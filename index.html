@@ -792,12 +792,26 @@ body.theme-day #gameOverScreen { background: rgba(255, 255, 255, 0.82); }
 .welcome-box {
     width: 100%;
     align-items: center;
-    max-width: min(480px, calc((100vh - 32px) * 9 / 16));
-    min-height: min(680px, 100vh - 24px);
+    /* Largest 9:16 rectangle that fits the viewport, constrained by BOTH axes
+       so the ratio holds whether the screen is limited by width or height.
+       No fixed px cap — the box grows to fill a desktop window.
+       dvh line overrides the vh line where supported: on iOS, 100vh means the
+       viewport with the browser bars HIDDEN, so it overflows while they show. */
+    max-width: min(100vw, calc((100vh - 12px) * 9 / 16));
+    max-width: min(100vw, calc((100dvh - 12px) * 9 / 16));
+    min-height: min(calc(100vh - 12px), calc(100vw * 16 / 9));
+    min-height: min(calc(100dvh - 12px), calc(100vw * 16 / 9));
+    /* Makes cqw units inside resolve against THIS box, so the contents scale
+       with the box rather than with the window. */
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    justify-content: center;   /* controls removed → centre the remaining stack */
-    gap: 20px;
+    /* space-evenly puts an equal gap above the first row, between every row,
+       and below the last — symmetric top-to-bottom at any box height, and it
+       spreads into the slack a taller box creates instead of leaving dead
+       bands at the ends. The gap is the floor when the box is short. */
+    justify-content: space-evenly;
+    gap: clamp(10px, 2.6cqw, 26px);
     padding: 24px 20px 24px;
     box-sizing: border-box;
 }
@@ -860,16 +874,22 @@ body.theme-day .welcome-box #demoVideo {
    provides context. Both centered, mantra echoes the player's accent
    colour for the theme. */
 .welcome-box .objective-block { width: 100%; }
+/* Wordmark + verbs are one unit, so the even row spacing falls BELOW the
+   pair rather than between them. */
+.title-block { width: 100%; }
 .welcome-box .objective-verbs {
-    margin: 0 0 6px 0;
-    font-size: clamp(15px, 4.2vw, 20px);
+    /* 1.2em = one line of THIS text (em resolves against the element's own
+       font-size), so the extra line of air scales with the type rather than
+       being a fixed pixel value. The clamp is the original tight gap. */
+    margin: calc(1.2em + clamp(8px, 2.4cqw, 20px)) 0 0 0;
+    font-size: clamp(15px, 4.2cqw, 26px);
     font-weight: 700;
     letter-spacing: 0.18em;
     color: #7dd3fc;
     text-align: center;
     text-transform: uppercase;
 }
-.welcome-box .objective-text { margin: 10px 0 0; text-align: center; font-size: clamp(14px, 3.9vw, 19px); }
+.welcome-box .objective-text { margin: 0; text-align: center; font-size: clamp(14px, 3.9cqw, 24px); }
 body.theme-day .welcome-box .objective-verbs { color: #0ea5e9; }
 
 /* Theme buttons stand alone (no pill wrapper) and stretch to fill */
@@ -893,8 +913,8 @@ body.theme-day .theme-button.active { background: #e0f2fe; color: #0e7490; borde
 /* PLAY button stretches to fill its full-width row */
 .welcome-box .start-btn {
     width: 100%;
-    font-size: 18px;
-    padding: 10px 24px;
+    font-size: clamp(16px, 4.6cqw, 28px);
+    padding: clamp(9px, 2.6cqw, 18px) 24px;
     margin: 0;
 }
 
@@ -1342,19 +1362,26 @@ body.theme-day .life-pip.on::before { color: #ec4899; }
 /* Welcome "how to play" legend — icon tiles matching the in-game items. */
 .howto { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 .howto-row { display: flex; justify-content: center; align-items: flex-end; gap: 16px; }
+.howto-row { width: 100%; justify-content: space-between; gap: clamp(5px, 1.8cqw, 18px); }
 .howto-item { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 56px; }
+.howto-item { gap: clamp(4px, 1.3cqw, 8px); width: clamp(52px, 16.5cqw, 112px); }
 .howto-tile {
     width: 26px; height: 26px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
 }
+.howto-tile {
+    width: clamp(30px, 11cqw, 76px); height: clamp(30px, 11cqw, 76px);
+    border-radius: clamp(7px, 2.5cqw, 17px);
+}
 .howto-tile svg { width: 16px; height: 16px; display: block; }
+.howto-tile svg { width: 62%; height: 62%; }
 .howto-tile.lime { background: #a3e635; }
 .howto-tile.teal { background: #2dd4bf; }
 .howto-tile.haz  { background: #ef4444; }
 .howto-tile.time { background: #f59e0b; }
 .howto-tile.wall { background: #9aa3b2; }
 .howto-label {
-    font-size: 10px; line-height: 1.15; text-align: center;
+    font-size: clamp(10px, 2.8cqw, 17px); line-height: 1.15; text-align: center;
     text-transform: uppercase; letter-spacing: 0.03em; color: #94a3b8;
 }
 body.theme-day .howto-label { color: #64748b; }
@@ -1370,8 +1397,8 @@ body.theme-day .howto-label { color: #64748b; }
 }
 .howto-grouptiles { display: flex; gap: 12px; }
 .howto-caption {
-    margin: 9px 0 0; text-align: center;
-    font-size: 12px; font-weight: 600; color: #cbd5e1;
+    margin: clamp(7px, 2.4cqw, 16px) 0 0; text-align: center;
+    font-size: clamp(11px, 3.1cqw, 18px); font-weight: 600; color: #cbd5e1;
 }
 body.theme-day .howto-grouplabel { color: #64748b; }
 body.theme-day .howto-group { border-color: rgba(100,116,139,0.32); }
@@ -1436,11 +1463,13 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
     <button class="cog-btn" onclick="openSettings()" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div class="welcome-box">
         <div class="welcome-row full">
-            <div class="screen-title"><span class="fitline">ROTO<span class="flip-r">R</span></span></div>
+            <div class="title-block">
+                <div class="screen-title"><span class="fitline">ROTO<span class="flip-r">R</span></span></div>
+                <p class="objective-verbs"><span class="fitline">FLIP · NAVIGATE · EVOLVE</span></p>
+            </div>
         </div>
         <div class="welcome-row full">
             <div class="objective-block">
-                <p class="objective-verbs"><span class="fitline">FLIP · NAVIGATE · EVOLVE</span></p>
                 <p class="objective-text"><span class="fitline">Collect the set to level up</span></p>
             </div>
         </div>
@@ -1459,8 +1488,6 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
                             <span class="howto-tile haz"><svg viewBox="0 0 24 24"><g transform="translate(12 12) scale(1.21) translate(-12 -12)"><path d="M4 10h16v4H4z" fill="#ffffff"/></g></svg></span>
                             <span class="howto-label">Devolve</span>
                         </div>
-                    </div>
-                    <div class="howto-row">
                         <div class="howto-item">
                             <span class="howto-tile teal"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.21) translate(-12 -12)"><path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7"/><path d="M17.5 3.5v3.5h-3.5"/></g></svg></span>
                             <span class="howto-label">Rotate</span>
@@ -1471,7 +1498,6 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
                         </div>
                     </div>
                 </div>
-                                <p class="howto-caption">NEW GROUND = NEW REWARDS</p>
             </div>
         </div>
         <div class="welcome-row full">

@@ -1661,6 +1661,13 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
 <script>
 // ============ SETUP ============
 
+// ── BUILD ───────────────────────────────────────────────────────────────
+// Naming convention: DDMMYY of the day the change set landed.
+// 270726: rotation around the trigger cube — pivots now rotate the shape
+// around the cube that landed on the shifter, not the anchor. The anchor
+// moves with the rotation, so pivots can change anchor parity.
+const BUILD_VERSION = '270726 ROTOЯ';
+
 // ── DEBUG FLAG ──────────────────────────────────────────────────────────
 // Master switch for all developer tools (movement-offset panel, grid coords,
 // replay/scrub, and the on-screen debug buttons). Ship PUBLIC builds with
@@ -2141,6 +2148,37 @@ const PIVOT_ROTATION_CCW = {
     jshape:   { A: 'C', C: 'D', D: 'B', B: 'A' },
     square:   { A: 'A' }
 };
+
+// ── [270726 ROTOЯ] ROTATION AROUND THE TRIGGER CUBE ──────────────────────
+// Pivots now rotate the shape around the TRIGGER CUBE — the cube of the
+// player's body that actually landed on the pivot shifter — not the anchor.
+// The trigger cube stays put; the rest of the body sweeps 90° around it.
+// Because the anchor itself now moves, a pivot can change anchor parity,
+// which changes "can I get there" for every shape.
+//
+// Given the shape's current world cells, the trigger cube (tx,ty), spin
+// direction, shape type and the post-rotation config, returns:
+//   anchorX/anchorY — the canonical anchor of the rotated footprint
+//   newCells        — canonical-order cells (what game logic commits)
+//   rotated         — geometric rotation of the input cells IN INPUT ORDER
+//                     (used by the pivot animation so each cube arcs on a
+//                     constant radius around the trigger cube)
+// The rotated set is always an exact translate of the canonical newConfig
+// cells (the rotation tables are true 90° turns), so aligning bounding-box
+// minima recovers the anchor exactly.
+function pivotAroundTrigger(cellsNow, tx, ty, ccw, type, newConfig) {
+    const rot = ccw
+        ? c => ({ x: tx + (c.y - ty), y: ty - (c.x - tx) })   // 90° CCW (screen y-down)
+        : c => ({ x: tx - (c.y - ty), y: ty + (c.x - tx) });  // 90° CW
+    const rotated = cellsNow.map(rot);
+    const offs = SHAPES[type].cells[newConfig];
+    let minRX = Infinity, minRY = Infinity, minOX = Infinity, minOY = Infinity;
+    for (const c of rotated) { if (c.x < minRX) minRX = c.x; if (c.y < minRY) minRY = c.y; }
+    for (const p of offs) { if (p[0] < minOX) minOX = p[0]; if (-p[1] < minOY) minOY = -p[1]; }
+    const anchorX = minRX - minOX, anchorY = minRY - minOY;
+    const newCells = offs.map(p => ({ x: anchorX + p[0], y: anchorY - p[1] }));
+    return { anchorX, anchorY, newCells, rotated };
+}
 
 // Slip direction encoding (0..7): N/NE/E/SE/S/SW/W/NW.
 // dx, dy use SCREEN convention (positive y = down, positive x = right).
@@ -3146,7 +3184,7 @@ function currentMission() {
 // world adjusts the moment a round transition fires.
 function getSlotEveryLandings()    { const m = currentMission(); return (m && m.slotEveryLandings)    || 20;   }
 function getWallChance()           { const m = currentMission(); return (m && m.wallChance)           || 0.03; }
-function getHazardChance()         { const m = currentMission(); return (((m && m.hazardChance) || 0.05)) * 0.75; }   // V9: relaxed from x0.5 — reds are the trim tool and were starving
+function getHazardChance()         { const m = currentMission(); return (((m && m.hazardChance) || 0.05)) * 0.5; }   // [270726] back to x0.5 — terrain reds were crowding slot approaches. Trim starvation is covered by the demand-driven injectors (trim supply + adjacent-red guarantee), which didn't exist when x0.5 last starved.
 function getShifterEveryLandings() { const m = currentMission(); return (m && m.shifterEveryLandings) || 4;    }
 
 // Requirement id = `${type}-${config}` (e.g., 'pair-H', 'jshape-B'). Used as
@@ -6336,8 +6374,9 @@ function checkCollisions() {
     // ANY cube of the player's shape can trigger a shifter — not just the
     // anchor. We scan cells in order so the anchor (cells[0]) still wins by
     // priority, but a non-anchor cube landing on a pivot/slip now also fires
-    // it. The effect itself is still anchor-centric (rotation pivots around
-    // the anchor; slip translates from the anchor) — only the TRIGGER changed.
+    // it. [270726] Rotation is now TRIGGER-CUBE-centric: the shape pivots
+    // around the cube that landed on the shifter (see pivotAroundTrigger).
+    // Slip is still anchor-centric (pure translation — centre is irrelevant).
     // Consume the cell where the SHIFTER actually was, not the anchor.
     if (cells.length > 0) {
         let triggerCell = null, triggerKey = null, triggerItem = null;
@@ -6355,10 +6394,11 @@ function checkCollisions() {
             const ccw = pmeta && pmeta.dir === 'ccw';
             const rotTable = ccw ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
             const newConfig = rotTable[game.shapeType][game.shapeConfig];
-            // Build the post-rotation cell set (anchor stays put)
-            const newCells = SHAPES[game.shapeType].cells[newConfig].map(([dx,dy]) => ({
-                x: game.playerX + dx, y: game.playerY - dy
-            }));
+            // [270726] Build the post-rotation cell set — the TRIGGER CUBE
+            // stays put and the body sweeps around it; the anchor moves.
+            const pv = pivotAroundTrigger(cells, triggerCell.x, triggerCell.y,
+                ccw, game.shapeType, newConfig);
+            const newCells = pv.newCells;
             // Socket gate: an imprecise rotation into slot territory is refused —
             // the pivot fires and is spent, but the world resists; no movement.
             if (slotMisfitAt(newCells)) {
@@ -6369,14 +6409,17 @@ function checkCollisions() {
                 if (sfx.bonk) sfx.bonk();
                 cells = getPlayerCells();
             } else {
-            // Identify cells that land in invalid space (OOB / wall / hazard).
-            // Those cells die; the rest determine the new shape.
+            // Identify cells that would land in invalid space (OOB / wall /
+            // hazard). [270726] Any casualty now REFUSES the turn instead of
+            // trimming the shape.
             const casualtyIndices = detectCasualties(newCells);
 
             if (casualtyIndices.length === 0) {
                 // CLEAN ROTATION — all cells valid.
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 game.shapeConfig = newConfig;
+                game.playerX = pv.anchorX;   // [270726] anchor moves with the rotation
+                game.playerY = pv.anchorY;
                 // Shifter cell becomes a visited-floor trace (no walls).
                 delete world[triggerKey];
                 markCovered(triggerKey);
@@ -6393,13 +6436,20 @@ function checkCollisions() {
                 }
                 triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
                 triggerShake(3, 150);
-                startPivotAnim(oldCellsForAnim, cells, game.playerX, game.playerY);
+                // [270726] Animate around the trigger cube; pv.rotated keeps
+                // old-order correspondence so every cube arcs on a fixed radius.
+                startPivotAnim(oldCellsForAnim, pv.rotated, triggerCell.x, triggerCell.y);
                 if (sfx.evolve) sfx.evolve();
             } else {
-                // PARTIAL OR FULL DEATH — rotation pushes cells into invalid space.
-                const outcome = applyCasualtyOutcome(newCells, casualtyIndices, triggerCell, triggerKey);
-                if (outcome === 'death') return 'death';
-                cells = getPlayerCells();
+                // [270726] SAFETY REFUSAL — the turn would push cubes into a
+                // wall / frame edge / hazard. The world resists: bonk, no
+                // movement, and the shifter is NOT consumed (unlike the socket
+                // gate) — reposition and trigger it with a different cube for
+                // a different sweep. Shifters are rewards, never traps.
+                triggerShake(3, 90);
+                if (sfx.bonk) sfx.bonk();
+                addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
+                    'NO ROOM', '#fbbf24');
             }
             }
         } else if (triggerItem === 'slip') {
@@ -6421,7 +6471,9 @@ function checkCollisions() {
                 if (sfx.bonk) sfx.bonk();
                 cells = getPlayerCells();
             } else {
-            // Identify cells that land in invalid space (OOB / wall / hazard).
+            // Identify cells that would land in invalid space (OOB / wall /
+            // hazard). [270726] Any casualty now REFUSES the step instead of
+            // trimming (or killing) the shape.
             const casualtyIndices = detectCasualties(newCells);
 
             if (casualtyIndices.length === 0) {
@@ -6448,10 +6500,14 @@ function checkCollisions() {
                 startSlipAnim(oldCellsForAnim, cells);
                 if (sfx.evolve) sfx.evolve();
             } else {
-                // PARTIAL OR FULL DEATH — slip pushes cells into invalid space.
-                const outcome = applyCasualtyOutcome(newCells, casualtyIndices, triggerCell, triggerKey);
-                if (outcome === 'death') return 'death';
-                cells = getPlayerCells();
+                // [270726] SAFETY REFUSAL — the step would push cubes into a
+                // wall / frame edge / hazard (steps translate the whole body,
+                // so this was the one shifter that could cost a LIFE). Same
+                // rule as turns: bonk, no movement, shifter kept.
+                triggerShake(3, 90);
+                if (sfx.bonk) sfx.bonk();
+                addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
+                    'NO ROOM', '#fbbf24');
             }
             }
         }
@@ -6971,6 +7027,9 @@ function detectCasualties(newCells) {
     return indices;
 }
 
+// [270726] NO LONGER CALLED — shifter casualties now refuse instead of trim
+// (see SAFETY REFUSAL in the pivot/slip handlers). Kept for reference while
+// the refusal rule is playtested; delete if it sticks.
 function applyCasualtyOutcome(newCells, casualtyIndices, triggerCell, triggerKey) {
     // Shifter cell always becomes a visited-floor trace regardless of outcome.
     delete world[triggerKey];
@@ -7276,12 +7335,16 @@ function routeStep(type, config, x, y, dir) {
         const item = world[k];
         if (item === 'pivot') {
             const meta = shifterMeta[k];
-            const table = (meta && meta.dir === 'ccw') ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
+            const ccwRot = meta && meta.dir === 'ccw';
+            const table = ccwRot ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
             const rConfig = table[type][nConfig];
-            const rCells = SHAPES[type].cells[rConfig].map(function (p) { return { x: nx + p[0], y: ny - p[1] }; });
-            if (slotMisfitAt(rCells)) break;                         // fizzle → keep post-flip node
-            if (detectCasualties(rCells).length) return null;        // devolve → route-break
-            nConfig = rConfig; cells = rCells; break;
+            // [270726] Trigger-cube rotation: the anchor moves too, so the
+            // solver must track the new anchor or its reachability answers
+            // would disagree with the real handler.
+            const pv = pivotAroundTrigger(cells, cells[i].x, cells[i].y, ccwRot, type, rConfig);
+            if (slotMisfitAt(pv.newCells)) break;                     // fizzle → keep post-flip node
+            if (detectCasualties(pv.newCells).length) break;          // [270726] refusal → keep post-flip node
+            nConfig = rConfig; nx = pv.anchorX; ny = pv.anchorY; cells = pv.newCells; break;
         }
         if (item === 'slip') {
             const meta = shifterMeta[k];
@@ -7289,7 +7352,7 @@ function routeStep(type, config, x, y, dir) {
             const sx = nx + v.dx, sy = ny + v.dy;
             const sCells = SHAPES[type].cells[nConfig].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; });
             if (slotMisfitAt(sCells)) break;
-            if (detectCasualties(sCells).length) return null;
+            if (detectCasualties(sCells).length) break;               // [270726] refusal → keep post-flip node
             nx = sx; ny = sy; cells = sCells; break;
         }
     }

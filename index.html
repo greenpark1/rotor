@@ -94,43 +94,45 @@ h1 { color: #38bdf8; font-size: 20px; margin-bottom: 5px; text-shadow: 0 0 20px 
     user-select: none;
 }
 
-/* Mobile-controls bar — hidden. Pause control now lives inside the HUD
-   on every device, so this strip is redundant. Kept in CSS so legacy
-   builds can re-enable with the legacy-show class if needed. */
-.mobile-controls {
-    display: none;
-}
-.mobile-controls.legacy-show {
-    justify-content: center;
-    gap: 12px;
-    margin: 10px auto 0;
-    width: 100%;
-    max-width: 480px;
-}
-.mobile-controls button {
-    flex: 1;
-    padding: 14px 8px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    color: #cbd5e1;
-    background: rgba(30, 41, 59, 0.85);
-    border: 1px solid rgba(148, 163, 184, 0.30);
-    border-radius: 10px;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    cursor: pointer;
-}
-.mobile-controls button:active,
-.mobile-controls button:hover {
-    background: rgba(56, 189, 248, 0.30);
-    color: #fff;
-}
 
 /* Round-transition overlay. Covers the canvas during round changes:
    fades to ~92% black, scales a huge "ROUND N" in, holds, then fades
    out. Whole animation runs 1800ms. Sits inside .game-container which
    is position:relative so the overlay covers just the canvas area. */
+/* [270726r] Level-complete card — structured and animated, translucent so
+   the final board stays visible behind it. Replaces the scattered floats. */
+.level-card {
+    position: absolute; inset: 0; z-index: 15;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(2, 6, 23, 0.42);
+    pointer-events: none; border-radius: 8px;
+}
+.level-card.hidden { display: none; }
+.level-card-box {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    max-width: 86%; padding: 26px 36px; border-radius: 16px;
+    background: rgba(15, 23, 42, 0.80);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    animation: lcCardIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.lc-row { opacity: 0; transform: translateY(10px); animation: lcRowIn 0.4s ease-out forwards; text-align: center; }
+.lc-row:empty { display: none; }
+.level-card-title  { animation-delay: 0.10s; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #a3e635; }
+.level-card-cov    { animation-delay: 0.50s; font-size: 17px; font-weight: 700; letter-spacing: 1px; color: #cbd5e1; font-variant-numeric: tabular-nums; }
+.level-card-cov.gold { color: #ffd60a; text-shadow: 0 0 14px rgba(255, 214, 10, 0.5); }
+.level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: #22d3ee; text-transform: uppercase; }
+.level-card-extra  { animation-delay: 1.25s; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #7dd3fc; }
+@keyframes lcCardIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes lcRowIn { to { opacity: 1; transform: translateY(0); } }
+body.theme-day .level-card { background: rgba(248, 250, 252, 0.30); }
+body.theme-day .level-card-box { background: rgba(255, 255, 255, 0.92); border-color: rgba(100, 116, 139, 0.30); }
+body.theme-day .level-card-title { color: #4d7c0f; }
+body.theme-day .level-card-cov { color: #334155; }
+body.theme-day .level-card-cov.gold { color: #b45309; text-shadow: none; }
+body.theme-day .level-card-praise { color: #0e7490; }
+body.theme-day .level-card-extra { color: #0369a1; }
+
 .round-overlay {
     position: absolute;
     inset: 0;
@@ -398,15 +400,39 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
     display: flex; align-items: center; gap: 10px;
     min-width: 0;
 }
+/* [270726q] Control row NEVER wraps — buttons shrink to fit one line. */
+.hud-row-controls { flex-wrap: nowrap; gap: clamp(4px, 1.6vw, 12px); }
+.hud-row-controls .hud-pause-btn {
+    min-width: 0; min-height: 0;
+    width: clamp(34px, 9.5vw, 52px);
+    height: clamp(30px, 8.5vw, 44px);
+    padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 1 auto;
+}
+.hud-row-controls .hud-pause-btn svg { width: clamp(14px, 4.2vw, 20px); height: auto; }
 .hud-right { gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
 .set-band-label {
-    font-size: 12px; font-weight: bold; letter-spacing: 2px;
-    color: #94a3b8; text-transform: uppercase;
+    font-size: 21px; font-weight: 800; letter-spacing: 2.5px;   /* [270726v] +40% */
+    color: #cbd5e1; text-transform: uppercase;
 }
+/* [270726u] SET row: six fixed 2×2 sockets on one line, scaling to fit. */
+.hud-row-set { flex-wrap: nowrap; }
+.set-band-icons { gap: clamp(3px, 1vw, 8px); }
+.set-band-icons .set-slot svg { width: clamp(32px, 9vw, 58px); height: auto; }
 .level-label {
     font-size: 16px; font-weight: 800; letter-spacing: 2px;
-    color: #cbd5e1; margin-right: 12px; white-space: nowrap;
+    color: #cbd5e1; white-space: nowrap;
 }
+/* [270726u] Score row: LEVEL N justified left, score truly centred
+   regardless of the label's width, combo chip in the right wing. */
+.hud-row-score {
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; width: 100%; gap: 8px;
+}
+.hud-row-score .level-label { justify-self: start; grid-column: 1; }
+.hud-row-score .score-center { grid-column: 2; display: flex; align-items: center; justify-content: center; }
+.hud-row-score .score-side { grid-column: 3; justify-self: start; }
 body.theme-day .level-label { color: #334155; }
 .set-band-icons { display: flex; align-items: center; gap: 6px; }
 .set-band-icons .set-slot {
@@ -487,54 +513,7 @@ body.theme-day .hud-exit-btn:hover, body.theme-day .hud-exit-btn:active {
 }
 .trace-pips .pip.on { box-shadow: 0 0 6px currentColor; filter: brightness(1.1); }
 
-/* Bullet-time charge meter in the top band */
-.bullet-meter { display: none; }
-.bullet-meter.legacy-show { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-left: 8px; }
-.bullet-label { font-size: 11px; font-weight: bold; letter-spacing: 1px; color: #7dd3fc; }
-.bullet-bar-wrap { width: 90px; height: 8px; border-radius: 5px; background: rgba(125,211,252,0.15); overflow: hidden; }
-.bullet-bar { height: 100%; width: 0%; background: #7dd3fc; transition: width 0.15s linear; }
-.bullet-bar.ready { animation: bulletReady 0.7s ease-in-out infinite; }
 
-/* Time Warp stockpile — five small cube pips mirroring the lives display,
-   but in the Time Warp cyan family. One pip lit per stocked Time Warp. */
-.warp-display {
-    /* Hidden — hourglasses now extend the clock directly, no stockpile. */
-    display: none;
-}
-.warp-display.legacy-show {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    padding: 0 4px;
-}
-.warp-pip {
-    width: 12px;
-    height: 12px;
-    border: 2px solid #334155;
-    background: transparent;
-    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s, opacity 0.25s;
-    opacity: 0.5;
-}
-.warp-pip.on {
-    background: #7dd3fc;
-    border-color: #7dd3fc;
-    box-shadow: 0 0 6px #7dd3fc, inset 0 0 2px rgba(255,255,255,0.4);
-    opacity: 1;
-}
-/* When Time Warp is firing, the whole row pulses purple to mirror the
-   active-state colour used elsewhere (#a78bfa). */
-.warp-display.active .warp-pip.on {
-    animation: warpFiring 0.6s ease-in-out infinite;
-    background: #a78bfa;
-    border-color: #a78bfa;
-    box-shadow: 0 0 8px #a78bfa;
-}
-@keyframes warpFiring {
-    0%   { transform: scale(1);    opacity: 0.7; }
-    50%  { transform: scale(1.15); opacity: 1;   }
-    100% { transform: scale(1);    opacity: 0.7; }
-}
-@keyframes bulletReady { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
 
 /* Countdown clock in the HUD band */
 /* V9 D2 — live coverage meter. Grey while working; gold at >=70% (grade S,
@@ -578,25 +557,11 @@ body.theme-day .chain-chip { color: #0f766e; }
 body.theme-day .cov-meter { color: #64748b; }
 body.theme-day .cov-meter.cov-s { color: #b45309; text-shadow: none; }
 
-.clock {
-    font-family: 'Courier New', monospace;
-    font-size: 19px;
-    font-weight: bold;
-    color: #cbd5e1;
-    letter-spacing: 1.2px;
-    min-width: 58px;
-    text-align: center;
-    transition: color 0.2s, text-shadow 0.2s;
-}
-.clock.warning { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
-.clock.critical { color: #ef4444; text-shadow: 0 0 14px rgba(239,68,68,0.7);
-                  animation: clockCritical 0.6s ease-in-out infinite; }
-.clock.slo-mo { color: #7dd3fc; text-shadow: 0 0 14px rgba(125, 211, 252, 0.55); }
 @keyframes clockCritical { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 /* Hourglass-add flourish: bright-green glow + scale pulse, plays once per
-   +10s pickup. Class is added by the warp pickup handler and removed via
-   setTimeout. */
-.clock.clock-boost {
+   +20s pickup. Class is added by the hourglass pickup handler and removed
+   via setTimeout. */
+.rotor-secs.clock-boost {
     color: #4ade80;
     text-shadow: 0 0 18px rgba(74, 222, 128, 0.9);
     animation: clockBoost 0.8s ease-out;
@@ -944,22 +909,6 @@ body.theme-day .theme-button.active { background: #e0f2fe; color: #0e7490; borde
 
 .screen-title { font-size: 108px; line-height: 1.0; margin-bottom: 5px; color: #38bdf8; text-shadow: 0 0 28px rgba(56, 189, 248, 0.45); }
 
-/* Charge currency — accumulates from floor coverage; rising count boosts
-   pickup spawn rate. Compact text + lightning icon. */
-.charge-display {
-    /* Hidden — charge counter removed from HUD per design simplification. */
-    display: none;
-}
-.charge-display.legacy-show {
-    align-items: center;
-    gap: 4px;
-    padding: 0 6px;
-    color: #fde68a;
-    font-weight: bold;
-    font-size: 13px;
-    text-shadow: 0 0 6px rgba(253, 230, 138, 0.4);
-}
-.charge-icon { font-size: 14px; }
 
 /* Brief player-facing objective — sits between the demo canvas and the
    theme toggle on the welcome screen. Muted so it doesn't compete with
@@ -1001,8 +950,6 @@ body.theme-day .hud, body.theme-day .pause-panel,
 body.theme-day .scrub-counter, body.theme-day .hud-value {
     color: #1d2a3a;
 }
-body.theme-day .clock { color: #475569; }
-body.theme-day .clock.slo-mo { color: #0e7490; text-shadow: 0 0 12px rgba(14, 116, 144, 0.45); }
 body.theme-day .hud { background: rgba(29, 42, 58, 0.04); }
 
 body.theme-day .screen-overlay {
@@ -1496,6 +1443,10 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
                             <span class="howto-tile teal"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.21) translate(-12 -12)"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></g></svg></span>
                             <span class="howto-label">Shift</span>
                         </div>
+                        <div class="howto-item">
+                            <span class="howto-tile time"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.21) translate(-12 -12)"><path d="M6.2 4.6h11.6M6.2 19.4h11.6M8.2 4.6c0 4 2.75 5.2 2.75 7.4s-2.75 3.4-2.75 7.4M15.8 4.6c0 4-2.75 5.2-2.75 7.4s2.75 3.4 2.75 7.4"/></g></svg></span>
+                            <span class="howto-label">+20 Sec</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1563,12 +1514,13 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
             <button class="hud-pause-btn hud-exit-btn" id="hudExitBtn" onclick="exitToWelcome()" title="Exit to menu"><svg viewBox="0 0 24 24" width="20" height="20" style="vertical-align:middle" aria-hidden="true"><path fill="currentColor" d="M12 3.2 2.3 11.6h2.4v8.8h5.1v-5h4.4v5h5.1v-8.8h2.4z"/></svg></button>
         </div>
         <div class="hud-row hud-row-set">
-            <div class="level-label" id="levelLabel">LEVEL 1</div>
             <div class="set-band-label">SET</div>
             <div class="set-band-icons" id="hudSetIcons"></div>
         </div>
         <div class="hud-row hud-row-score">
-            <span class="score-badge" id="scoreBadge"></span><div class="score-display" id="scoreDisplay">0</div><span class="chain-chip" id="chainChip"></span>
+            <div class="level-label" id="levelLabel">LEVEL 1</div>
+            <div class="score-center"><span class="score-badge" id="scoreBadge"></span><div class="score-display" id="scoreDisplay">0</div></div>
+            <div class="score-side"><span class="chain-chip" id="chainChip"></span></div>
         </div>
     </div>
     <canvas id="canvas" class="game-canvas"></canvas>
@@ -1582,6 +1534,14 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
          CSS animations. Sits over the canvas (z-index 20). Triggered via
          showRoundOverlay(n). The .active class drives both the fade-to-
          black background and the big number scale-in / scale-out. -->
+    <div class="level-card hidden" id="levelCard">
+        <div class="level-card-box">
+            <div class="level-card-title lc-row" id="lcTitle"></div>
+            <div class="level-card-cov lc-row" id="lcCov"></div>
+            <div class="level-card-praise lc-row" id="lcPraise"></div>
+            <div class="level-card-extra lc-row" id="lcExtra"></div>
+        </div>
+    </div>
     <div class="round-overlay" id="roundOverlay">
         <div class="round-overlay-inner">
             <div class="round-overlay-label">LEVEL</div>
@@ -1652,10 +1612,6 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
             <button class="settings-done" onclick="closeSettings()">Done</button>
         </div>
     </div>
-    <!-- Mobile-only on-screen buttons. Hidden on desktop where keyboard handles these. -->
-    <div class="mobile-controls" id="mobileControls">
-        <button id="mobilePauseBtn" onclick="togglePause()">⏸ PAUSE</button>
-    </div>
 </div>
 
 <script>
@@ -1666,7 +1622,173 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
 // 270726: rotation around the trigger cube — pivots now rotate the shape
 // around the cube that landed on the shifter, not the anchor. The anchor
 // moves with the rotation, so pivots can change anchor parity.
-const BUILD_VERSION = '270726 ROTOЯ';
+// 270726b: housekeeping — hourglass re-enabled wearing new white icon art
+// (+20s pickup, rare); dead HUD code stripped (warp pips, charge counter,
+// bullet meter, mobile bar, old clock CSS); diagonal flips now foreshorten
+// along the move axis instead of collapsing to the corner.
+// 270726c: MINUS TRIMS, WALLS REFUSE — a step/turn shift that would move
+// cubes onto red minus cells now trims them (devolve to survivors, same as
+// a flip through a red); walls/frame edge still refuse with NO ROOM, and a
+// trim that would destroy the whole shape also refuses.
+// 270726d: hourglass ACTUALLY spawns — chooseShifterKind rolled out of 100
+// while the weights sum past it, so 'warp' was unreachable; the roll now
+// uses the real total. Welcome legend gets its amber hourglass tile back
+// (+20 Sec), wearing the same icon art as the board cell.
+// 270726e: hourglass +20s now pours through the momentum funnel
+// (momentumAddSeconds) — full-ring clamp, overflow factory, band refresh,
+// wheel kick — instead of raw speedTimer surgery that could overfill the
+// ring past 3:00. Spawn burst recoloured amber to match the art.
+// 270726f: frame/border glow flashes disabled (triggerEdgeGlow no-ops;
+// call sites kept for easy reinstatement).
+// 270726g: FIX — drawHourglassIcon referenced draw()-local CELL_SIZE and
+// threw every frame an hourglass was visible; the frame guard swallowed the
+// error, so frames aborted mid-draw (invisible player, truncated board,
+// smeared flip trails). Icon size now computed locally.
+// 270726h: SOLIDS TRIM, SMASH-THROUGH — walls now behave like reds for ALL
+// movement (flips, step shifts, turn shifts): the contacting cube dies, the
+// wall is smashed to floor. Only off-grid and total-destruction landings
+// refuse; wall-on-player is no longer instant death (joins the trim pass).
+// Move Guide, trapped detection and shave-into-slot all updated to match.
+// Held-drag continuation still stops at walls (deliberate swipes only).
+// 270726i: the board's side edges join the trim rule for SHIFT PUSHES — a
+// step/turn shift that shoves a cube off the board destroys that cube and
+// the survivors carry on (total destruction still refuses). Player flips
+// off the edge still bonk (chosen moves answer to the boundary).
+// 270726j: WALLS SURVIVE SHIFT CONTACT — when a step/turn shift grinds a
+// cube into a wall, the cube comes off but the wall stands (like the board
+// edge). Deliberate swiped flips still smash through and demolish the wall.
+// 270726k: dynamo hum removed for good (updateHum now just silences any
+// leftover oscillator). Hourglass icon redrawn as a vector with one uniform
+// stroke weight matched to the step/turn shift glyphs, in-game and on the
+// welcome legend (bitmap art retired).
+// 270726l: ONE LINE WEIGHT — every board icon's white linework is now
+// exactly 2.4px (measured off the green cube's "+"): hourglass pinned to
+// 2.4, and the step/turn shift font arrows replaced with stroked vector
+// glyphs (font rendering made their weight platform-dependent).
+// 270726m: night visited-cell plum dialled up 20% (alpha 0.24 -> 0.29) so
+// covered ground reads clearly and feeds the tidy-upper instinct, without
+// competing with item colours.
+// 270726n: all in-game icon linework thickened 2.4 -> 3.6px, matching the
+// welcome legend's stroke-to-icon ratio (12.1%); visited plum 0.29 -> 0.32.
+// 270726o: WALLS ARE SOLID TO FLIPS — smash-through withdrawn. A swiped
+// flip touching any wall refuses (thud + red ghost, ✕ in the Move Guide).
+// Machines still force wall contact: shift pushes cost the cube, wall
+// survives; a wall forming under the player costs the cube, wall survives.
+// Reds are unchanged everywhere (trim + consumed).
+// 270726p: LAST CUBE STANDING — the NO ROOM refusal (and its float) is
+// retired. A shift push always resolves: invalid survivors grind down to a
+// single on a clear cell; if every destination is blocked the push is
+// absorbed (shape stands its ground, shifter spent, dull thud).
+// 270726q: HUD love — control buttons locked to ONE line (shrink to fit,
+// never wrap); SET band enlarged (label 15px, glyphs u23->29 with
+// shrink-to-fit); duplicate requirements now display as that many glyphs
+// instead of a multiplier, in the HUD and the level-transition overlay.
+// 270726r: LEVEL CARD — the scattered end-of-level floats (LEVEL COMPLETE,
+// CLEAN SLATE, praise line, ENDLESS MODE) are replaced by one structured
+// card that animates in over the final scene (translucent backdrop), rows
+// staggering in: title, coverage/bonus (gold on CLEAN SLATE), praise,
+// extra. Fireworks and the jackpot audio stay. Card yields to the
+// fade-to-black overlay at the usual moment.
+// 270726s: DENIED FLASH — the shape glows red for ~300ms in sync with the
+// bonk on every refused move (walls, edges, visibility gate, drag stop,
+// socket-gate fizzles, absorbed pushes). One visual voice for "no".
+// 270726t: denied flash lengthened by ~10 frames (300ms -> 465ms).
+// 270726u: HUD restructure — LEVEL N moved to the score row (left-justified
+// wing of a 3-column grid; score truly centred, combo chip right wing).
+// SET band is now SIX fixed 2×2 sockets visible from the start: every
+// shape draws inside its socket grid anchored bottom-left (configuration
+// legible), requirements fill sockets as levels define them, the rest
+// stay faint empty grids.
+// 270726v: CRISP PASS — canvas backing store now carries devicePixelRatio
+// resolution (soft icons were 480px upscaled); denied flash doubled to
+// 930ms and 20% more saturated; SET label +40%; turn shift arrowhead is
+// now a solid tangent triangle so the direction is unmistakable.
+const BUILD_VERSION = '270726v ROTOЯ';
+
+// ── HOURGLASS ICON ──────────────────────────────────────────────────────
+// [270726l] Step/turn shift glyphs as stroked vectors — ONE uniform 2.4px
+// line (measured off the green cube's "+"), replacing the font arrows whose
+// stroke weight varied with the platform font and never matched the other
+// icons. White with the same day/night alpha as the green's "+".
+function drawShifterGlyph(gcx, gcy, item, meta) {
+    ctx.save();
+    ctx.globalAlpha = currentTheme === 'day' ? 0.9 : 0.95;
+    ctx.strokeStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';   // solid arrowheads
+    ctx.lineWidth = 3.6;   // [270726n] welcome-legend weight
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (item === 'pivot') {
+        // Rotation arrow: near-full circle with a gap, and a SOLID tangent
+        // arrowhead at the arc's end ([270726v] — the stroked head didn't
+        // read at cell size). CW = ↻, CCW = ↺ (mirrored).
+        const ccw = meta && meta.dir === 'ccw';
+        const R = CELL * 0.16, GAP = 0.72, HEAD = CELL * 0.145;
+        const a0 = -Math.PI / 2 + (ccw ? -GAP : GAP);
+        const a1 = a0 + (ccw ? -(Math.PI * 2 - GAP * 2) : (Math.PI * 2 - GAP * 2));
+        ctx.beginPath();
+        ctx.arc(gcx, gcy, R, a0, a1, ccw);
+        ctx.stroke();
+        const ex = gcx + R * Math.cos(a1), ey = gcy + R * Math.sin(a1);
+        const t = ccw ? (a1 - Math.PI / 2) : (a1 + Math.PI / 2);   // direction of travel
+        const px = Math.cos(t + Math.PI / 2), py = Math.sin(t + Math.PI / 2);
+        ctx.beginPath();
+        ctx.moveTo(ex + Math.cos(t) * HEAD, ey + Math.sin(t) * HEAD);   // tip
+        ctx.lineTo(ex + px * HEAD * 0.66, ey + py * HEAD * 0.66);
+        ctx.lineTo(ex - px * HEAD * 0.66, ey - py * HEAD * 0.66);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        return;
+    }
+    ctx.beginPath();
+    {
+        // Step arrow: shaft through the centre plus two head strokes,
+        // aimed along the slip's direction vector.
+        const v = SLIP_VECTORS[meta ? meta.dir : 0];
+        const th = Math.atan2(v.dy, v.dx);
+        const L = CELL * 0.155, HEAD = CELL * 0.105;
+        const tx = gcx + L * Math.cos(th), ty = gcy + L * Math.sin(th);
+        ctx.moveTo(gcx - L * Math.cos(th), gcy - L * Math.sin(th));
+        ctx.lineTo(tx, ty);
+        for (const spread of [0.62, -0.62]) {
+            const ang = th + Math.PI + spread;
+            ctx.moveTo(tx, ty);
+            ctx.lineTo(tx + HEAD * Math.cos(ang), ty + HEAD * Math.sin(ang));
+        }
+    }
+    ctx.stroke();
+    ctx.restore();
+}
+
+// [270726k] Vector hourglass, single UNIFORM stroke weight matched to the
+// step/turn shift glyphs (2.4px at CELL=48, scaling with the board).
+// Replaces the bitmap art, whose line thickness varied across the image.
+// Same silhouette: top/bottom caps + pinched-waist glass.
+function drawHourglassIcon(sx, sy) {
+    const tile = CELL - (currentTheme === 'day' ? 1 : 2) * 2;   // matches draw()'s CELL_SIZE
+    const h = CELL * 0.62;
+    const s = h / 14.8;                     // design box: x -5.8..5.8, y -7.4..7.4
+    const cx = sx + tile / 2, cy = sy + tile / 2;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(s, s);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 3.6 / s;   // [270726n] uniform 3.6px — welcome-legend ratio (12.1% of icon box)
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-5.8, -7.4); ctx.lineTo(5.8, -7.4);             // top cap
+    ctx.moveTo(-5.8, 7.4);  ctx.lineTo(5.8, 7.4);              // bottom cap
+    ctx.moveTo(-3.8, -7.4);                                     // left wall
+    ctx.bezierCurveTo(-3.8, -3.4, -1.05, -2.2, -1.05, 0);
+    ctx.bezierCurveTo(-1.05, 2.2, -3.8, 3.4, -3.8, 7.4);
+    ctx.moveTo(3.8, -7.4);                                      // right wall
+    ctx.bezierCurveTo(3.8, -3.4, 1.05, -2.2, 1.05, 0);
+    ctx.bezierCurveTo(1.05, 2.2, 3.8, 3.4, 3.8, 7.4);
+    ctx.stroke();
+    ctx.restore();
+}
 
 // ── DEBUG FLAG ──────────────────────────────────────────────────────────
 // Master switch for all developer tools (movement-offset panel, grid coords,
@@ -1692,8 +1814,16 @@ const ctx = canvas.getContext('2d');
 const CELL = 48;
 const VIEW_W = 10;  // Visible columns
 const VIEW_H = 10;  // Visible rows (10×10 square play zone)
-canvas.width = VIEW_W * CELL;
-canvas.height = VIEW_H * CELL;
+// [270726v] CRISP RENDERING — the backing store was 480×480 logical px,
+// upscaled by CSS and the device pixel ratio, which blurred every icon.
+// The canvas now carries devicePixelRatio ×1.5 extra resolution (capped
+// ×3) and draw()/drawSnapshot() scale all logical coordinates up once per
+// frame. All game code keeps working in LOGICAL_W/H (480) coordinates.
+const LOGICAL_W = VIEW_W * CELL;
+const LOGICAL_H = VIEW_H * CELL;
+const RENDER_SCALE = Math.min(3, Math.max(1, (window.devicePixelRatio || 1) * 1.5));
+canvas.width = LOGICAL_W * RENDER_SCALE;
+canvas.height = LOGICAL_H * RENDER_SCALE;
 
 // ============ SCREEN SHAKE ============
 let shake = { x: 0, y: 0, timer: 0, intensity: 0 };
@@ -2053,6 +2183,11 @@ function drawTransitionRings() {
 
 
 function triggerEdgeGlow(color = '#a3e635', duration = 600) {
+    // [270726f] DISABLED — the flashing frame/border glow (evolutions,
+    // shifters, claims, chain fever, full rows all strobed it) was more
+    // distraction than signal. All call sites are preserved untouched, so
+    // reinstating later is just deleting this early return.
+    return;
     edgeGlowColor = color;
     edgeGlowTimer = duration;
     const container = document.querySelector('.game-container');
@@ -2092,6 +2227,21 @@ const FACTORY_PTS = 100;          // overflow factory: surplus pts per new gear
 let overflowPts = 0;              // surplus accumulated while the ring is full
 let factoryQueue = 0;             // gears waiting to be stamped out
 function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedTimer); }
+// [270726e] Direct time credit (hourglass +20s) poured through the SAME
+// funnel as points: full-ring clamp, surplus to the overflow factory,
+// bands/lives refreshed, wheel kicked. Bypassing this (the old raw
+// speedTimer -= 20) could push the ring past its 3:00 maximum.
+function momentumAddSeconds(sec) {
+    const fullAt = LEVEL_TIME_LIMIT - MOMENTUM_MAX;
+    game.speedTimer -= sec;
+    if (game.speedTimer < fullAt) {
+        overflowPts += (fullAt - game.speedTimer) * PTS_PER_SEC;
+        game.speedTimer = fullAt;
+        while (overflowPts >= FACTORY_PTS) { overflowPts -= FACTORY_PTS; factoryQueue++; }
+    }
+    lives = momentumBands();
+    game._rotorKick = performance.now();
+}
 function momentumBands() { return Math.min(3, Math.ceil(momentumRemaining() / BAND_SEC)); }
 // PERIL PAY: rewards executed while adjacent to a hazard/wall or on the
 // last row/column pay x1.5 — difficulty priced by where you were.
@@ -2114,7 +2264,7 @@ const bullet = { active: false, timer: 0, charge: 0, stock: 0 };
 // All three are earned by the same fuel cycle (landings on floor) and all
 // three leave a wall behind when consumed.
 const SHIFTER_EVERY_LANDINGS = 4;
-const SHIFTER_WEIGHTS = { green: 32, pivot: 28, slip: 45, warp: 0 };  // hourglass RETIRED (Momentum): points are the time source now
+const SHIFTER_WEIGHTS = { green: 32, pivot: 28, slip: 45, warp: 6 };  // hourglass back on (rare): +20s pickup wearing the new icon art
 // (Shifter expiry retired 2014 the auto-scroll/void is the one universal deadline.)
 const SHIFTER_FAMILY_COLOR = '#0891b2';                       // deep teal-blue — distinctly darker than the player's bright cyan/teal for visual discernment
 // 50% chance a consumed/expired shifter leaves a wall behind. The other
@@ -2217,7 +2367,12 @@ let shifterMeta = {};
 let pendingWalls = new Set();
 
 function chooseShifterKind() {
-    const r = Math.random() * 100;
+    // [270726d] Roll against the ACTUAL weight total. The old roll was
+    // Math.random() * 100 while green+pivot+slip alone sum to 105 — so the
+    // final 'warp' return was unreachable and hourglasses could never spawn,
+    // whatever their weight said.
+    const r = Math.random() * (SHIFTER_WEIGHTS.green + SHIFTER_WEIGHTS.pivot
+        + SHIFTER_WEIGHTS.slip + SHIFTER_WEIGHTS.warp);
     if (r < SHIFTER_WEIGHTS.green) return 'green';
     if (r < SHIFTER_WEIGHTS.green + SHIFTER_WEIGHTS.pivot) return 'pivot';
     if (r < SHIFTER_WEIGHTS.green + SHIFTER_WEIGHTS.pivot + SHIFTER_WEIGHTS.slip) return 'slip';
@@ -3621,6 +3776,7 @@ function togglePause() {
 // the next PLAY starts fresh via startGame(). Stops the music and the game
 // loop, and re-arms the welcome demo (which stops itself whenever a run is up).
 function exitToWelcome() {
+    hideLevelCard();
     if (scrubbing) exitScrub();
     game.running = false;
     game.paused = false;
@@ -3666,7 +3822,7 @@ function drawPauseOverlay() {
     ctx.save();
     // Barely-there wash: signals "paused" without hiding the board.
     ctx.fillStyle = day ? 'rgba(255,255,255,0.10)' : 'rgba(8,12,22,0.20)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
     ctx.restore();
 
     ctx.save();
@@ -3675,7 +3831,7 @@ function drawPauseOverlay() {
     ctx.shadowBlur = 6;
     ctx.fillStyle = day ? '#0f172a' : '#e2e8f0';
     ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('PAUSED', canvas.width / 2, 28);
+    ctx.fillText('PAUSED', LOGICAL_W / 2, 28);
     ctx.restore();
 }
 
@@ -3736,6 +3892,7 @@ function captureSnapshot(dir) {
 // Render a snapshot by swapping it into live globals, drawing, then restoring.
 // Safe because scrubbing only runs while paused (no game updates occur).
 function drawSnapshot(snap) {
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
     const saved = {
         playerX: game.playerX, playerY: game.playerY,
         shapeType: game.shapeType, shapeConfig: game.shapeConfig,
@@ -3797,12 +3954,12 @@ function drawScrubOverlay(snap) {
     // Dim banner top + bottom so the board stays clear for screenshots
     ctx.save();
     // Bottom state stamp
-    const h = 58, y = canvas.height - h;
+    const h = 58, y = LOGICAL_H - h;
     ctx.fillStyle = 'rgba(8, 12, 22, 0.86)';
-    ctx.fillRect(0, y, canvas.width, h);
+    ctx.fillRect(0, y, LOGICAL_W, h);
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke();
 
     ctx.textAlign = 'left';
     ctx.fillStyle = '#38bdf8';
@@ -4349,7 +4506,7 @@ let currentTheme = 'night';
 const PALETTES = {
     night: {
         emptyOutline: 'rgba(148, 163, 184, 0.24)',
-        visitedFill:  'rgba(129, 90, 175, 0.24)',   // muted plum trail — clearly "been here", greyer and dimmer than the diagonal family's violet
+        visitedFill:  'rgba(129, 90, 175, 0.32)',   // [270726n] muted plum trail, presence raised again per feel — still below the item colours
         wallBody:     '#000000',
         wallStroke:   '#5b6a82',
         wallInner:    'rgba(91, 106, 130, 0.35)',
@@ -4577,13 +4734,12 @@ function spawnShifter() {
         showTip('green');
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#a3e635');
     } else if (kind === 'warp') {
-        // WARP: persistent pickup. Lands on player's stockpile (bullet stock).
+        // HOURGLASS: persistent pickup — +20s of momentum when collected.
         // No expiry, no direction — purely a collect-when-routed pickup.
-        // Now visually part of the cyan shifter family (same backing colour
-        // as pivot/slip); the hourglass glyph distinguishes its function.
+        // Amber (time's own colour family), wearing the white hourglass icon.
         world[k] = 'warp';
         showTip('hourglass');
-        addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
+        addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#f59e0b');   // amber — time's own colour
     } else if (kind === 'pivot') {
         // Pivot direction is decided at spawn: 50/50 CW vs CCW. Stored on
         // the shifter meta so the trigger handler and renderer can both
@@ -4641,7 +4797,7 @@ function cancelBulletTime() {
     requestAnimationFrame(step);
     // Cancel sweep — short, snappy ascending sweep (punchier than expiry).
     if (sfx.timeWarpCancel) sfx.timeWarpCancel();
-    addFloat(canvas.width / 2, 90, 'cancelled', '#7dd3fc');
+    addFloat(LOGICAL_W / 2, 90, 'cancelled', '#7dd3fc');
 }
 
 function updateBulletTime(dt) {
@@ -4765,7 +4921,7 @@ function checkSlotClaims() {
             scoreGain(claimPts, true);
             if (viaShifter) {
                 game._lastComboT = performance.now();   // this IS the combo — suppress a duplicate line-combo this beat
-                addFloat(canvas.width / 2, canvas.height / 2 - 20,
+                addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
                     `NICE COMBO!\n+${claimPts}`, '#f8fafc', true);
                 triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 900);
                 if (typeof triggerShake === 'function') triggerShake(5, 220);
@@ -4795,13 +4951,13 @@ function checkSlotClaims() {
             // arrived transformed onto the claim, all in one gesture.
             if (game._lastTrimT && performance.now() - game._lastTrimT < 600) {
                 game._lastTrimT = 0;
-                showCombo(canvas.width / 2, canvas.height / 2 - 44, 'THE SHAVE!');
+                showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 44, 'THE SHAVE!');
             }
             if (typeGone) {
                 const fgBonus = Math.round(25 * (CLEAR_WEIGHT[slot.type] || 1));
                 scoreGain(fgBonus, false);
                 if (sfx.bankSettle) sfx.bankSettle();
-                addFloat(canvas.width / 2, canvas.height / 2 + 40,
+                addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 40,
                     `${FAMILY_GONE_LABEL[slot.type] || slot.type.toUpperCase()} GONE!\n+${fgBonus}`, slot.color, true);
             }
             maybeEdgePraise();
@@ -4882,17 +5038,27 @@ function setIconSVG(t) {
     }
     return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${rects}</svg>`;
 }
+// [270726r] Structured, animated level-complete card. display:none → flex
+// restarts the row animations, so re-showing replays the stagger.
+function showLevelCard(opts) {
+    const el = document.getElementById('levelCard');
+    if (!el) return;
+    const set = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt || ''; };
+    set('lcTitle', opts.title);
+    set('lcCov', opts.covText);
+    set('lcPraise', opts.praise);
+    set('lcExtra', opts.extra);
+    const cv = document.getElementById('lcCov');
+    if (cv) cv.classList.toggle('gold', !!opts.gold);
+    el.classList.remove('hidden');
+}
+function hideLevelCard() { const el = document.getElementById('levelCard'); if (el) el.classList.add('hidden'); }
+
 function updateOverlayMission() {
     const el = document.getElementById('roundOverlaySet');
     if (el && typeof setDisplayOrder !== 'undefined' && setDisplayOrder.length) {
-        const seen = new Map(), groups = [];
-        for (const t of setDisplayOrder) {
-            const id = requirementId(t.type, t.config, t.difficulty);
-            if (seen.has(id)) { seen.get(id).total++; continue; }
-            const gp = { t, total: 1 }; seen.set(id, gp); groups.push(gp);
-        }
-        el.innerHTML = groups.map(gp => setIconSVG(gp.t) +
-            (gp.total > 1 ? `<span class="set-mult overlay">\u00d7${gp.total}</span>` : '')).join('');
+        // [270726q] One icon per requirement — matches the HUD's SET band.
+        el.innerHTML = setDisplayOrder.map(t => setIconSVG(t)).join('');
     }
 }
 
@@ -5027,7 +5193,7 @@ function scoreGain(pts, big) {
         }
         triggerEdgeGlow('#ffd60a', 1200);
         if (sfx.bassImpact) sfx.bassImpact(1);
-        addFloat(canvas.width / 2, canvas.height * 0.30, 'NEW HIGH SCORE!', '#ffd60a', true);
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30, 'NEW HIGH SCORE!', '#ffd60a', true);
         // Ascending pentatonic fanfare (reward family)
         if (typeof playTone === 'function') {
             playTone(NOTE.C5, 0.09, WAVE.reward, VOL.event);
@@ -5122,7 +5288,7 @@ function nearPlayEdge() {
 function maybeEdgePraise() {
     if (!nearPlayEdge()) return;
     const t = EDGE_PRAISES[(Math.random() * EDGE_PRAISES.length) | 0];
-    showCombo(canvas.width / 2, canvas.height / 2 - 60, t);
+    showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 60, t);
 }
 // V9 BURN & MERGE — a banked slot FLARES for 2s (family colour igniting to
 // white-hot, then dying down), and what's left is ordinary covered floor.
@@ -5150,28 +5316,13 @@ function drawRotorSparks() {
         ctx.restore();
     }
 }
-// V9 MOMENTUM — dynamo hum: a quiet continuous tone whose pitch tracks the
-// wheel's charge. A diegetic warning channel that costs no screen space.
+// [270726k] Dynamo hum REMOVED — it wasn't working and muddied the mix.
+// stopHum() is kept so old call sites still silence any live oscillator.
 let humOsc = null, humGainNode = null;
 function stopHum() {
     if (humOsc) { try { humOsc.stop(); } catch (e) {} humOsc = null; humGainNode = null; }
 }
-function updateHum() {
-    const sc = document.getElementById('soundCheck');
-    const on = game.running && !game.paused && audioCtx && sc && sc.checked;
-    if (!on) { stopHum(); return; }
-    if (!humOsc) {
-        humOsc = audioCtx.createOscillator();
-        humGainNode = audioCtx.createGain();
-        humOsc.type = 'sawtooth';
-        humGainNode.gain.value = 0;
-        humOsc.connect(humGainNode); humGainNode.connect(audioCtx.destination);
-        humOsc.start();
-    }
-    const rem = momentumRemaining();
-    humOsc.frequency.setTargetAtTime(45 + 110 * (rem / MOMENTUM_MAX), audioCtx.currentTime, 0.1);
-    humGainNode.gain.setTargetAtTime(!game.spinUp && rem < 30 ? 0.02 : 0.011, audioCtx.currentTime, 0.2);
-}
+function updateHum() { stopHum(); }
 
 // V9 TRAPPED CHECK — can the player flip in ANY of the 8 directions?
 // Mirrors the real move gates (columns, visibility, walls, wrong-shape
@@ -5190,14 +5341,17 @@ function hasAnyLegalMove() {
         if (!off) continue;
         const nx = game.playerX + off[0], ny = game.playerY - off[1];
         const cells = SHAPES[type].cells[nConfig].map(pp => ({ x: nx + pp[0], y: ny - pp[1] }));
-        let ok = true;
-        for (const c of cells) {
-            if (c.x < 0 || c.x >= VIEW_W) { ok = false; break; }
-            if (c.y < topRow || c.y > bottomRow) { ok = false; break; }
-            if (world[`${c.x},${c.y}`] === 'wall') { ok = false; break; }
-        }
-        if (!ok) continue;
-        if (landsOnHazard(nx, ny, type, nConfig)) return true;   // trim = exit
+        let blocked = false;
+        const redIdx = [];
+        cells.forEach((c, i) => {
+            if (c.x < 0 || c.x >= VIEW_W || c.y < topRow || c.y > bottomRow) { blocked = true; return; }
+            const wv = world[`${c.x},${c.y}`];
+            if (wv === 'wall') blocked = true;               // [270726o] walls refuse flips
+            else if (wv === 'hazard') redIdx.push(i);
+        });
+        if (blocked) continue;
+        // A survivable red trim is an exit; total destruction is refused.
+        if (redIdx.length) { if (tryMultiDevolve(cells, redIdx)) return true; continue; }
         if (findFusionAt(cells)) return true;                    // fuse = exit
         if (routeRepelsNonExact(cells)) continue;                // repel = blocked
         return true;
@@ -5227,28 +5381,28 @@ function checkRowMilestones() {
     if (tier === 1) {
         const pts = 25 * lvl;
         scoreGain(pts, false);
-        addFloat(canvas.width / 2, canvas.height * 0.36, `5 ROWS UP!\n+${pts}`, '#f8fafc', true);
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.36, `5 ROWS UP!\n+${pts}`, '#f8fafc', true);
         if (sfx.line) sfx.line(2);
     } else if (tier === 2) {
         const pts = 60 * lvl;
         scoreGain(pts, true);
-        addFloat(canvas.width / 2, canvas.height * 0.36, `8 ROWS STRONG!\n+${pts}`, '#a3e635', true);
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.36, `8 ROWS STRONG!\n+${pts}`, '#a3e635', true);
         if (sfx.line) sfx.line(4);
         if (sfx.bassImpact) sfx.bassImpact(0.6);
         for (let i = 0; i < 3; i++) setTimeout(() => addBurst(
-            60 + Math.random() * (canvas.width - 120),
-            60 + Math.random() * (canvas.height * 0.4), '#a3e635'), i * 140);
+            60 + Math.random() * (LOGICAL_W - 120),
+            60 + Math.random() * (LOGICAL_H * 0.4), '#a3e635'), i * 140);
     } else if (tier === 3) {
         const pts = 150 * lvl;
         scoreGain(pts, true);
-        addFloat(canvas.width / 2, canvas.height * 0.34, `FULL HOUSE!\n+${pts}`, GOLD_SLOT_COLOR, true, { life: 2400, hold: 1400 });
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `FULL HOUSE!\n+${pts}`, GOLD_SLOT_COLOR, true, { life: 2400, hold: 1400 });
         triggerEdgeGlow(GOLD_SLOT_COLOR, 1400);
         if (sfx.gold) sfx.gold();
         if (sfx.bassImpact) sfx.bassImpact(1);
         if (typeof triggerShake === 'function') triggerShake(5, 300);
         for (let i = 0; i < 6; i++) setTimeout(() => addBurst(
-            40 + Math.random() * (canvas.width - 80),
-            50 + Math.random() * (canvas.height * 0.5), GOLD_SLOT_COLOR), i * 130);
+            40 + Math.random() * (LOGICAL_W - 80),
+            50 + Math.random() * (LOGICAL_H * 0.5), GOLD_SLOT_COLOR), i * 130);
     }
 }
 
@@ -5297,7 +5451,7 @@ function drawSlotBurns() {
         for (const c of b.cells) {
             const sx = c.x * CELL + 2;
             const sy = (c.y - game.cameraY) * CELL + 2;
-            if (sy < -CELL || sy > canvas.height + CELL) continue;
+            if (sy < -CELL || sy > LOGICAL_H + CELL) continue;
             const size = CELL - 4;
             ctx.save();
             ctx.globalAlpha = 0.85 * fade;
@@ -5338,24 +5492,13 @@ function completeSet() {
                        : covGrade === 'B' ? 10 * advancedRound : 0;
         if (covBonus > 0) scoreGain(covBonus, true);
         game._lastCovGrade = covGrade; game._lastCovBonus = covBonus;
+        // [270726r] The text moved onto the level card; the jackpot keeps
+        // its audio moment.
         if (covGrade === 'S') {
-            // CLEAN SLATE — the order-restored jackpot moment (principle #1+#5).
             setTimeout(() => {
                 if (!game.running) return;
-                addFloat(canvas.width / 2, canvas.height / 2 - 90,
-                    `CLEAN SLATE!\n${cov}% COVERED  +${covBonus}`, GOLD_SLOT_COLOR, true, { life: 2600, hold: 1600 });
-                triggerEdgeGlow(GOLD_SLOT_COLOR, 1200);
                 if (sfx.gold) sfx.gold();
                 if (sfx.bassImpact) sfx.bassImpact(1);
-                for (let i = 0; i < 6; i++) setTimeout(() => addBurst(
-                    40 + Math.random() * (canvas.width - 80),
-                    50 + Math.random() * (canvas.height * 0.5), GOLD_SLOT_COLOR), i * 130);
-            }, 450);
-        } else if (covBonus > 0) {
-            setTimeout(() => {
-                if (!game.running) return;
-                addFloat(canvas.width / 2, canvas.height / 2 - 90,
-                    `COVERAGE ${covGrade} \u00b7 ${cov}%  +${covBonus}`, '#94a3b8', true);
             }, 450);
         }
     }
@@ -5375,35 +5518,35 @@ function completeSet() {
         // ROUNDS 1-4 — staggered round-complete text, then a cinematic
         // fade-to-black overlay with the next round number, then resume.
         //
-        //   t=0     "ROUND N COMPLETE" appears
-        //   t=900   encouraging celebration line appears
+        //   t=0     level card animates in over the final scene (title,
+        //           coverage row, praise line stagger in)
         //   t=2200  overlay starts: fade to black + huge "ROUND N+1"
         //   t=4000  overlay finishes, game resumes
-        addFloat(canvas.width / 2, canvas.height / 2 - 30,
-            campaignDone ? 'MISSION COMPLETE' : `LEVEL ${advancedRound} COMPLETE`,
-            '#a3e635', true);
-        if (campaignDone) setTimeout(() => {
-            if (!game.running) return;
-            addFloat(canvas.width / 2, canvas.height / 2 + 90,
-                'ENDLESS MODE UNLOCKED', '#7dd3fc', true, { life: 2600, hold: 1600 });
-        }, 1500);
+        {
+            const cov = Math.min(100, game.coverage || 0);
+            const gold = game._lastCovGrade === 'S';
+            showLevelCard({
+                title: campaignDone ? 'MISSION COMPLETE' : `LEVEL ${advancedRound} COMPLETE`,
+                covText: gold ? `${cov}% COVERED \u00b7 CLEAN SLATE  +${game._lastCovBonus}`
+                              : `${cov}% COVERED` + (game._lastCovBonus ? `  +${game._lastCovBonus}` : ''),
+                gold,
+                praise: celebration,
+                extra: campaignDone ? 'ENDLESS MODE UNLOCKED' : ''
+            });
+        }
         triggerSetCelebration(fwCount, fwDuration);
         game.paused = true;
         game.celebrating = true;
         const pp = document.getElementById('pausePanel');
         if (pp) pp.classList.add('hidden');
-        // Staggered celebration line — appears below the complete banner
-        setTimeout(() => {
-            if (!game.running) return;
-            addFloat(canvas.width / 2, canvas.height / 2 + 30,
-                celebration, '#a3e635', true, { life: 2600, hold: 1600 });
-        }, 900);
+        // (Celebration line now rides the level card as its praise row.)
         // Round advances and overlay fires when the screen is about to
         // go to black — the HUD updates behind the overlay so the player
         // sees the new SET targets when the overlay fades out. Slots are
         // also seeded at the top so the player sees real targets the
         // moment the overlay clears, not just empty board.
         setTimeout(() => {
+            hideLevelCard();   // [270726r] card yields to the fade-to-black overlay
             advancedRound++;
             // LEVEL COMPLETE = FULL RECHARGE (Momentum): the ring refills to
             // three bands — the old lives-reset and time-carryover unified.
@@ -5471,11 +5614,11 @@ function completeSet() {
         // ROUND 5 — finale. Full celebration, then endGame win.
         // Staggered finale text — "MISSION COMPLETE" first, then the
         // closing celebration line. Same stagger pattern as rounds 1-4.
-        addFloat(canvas.width / 2, canvas.height / 2 - 30,
+        addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 30,
             'MISSION COMPLETE', '#a3e635', true);
         setTimeout(() => {
             if (!game.running) return;
-            addFloat(canvas.width / 2, canvas.height / 2 + 30,
+            addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
                 celebration, '#a3e635', true, { life: 2600, hold: 1600 });
         }, 900);
         triggerSetCelebration(fwCount, fwDuration);
@@ -5505,7 +5648,7 @@ function triggerSetCelebration(fireworkCount = 15, duration = 2500) {
     const fireworkInterval = duration / Math.max(1, fireworkCount);
 
     // ── Visual: fireworks fired evenly across the duration ──
-    const W = canvas.width, H = canvas.height;
+    const W = LOGICAL_W, H = LOGICAL_H;
     for (let i = 0; i < fireworkCount; i++) {
         setTimeout(() => {
             const cx = 40 + Math.random() * (W - 80);
@@ -5656,7 +5799,7 @@ function applyFusionMove(cells, fuse) {
         game.frozenTimer = 400;
         sfx.firstEvolve();   // special one-time fanfare (in addition to the grow cue)
         // Caption the run's first flip-and-grow.
-        addFloat(canvas.width / 2, canvas.height / 2 - 20,
+        addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
             'A FLIPPING FLYING START!', '#a3e635', true, { life: 1600, hold: 900 });
     }
     addBurst(screenX, screenY, '#a3e635');
@@ -5759,7 +5902,7 @@ function tryFuseAlongPath(dir) {
         checkWrongShapeOnSlot();
         // Combo: claimed a slot AND evolved a green in the same landing.
         if ((game.roundClaims || 0) > _claimsBefore)
-            showCombo(canvas.width / 2, (game.playerY - game.cameraY) * CELL - 24);
+            showCombo(LOGICAL_W / 2, (game.playerY - game.cameraY) * CELL - 24);
         commitFusion(getPlayerCells(), fuse, dir);
         return true;
     }
@@ -5928,7 +6071,9 @@ function startFlip(dir, fromCells, fromParity, repel = false) {
         hy: hasS ? (maxY + 1) : minY,
         axisX: hasE || hasW,
         axisY: hasN || hasS,
-        dirX: hasE ? 1 : (hasW ? -1 : 0)
+        dirX: hasE ? 1 : (hasW ? -1 : 0),
+        dirY: hasS ? 1 : (hasN ? -1 : 0),
+        diag: (hasE || hasW) && (hasN || hasS)
     };
 }
 
@@ -6022,7 +6167,7 @@ function respawnPlayer() {
     // remaining lives clearly. The float renderer respects \n.
     const remaining = lives;   // already decremented at the top of respawnPlayer
     const remainingLabel = remaining === 1 ? '1 LIFE LEFT' : `${remaining} LIVES LEFT`;
-    addFloat(canvas.width / 2, canvas.height / 2 - 20,
+    addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
         `LIFE LOST\n${remainingLabel}`,
         '#ff6b9d', true);
 
@@ -6064,6 +6209,13 @@ function showMoveGhost(nx, ny, cfg, reason, dir) {
     game._moveGhost = { cells, reason, dir, t0: performance.now() };
 }
 
+// [270726s] DENIED FLASH — the whole shape glows red for a beat whenever a
+// move is refused or a push is absorbed, synced to the bonk thud. One shared
+// signal for "that was not permitted".
+let deniedFlashT0 = 0;
+const DENIED_FLASH_MS = 930;   // [270726v] doubled again per feel
+function flashPlayerDenied() { deniedFlashT0 = performance.now(); }
+
 function move(dir) {
     if (game.inputLocked) return;   // set/advance condition met — moves are locked
     if (!game.running) return;
@@ -6084,13 +6236,27 @@ function move(dir) {
     const newX = game.playerX + dx;
     const newY = game.playerY - dy;
 
-    if (!canFit(newX, newY, game.shapeType, newConfig)) {
-        // Wall-blocked — the boundary answers: brief shake + dull bonk, same
-        // voice as the top-edge refusal. Every refused flip is audible.
-        showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the attempted spot (edge or wall)
-        triggerShake(3, 90);
-        if (sfx.bonk) sfx.bonk();
-        return;
+    // [270726o] WALLS ARE SOLID TO FLIPS: a swiped flip whose landing touches
+    // any wall is not a lawful move — dull thud, red ghost, no movement, wall
+    // untouched. Only machines (step/turn shifts) can force wall contact, and
+    // there the cube comes off while the wall survives. Reds keep trimming
+    // flips as before; a red landing where NO valid shape would survive also
+    // refuses (never kills a chosen flip). Off-grid refuses as always.
+    {
+        const probeCells = SHAPES[game.shapeType].cells[newConfig].map(([ddx, ddy]) => ({ x: newX + ddx, y: newY - ddy }));
+        let refuse = probeCells.some(c => c.x < 0 || c.x >= VIEW_W);
+        const redIdx = [];
+        if (!refuse) probeCells.forEach((c, i) => {
+            const wv = world[`${c.x},${c.y}`];
+            if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) refuse = true;
+            else if (wv === 'hazard') redIdx.push(i);
+        });
+        if (refuse || (redIdx.length > 0 && !tryMultiDevolve(probeCells, redIdx))) {
+            showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
+            triggerShake(3, 90);
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+            return;
+        }
     }
     {
         // Tisibility gate (V9): any move whose intended squares are not
@@ -6111,7 +6277,7 @@ function move(dir) {
                 // canMove range check; this gate covers top AND bottom).
                 showMoveGhost(newX, newY, newConfig, 'top', dir);   // red ghost at the refused cells
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk();
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 return;
             }
         }
@@ -6215,7 +6381,7 @@ function applyDrag(dt) {
 
         if (!canFit(newX, newY, game.shapeType, newConfig)) {
             triggerShake(3, 90);
-            if (sfx.bonk) sfx.bonk();   // wall-blocked drag — one audible refusal
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();   // wall-blocked drag — one audible refusal
             stopDrag();                 // then the drag ends (original behaviour)
             return;
         }
@@ -6263,13 +6429,13 @@ function checkCollisions() {
             const key = `${cell.x},${cell.y}`;
             const w = world[key];
             if (w === 'warp') {
-                // Even during invulnerability, collecting a warp is a pickup,
-                // not damage — bank it if there's room and apply the passive
-                // slowdown.
-                game.speedOffset = (game.speedOffset || 0) + 0.35;
-                if (bullet.stock < BULLET_MAX_STOCK) {
-                    bullet.stock = Math.min(BULLET_MAX_STOCK, bullet.stock + 1);
-                }
+                // Even during invulnerability, collecting an hourglass is a
+                // pickup, not damage — same reward as the normal pickup path:
+                // +20s on the clock, +3 garnish.
+                scoreGain(3, false);
+                momentumAddSeconds(20);
+                addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
+                    '+ 20 SECONDS', '#86efac');
                 delete world[key];
                 markCovered(key);
             } else if (w === 'wall' || w === 'hazard' || w === 'pickup' ||
@@ -6285,14 +6451,11 @@ function checkCollisions() {
 
     let cells = getPlayerCells();
     
-    // First check for walls - instant death (but pending walls under the player
-    // are exempt; they become lethal once the player flips off them).
-    for (const cell of cells) {
-        const key = `${cell.x},${cell.y}`;
-        if (world[key] === 'wall' && !pendingWalls.has(key)) {
-            return 'death';
-        }
-    }
+    // [270726h] Walls under the player are no longer instant death — they
+    // join the trim pass below and cost the contacting cube instead (pending
+    // walls under the player stay exempt until flipped off, as before). The
+    // 'death' return in the trim pass still covers the no-survivor case
+    // (e.g. spawned walls swallowing the whole shape).
 
     // Prune any pending walls the player has moved off this frame: they become
     // ordinary lethal walls from this point onward.
@@ -6301,13 +6464,17 @@ function checkCollisions() {
         for (const k of [...pendingWalls]) if (!onCells.has(k)) pendingWalls.delete(k);
     }
     
-    // Collect all hazard hits
+    // Collect all solid hits. Reds are the normal case (flips may land on
+    // them). Walls can only be under the player here when one FORMED beneath
+    // a stationary shape ([270726o]: flips refuse walls pre-move) — that
+    // still costs the contacting cube, but the wall survives.
     const hazardHits = [];
     for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         const key = `${cell.x},${cell.y}`;
-        if (world[key] === 'hazard') {
-            hazardHits.push({ index: i, x: cell.x, y: cell.y, key });
+        const wv = world[key];
+        if (wv === 'hazard' || (wv === 'wall' && !pendingWalls.has(key))) {
+            hazardHits.push({ index: i, x: cell.x, y: cell.y, key, wall: wv === 'wall' });
         }
     }
     
@@ -6319,8 +6486,13 @@ function checkCollisions() {
         // in a row the player was completing.
         game._lastTrimT = performance.now();   // trim->claim in one landing = THE SHAVE
         for (const hit of hazardHits) {
+            if (hit.wall) {
+                // [270726o] Wall stands — it takes the cube, not the reverse.
+                addBurst(hit.x * CELL + CELL/2, (hit.y - game.cameraY) * CELL + CELL/2, '#9aa3b2');
+                continue;
+            }
             delete world[hit.key];
-            markCovered(hit.key, true);   // hazard-born cell becomes real floor
+            markCovered(hit.key, true);   // red-born cell becomes real floor
         }
         
         // Try to devolve, removing hit cells
@@ -6406,15 +6578,14 @@ function checkCollisions() {
                 markCovered(triggerKey);
                 delete shifterMeta[triggerKey];
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk();
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             } else {
-            // Identify cells that would land in invalid space (OOB / wall /
-            // hazard). [270726] Any casualty now REFUSES the turn instead of
-            // trimming the shape.
-            const casualtyIndices = detectCasualties(newCells);
+            // [270726p] Solids trim, last cube standing — the turn always
+            // resolves; see classifyShiftPush.
+            const push = classifyShiftPush(newCells);
 
-            if (casualtyIndices.length === 0) {
+            if (!push.trim) {
                 // CLEAN ROTATION — all cells valid.
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 game.shapeConfig = newConfig;
@@ -6440,16 +6611,35 @@ function checkCollisions() {
                 // old-order correspondence so every cube arcs on a fixed radius.
                 startPivotAnim(oldCellsForAnim, pv.rotated, triggerCell.x, triggerCell.y);
                 if (sfx.evolve) sfx.evolve();
+            } else if (push.trim && !push.trim.held) {
+                // MINUS/WALL TRIM — the turn sweeps cube(s) onto red
+                // minus cell(s): trimmed exactly like a flip through a red,
+                // the body devolves in place to the surviving configuration.
+                // Build the survivor animation pairs BEFORE state changes:
+                // pv.rotated keeps old-order correspondence with `cells`,
+                // while redIndices index pv.newCells — match by position.
+                const redSet = new Set(push.trim.redIndices.map(i => `${newCells[i].x},${newCells[i].y}`));
+                const oldSurv = [], newSurv = [];
+                for (let j = 0; j < pv.rotated.length; j++) {
+                    const r = pv.rotated[j];
+                    if (redSet.has(`${r.x},${r.y}`)) continue;
+                    oldSurv.push({ x: cells[j].x, y: cells[j].y });
+                    newSurv.push({ x: r.x, y: r.y });
+                }
+                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey);
+                cells = getPlayerCells();
+                startPivotAnim(oldSurv, newSurv, triggerCell.x, triggerCell.y);
             } else {
-                // [270726] SAFETY REFUSAL — the turn would push cubes into a
-                // wall / frame edge / hazard. The world resists: bonk, no
-                // movement, and the shifter is NOT consumed (unlike the socket
-                // gate) — reposition and trigger it with a different cube for
-                // a different sweep. Shifters are rewards, never traps.
-                triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk();
-                addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
-                    'NO ROOM', '#fbbf24');
+                // [270726p] ABSORBED — every destination blocked (practically
+                // unreachable for turns: the trigger cube never moves). The
+                // shape stands its ground; the shifter is spent; dull thud.
+                delete world[triggerKey];
+                markCovered(triggerKey);
+                delete shifterMeta[triggerKey];
+                scoreGain(2, false);   // engaged a mechanism
+                triggerShake(3, 110);
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                cells = getPlayerCells();
             }
             }
         } else if (triggerItem === 'slip') {
@@ -6468,15 +6658,14 @@ function checkCollisions() {
                 markCovered(triggerKey);
                 delete shifterMeta[triggerKey];
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk();
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             } else {
-            // Identify cells that would land in invalid space (OOB / wall /
-            // hazard). [270726] Any casualty now REFUSES the step instead of
-            // trimming (or killing) the shape.
-            const casualtyIndices = detectCasualties(newCells);
+            // [270726p] Solids trim, last cube standing — the step always
+            // resolves; see classifyShiftPush.
+            const push = classifyShiftPush(newCells);
 
-            if (casualtyIndices.length === 0) {
+            if (!push.trim) {
                 // CLEAN SLIP — all cells valid.
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 game.playerX = newX;
@@ -6499,37 +6688,52 @@ function checkCollisions() {
                 triggerShake(3, 150);
                 startSlipAnim(oldCellsForAnim, cells);
                 if (sfx.evolve) sfx.evolve();
+            } else if (push.trim && !push.trim.held) {
+                // MINUS/WALL TRIM — the step drags cube(s) onto red minus
+                // cell(s): trimmed exactly like a flip through a red, the body
+                // devolves in place to the surviving configuration. Old and new
+                // cells share index order (both built from the same config map),
+                // so survivors animate by filtering the trimmed indices.
+                const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
+                const keep = i => !push.trim.redIndices.includes(i);
+                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey);
+                cells = getPlayerCells();
+                startSlipAnim(oldCellsForAnim.filter((_, i) => keep(i)),
+                              newCells.filter((_, i) => keep(i)));
             } else {
-                // [270726] SAFETY REFUSAL — the step would push cubes into a
-                // wall / frame edge / hazard (steps translate the whole body,
-                // so this was the one shifter that could cost a LIFE). Same
-                // rule as turns: bonk, no movement, shifter kept.
-                triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk();
-                addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
-                    'NO ROOM', '#fbbf24');
+                // [270726p] ABSORBED — every destination is blocked (e.g. a
+                // single stepped into a wall or off the edge). The push is
+                // absorbed: the shape stands its ground, the shifter is
+                // spent, a dull thud plays. No text, no refusal — the old
+                // NO ROOM float is retired.
+                delete world[triggerKey];
+                markCovered(triggerKey);
+                delete shifterMeta[triggerKey];
+                scoreGain(2, false);   // engaged a mechanism
+                triggerShake(3, 110);
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                cells = getPlayerCells();
             }
             }
         }
     }
 
     // ── HOURGLASS PICKUP — extends the countdown ──────────────────────────
-    // Each hourglass cell collected adds 20 seconds back to the clock by
-    // reducing speedTimer (remaining = LIMIT - speedTimer). No lower clamp, so
-    // banking several can push the clock ABOVE 1:00; the speed ramp is already
-    // floored at SPEED_MIN, so a negative speedTimer just holds minimum speed.
+    // Each hourglass cell collected pours 20 seconds into the momentum wheel
+    // via momentumAddSeconds: clamped at the full ring, surplus manufactured
+    // into gears by the overflow factory — identical rules to points.
     for (const cell of cells) {
         const key = `${cell.x},${cell.y}`;
         if (world[key] === 'warp') {
             delete world[key];
             markCovered(key);
             scoreGain(3, false);   // hourglass garnish (pays time + 3)
-            game.speedTimer = game.speedTimer - 20;
+            momentumAddSeconds(20);
             addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
                 '+ 20 SECONDS', '#86efac');
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2, '#86efac');
             // Trigger the clock-boost animation
-            const clockEl = document.getElementById('hudClock');
+            const clockEl = document.getElementById('rotorSecs');
             if (clockEl) {
                 clockEl.classList.remove('clock-boost');
                 // Force reflow so the class can re-add and animation restarts
@@ -6773,16 +6977,16 @@ function celebrateLineBand(newRows) {
     // The ENTIRE band glows together — one shared exhale across all its rows
     const t0 = performance.now();
     for (let r = lo; r <= hi; r++) lineFlashes.push({ y: r, t0, col, strong: size >= 2 });
-    addFloat(canvas.width / 2, ((lo + hi) / 2 - game.cameraY) * CELL,
+    addFloat(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL,
         bandLabel(size, pts), col);
     if (game.shapeType === 'diagonal') {
-        addFloat(canvas.width / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 74,
+        addFloat(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 74,
             'DIAGONAL CLEAR \u00d72', '#b94dff');
     }
     if (sfx.line) sfx.line(size, rowsUp);
     // The accumulation NAMED between milestones (4+ standing rows).
     if (rowsUp >= 4 && rowsUp < VIEW_H) {
-        addFloat(canvas.width / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 52,
+        addFloat(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 52,
             `${rowsUp} ROWS`, '#c9a0f5');
     }
     // Combo: a shifter (pivot/slip) that lands you into a completed row, OR a
@@ -6796,10 +7000,10 @@ function celebrateLineBand(newRows) {
             : size === 2 ? 'DOUBLE SWEEP!'
             : size === 3 ? 'TRIPLE SWEEP!'
             : `\u00d7${size} SWEEP!`;
-        showCombo(canvas.width / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 30, sweep);
+        showCombo(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 30, sweep);
     } else {
         // V9: completing a row IS the skill — plain rows earn "GOOD SKILLS!".
-        showCombo(canvas.width / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 30, 'GOOD SKILLS!');
+        showCombo(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL - 30, 'GOOD SKILLS!');
     }
     maybeEdgePraise();
 }
@@ -6810,7 +7014,7 @@ function drawLineFlashes() {
     for (const f of lineFlashes) {
         const t = (now - f.t0) / 700;
         const sy = (f.y - game.cameraY) * CELL;
-        if (sy < -CELL || sy > canvas.height + CELL) continue;
+        if (sy < -CELL || sy > LOGICAL_H + CELL) continue;
         // Single line: pale exhale at 30%. Coloured bands (×2+): the rainbow
         // has to actually READ, so they run at 55% peak with a soft glow in
         // the tier colour — at 30% over dark navy every hue collapses to grey.
@@ -7027,39 +7231,73 @@ function detectCasualties(newCells) {
     return indices;
 }
 
-// [270726] NO LONGER CALLED — shifter casualties now refuse instead of trim
-// (see SAFETY REFUSAL in the pivot/slip handlers). Kept for reference while
-// the refusal rule is playtested; delete if it sticks.
-function applyCasualtyOutcome(newCells, casualtyIndices, triggerCell, triggerKey) {
-    // Shifter cell always becomes a visited-floor trace regardless of outcome.
-    delete world[triggerKey];
-    markCovered(triggerKey);
-    delete shifterMeta[triggerKey];
-
-    const result = tryMultiDevolve(newCells, casualtyIndices);
-    if (!result) {
-        // No valid surviving shape — full death. Sound decided downstream.
-        for (const i of casualtyIndices) {
-            const c = newCells[i];
-            const cx = c.x * CELL + CELL/2;
-            const cy = (c.y - game.cameraY) * CELL + CELL/2;
-            addBurst(cx, cy, '#ef4444');
-        }
-        return 'death';
+// [270726p] SOLIDS TRIM, LAST CUBE STANDING — classify a shift-pushed
+// footprint. Cubes forced onto red minus cells, walls, or off the board's
+// side edges die; the shape devolves to the survivors. The machine NEVER
+// refuses and NEVER destroys everything:
+//   · if the survivors don't form a valid shape, it grinds down to a
+//     SINGLE on a clear destination cell;
+//   · if every destination is blocked, the push is ABSORBED — the shape
+//     stands its ground, the shifter is spent, a dull thud plays.
+// Reds are spent on contact; walls survive machine contact; the edge just
+// claims the cube. Returns { trim } where trim is null (clean move),
+// { held: true } (absorbed push), or { redIndices, result }.
+function classifyShiftPush(newCells) {
+    let redIndices = [];
+    for (let i = 0; i < newCells.length; i++) {
+        const c = newCells[i];
+        if (c.x < 0 || c.x >= VIEW_W) { redIndices.push(i); continue; }   // knocked out of bounds
+        const k = `${c.x},${c.y}`;
+        if (world[k] === 'hazard' || world[k] === 'wall') redIndices.push(i);
     }
+    if (!redIndices.length) return { trim: null };
+    let result = tryMultiDevolve(newCells, redIndices);
+    if (!result) {
+        // Survivors don't form a valid shape — LAST CUBE STANDING: spare
+        // one cube with a clear destination, grind off the rest.
+        let okIdx = -1;
+        for (let i = 0; i < newCells.length; i++) if (!redIndices.includes(i)) { okIdx = i; break; }
+        if (okIdx === -1) return { trim: { held: true } };   // every destination blocked — absorbed
+        result = { shapeType: 'single', config: 'A', anchorX: newCells[okIdx].x, anchorY: newCells[okIdx].y };
+        redIndices = newCells.map((_, i) => i).filter(i => i !== okIdx);
+    }
+    return { trim: { redIndices, result } };
+}
 
-    // Partial death — apply the surviving shape state.
+// [270726c] Shared trim path for shift pushes (turn + step shifts). The red
+// minus cells are consumed to real floor, the shape devolves in place to the
+// surviving configuration, the shifter is spent, and the trim pays the same
+// 3 as a flip trim on top of the 2 for engaging the mechanism.
+function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
+    const { redIndices, result } = trim;
+    game._lastTrimT = performance.now();   // trim->claim in one gesture = THE SHAVE
+    for (const i of redIndices) {
+        const c = newCells[i];
+        if (c.x < 0 || c.x >= VIEW_W) continue;   // edge casualty — no cell to consume
+        const rk = `${c.x},${c.y}`;
+        // Walls survive machine contact; only reds are consumed. Empty
+        // destination cells (last-cube-standing grind) are left untouched.
+        if (world[rk] !== 'hazard') continue;
+        delete world[rk];
+        markCovered(rk, true);   // red-born cell becomes real floor
+    }
     const prevType = game.shapeType;
     game.shapeType = result.shapeType;
     game.shapeConfig = result.config;
     game.playerX = result.anchorX;
     game.playerY = result.anchorY;
-    sfx.devolve();
-    signalSizeChange(prevType, result.shapeType, true);
-
-    const casualties = casualtyIndices.map(i => newCells[i]);
-    const survivors = newCells.filter((_, i) => !casualtyIndices.includes(i));
-    for (const cas of casualties) {
+    delete world[triggerKey];
+    markCovered(triggerKey);
+    delete shifterMeta[triggerKey];
+    scoreGain(2, false);   // engaged a mechanism
+    scoreGain(3, false);   // the trim transaction (same price as a flip trim)
+    game._arrivedViaShifter = true;   // shifter-driven landing (strategic-claim bonus)
+    game.roundTrims = (game.roundTrims || 0) + 1;
+    // Uncouple FX: fling each trimmed cube from the seam it shared with the
+    // nearest survivor (mirrors the flip-trim presentation).
+    const survivors = newCells.filter((_, i) => !redIndices.includes(i));
+    for (const i of redIndices) {
+        const cas = newCells[i];
         const cubeX = cas.x * CELL + CELL/2;
         const cubeY = (cas.y - game.cameraY) * CELL;
         let seamX = cubeX, seamY = cubeY, best = Infinity;
@@ -7070,12 +7308,12 @@ function applyCasualtyOutcome(newCells, casualtyIndices, triggerCell, triggerKey
         }
         addFusion(seamX, seamY, cubeX, cubeY, 'uncouple');
     }
+    sfx.devolve();
+    signalSizeChange(prevType, result.shapeType, true);
     triggerShake(4, 200);
     addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
-        casualties.length > 1 ? `DEVOLVE x${casualties.length}!` : 'DEVOLVE!', '#ef4444');
+        redIndices.length > 1 ? `DEVOLVE x${redIndices.length}!` : 'DEVOLVE!', '#ef4444');
     showTip('devolve');
-
-    return 'partial';
 }
 
 // ============ DRAWING ============
@@ -7104,9 +7342,12 @@ function classifyFlip(dir) {
     const ny = game.playerY - off[1];
     const footprint = SHAPES[type].cells[newConfig].map(([cx, cy]) => ({ x: nx + cx, y: ny - cy }));
 
-    // Wall / off-grid — canFit is exactly move()'s legality gate, so calling it
-    // directly guarantees the hint agrees with the move.
-    if (!canFit(nx, ny, type, newConfig)) return { outcome: 'fatal', footprint };
+    // [270726o] Off-grid and wall contact are hard refusals for flips —
+    // shown as the red ✕ so the player reads 'not a lawful move'.
+    if (footprint.some(c => {
+        if (c.x < 0 || c.x >= VIEW_W) return true;
+        return world[`${c.x},${c.y}`] === 'wall' && !pendingWalls.has(`${c.x},${c.y}`);
+    })) return { outcome: 'fatal', footprint };
 
     // Above the top row → bonk-back (a non-event; show nothing).
     const topRow = Math.floor(game.cameraY);
@@ -7125,13 +7366,16 @@ function classifyFlip(dir) {
         if (!exact) return { outcome: 'blocked', footprint };
     }
 
-    // Hazard takes precedence over a green interaction (mirrors tryFuseAlongPath,
-    // which defers to the normal move when landing on a hazard).
-    if (landsOnHazard(nx, ny, type, newConfig)) {
+    // Reds take precedence over a green interaction (mirrors
+    // tryFuseAlongPath, which defers to the normal move).
+    {
         const hitIndices = [];
         footprint.forEach((c, i) => { if (world[`${c.x},${c.y}`] === 'hazard') hitIndices.push(i); });
-        const survivor = tryMultiDevolve(footprint, hitIndices);
-        return survivor ? { outcome: 'devolve', footprint } : { outcome: 'fatal', footprint };
+        if (hitIndices.length) {
+            const survivor = tryMultiDevolve(footprint, hitIndices);
+            // No survivor = the move is REFUSED in move(), shown as ✕.
+            return survivor ? { outcome: 'devolve', footprint } : { outcome: 'fatal', footprint };
+        }
     }
 
     // Green claim → evolve (findFusionAt returns the consumed green to star).
@@ -7343,7 +7587,7 @@ function routeStep(type, config, x, y, dir) {
             // would disagree with the real handler.
             const pv = pivotAroundTrigger(cells, cells[i].x, cells[i].y, ccwRot, type, rConfig);
             if (slotMisfitAt(pv.newCells)) break;                     // fizzle → keep post-flip node
-            if (detectCasualties(pv.newCells).length) break;          // [270726] refusal → keep post-flip node
+            if (detectCasualties(pv.newCells).length) break;          // [270726c] wall refusal OR trim (shape change) → stop at post-flip node
             nConfig = rConfig; nx = pv.anchorX; ny = pv.anchorY; cells = pv.newCells; break;
         }
         if (item === 'slip') {
@@ -7352,7 +7596,7 @@ function routeStep(type, config, x, y, dir) {
             const sx = nx + v.dx, sy = ny + v.dy;
             const sCells = SHAPES[type].cells[nConfig].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; });
             if (slotMisfitAt(sCells)) break;
-            if (detectCasualties(sCells).length) break;               // [270726] refusal → keep post-flip node
+            if (detectCasualties(sCells).length) break;               // [270726c] wall refusal OR trim (shape change) → stop at post-flip node
             nx = sx; ny = sy; cells = sCells; break;
         }
     }
@@ -7520,7 +7764,7 @@ function drawMoveGhost() {
         if (c.x < 0 || c.x >= VIEW_W) continue;                  // off the side
         const sx = c.x * CELL + 2;
         const sy = (c.y - game.cameraY) * CELL + 2;
-        if (sy < -CELL || sy > canvas.height + CELL) continue;   // off top/bottom
+        if (sy < -CELL || sy > LOGICAL_H + CELL) continue;   // off top/bottom
         const size = CELL - 4;
         ctx.globalAlpha = 0.20 * a;
         roundedSq(sx, sy, size, col, null);            // faint fill
@@ -7609,6 +7853,7 @@ const TIPS = {
     devolve:   'A minus trims a cube. Sometimes that\u2019s the plan.',
     trim:      'Too big? Trim down on a minus.',
     diag:      'Swipe diagonally \u2014 corners count.',
+    hourglass: 'Hourglass: +20 seconds on the clock.',
     noroute:   'No flip reaches that shape. A rotate or shift could.',
     nofit:     'No slot fits you now. Evolve or devolve to match.'
 };
@@ -7683,6 +7928,7 @@ function toggleTips() { applyTips(!game.tipsOn); }
 try { applyTips(localStorage.getItem('rotor_tips_on') !== '0'); } catch (e) { applyTips(true); }
 
 function draw() {
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
 
     ctx.save();
     
@@ -7693,7 +7939,7 @@ function draw() {
     // (#0f172a lightened 50% toward white) so the inset gaps between the white
     // floor tiles read as soft grout rather than harsh inky lines.
     ctx.fillStyle = currentTheme === 'day' ? '#dde2e8' : '#0f172a';
-    ctx.fillRect(-5, -5, canvas.width + 10, canvas.height + 10);
+    ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
 
     // Per-level wash — the void tints as you climb (see LEVEL_WASH). Night gets
     // the full overlay; day gets it at half strength on the grout, with the main
@@ -7705,7 +7951,7 @@ function draw() {
             ctx.save();
             ctx.globalAlpha = currentTheme === 'day' ? wash[1] * 0.5 : wash[1];
             ctx.fillStyle = wash[0];
-            ctx.fillRect(-5, -5, canvas.width + 10, canvas.height + 10);
+            ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
             ctx.restore();
         }
     }
@@ -7808,7 +8054,7 @@ function draw() {
                 ctx.save();
                 ctx.globalAlpha = 0.95;
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2.4;
+                ctx.lineWidth = 3.6;   // [270726n] welcome-legend weight
                 ctx.lineCap = 'round';
                 const hcx = sx + CELL_SIZE / 2;
                 const hcy = sy + CELL_SIZE / 2;
@@ -7822,26 +8068,7 @@ function draw() {
                     // Day warp — amber (time has its own colour family: the
                     // sand of an hourglass; distinct from shifter teal)
                     roundedSq(sx, sy, CELL_SIZE, '#f59e0b', '#b45309', 1);
-                    const g = CELL * 0.374;
-                    const gx = sx + (CELL_SIZE - g) / 2;
-                    const gy = sy + (CELL_SIZE - g) / 2;
-                    const hCx = gx + g / 2;
-                    const hCy = gy + g / 2;
-                    ctx.save();
-                    ctx.strokeStyle = '#ffffff';   // white glyph in both themes (matches legend)
-                    ctx.lineWidth = Math.max(1.4, g * 0.13);
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.beginPath();
-                    ctx.moveTo(gx,        gy);
-                    ctx.lineTo(gx + g,    gy);
-                    ctx.lineTo(hCx,       hCy);
-                    ctx.lineTo(gx + g,    gy + g);
-                    ctx.lineTo(gx,        gy + g);
-                    ctx.lineTo(hCx,       hCy);
-                    ctx.closePath();
-                    ctx.stroke();
-                    ctx.restore();
+                    drawHourglassIcon(sx, sy);
                     continue;
                 }
                 // Night warp — filled amber with outlined hourglass (time's own
@@ -7852,52 +8079,15 @@ function draw() {
                 ctx.shadowBlur  = 8;
                 roundedSq(sx, sy, CELL_SIZE, '#f59e0b', null);
                 ctx.restore();
-                // Outlined hourglass glyph — bowtie + caps silhouette, traced
-                // as a single stroked path in off-white. Reads as a minimal
-                // outline drawing rather than a solid icon, matching the
-                // "outline indicators" theme of the new visual language.
-                const g = CELL * 0.34;
-                const gx = sx + (CELL_SIZE - g) / 2;
-                const gy = sy + (CELL_SIZE - g) / 2;
-                const hCx = gx + g / 2;
-                const hCy = gy + g / 2;
-                ctx.save();
-                ctx.strokeStyle = '#ffffff';        // off-white (slate-100)
-                ctx.lineWidth = Math.max(1.4, g * 0.13);
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.beginPath();
-                ctx.moveTo(gx,        gy);
-                ctx.lineTo(gx + g,    gy);
-                ctx.lineTo(hCx,       hCy);
-                ctx.lineTo(gx + g,    gy + g);
-                ctx.lineTo(gx,        gy + g);
-                ctx.lineTo(hCx,       hCy);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.restore();
+                // White hourglass icon (user art) laid over the amber tile.
+                drawHourglassIcon(sx, sy);
             } else if (item === 'pivot' || item === 'slip') {
                 if (currentTheme === 'day') {
                     // Day pivot/slip — bright teal cyan flat fill, dark glyph.
                     const meta = shifterMeta[key];   // spin/arrow data (expiry retired)
                     roundedSq(sx, sy, CELL_SIZE, 'rgb(45,212,191)', '#0d9488', 1);
-                    // Glyph — white in both themes (matches legend)
-                    ctx.save();
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = `bold ${Math.floor(CELL * 0.396)}px system-ui, sans-serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    let glyph;
-                    if (item === 'pivot') {
-                        const ccw = meta && meta.dir === 'ccw';
-                        glyph = ccw ? '↺' : '↻';
-                    } else {
-                        glyph = SLIP_VECTORS[meta ? meta.dir : 0].glyph;
-                    }
-                    const gcx = sx + CELL_SIZE / 2;
-                    const gcy = sy + CELL_SIZE / 2;
-                    ctx.fillText(glyph, gcx, gcy);
-                    ctx.restore();
+                    // Glyph — stroked vector, uniform 2.4px ([270726l]).
+                    drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
                     continue;
                 }
                 // Night pivot/slip — filled electric-cyan rounded square; the
@@ -7912,26 +8102,9 @@ function draw() {
                 ctx.shadowBlur  = 6 + 6 * pulse;
                 roundedSq(sx, sy, CELL_SIZE, `rgb(${r},${g},${b})`, null);
                 ctx.restore();
-                // Glyph: drawn here (was in the special-items pass before).
-                ctx.save();
-                ctx.globalAlpha = 0.95;
-                ctx.fillStyle = '#ffffff';
-                ctx.font = `bold ${Math.floor(CELL * 0.396)}px system-ui, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                let glyph;
-                if (item === 'pivot') {
-                    const ccw = meta && meta.dir === 'ccw';
-                    glyph = ccw ? '↺' : '↻';
-                } else {
-                    glyph = SLIP_VECTORS[meta ? meta.dir : 0].glyph;
-                }
-                const gcx = sx + CELL_SIZE / 2;
-                const gcy = sy + CELL_SIZE / 2;
-                // Pure white glyph (matches the white + on green cubes) — no dark
-                // outline, so every night-mode shifter reads as a clean white icon.
-                ctx.fillText(glyph, gcx, gcy);
-                ctx.restore();
+                // Glyph — stroked vector, uniform 2.4px ([270726l]): matches
+                // the white "+" on greens, "−" on reds, and the hourglass.
+                drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
             } else if (visited.has(key)) {
                 if (currentTheme === 'day') {
                     // Day visited — peach floor with a darker-peach edge so
@@ -8029,7 +8202,7 @@ function draw() {
             ctx.save();
             ctx.globalAlpha = currentTheme === 'day' ? 0.9 : 0.95;
             ctx.strokeStyle = '#ffffff';   // white + in both themes (matches legend)
-            ctx.lineWidth = 2.4;
+            ctx.lineWidth = 3.6;   // [270726n] welcome-legend weight
             ctx.lineCap = 'round';
             const pcx = sx + SIZE / 2;
             const pcy = sy + SIZE / 2;
@@ -8084,7 +8257,7 @@ function draw() {
         for (const c of slot.cells) {
             const sx = c.x * CELL + 2;
             const sy = (c.y - game.cameraY) * CELL + 2;
-            if (sy < -CELL || sy > canvas.height + CELL) continue;
+            if (sy < -CELL || sy > LOGICAL_H + CELL) continue;
             // Already-traced cells render as walls in the main pass — skip
             if (slot.traced.has(`${c.x},${c.y}`)) continue;
             const size = CELL - 4;
@@ -8151,7 +8324,7 @@ function draw() {
         if (dimA > 0) {
             ctx.save();
             ctx.fillStyle = `rgba(2, 6, 20, ${dimA})`;
-            ctx.fillRect(-5, -5, canvas.width + 10, canvas.height + 10);
+            ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
             ctx.restore();
         }
     }
@@ -8163,6 +8336,7 @@ function draw() {
     let renderCells = playerCellsForHint;
     let renderParity = game.faceParity;
     let flipping = false, flipAX = 0, flipAY = 0, flipSX = 1, flipSY = 1, flipBShear = 0, flipLift = 0;
+    let flipDiag = false, flipAng = 0, flipS = 1;
     // If a pivot or slip is currently animating, use the interpolated cell
     // positions (fractional grid coords are fine — they get multiplied by CELL
     // like any other cell). The flip block below won't fire because flip and
@@ -8192,14 +8366,25 @@ function draw() {
             } else if (ft < 0.5) { renderCells = flip.fromCells; renderParity = flip.fromParity; s = 1 - ft / 0.5; }
             else                 { renderCells = flip.toCells;   renderParity = flip.toParity;   s = (ft - 0.5) / 0.5; }
             s = Math.max(0.05, s);   // keep a sliver at edge-on
-            flipSX = flip.axisX ? s : 1;
-            flipSY = flip.axisY ? s : 1;
+            if (flip.diag) {
+                // Diagonal move: foreshorten along the move direction (a
+                // rotated axis) instead of scaling X AND Y — that collapsed
+                // the whole shape to a point at the corner hinge, reading as
+                // a shrink rather than a flip over the corner.
+                flipDiag = true;
+                flipAng = Math.atan2(flip.dirY, flip.dirX);
+                flipS = s;
+            } else {
+                flipSX = flip.axisX ? s : 1;
+                flipSY = flip.axisY ? s : 1;
+            }
             flipAX = flip.hx * CELL;
             flipAY = (flip.hy - game.cameraY) * CELL;
             if (FLIP_3D && !REDUCED_MOTION) {
                 const sinA = Math.sin(Math.PI * ft);
-                if (flip.dirX !== 0) flipBShear = LIFT3D * sinA * flip.dirX * (ft < 0.5 ? 1 : -1);
-                else                 flipLift   = LIFT3D * CELL * sinA;
+                if (flip.diag)            flipLift   = LIFT3D * CELL * sinA * 0.75;
+                else if (flip.dirX !== 0) flipBShear = LIFT3D * sinA * flip.dirX * (ft < 0.5 ? 1 : -1);
+                else                      flipLift   = LIFT3D * CELL * sinA;
             }
         }
     }
@@ -8242,9 +8427,18 @@ function draw() {
         ctx.globalAlpha = blink === 0 ? 0.35 : 0.85;
     }
     if (flipping) {
-        if (flipLift) ctx.translate(0, -flipLift);              // screen-up pop (pure N/S, 3D)
+        if (flipLift) ctx.translate(0, -flipLift);              // screen-up pop (N/S + diagonals, 3D)
         ctx.translate(flipAX, flipAY);
-        ctx.transform(flipSX, flipBShear, 0, flipSY, 0, 0);     // foreshorten + tumble shear
+        if (flipDiag) {
+            // Rotate so X lines up with the move direction, squash X toward
+            // the corner hinge, rotate back — reads as an edge-on flip over
+            // the corner rather than a pinch into it.
+            ctx.rotate(flipAng);
+            ctx.transform(flipS, 0, 0, 1, 0, 0);
+            ctx.rotate(-flipAng);
+        } else {
+            ctx.transform(flipSX, flipBShear, 0, flipSY, 0, 0); // foreshorten + tumble shear
+        }
         ctx.translate(-flipAX, -flipAY);
     }
     // (Player glow removed — cubes render as clean flat-filled rounded
@@ -8334,15 +8528,15 @@ function draw() {
     ctx.restore();
     
     // Danger gradient at BOTTOM — cold deep indigo (cold scheme)
-    const grad = ctx.createLinearGradient(0, canvas.height - CELL * 2.5, 0, canvas.height);
+    const grad = ctx.createLinearGradient(0, LOGICAL_H - CELL * 2.5, 0, LOGICAL_H);
     grad.addColorStop(0, 'rgba(56, 89, 120, 0)');
     grad.addColorStop(1, 'rgba(40, 70, 110, 0.5)');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, canvas.height - CELL * 2.5, canvas.width, CELL * 2.5);
+    ctx.fillRect(0, LOGICAL_H - CELL * 2.5, LOGICAL_W, CELL * 2.5);
     
     // Rising floor indicator — a glowing line creeping up
     const floorPulse = 0.6 + 0.4 * Math.sin(Date.now() / 400 * Math.PI);
-    const floorY = canvas.height - CELL * 0.5;
+    const floorY = LOGICAL_H - CELL * 0.5;
     ctx.save();
     ctx.globalAlpha = floorPulse * 0.8;
     ctx.strokeStyle = '#ef4444';
@@ -8351,10 +8545,31 @@ function draw() {
     ctx.shadowBlur = 8;
     ctx.beginPath();
     ctx.moveTo(0, floorY);
-    ctx.lineTo(canvas.width, floorY);
+    ctx.lineTo(LOGICAL_W, floorY);
     ctx.stroke();
     ctx.restore();
     
+    // [270726s] DENIED FLASH — red glow over the shape, fading out over
+    // ~300ms. Refusals never move the shape, so its resting cells are the
+    // right place to draw.
+    if (deniedFlashT0) {
+        const dAge = performance.now() - deniedFlashT0;
+        if (dAge >= DENIED_FLASH_MS) {
+            deniedFlashT0 = 0;
+        } else {
+            const dk = 1 - dAge / DENIED_FLASH_MS;
+            ctx.save();
+            ctx.globalAlpha = 0.6 * dk;          // [270726v] +20% saturation
+            ctx.shadowColor = '#ff3333';
+            ctx.shadowBlur = 20 * dk;
+            for (const c of getPlayerCells()) {
+                const dsx = c.x * CELL + 4, dsy = (c.y - game.cameraY) * CELL + 4;
+                roundedSq(dsx, dsy, CELL - 8, '#ff3333', null);
+            }
+            ctx.restore();
+        }
+    }
+
     // Refused-move ghost — the shape (or an edge chevron) at the spot the
     // player just tried to reach. Drawn AFTER the player so an edge chevron at
     // the boundary isn't hidden behind the live shape; the ghost is always at
@@ -8412,7 +8627,7 @@ function draw() {
         // Without this, long copy like "AMAZING — CONGRATULATIONS!" runs
         // off the canvas edge on smaller-width screens.
         const PAD = 24;
-        const maxLineWidth = canvas.width - PAD;
+        const maxLineWidth = LOGICAL_W - PAD;
         let actualSize = fontSize;
         ctx.font = `bold ${Math.round(actualSize)}px sans-serif`;
         for (const line of lines) {
@@ -8464,15 +8679,15 @@ function draw() {
         const strength = 0.35 + 0.45 * k;                // deepest at trigger, thins out
         const breathe = 0.9 + 0.1 * Math.sin(Date.now() / 600);
         // Cool blue-indigo vignette: clear centre, darker cool edges
-        const cx = canvas.width / 2, cy = canvas.height / 2;
-        const g = ctx.createRadialGradient(cx, cy, canvas.width * 0.25, cx, cy, canvas.width * 0.75);
+        const cx = LOGICAL_W / 2, cy = LOGICAL_H / 2;
+        const g = ctx.createRadialGradient(cx, cy, LOGICAL_W * 0.25, cx, cy, LOGICAL_W * 0.75);
         g.addColorStop(0, `rgba(56, 120, 200, ${0.04 * strength})`);
         g.addColorStop(1, `rgba(20, 40, 110, ${strength * breathe})`);
         ctx.fillStyle = g;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
         // Thin top progress line draining as time runs out
         ctx.fillStyle = 'rgba(125, 211, 252, 0.85)';
-        ctx.fillRect(0, 0, canvas.width * k, 4);
+        ctx.fillRect(0, 0, LOGICAL_W * k, 4);
     }
 
     // ── Bullet-time charge bar is now a DOM meter in the top band (see renderSetIcons) ──
@@ -8483,7 +8698,7 @@ function draw() {
     // On-screen green-interaction log — shown only when toggled on (key 1)
     if (window.SHOW_GREEN_LOG && greenLogLines.length > 0) {
         ctx.save();
-        const pad = 6, lh = 14, w = canvas.width - 16;
+        const pad = 6, lh = 14, w = LOGICAL_W - 16;
         const h = greenLogLines.length * lh + pad * 2;
         const x = 8, y = 8;
         ctx.fillStyle = 'rgba(0,0,0,0.78)';
@@ -8522,85 +8737,39 @@ function updateLivesHUD() {
 // removed — slot is either claimed or it isn't).
 function renderSetIcons() {
     // SET row was removed from the HUD; this function name is now a
-    // misnomer but it's the HUD update routine for the clock, warp pips,
-    // charge counter, and pause-button label. Don't bail out if the SET
-    // element is missing — gate just the set-icon code below.
+    // misnomer but it's the HUD update routine for the set icons and the
+    // rotor gauge. Dead-HUD updaters (warp pips, charge counter, bullet
+    // label, mobile bar) were removed in 270726b.
     const el = document.getElementById('hudSetIcons');
     if (el) {
         // Use the pre-shuffled display order (sequential when targets ≤ 2,
         // randomised on round-start when targets > 2). Falls back to the
         // mission's targets list if displayOrder was never populated.
         const order = (setDisplayOrder && setDisplayOrder.length) ? setDisplayOrder : [];
-        // V9: duplicate requirements COLLAPSE to one glyph x N (live count-
-        // down: x3 -> x2 -> x1 -> claimed tick). Needed because duplicate ids
-        // can't show per-glyph state; also saves HUD room.
-        const groups = [];
-        const seen = new Map();
+        // [270726q] One glyph PER requirement — duplicates display as that
+        // many cubes to collect (no multiplier). Claimed instances fill
+        // left-to-right within each duplicate family.
+        const totalById = {}, remById = {}, idxById = {};
+        for (const t of order) { const tid = requirementId(t.type, t.config, t.difficulty); totalById[tid] = (totalById[tid] || 0) + 1; }
+        for (const x of setNeeded) remById[x] = (remById[x] || 0) + 1;
+        let html = '';
         for (const target of order) {
             const id = requirementId(target.type, target.config, target.difficulty);
-            if (seen.has(id)) { seen.get(id).total++; continue; }
-            const gp = { id, target, total: 1 };
-            seen.set(id, gp); groups.push(gp);
+            const k = idxById[id] = (idxById[id] || 0) + 1;      // 1-based instance
+            const claimedCount = (totalById[id] || 0) - (remById[id] || 0);
+            const claimed = k <= claimedCount;
+            const color = slotColorFor(target.type, target.config, target.difficulty);
+            const pop = claimed && k === claimedCount && game._setPop && game._setPop.id === id && (performance.now() - game._setPop.t) < 900;
+            html += `<div class="set-slot${claimed ? ' claimed' : ''}${pop ? ' pop' : ''}">${miniShapeGlyph(target.type, color, claimed ? 1 : 0, target.config)}</div>`;
         }
-        let html = '';
-        for (const gp of groups) {
-            const remainingN = setNeeded.filter(x => x === gp.id).length;
-            const claimed = remainingN === 0;
-            const color = slotColorFor(gp.target.type, gp.target.config, gp.target.difficulty);
-            const pop = claimed && game._setPop && game._setPop.id === gp.id && (performance.now() - game._setPop.t) < 900;
-            const mult = gp.total > 1
-                ? `<span class="set-mult">\u00d7${claimed ? gp.total : remainingN}</span>` : '';
-            html += `<div class="set-slot${claimed ? ' claimed' : ''}${pop ? ' pop' : ''}">${miniShapeGlyph(gp.target.type, color, claimed ? 1 : 0, gp.target.config)}${mult}</div>`;
-        }
+        // Pad to the fixed six sockets with empty 2×2 grids.
+        for (let s = order.length; s < SET_SOCKETS; s++)
+            html += `<div class="set-slot socket-empty">${emptySocketSVG()}</div>`;
         if (setsCompleted > 0)
             html += `<span style="color:#a3e635;font-size:22px;font-weight:bold;margin-left:8px;">×${setsCompleted}</span>`;
         if (el._lastSetHtml !== html) { el.innerHTML = html; el._lastSetHtml = html; }   // change-gated so the ✓ pop animation plays once
     }
 
-    // Time Warp pip strip — repurposed as a time-remaining meter for the
-    // active slo-mo. Each pip = ~2 seconds. If more than 10s is accumulated
-    // (5 pips × 2s), all pips stay lit and the text label carries the
-    // overflow. Pips drain as the timer counts down.
-    const warpEl = document.getElementById('warpDisplay');
-    if (warpEl) {
-        const pips = warpEl.querySelectorAll('.warp-pip');
-        const secsRemaining = bullet.active ? bullet.timer : 0;
-        // Each pip = one pickup's worth of slo-mo (BULLET_DURATION seconds).
-        // 3 pips fill as pickups are collected, drain as time ticks down.
-        const SECS_PER_PIP = BULLET_DURATION;
-        const pipsLit = Math.ceil(secsRemaining / SECS_PER_PIP);
-        pips.forEach((p, i) => {
-            if (i < pipsLit) p.classList.add('on');
-            else p.classList.remove('on');
-        });
-        warpEl.classList.toggle('active', bullet.active);
-    }
-    // Charge counter
-    const chargeEl = document.getElementById('chargeValue');
-    if (chargeEl) chargeEl.textContent = game.charge || 0;
-    const blabel = document.getElementById('bulletLabel');
-    if (blabel) {
-        if (bullet.active) {
-            blabel.textContent = `⏳ TIME WARP ${Math.ceil(bullet.timer)}s`;
-        } else {
-            blabel.textContent = '⏳ TIME WARP';
-        }
-        blabel.style.color = bullet.active ? '#7dd3fc' : '#5a7a8a';
-    }
-    // Mobile warp button: shows remaining time when active; placeholder text
-    // when inactive (button does nothing — slo-mo is pickup-only).
-    const mbb = document.getElementById('mobileBulletBtn');
-    if (mbb) {
-        if (bullet.active) {
-            mbb.textContent = `⏳ TIME WARP ${Math.ceil(bullet.timer)}s`;
-            mbb.classList.add('active');
-        } else {
-            mbb.textContent = '⏳ TIME WARP';
-            mbb.classList.remove('active');
-        }
-    }
-    const mpb = document.getElementById('mobilePauseBtn');
-    if (mpb) mpb.textContent = game.paused ? '▶ RESUME' : '⏸ PAUSE';
 
     // ROTOR GAUGE (Momentum): three-band charge ring + spinning wheel +
     // small seconds. Ring colour walks gold -> amber -> red; the wheel's
@@ -8640,8 +8809,8 @@ function updateRotorGauge() {
         const rr = document.getElementById('rotorSvg').getBoundingClientRect();
         const cr = canvas.getBoundingClientRect();
         if (cr.width > 0) game._rotorTgt = {
-            x: (rr.left + rr.width / 2 - cr.left) * (canvas.width / cr.width),
-            y: (rr.top + rr.height / 2 - cr.top) * (canvas.height / cr.height)
+            x: (rr.left + rr.width / 2 - cr.left) * (LOGICAL_W / cr.width),
+            y: (rr.top + rr.height / 2 - cr.top) * (LOGICAL_H / cr.height)
         };
     }
     updateHum();
@@ -8815,6 +8984,23 @@ function lightenHex(hex, f) {
     return '#' + [mix(r), mix(g), mix(b)].map(v => v.toString(16).padStart(2,'0')).join('');
 }
 
+// [270726u] The SET band shows SIX fixed 2×2 sockets from the start of a
+// run: requirements fill sockets left-to-right as levels spell them out;
+// the rest stay as faint empty grids, so the space never jumps around.
+const SET_SOCKETS = 6;
+function socketGridRects() {
+    const u = 29, pad = 3, gap = 2;
+    const stroke = currentTheme === 'day' ? 'rgba(71,85,105,0.30)' : 'rgba(148,163,184,0.22)';
+    let r = '';
+    for (let gy = 0; gy < 2; gy++) for (let gx = 0; gx < 2; gx++)
+        r += `<rect x="${pad + gx * u + gap}" y="${pad + gy * u + gap}" width="${u - gap * 2}" height="${u - gap * 2}" rx="4" fill="none" stroke="${stroke}" stroke-width="1.4"/>`;
+    return r;
+}
+function emptySocketSVG() {
+    const u = 29, pad = 3, box = 2 * u + pad * 2;
+    return `<svg width="${box}" height="${box}" viewBox="0 0 ${box} ${box}">${socketGridRects()}</svg>`;
+}
+
 function miniShapeGlyph(type, color, progress, config = null) {
     const useConfig = config || SLOT_DEFS[type].configs[0];
     const cells = SHAPES[type].cells[useConfig];
@@ -8824,10 +9010,11 @@ function miniShapeGlyph(type, color, progress, config = null) {
     // THICK outline in a slightly darker version of its own colour (hollow) and
     // fills SOLID once collected — so to-collect vs collected reads at a glance.
     // Night: the original faint→solid progress fill on the already-dark band.
-    const u=23, pad=3, box=2*u+pad*2;   // ~5% trimmed
-    const offX=(box-((mxX-mnX+1)*u))/2;
-    // V9: bottom-aligned, not centred — every shape stands on the same
-    // ground line, so the SET row reads level and symmetrical.
+    const u=29, pad=3, box=2*u+pad*2;   // [270726q] SET glyphs enlarged
+    // [270726u] Anchored bottom-LEFT so every config sits in the same 2×2
+    // socket grid (drawn behind the shape below) — the socket makes the
+    // configuration legible: which of the four cells the shape occupies.
+    const offX=pad;
     const offY=box-pad-((mxY-mnY+1)*u);
     const gap=2;
     const p = Math.pow(progress, 0.7);
@@ -8837,7 +9024,7 @@ function miniShapeGlyph(type, color, progress, config = null) {
     const edgeCol = day ? shadeHex(color, 0.72) : color; // slightly darker hue
     const edgeOp = day ? 1 : (0.55 + 0.45 * p);
     const edgeW = day ? 3.5 : 1.6;                        // thick outline in day
-    let r='';
+    let r = socketGridRects();   // faint 2×2 grid behind the shape
     for (const [dx,dy] of cells){
         const x=(dx-mnX)*u+offX, y=(mxY-dy)*u+offY;
         r += `<rect x="${x+gap}" y="${y+gap}" width="${u-gap*2}" height="${u-gap*2}" rx="4" fill="${color}" fill-opacity="${fillOp}"/>`;
@@ -8955,7 +9142,7 @@ function loop(time) {
       // mini-achievement. Panic signalling arms only from this moment.
       if (game.spinUp && momentumRemaining() >= MOMENTUM_MAX - 2) {
           game.spinUp = false;
-          addFloat(canvas.width / 2, canvas.height / 2 - 30, 'FULL CHARGE!', '#22c55e', true, { life: 2200, hold: 1200 });
+          addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 30, 'FULL CHARGE!', '#22c55e', true, { life: 2200, hold: 1200 });
           triggerEdgeGlow('#22c55e', 1200);
           if (sfx.line) sfx.line(4);
           if (sfx.bassImpact) sfx.bassImpact(0.8);
@@ -9029,7 +9216,7 @@ function loop(time) {
                   game.inputLocked = true;
                   triggerShake(6, 400);
                   if (sfx.hit) sfx.hit();
-                  addFloat(canvas.width / 2, canvas.height / 2 - 20, 'TRAPPED!', '#ef4444', true);
+                  addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20, 'TRAPPED!', '#ef4444', true);
                   for (const c of getPlayerCells())
                       addBurst(c.x * CELL + CELL/2, (c.y - game.cameraY) * CELL + CELL/2, '#ef4444');
                   setTimeout(() => {
@@ -9068,7 +9255,7 @@ function loop(time) {
             // the pause button stops the world but not their thinking.
             if (!game._pauseHintShown) {
                 game._pauseHintShown = true;
-                addFloat(canvas.width / 2, canvas.height * 0.3,
+                addFloat(LOGICAL_W / 2, LOGICAL_H * 0.3,
                     'PAUSE \u2014 THINKING IS FREE', '#f8fafc', true, { life: 2600, hold: 1500 });
             }
         }
@@ -9373,7 +9560,7 @@ function startGame() {
     if (currentMission()) {
         setTimeout(() => {
             if (!game.running) return;
-            addFloat(canvas.width / 2, canvas.height / 2 + 30,
+            addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
                 'CLAIM EVERY SLOT', '#94a3b8');
         }, 1400);
     }
@@ -9563,20 +9750,20 @@ document.addEventListener('keydown', e => {
     // clear). 1 = green log · 2 = movement-offset panel · 3 = grid coordinates.
     if (e.key === '1') {
         window.SHOW_GREEN_LOG = !window.SHOW_GREEN_LOG;
-        addFloat(canvas.width / 2, 70, window.SHOW_GREEN_LOG ? '1 · Green log ON' : '1 · Green log OFF', '#a3e635');
+        addFloat(LOGICAL_W / 2, 70, window.SHOW_GREEN_LOG ? '1 · Green log ON' : '1 · Green log OFF', '#a3e635');
         e.preventDefault();
         return;
     }
     if (e.key === '2') {
         window.DEBUG_MOVE = !window.DEBUG_MOVE;
         if (window.DEBUG_MOVE) runMovementSelfTest();
-        addFloat(canvas.width / 2, 70, window.DEBUG_MOVE ? '2 · Move panel ON' : '2 · Move panel OFF', '#38bdf8');
+        addFloat(LOGICAL_W / 2, 70, window.DEBUG_MOVE ? '2 · Move panel ON' : '2 · Move panel OFF', '#38bdf8');
         e.preventDefault();
         return;
     }
     if (e.key === '3') {
         window.SHOW_GRID_COORDS = !window.SHOW_GRID_COORDS;
-        addFloat(canvas.width / 2, 70, window.SHOW_GRID_COORDS ? '3 · Grid coords ON' : '3 · Grid coords OFF', '#38bdf8');
+        addFloat(LOGICAL_W / 2, 70, window.SHOW_GRID_COORDS ? '3 · Grid coords ON' : '3 · Grid coords OFF', '#38bdf8');
         e.preventDefault();
         return;
     }
@@ -9599,7 +9786,7 @@ document.addEventListener('keydown', e => {
     // Flip style toggle — F key: pseudo-3D tumble vs flat 2D fold (debug builds only)
     if (DEBUG_MODE && (e.key === 'f' || e.key === 'F')) {
         FLIP_3D = !FLIP_3D;
-        addFloat(canvas.width / 2, 70, FLIP_3D ? 'FLIP: 3D tumble' : 'FLIP: 2D fold', '#fbbf24');
+        addFloat(LOGICAL_W / 2, 70, FLIP_3D ? 'FLIP: 3D tumble' : 'FLIP: 2D fold', '#fbbf24');
         e.preventDefault();
         return;
     }

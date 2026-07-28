@@ -903,6 +903,54 @@ body.theme-day .theme-button.active { background: #e0f2fe; color: #0e7490; borde
     margin: 0;
 }
 
+/* ── TEST DRIVE mode ──
+   No clock, no hazards, no score — the HUD slims to exit + settings and a
+   shape-selector bar takes over the set/score rows. */
+body.test-drive .rotor-wrap,
+body.test-drive .cov-meter,
+body.test-drive .hud-review-btn,
+body.test-drive #hudPauseBtn,
+body.test-drive .hud-row-set,
+body.test-drive .hud-row-score,
+body.test-drive .coach-tip,
+body.test-drive .mobile-controls { display: none !important; }
+
+.td-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 4px 4px;
+}
+.td-bar.hidden { display: none; }
+.td-title {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.18em;
+    color: #5eead4;
+    margin-right: 6px;
+    white-space: nowrap;
+}
+.td-shape {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(148, 163, 184, 0.35);
+    background: rgba(15, 23, 42, 0.6);
+    cursor: pointer;
+    padding: 8px;
+    transition: border-color 0.15s, background 0.15s;
+}
+.td-shape svg { width: 100%; height: 100%; display: block; }
+.td-shape rect { fill: #64748b; }
+.td-shape.active { border-color: #5eead4; background: rgba(94, 234, 212, 0.12); }
+.td-shape.active rect { fill: #5eead4; }
+body.theme-day .td-title { color: #0d9488; }
+body.theme-day .td-shape { background: #f8fafc; border-color: rgba(71, 85, 105, 0.3); }
+body.theme-day .td-shape.active { border-color: #0d9488; background: #ccfbf1; }
+body.theme-day .td-shape.active rect { fill: #0d9488; }
+
 /* Two mode buttons sit side-by-side in a half-row. Both inherit .start-btn
    sizing but slim down their font + padding to fit a half-width cell. */
 .welcome-box .mode-btn {
@@ -1345,7 +1393,7 @@ body.theme-day .life-pip.on::before { color: #ec4899; }
 .howto-tile.lime { background: #a3e635; }
 .howto-tile.teal { background: #2dd4bf; }
 .howto-tile.haz  { background: #ef4444; }
-.howto-tile.time { background: #f59e0b; }
+.howto-tile.time { background: #fbbf24; }
 .howto-tile.wall { background: #9aa3b2; }
 .howto-label {
     font-size: clamp(10px, 2.8cqw, 17px); line-height: 1.15; text-align: center;
@@ -1416,6 +1464,14 @@ body.theme-day .settings-title { color: #0369a1; }
 .settings-seg.active { background: rgba(34,211,238,0.18); border-color: #22d3ee; color: #e0f7ff; }
 body.theme-day .settings-seg { background: #e2e8f0; color: #475569; }
 body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9; color: #0c4a6e; }
+.settings-testdrive {
+    width: 100%; margin-top: 14px; padding: 11px; border-radius: 10px;
+    background: transparent; border: 2px solid rgba(94, 234, 212, 0.5);
+    color: #5eead4; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; cursor: pointer;
+}
+.settings-testdrive:hover { box-shadow: 0 0 12px rgba(94, 234, 212, 0.35); }
+body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border-color: rgba(13, 148, 136, 0.5); }
+
 .settings-done {
     width: 100%; margin-top: 18px; padding: 11px; border: none; border-radius: 10px;
     background: #22d3ee; color: #06222b; font-weight: 700; font-size: 14px; cursor: pointer;
@@ -1542,13 +1598,19 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
             <div class="score-side"><span class="chain-chip" id="chainChip"></span></div>
         </div>
     </div>
+    <!-- TEST DRIVE shape selector — swap the machine on the test stand.
+         Tiny cell-diagrams of the five shapes; active one glows teal. -->
+    <div class="td-bar hidden" id="tdBar">
+        <span class="td-title">TEST DRIVE</span>
+        <button class="td-shape" data-shape="single" onclick="tdSetShape('single')" title="Single"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>
+        <button class="td-shape" data-shape="pair" onclick="tdSetShape('pair')" title="Pair"><svg viewBox="0 0 24 24"><rect x="1" y="7" width="10" height="10" rx="2"/><rect x="13" y="7" width="10" height="10" rx="2"/></svg></button>
+        <button class="td-shape" data-shape="diagonal" onclick="tdSetShape('diagonal')" title="Diagonal"><svg viewBox="0 0 24 24"><rect x="1" y="13" width="10" height="10" rx="2"/><rect x="13" y="1" width="10" height="10" rx="2"/></svg></button>
+        <button class="td-shape" data-shape="jshape" onclick="tdSetShape('jshape')" title="J-Shape"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" rx="2"/><rect x="1" y="13" width="10" height="10" rx="2"/><rect x="13" y="1" width="10" height="10" rx="2"/></svg></button>
+        <button class="td-shape" data-shape="square" onclick="tdSetShape('square')" title="Square"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" rx="2"/><rect x="13" y="1" width="10" height="10" rx="2"/><rect x="1" y="13" width="10" height="10" rx="2"/><rect x="13" y="13" width="10" height="10" rx="2"/></svg></button>
+    </div>
     <canvas id="canvas" class="game-canvas"></canvas>
     <div class="coach-tip" id="coachTip"><span class="coach-label">TIP</span><span id="coachTipText"></span></div>
     <div class="record-banner" id="recordBanner">NEW HIGH SCORE!</div>
-    <div class="pill-row">
-        <button id="tipsPill" class="hint-pill" onclick="toggleTips()" title="Toggle Tips (T)">💡 Tips: On</button>
-        <button id="hintPill" class="hint-pill" onclick="toggleHints()" title="Toggle Move Guide (H)">🧭 Move Guide: On</button>
-    </div>
     <!-- Round-transition overlay. DOM-based so we get crisp big text and
          CSS animations. Sits over the canvas (z-index 20). Triggered via
          showRoundOverlay(n). The .active class drives both the fade-to-
@@ -1627,6 +1689,30 @@ body.theme-day .settings-seg.active { background: #bae6fd; border-color: #0ea5e9
                 <span>Tips</span>
                 <input type="checkbox" id="setTips" onchange="settingTips(this.checked)">
             </label>
+
+            <div class="settings-section-label">Joystick</div>
+            <label class="settings-row">
+                <span>Show joystick</span>
+                <input type="checkbox" id="setStick" onchange="applyStick(this.checked)">
+            </label>
+            <div class="settings-row slider-row">
+                <span>Opacity</span>
+                <input type="range" id="setStickOpacity" min="30" max="100" step="1" oninput="settingStickOpacity(this.value/100)">
+            </div>
+            <div class="settings-row">
+                <span>Position</span>
+                <div class="settings-theme">
+                    <button id="setStickLeft" class="settings-seg" onclick="settingStickSide('left')">◀ Left</button>
+                    <button id="setStickRight" class="settings-seg" onclick="settingStickSide('right')">Right ▶</button>
+                </div>
+            </div>
+            <label class="settings-row">
+                <span>Auto-dodge the player</span>
+                <input type="checkbox" id="setStickDodge" onchange="settingStickDodge(this.checked)">
+            </label>
+
+            <div class="settings-section-label">Practice</div>
+            <button class="settings-testdrive" onclick="startTestDriveFromSettings()">🕹 TEST DRIVE — open the practice arena</button>
 
             <button class="settings-done" onclick="closeSettings()">Done</button>
         </div>
@@ -2685,6 +2771,7 @@ function syncSettingsUI() {
     const night = document.getElementById('setThemeNight'), day = document.getElementById('setThemeDay');
     if (night) night.classList.toggle('active', currentTheme === 'night');
     if (day)   day.classList.toggle('active', currentTheme === 'day');
+    if (typeof syncStickSettingsUI === 'function') syncStickSettingsUI();
 }
 
 function settingMusic(on) {
@@ -3869,6 +3956,9 @@ function exitToWelcome() {
     game.running = false;
     game.paused = false;
     game.celebrating = false;
+    game.testDrive = false;
+    document.body.classList.remove('test-drive');
+    { const tb = document.getElementById('tdBar'); if (tb) tb.classList.add('hidden'); }
     if (typeof endCoach === 'function') endCoach();
     if (typeof stopMusic === 'function') stopMusic();
     const panel = document.getElementById('pausePanel');
@@ -4665,6 +4755,7 @@ let game = {
 
 let floats = [];
 function addFloat(screenX, screenY, text, color, big = false, opts = {}) {
+    if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no on-screen text
     floats.push({ x: screenX, y: screenY, text, color, t: Date.now(), big,
                   life: opts.life || 0, hold: opts.hold || 0 });
 }
@@ -4877,9 +4968,24 @@ function spawnShifter() {
         }
     }
 
-    // Greens felt too dense — halve them: skip half the green rolls. Pivots,
-    // slips and warps are unaffected, and the square-rescue above still fires.
-    if (kind === 'green' && Math.random() < 0.5) return null;
+    // (The old "skip half the green rolls" density nerf is retired — it
+    // predated the MAX_VISIBLE_GREENS budget below, and stacked with it the
+    // two starved evolution entirely: screens were showing 0-1 greens while
+    // the SET demanded J/Square claims.)
+
+    // GROW SUPPLY (mirror of TRIM SUPPLY above): greens are the only way UP
+    // the evolution chain, and the mission dictates when you need one. If the
+    // player's shape is SMALLER than the largest still-needed slot (they must
+    // evolve to finish) and fewer than 2 greens are visible, this spawn
+    // becomes a green — supply keyed to demand, not luck. Reds keep priority:
+    // the trim-supply block above already returned if a red was owed.
+    {
+        const maxNeed = setNeeded.length
+            ? Math.max(...setNeeded.map(id => SHAPE_SIZE[parseRequirement(id).type] || 1))
+            : 1;
+        if (SHAPES[game.shapeType].mult < maxNeed && countVisibleGreens() < 2)
+            kind = 'green';
+    }
     // [270726zn] Green budget: at the cap, the spawn becomes a shift instead.
     if (kind === 'green' && countVisibleGreens() >= MAX_VISIBLE_GREENS)
         kind = Math.random() < 0.4 ? 'pivot' : 'slip';
@@ -4894,7 +5000,7 @@ function spawnShifter() {
         // Amber (time's own colour family), wearing the white hourglass icon.
         world[k] = 'warp';
         showTip('hourglass');
-        addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#f59e0b');   // amber — time's own colour
+        addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#fcd34d');   // sand — time's own colour
     } else if (kind === 'pivot') {
         // Pivot direction is decided at spawn: 50/50 CW vs CCW. Stored on
         // the shifter meta so the trigger handler and renderer can both
@@ -5319,7 +5425,7 @@ let scoreRecordShown = false; // NEW HIGH SCORE fires once per run
 function scoreGain(pts, big) {
     game.score += pts;
     // MOMENTUM: every point pours energy into the wheel (PTS_PER_SEC pts = 1s).
-    if (game.running && pts > 0) {
+    if (game.running && pts > 0 && !game.testDrive) {
         const fullAt = LEVEL_TIME_LIMIT - MOMENTUM_MAX;
         game.speedTimer -= pts / PTS_PER_SEC;
         if (game.speedTimer < fullAt) {
@@ -6017,6 +6123,7 @@ function commitFusion(cellsHere, fuse, dir) {
     fuseFlipsParity = false;
     game.faceParity ^= 1;   // every move flips the face
     game._lastMoveDir = dir;
+    game._tdEchoDir = dir; game._tdEchoT = performance.now();   // joystick echo (all modes)
     game.dragDir = dir;
     game.dragTimer = game.dragInterval;
 }
@@ -6372,6 +6479,7 @@ function handleDeath(reason = 'death') {
 // reason: 'wall'/'edge'/'top' → red (blocked); 'wrong' → amber (slot wants a
 // different shape). Auto-detects edge vs wall when reason is omitted.
 function showMoveGhost(nx, ny, cfg, reason, dir) {
+    if (typeof stickDeny === 'function') stickDeny(dir);   // joystick: flash the refused chevron red
     const cells = SHAPES[game.shapeType].cells[cfg].map(([ddx, ddy]) => ({ x: nx + ddx, y: ny - ddy }));
     if (!reason) {
         reason = 'wall';
@@ -6459,6 +6567,7 @@ function topLawfulRow() { return Math.ceil(game.cameraY - 0.5); }
 // Fallback when no clean square exists next door: wall on the refused
 // ghost instead (no shove).
 function spawnDenialWall(cellsTried) {
+    if (game.testDrive) return;   // the garage never builds walls
     const topRow = Math.floor(game.cameraY), botRow = topRow + VIEW_H - 1;
     const pc = getPlayerCells();
     for (const c of cellsTried) {
@@ -6513,7 +6622,7 @@ function move(dir) {
         if (refuse) {
             showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
             { const v = HINT_DIR_VEC[dir];                     // [270726x] recoil + wall at impact
-              if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null)) spawnDenialWall(probeCells); }
+              if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) spawnDenialWall(probeCells); }
             triggerShake(3, 90);
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
             return;
@@ -6554,13 +6663,21 @@ function move(dir) {
             if (c.y < topRowWorld) {
                 showMoveGhost(newX, newY, newConfig, 'top', dir);   // red ghost at the refused cells
                 { const v = HINT_DIR_VEC[dir];                      // [270726x] recoil + wall at impact
-                  if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null)) spawnDenialWall(proposedCells); }
+                  if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) spawnDenialWall(proposedCells); }
                 triggerShake(3, 90);
                 if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 return;
             }
         }
         if (proposedCells.some(c => c.y > bottomRowWorld)) {
+            if (game.testDrive) {
+                // Garage rule: the void takes no one. The bottom edge refuses
+                // like the top — bonk, no wall, no death.
+                showMoveGhost(newX, newY, newConfig, 'top', dir);
+                triggerShake(3, 90);
+                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                return;
+            }
             triggerShake(6, 300);
             if (sfx.hit) sfx.hit();
             for (const c of getPlayerCells())
@@ -6624,6 +6741,7 @@ function move(dir) {
         startFlip(dir, _flipFrom, _flipFromParity);
         flip.reTread = _reTread;
         game._lastMoveDir = dir;
+        game._tdEchoDir = dir; game._tdEchoT = performance.now();   // joystick echo (all modes)
         trackDiagonalUse(dir);
 
         game.dragDir = dir;
@@ -7129,7 +7247,7 @@ function checkCollisions() {
             // so the first minute rains greens, shifters and hourglasses.
             const roundEase = advancedRound === 1 ? 0.7 : 1;
             const effectiveThreshold = Math.max(2, Math.round(getShifterEveryLandings() * roundEase / chargeBoost));
-            if (shifterProgress >= effectiveThreshold) {
+            if (!game.testDrive && shifterProgress >= effectiveThreshold) {
                 shifterProgress = 0;
                 spawnShifter();
             }
@@ -7137,7 +7255,7 @@ function checkCollisions() {
             // quickly (player doesn't wait around) and late rounds slow
             // the pace so each slot earned feels harder-won.
             slotProgress++;
-            if (slotProgress >= getSlotEveryLandings()) {
+            if (!game.testDrive && slotProgress >= getSlotEveryLandings()) {
                 slotProgress = 0;
                 trySpawnSlot();
             }
@@ -7268,6 +7386,7 @@ function bandLabel(n, pts) {
 // a reward, or a grow-and-claim in one move. Timestamp-dedup'd so overlapping
 // combos in the same beat surface only one "NICE COMBO!".
 function showCombo(sx, sy, text, color) {
+    if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no praise text
     const now = performance.now();
     if (now - (game._lastComboT || 0) < 500) return;   // one praise per beat
     game._lastComboT = now;
@@ -8107,8 +8226,337 @@ function drawMoveGhost() {
     ctx.restore();
 }
 
+// ============ TEST DRIVE (the garage) ============
+// The move guide in the test drive is the same radar sweep as gameplay
+// (drawFlipHints): directions reveal one at a time as the beam passes, so the
+// board never floods with eight footprints at once. Landings stay TAPPABLE
+// even when unlit — tdLandings() recomputes the candidates for the hit-test.
+function tdLandings() {
+    const out = [];
+    if (!game.running || game.paused) return out;
+    if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return out;
+    const topRow = Math.floor(game.cameraY);
+    const bottomRow = topRow + VIEW_H - 1;
+    for (const dir of DIRS_ORDER) {
+        const r = classifyFlip(dir);
+        if (!r || r.outcome === 'fatal' || r.outcome === 'blocked') continue;
+        if (r.footprint.some(c => c.y < topRow || c.y > bottomRow)) continue;
+        out.push({ dir, cells: r.footprint });
+    }
+    return out;
+}
+
+// Convert a client-space tap to a board cell; if a ghost owns that cell, play
+// the real flip there (tap → direction → outcome stays causally linked).
+// Overlapping footprints resolve to the ghost whose centre is nearest the tap.
+function tdTapAt(clientX, clientY) {
+    if (!game.testDrive || !game.running || game.paused) return false;
+    const ghosts = tdLandings();
+    if (!ghosts.length) return false;
+    const rect = canvas.getBoundingClientRect();
+    const px = (clientX - rect.left) * (LOGICAL_W / rect.width);   // logical units (canvas.width is HiDPI-scaled)
+    const py = (clientY - rect.top) * (LOGICAL_H / rect.height);
+    const col = Math.floor(px / CELL);
+    const row = Math.floor(py / CELL + game.cameraY);
+    const tx = px / CELL - 0.5, ty = py / CELL + game.cameraY - 0.5;
+    let best = null, bestD = Infinity;
+    for (const g of ghosts) {
+        if (!g.cells.some(c => c.x === col && c.y === row)) continue;
+        let cx = 0, cy = 0;
+        for (const c of g.cells) { cx += c.x; cy += c.y; }
+        cx /= g.cells.length; cy /= g.cells.length;
+        const d = (cx - tx) * (cx - tx) + (cy - ty) * (cy - ty);
+        if (d < bestD) { bestD = d; best = g; }
+    }
+    if (!best) return false;
+    move(best.dir);
+    stopDrag();   // a tap is not a held swipe
+    return true;
+}
+
+// ── JOYSTICK GUIDE (the stick) ──
+// A REAL virtual joystick now, monochrome and knob-dominant:
+// • INPUT — grab the knob and drag: 8-way flips commit exactly like swipes
+//   (hold at the rim for auto-repeat, ease back to the deadzone to stop).
+//   Board swipes and keys still work; the stick is an alternative, not a gate.
+// • REFUSAL FLASH — a bonked move flashes its chevron RED (the one colour
+//   accent), in sync with the shake: the stick teaches WHY nothing happened.
+// • CORNER DODGE — in gameplay the stick slides bottom-left ⇄ bottom-right
+//   whenever the player's shape closes in, so it never hides the action.
+// • IDLE FADE — dims to half after a second untouched; wakes instantly.
+const TD_ROSE_VEC = { N:[0,-1], NE:[1,-1], E:[1,0], SE:[1,1], S:[0,1], SW:[-1,1], W:[-1,0], NW:[-1,-1] };
+const STICK_R = 45;      // base pad radius
+const STICK_KR = 25;     // knob radius (dominant)
+let _tdKnob = { x: 0, y: 0, t: 0 };                       // smoothed knob offset + frame time
+let _stickUI = { tgt: 0, dodge: 0, fade: 1, lastAct: 0 }; // corner dodge + idle fade state
+let _stickTouch = { active: false, ox: 0, oy: 0, dir: null, pendDir: null, pendT: 0 };
+let _stickDeny = { dir: null, t: 0 };
+function stickDeny(dir) { if (dir) { _stickDeny.dir = dir; _stickDeny.t = performance.now(); } }
+
+function stickCentre() {
+    const leftX = STICK_R + 14;
+    if (game.testDrive) return { x: stickSide === 'right' ? LOGICAL_W - STICK_R - 14 : leftX,
+                                 y: STICK_R + 14 };   // garage: top corner, same side as gameplay
+    const rightX = LOGICAL_W - STICK_R - 14;
+    return { x: leftX + (rightX - leftX) * _stickUI.dodge, y: LOGICAL_H - STICK_R - 14 };
+}
+function stickClientToLogical(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    return { x: (clientX - rect.left) * (LOGICAL_W / rect.width),
+             y: (clientY - rect.top) * (LOGICAL_H / rect.height) };
+}
+// 8-way direction from a knob offset (screen coords, y-down); null = deadzone.
+function stickDirFromOffset(ox, oy) {
+    const maxThrow = STICK_R - STICK_KR - 3;
+    if (Math.hypot(ox, oy) < maxThrow * 0.45) return null;
+    const angle = Math.atan2(-oy, ox) * 180 / Math.PI;
+    if (angle >= -22.5 && angle < 22.5) return 'E';
+    if (angle >= 22.5 && angle < 67.5) return 'NE';
+    if (angle >= 67.5 && angle < 112.5) return 'N';
+    if (angle >= 112.5 && angle < 157.5) return 'NW';
+    if (angle >= 157.5 || angle < -157.5) return 'W';
+    if (angle >= -157.5 && angle < -112.5) return 'SW';
+    if (angle >= -112.5 && angle < -67.5) return 'S';
+    return 'SE';
+}
+
+function drawJoystickGuide() {
+    if (!game.running) return;
+    const R = STICK_R, KR = STICK_KR;
+    const topRow = Math.floor(game.cameraY);
+    const bottomRow = topRow + VIEW_H - 1;
+    const now = performance.now();
+    const day = currentTheme === 'day';
+    const mono = day ? '#334155' : '#e2e8f0';
+
+    // ── frame time + corner dodge (gameplay only; frozen mid-grab) ──
+    const dtms = Math.min(50, now - (_tdKnob.t || now));
+    _tdKnob.t = now;
+    if (!game.testDrive && !_stickTouch.active) {
+        if (!stickDodge) {
+            // PLANTED (default): the stick lives at its chosen side and never
+            // moves — it's translucent enough to read the grid through.
+            _stickUI.tgt = stickSide === 'right' ? 1 : 0;
+            _stickUI.pend = null;
+        } else {
+            const pcells = getPlayerCells();
+            const nearL = pcells.some(c => c.x <= 3 && (c.y - game.cameraY) >= VIEW_H - 3.6);
+            const nearR = pcells.some(c => c.x >= VIEW_W - 4 && (c.y - game.cameraY) >= VIEW_H - 3.6);
+            // GENTLE dodge (opt-in): the player must OCCUPY the corner for
+            // 400ms before the stick commits, never twice within 1.5s.
+            const want = (_stickUI.tgt === 0 && nearL && !nearR) ? 1
+                       : (_stickUI.tgt === 1 && nearR && !nearL) ? 0 : null;
+            if (want === null) { _stickUI.pend = null; }
+            else if (_stickUI.pend !== want) { _stickUI.pend = want; _stickUI.pendT = now; }
+            else if (now - _stickUI.pendT > 400 && now - (_stickUI.lastSwitch || 0) > 1500) {
+                _stickUI.tgt = want; _stickUI.pend = null; _stickUI.lastSwitch = now;
+            }
+        }
+    }
+    _stickUI.dodge += (_stickUI.tgt - _stickUI.dodge) * (1 - Math.exp(-dtms / 450));
+    const sc = stickCentre();
+    const cx = sc.x, cy = sc.y;
+
+    // ── logic pass: legality + heat per direction ──
+    const info = {};
+    let hotDir = null, hot = 0;
+    for (const dir of DIRS_ORDER) {
+        const r = classifyFlip(dir);
+        const legal = r && r.outcome !== 'fatal' && r.outcome !== 'blocked' &&
+                      !r.footprint.some(c => c.y < topRow || c.y > bottomRow);
+        const echoAge = (game._tdEchoDir === dir) ? now - (game._tdEchoT || 0) : Infinity;
+        const held = (game.dragDir === dir && game.isTouching) ||
+                     (_stickTouch.active && _stickTouch.dir === dir);
+        const h = held ? 1 : Math.max(0, 1 - echoAge / 650);
+        info[dir] = { legal, h };
+        if (legal && h > hot) { hot = h; hotDir = dir; }
+    }
+    const denyAge = now - _stickDeny.t;
+    const denyLive = _stickDeny.dir && denyAge < 320;
+
+    // ── idle fade ──
+    if (_stickTouch.active || hot > 0 || denyLive) _stickUI.lastAct = now;
+    const fadeTgt = (now - _stickUI.lastAct > 1000) ? 0.5 : 1;
+    _stickUI.fade += (fadeTgt - _stickUI.fade) * (1 - Math.exp(-dtms / 250));
+    const FA = _stickUI.fade * stickOpacity;
+    const FAc = (0.75 + 0.25 * _stickUI.fade) * stickOpacity;   // chevrons resist
+                                    // the idle fade but honour the master opacity
+
+    ctx.save();
+
+    // ── base pad ──
+    ctx.globalAlpha = (day ? 0.85 : 0.72) * FA;
+    ctx.fillStyle = day ? '#e2e8f0' : '#0b1220';
+    ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = FA;
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = day ? 'rgba(71,85,105,0.3)' : 'rgba(148,163,184,0.22)';
+    ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = day ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.07)';
+    ctx.beginPath(); ctx.arc(cx, cy, R - 10, 0, Math.PI * 2); ctx.fill();
+
+    // ── rim chevrons ──
+    for (const dir of DIRS_ORDER) {
+        const v = TD_ROSE_VEC[dir];
+        const vlen = Math.hypot(v[0], v[1]);
+        const ang = Math.atan2(v[1] / vlen, v[0] / vlen);
+        const { legal, h } = info[dir];
+        const deny = denyLive && _stickDeny.dir === dir;
+        const active = (legal && h > 0) || deny;
+        const tipR = active ? R + 5 : R + 1;
+        const baseR = R - 6;
+        const spread = active ? 7 : 5;
+        const tx = cx + Math.cos(ang) * tipR,  ty = cy + Math.sin(ang) * tipR;
+        const b1x = cx + Math.cos(ang) * baseR - Math.sin(ang) * spread;
+        const b1y = cy + Math.sin(ang) * baseR + Math.cos(ang) * spread;
+        const b2x = cx + Math.cos(ang) * baseR + Math.sin(ang) * spread;
+        const b2y = cy + Math.sin(ang) * baseR - Math.cos(ang) * spread;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(tx, ty); ctx.lineTo(b1x, b1y); ctx.lineTo(b2x, b2y);
+        ctx.closePath();
+        if (deny) {
+            // REFUSAL FLASH — bright red, decaying with the bonk
+            ctx.globalAlpha = 0.95 * (1 - denyAge / 320);   // full strength: a refusal must be seen
+            ctx.fillStyle = '#ef4444';
+            ctx.shadowColor = '#ef4444';
+            ctx.shadowBlur = 12 * (1 - denyAge / 320);
+            ctx.fill();
+        } else if (!legal) {
+            // unavailable — HOLLOW: an empty outline reads as "nothing there"
+            // even at a glance, at any fade level
+            ctx.globalAlpha = 0.28 * FAc;
+            ctx.strokeStyle = day ? '#64748b' : '#94a3b8';
+            ctx.lineWidth = 1.4;
+            ctx.stroke();
+        } else if (h > 0) {
+            ctx.globalAlpha = 0.95 * FA;
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = mono;
+            ctx.shadowBlur = 10 * h;
+            ctx.fill();
+        } else {
+            // available — soft FILLED tick, always present
+            ctx.globalAlpha = (day ? 0.48 : 0.42) * FAc;
+            ctx.fillStyle = day ? '#64748b' : '#94a3b8';
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    // ── knob target: finger when grabbed, echo/held otherwise ──
+    let txo = 0, tyo = 0;
+    if (_stickTouch.active) {
+        txo = _stickTouch.ox; tyo = _stickTouch.oy;
+    } else if (hotDir) {
+        const v = TD_ROSE_VEC[hotDir];
+        const vlen = Math.hypot(v[0], v[1]);
+        const held = game.dragDir === hotDir && game.isTouching;
+        const throwDist = (R - KR - 3) * (held ? 1 : hot);
+        txo = (v[0] / vlen) * throwDist;
+        tyo = (v[1] / vlen) * throwDist;
+    }
+    const ease = 1 - Math.exp(-dtms / (_stickTouch.active ? 40 : 70));
+    _tdKnob.x += (txo - _tdKnob.x) * ease;
+    _tdKnob.y += (tyo - _tdKnob.y) * ease;
+    const kx = cx + _tdKnob.x, ky = cy + _tdKnob.y;
+    const glow = _stickTouch.active ? 1 : hot;
+
+    // ── motion trail — fast pushes smear a brief monochrome wake ──
+    const sp = dtms > 0 ? Math.hypot(kx - (_tdKnob.px !== undefined ? _tdKnob.px : kx),
+                                     ky - (_tdKnob.py !== undefined ? _tdKnob.py : ky)) / dtms : 0;
+    _tdKnob.px = kx; _tdKnob.py = ky;
+    if (!_tdKnob.hist) _tdKnob.hist = [];
+    _tdKnob.hist.push({ x: kx, y: ky, t: now, sp });
+    while (_tdKnob.hist.length && now - _tdKnob.hist[0].t > 200) _tdKnob.hist.shift();
+    for (const hpt of _tdKnob.hist) {
+        if (hpt.sp < 0.15) continue;
+        const age = now - hpt.t;
+        const a = Math.min(0.28, hpt.sp * 0.4) * (1 - age / 200) * FA;
+        if (a <= 0.01) continue;
+        ctx.save();
+        ctx.globalAlpha = a;
+        ctx.fillStyle = mono;
+        ctx.beginPath(); ctx.arc(hpt.x, hpt.y, KR * 0.85, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
+
+    // ── the knob, tilting like a real stick ──
+    const throwFrac = Math.min(1, Math.hypot(_tdKnob.x, _tdKnob.y) / (R - KR - 3));
+    const leanAng = Math.atan2(_tdKnob.y, _tdKnob.x);
+    ctx.save();
+    ctx.globalAlpha = FA;
+    ctx.translate(kx, ky);
+    if (throwFrac > 0.02) { ctx.rotate(leanAng); ctx.scale(1 - 0.16 * throwFrac, 1); }
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetY = 2;
+    const g = ctx.createRadialGradient(-KR * 0.35, -KR * 0.4, KR * 0.15, 0, 0, KR);
+    if (day) {
+        g.addColorStop(0, '#ffffff');
+        g.addColorStop(0.55, glow > 0 ? '#cbd5e1' : '#b6bec9');
+        g.addColorStop(1, '#475569');
+    } else {
+        g.addColorStop(0, '#f8fafc');
+        g.addColorStop(0.55, glow > 0 ? '#e2e8f0' : '#94a3b8');
+        g.addColorStop(1, glow > 0 ? '#64748b' : '#334155');
+    }
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowColor = 'transparent';
+    if (glow > 0) {
+        ctx.save();
+        ctx.shadowColor = mono;
+        ctx.shadowBlur = 20 * glow;
+        ctx.strokeStyle = mono;
+        ctx.globalAlpha = 0.9 * FA;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.stroke();
+        ctx.restore();
+    } else {
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
+        ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 0.3 * FA;
+    ctx.fillStyle = day ? '#1e293b' : '#0f172a';
+    for (const [gx, gy] of [[0,0],[-7,0],[7,0],[0,-7],[0,7]]) {
+        ctx.beginPath(); ctx.arc(gx, gy, 1.9, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.restore();
+}
+
+// Shape selector — swap the machine on the test stand. Repositions to the
+// spawn point only if the new shape can't stand where the old one is.
+function tdSetShape(type) {
+    if (!game.testDrive || !game.running || !SHAPES[type]) return;
+    if (isTransformAnimActive() || flip.active) return;
+    const cfg = SHAPES[type].cells.A ? 'A' : Object.keys(SHAPES[type].cells)[0];
+    const topRow = Math.floor(game.cameraY);
+    const bottomRow = topRow + VIEW_H - 1;
+    const fitsHere = (x, y) => canFit(x, y, type, cfg) &&
+        SHAPES[type].cells[cfg].every(([dx, dy]) => (y - dy) >= topRow && (y - dy) <= bottomRow);
+    let x = game.playerX, y = game.playerY;
+    if (!fitsHere(x, y)) { x = Math.floor(VIEW_W / 2); y = topRow + VIEW_H - 5; }
+    game.shapeType = type;
+    game.shapeConfig = cfg;
+    game.lastShapeConfig = cfg;
+    game.playerX = x;
+    game.playerY = y;
+    flip = { active: false };
+    transformAnim = null;
+    stopDrag();
+    tdSyncShapeBar();
+}
+function tdSyncShapeBar() {
+    document.querySelectorAll('#tdBar .td-shape').forEach(b =>
+        b.classList.toggle('active', b.dataset.shape === game.shapeType));
+}
+
 function drawFlipHints() {
-    if (!game.hintsOn || !game.running || game.paused || game.celebrating) return;
+    // Garage: the radar is the whole point — always on, ignoring the toggle.
+    if ((!game.hintsOn && !game.testDrive) || !game.running || game.paused || game.celebrating) return;
     if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return;
 
     // Player centre (screen space) — the sweep emanates from here.
@@ -8125,7 +8573,8 @@ function drawFlipHints() {
     if (held) {
         beamAngle = HINT_DIR_ANGLE[held];
     } else {
-        const t = (performance.now() % HINT_SWEEP_MS) / HINT_SWEEP_MS;
+        const sweepMs = game.testDrive ? HINT_SWEEP_MS * 2 : HINT_SWEEP_MS;   // garage: half speed, easier to study
+        const t = (performance.now() % sweepMs) / sweepMs;
         beamAngle = -Math.PI / 2 + t * Math.PI * 2;
     }
 
@@ -8167,6 +8616,70 @@ function applyHints(on) {
     if (typeof updateCoachBanner === 'function') updateCoachBanner();
 }
 function toggleHints() { applyHints(!game.hintsOn); }
+
+// ── JOYSTICK toggle ── module-level (survives the per-run game resets) and
+// persisted per device. The garage always shows the stick regardless.
+let stickOn = true;
+try { const _sv = localStorage.getItem('rotor_stick'); if (_sv !== null) stickOn = _sv === '1'; } catch (e) {}
+function applyStick(on) {
+    stickOn = !!on;
+    try { localStorage.setItem('rotor_stick', stickOn ? '1' : '0'); } catch (e) {}
+    const p = document.getElementById('stickPill');
+    if (p) {
+        p.classList.toggle('off', !stickOn);
+        p.textContent = stickOn ? '🕹 Joystick: On' : '🕹 Joystick: Off';
+    }
+}
+function toggleStick() { applyStick(!stickOn); }
+
+// Joystick position + auto-dodge prefs (per device). Default: bottom-RIGHT,
+// auto-dodge OFF — the stick is translucent enough to read the grid through,
+// so it stays planted unless the player opts back in.
+let stickSide = 'right';
+let stickDodge = false;
+try { const _ss = localStorage.getItem('rotor_stick_side'); if (_ss === 'left' || _ss === 'right') stickSide = _ss; } catch (e) {}
+try { stickDodge = localStorage.getItem('rotor_stick_dodge') === '1'; } catch (e) {}
+_stickUI.tgt = _stickUI.dodge = (stickSide === 'right' ? 1 : 0);   // start planted, no boot-up glide
+function settingStickSide(side) {
+    stickSide = side === 'left' ? 'left' : 'right';
+    try { localStorage.setItem('rotor_stick_side', stickSide); } catch (e) {}
+    _stickUI.tgt = stickSide === 'right' ? 1 : 0;   // glide over to the new home
+    syncStickSettingsUI();
+}
+// Joystick opacity (30–100%), applied on top of the idle fade.
+let stickOpacity = 1;
+try { const _so = parseFloat(localStorage.getItem('rotor_stick_opacity')); if (_so >= 0.3 && _so <= 1) stickOpacity = _so; } catch (e) {}
+function settingStickOpacity(v) {
+    stickOpacity = Math.min(1, Math.max(0.3, v));
+    try { localStorage.setItem('rotor_stick_opacity', String(stickOpacity)); } catch (e) {}
+}
+
+function settingStickDodge(on) {
+    stickDodge = !!on;
+    try { localStorage.setItem('rotor_stick_dodge', stickDodge ? '1' : '0'); } catch (e) {}
+    syncStickSettingsUI();
+}
+function syncStickSettingsUI() {
+    const l = document.getElementById('setStickLeft'), r = document.getElementById('setStickRight');
+    if (l) l.classList.toggle('active', stickSide === 'left');
+    if (r) r.classList.toggle('active', stickSide === 'right');
+    const d = document.getElementById('setStickDodge');
+    if (d) d.checked = stickDodge;
+    const c = document.getElementById('setStick');
+    if (c) c.checked = stickOn;
+    const o = document.getElementById('setStickOpacity');
+    if (o) o.value = Math.round(stickOpacity * 100);
+}
+
+// Settings → Practice: close the panel and start the garage. Works from the
+// welcome screen AND mid-run (startGame(true) resets cleanly either way).
+function startTestDriveFromSettings() {
+    closeSettings();
+    const panel = document.getElementById('pausePanel');
+    if (panel) panel.classList.add('hidden');
+    startGame(true);
+}
+applyStick(stickOn);   // sync the pill to the saved preference on load
 // [270726w] The guide is a GLANCE, not a permanent layer: turning it on
 // arms a 5-second timer that toggles it back off through the same path the
 // pill uses, so the switch is seen going off.
@@ -8207,6 +8720,7 @@ try { tipsSeen = new Set(JSON.parse(localStorage.getItem('rotor_tips_seen') || '
 let tipQueue = [], tipCurrent = null, tipTimer = 0, tipGap = 0;
 
 function showTip(key) {
+    if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no tips
     if (!game.tipsOn || !TIPS[key] || tipsSeen.has(key)) return;
     tipsSeen.add(key);
     try { localStorage.setItem('rotor_tips_seen', JSON.stringify([...tipsSeen])); } catch (e) {}
@@ -8453,19 +8967,20 @@ function draw() {
                 ctx.restore();
             } else if (item === 'warp') {
                 if (currentTheme === 'day') {
-                    // Day warp — amber (time has its own colour family: the
+                    // Day warp — sand (time has its own colour family: the
                     // sand of an hourglass; distinct from shifter teal)
-                    roundedSq(sx, sy, CELL_SIZE, '#f59e0b', '#b45309', 1);
+                    roundedSq(sx, sy, CELL_SIZE, '#fbbf24', '#d97706', 1);
                     drawHourglassIcon(sx, sy);
                     continue;
                 }
-                // Night warp — filled amber with outlined hourglass (time's own
-                // colour family, matching the welcome legend)
+                // Night warp — SAND, not mud: brighter hue at higher alpha so
+                // it stays luminous over the navy void (the old #f59e0b at
+                // 0.56 alpha muddied to olive).
                 ctx.save();
-                ctx.globalAlpha = 0.56;
-                ctx.shadowColor = '#f59e0b';
+                ctx.globalAlpha = 0.82;
+                ctx.shadowColor = '#fbbf24';
                 ctx.shadowBlur  = 8;
-                roundedSq(sx, sy, CELL_SIZE, '#f59e0b', null);
+                roundedSq(sx, sy, CELL_SIZE, '#fcd34d', null);
                 ctx.restore();
                 // White hourglass icon (user art) laid over the amber tile.
                 drawHourglassIcon(sx, sy);
@@ -8494,6 +9009,11 @@ function draw() {
                 // the white "+" on greens, "−" on reds, and the hourglass.
                 drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
             } else if (visited.has(key)) {
+                // TEST DRIVE: keep the parity tone faintly readable under the
+                // translucent night trail (day trail is opaque — skip).
+                if (game.testDrive && currentTheme !== 'day' && ((col + worldY) & 1) === 0) {
+                    roundedSq(sx, sy, CELL_SIZE, 'rgba(148, 163, 184, 0.10)', null);
+                }
                 if (currentTheme === 'day') {
                     // Day visited — peach floor with a darker-peach edge so
                     // the trail reads clearly against the white floor tiles.
@@ -8516,7 +9036,16 @@ function draw() {
                       }
                   } }
             } else if (!item) {
-                if (currentTheme === 'day') {
+                // TEST DRIVE checkerboard: (x+y) parity tinted from the very
+                // first tap. Diagonal/J anchors can never change tone by
+                // flipping alone — the board says so silently.
+                if (game.testDrive && ((col + worldY) & 1) === 0) {
+                    if (currentTheme === 'day') {
+                        roundedSq(sx, sy, CELL_SIZE, '#e6ebf2', '#b9c0c9', 1);
+                    } else {
+                        roundedSq(sx, sy, CELL_SIZE, 'rgba(148, 163, 184, 0.10)', palette().emptyOutline, 1.4);
+                    }
+                } else if (currentTheme === 'day') {
                     // Day empty — solid white floor tile with a light-grey
                     // edge. The navy background now shows only in the inset
                     // gaps between tiles, so the floor reads as white tiles on
@@ -8915,27 +9444,31 @@ function draw() {
     }
     ctx.restore();
     
-    // Danger gradient at BOTTOM — cold deep indigo (cold scheme)
-    const grad = ctx.createLinearGradient(0, LOGICAL_H - CELL * 2.5, 0, LOGICAL_H);
-    grad.addColorStop(0, 'rgba(56, 89, 120, 0)');
-    grad.addColorStop(1, 'rgba(40, 70, 110, 0.5)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, LOGICAL_H - CELL * 2.5, LOGICAL_W, CELL * 2.5);
-    
-    // Rising floor indicator — a glowing line creeping up
-    const floorPulse = 0.6 + 0.4 * Math.sin(Date.now() / 400 * Math.PI);
-    const floorY = LOGICAL_H - CELL * 0.5;
-    ctx.save();
-    ctx.globalAlpha = floorPulse * 0.8;
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.shadowColor = '#ef4444';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.moveTo(0, floorY);
-    ctx.lineTo(LOGICAL_W, floorY);
-    ctx.stroke();
-    ctx.restore();
+    // Danger gradient + rising-floor line: gameplay pressure signals — the
+    // garage has no pressure, so neither appears in test drive.
+    if (!game.testDrive) {
+        // Danger gradient at BOTTOM — cold deep indigo (cold scheme)
+        const grad = ctx.createLinearGradient(0, LOGICAL_H - CELL * 2.5, 0, LOGICAL_H);
+        grad.addColorStop(0, 'rgba(56, 89, 120, 0)');
+        grad.addColorStop(1, 'rgba(40, 70, 110, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, LOGICAL_H - CELL * 2.5, LOGICAL_W, CELL * 2.5);
+
+        // Rising floor indicator — a glowing line creeping up
+        const floorPulse = 0.6 + 0.4 * Math.sin(Date.now() / 400 * Math.PI);
+        const floorY = LOGICAL_H - CELL * 0.5;
+        ctx.save();
+        ctx.globalAlpha = floorPulse * 0.8;
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#ef4444';
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(0, floorY);
+        ctx.lineTo(LOGICAL_W, floorY);
+        ctx.stroke();
+        ctx.restore();
+    }
     
     // [270726s] DENIED FLASH — red glow over the shape, fading out over
     // ~300ms. Refusals never move the shape, so its resting cells are the
@@ -8963,6 +9496,7 @@ function draw() {
     // the boundary isn't hidden behind the live shape; the ghost is always at
     // the destination cells, never on the player's own, so nothing is occluded.
     drawMoveGhost();
+    if (game.testDrive || stickOn) drawJoystickGuide();
 
     // Burst rings
     drawBursts();
@@ -9533,7 +10067,7 @@ function loop(time) {
       // red within arm's reach — the way DOWN the chain is never more than
       // one flip away for the big shapes. Checked on a 2s cooldown; places
       // a red on a free cell orthogonally adjacent to the shape.
-      if ((game.shapeType === 'jshape' || game.shapeType === 'square') &&
+      if (!game.testDrive && (game.shapeType === 'jshape' || game.shapeType === 'square') &&
           game.running && !game.paused &&
           countVisibleHazards() < MAX_VISIBLE_REDS &&   // [270726zn] budget
           (!game._adjRedT || nowT - game._adjRedT > 2000)) {
@@ -9564,7 +10098,7 @@ function loop(time) {
           }
       }
       // OVERFLOW FACTORY (Momentum): surplus momentum stamps out new gears.
-      if (factoryQueue > 0 && (!game._nextForge || nowT >= game._nextForge)) {
+      if (!game.testDrive && factoryQueue > 0 && (!game._nextForge || nowT >= game._nextForge)) {
           game._nextForge = nowT + 900;
           if (spawnShifter()) factoryQueue--;
       }
@@ -9578,7 +10112,7 @@ function loop(time) {
       // TRAPPED = BAD LUCK, FAST (V9 decision): no rescue — the trap stays
       // a terrain-reading punishment — but no slow death either. Detected
       // trapped for 2s -> crack, crumble, life lost. Counted for playtests.
-      if (game.running && !game.paused && !game.celebrating && !game.inputLocked &&
+      if (!game.testDrive && game.running && !game.paused && !game.celebrating && !game.inputLocked &&
           !(typeof flip === 'object' && flip.active) &&
           (!game._trapNextCheck || nowT >= game._trapNextCheck)) {
           game._trapNextCheck = nowT + 500;
@@ -9626,7 +10160,7 @@ function loop(time) {
     // the run clock. The world scrolls at BULLET_SCROLL_MUL (0.27) during slo-mo,
     // so the countdown ticks at the same rate. Using bullet time is a clean win.
     const timerMul = bullet.active ? BULLET_SCROLL_MUL : 1;
-    game.speedTimer += (dt / 1000) * timerMul;
+    if (!game.testDrive) game.speedTimer += (dt / 1000) * timerMul;   // TEST DRIVE: the wheel never drains
 
     // [270726za] TIME-PASSING REMINDERS — every 30s of level time the clock
     // digits blip (secondary); on the minute the blip is joined by one short
@@ -9731,13 +10265,15 @@ function loop(time) {
         game.setBreather -= dt / 1000;
         scrollMul = 0.35;   // ease the pressure for a beat after banking a set
     }
-    const scroll = game.speed * dt * 0.00014 * scrollMul;
+    const scroll = game.testDrive ? 0 : game.speed * dt * 0.00014 * scrollMul;   // TEST DRIVE: the world stands still
     game.cameraY -= scroll;
     
     applyDrag(dt);
-    ensureWorldGenerated(game.cameraY);
-    cullScrolledSlots();
-    expireShifters();
+    if (!game.testDrive) {
+        ensureWorldGenerated(game.cameraY);
+        cullScrolledSlots();
+        expireShifters();
+    }
     magneticFuseCheck();   // [270726zm] greens are magnetic — see below
     
     // (Distance drip retired — fresh squares pay movement honestly now.)
@@ -9797,7 +10333,7 @@ function loop(time) {
     
     // Danger warning — bottom edge
     const dangerThreshold = VIEW_H - 2.5;
-    if (playerScreenY > dangerThreshold) {
+    if (!game.testDrive && playerScreenY > dangerThreshold) {
         const dangerLevel = Math.min(1, (playerScreenY - dangerThreshold) / 2.5);
         const beepInterval = 400 - 250 * dangerLevel;
         if (!game.lastDangerSound || Date.now() - game.lastDangerSound > beepInterval) {
@@ -9836,14 +10372,14 @@ function toggleDetails() {
     btn.textContent = hidden ? 'Details ▾' : 'Details ▴';
 }
 
-function startGame() {
+function startGame(testDrive = false) {
     initAudio();
     startMusic();
 
     // Sync the hint overlay to the welcome-screen checkbox (default on).
     applyHints(document.getElementById('hintsCheck') ? document.getElementById('hintsCheck').checked : true);
     // Kick off the early-run coach tips (auto-retires after a couple of runs).
-    startCoachTips();
+    if (!testDrive) startCoachTips();
     game.flipCount = 0; game.diagCount = 0;
     game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false;
     displayScore = 0; scoreRecordShown = false;
@@ -9874,7 +10410,7 @@ function startGame() {
     // tapping PLAY and the round number appearing. The overlay sits in
     // the (currently hidden) game-container — applying the class now
     // means it's already at peak by the time the welcome screen hides.
-    showRoundOverlay(1, true);
+    if (!testDrive) showRoundOverlay(1, true);
     
     document.getElementById('startScreen').classList.add('hidden');
     { const dv = document.getElementById('demoVideo'); if (dv) dv.pause(); }   // rest the clip during play
@@ -9960,6 +10496,14 @@ function startGame() {
         _lastMoveDir: null
     };
     
+    // ── TEST DRIVE (the garage) ── no clock, no hazards, no spawns: a fixed
+    // open floor with a parity checkerboard, for learning the movement system.
+    // Exit anytime via the home button (or Escape).
+    game.testDrive = testDrive;
+    document.body.classList.toggle('test-drive', testDrive);
+    { const tb = document.getElementById('tdBar'); if (tb) tb.classList.toggle('hidden', !testDrive); }
+    if (testDrive && typeof tdSyncShapeBar === 'function') tdSyncShapeBar();
+
     resetSetTracker();
     bullet.active = false; bullet.timer = 0; bullet.charge = 0; bullet.stock = 0;
     shifterProgress = 0; slotProgress = 0; shifterMeta = {}; pendingWalls = new Set();
@@ -9969,18 +10513,18 @@ function startGame() {
     transformAnim = null;
     nonFusionPulses = [];
     resetGenState();
-    generateChunk(0, -100);
+    if (!testDrive) generateChunk(0, -100);
     // Seed multiple slots at the top of the visible viewport so the player
     // sees several SET targets the moment the round overlay clears — was
     // a single slot which felt slow on PLAY. seedSlotsAtTop() spawns up
     // to mission-target-count slots (capped at 3 for visual sanity),
     // distributed across the top four rows so they don't stack.
-    seedSlotsAtTop();
+    if (!testDrive) seedSlotsAtTop();
     captureSnapshot('START');
     
     // CLAIM EVERY SLOT hint surfaces after the instant overlay finishes
     // (1400ms total) so it lands on the visible canvas, not on black.
-    if (currentMission()) {
+    if (currentMission() && !testDrive) {
         setTimeout(() => {
             if (!game.running) return;
             addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
@@ -10237,6 +10781,13 @@ document.addEventListener('keydown', e => {
         return;
     }
     
+    // TEST DRIVE: Escape exits to the welcome screen
+    if (game.testDrive && e.key === 'Escape') {
+        exitToWelcome();
+        e.preventDefault();
+        return;
+    }
+
     // Spacebar toggles pause during play
     if (e.key === ' ') {
         togglePause();
@@ -10254,6 +10805,8 @@ document.addEventListener('keydown', e => {
     // No moves while paused
     if (game.paused) { e.preventDefault(); return; }
     
+    if (e.key.toLowerCase() === 'j') { toggleStick(); e.preventDefault(); return; }
+
     const map = { q:'NW', w:'N', e:'NE', a:'W', d:'E', z:'SW', x:'S', c:'SE' };
     const dir = map[e.key.toLowerCase()];
     if (dir) {
@@ -10270,6 +10823,9 @@ let touchX = 0, touchY = 0;
 // direction must be held for DIRECTION_SETTLE_MS before it commits.
 let pendingTouchDir = null;
 let pendingTouchSince = 0;
+// TEST DRIVE tap-to-fly: a stationary tap (start→end without real movement)
+// hit-tests the ghost landings instead of being ignored.
+let tdTapX = 0, tdTapY = 0, tdTapOk = false;
 const DIRECTION_SETTLE_MS = 220;
 canvas.addEventListener('touchstart', e => {
     // iOS Safari requires the audio context to be created/resumed from a
@@ -10281,18 +10837,66 @@ canvas.addEventListener('touchstart', e => {
         e.preventDefault();
         return;
     }
+    // STICK GRAB — a touch landing on the joystick drives the knob directly;
+    // it is never a board swipe and never a ghost-tap.
+    if (game.running && (game.testDrive || stickOn)) {
+        const pt = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
+        const sc = stickCentre();
+        if (Math.hypot(pt.x - sc.x, pt.y - sc.y) <= STICK_R + 12) {
+            _stickTouch.active = true;
+            _stickTouch.dir = null; _stickTouch.pendDir = null;
+            _stickTouch.ox = 0; _stickTouch.oy = 0;
+            game.isTouching = true;
+            tdTapOk = false;
+            e.preventDefault();
+            return;
+        }
+    }
     touchX = e.touches[0].clientX;
     touchY = e.touches[0].clientY;
     game.isTouching = true;
     pendingTouchDir = null;
+    tdTapX = touchX; tdTapY = touchY; tdTapOk = true;
     e.preventDefault();
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
     if (!game.running || game.paused) return;
     
+    // STICK DRIVE — knob follows the finger; 8-way commits mirror the swipe
+    // rules (instant from neutral, 120ms settle on direction changes, release
+    // to the deadzone stops the auto-repeat).
+    if (_stickTouch.active) {
+        const pt = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
+        const sc = stickCentre();
+        const maxThrow = STICK_R - STICK_KR - 3;
+        let ox = pt.x - sc.x, oy = pt.y - sc.y;
+        const m = Math.hypot(ox, oy);
+        if (m > maxThrow) { ox *= maxThrow / m; oy *= maxThrow / m; }
+        _stickTouch.ox = ox; _stickTouch.oy = oy;
+        const sDir = stickDirFromOffset(pt.x - sc.x, pt.y - sc.y);
+        const nowT = performance.now();
+        if (!sDir) {
+            _stickTouch.dir = null; _stickTouch.pendDir = null;
+            stopDrag();
+        } else if (_stickTouch.dir === null) {
+            _stickTouch.dir = sDir;
+            move(sDir);
+        } else if (sDir === _stickTouch.dir) {
+            _stickTouch.pendDir = null;
+        } else if (_stickTouch.pendDir !== sDir) {
+            _stickTouch.pendDir = sDir; _stickTouch.pendT = nowT;
+        } else if (nowT - _stickTouch.pendT >= 120) {
+            _stickTouch.dir = sDir; _stickTouch.pendDir = null;
+            move(sDir);
+        }
+        e.preventDefault();
+        return;
+    }
+
     const currentX = e.touches[0].clientX;
     const currentY = e.touches[0].clientY;
+    if (tdTapOk && (Math.abs(currentX - tdTapX) > 12 || Math.abs(currentY - tdTapY) > 12)) tdTapOk = false;
     const dx = currentX - touchX;
     const dy = currentY - touchY;
     
@@ -10344,7 +10948,31 @@ canvas.addEventListener('touchmove', e => {
 
 canvas.addEventListener('touchend', e => {
     if (!game.running) { startGame(); return; }
-    
+
+    // STICK RELEASE — knob springs home, auto-repeat stops.
+    if (_stickTouch.active) {
+        _stickTouch.active = false;
+        _stickTouch.dir = null; _stickTouch.pendDir = null;
+        _stickTouch.ox = 0; _stickTouch.oy = 0;
+        game.isTouching = false;
+        stopDrag();
+        e.preventDefault();
+        return;
+    }
+
+    // TEST DRIVE: a stationary tap on a ghost flies there (real flip).
+    if (game.testDrive && tdTapOk) {
+        tdTapOk = false;
+        if (tdTapAt(tdTapX, tdTapY)) {
+            game.isTouching = false;
+            pendingTouchDir = null;
+            stopDrag();
+            e.preventDefault();
+            return;
+        }
+    }
+    tdTapOk = false;
+
     // Stop drag when finger lifts
     game.isTouching = false;
     pendingTouchDir = null;
@@ -10354,10 +10982,21 @@ canvas.addEventListener('touchend', e => {
 }, { passive: false });
 
 canvas.addEventListener('touchcancel', e => {
+    _stickTouch.active = false;
+    _stickTouch.dir = null; _stickTouch.pendDir = null;
+    _stickTouch.ox = 0; _stickTouch.oy = 0;
     game.isTouching = false;
     pendingTouchDir = null;
+    tdTapOk = false;
     stopDrag();
 }, { passive: false });
+
+// Desktop: a mouse click on a ghost flies there too (touch taps suppress the
+// synthetic click via preventDefault in touchend, so no double-fire).
+canvas.addEventListener('click', e => {
+    if (!game.testDrive) return;
+    tdTapAt(e.clientX, e.clientY);
+});
 
 // ============ FULLSCREEN ============
 function toggleFullscreen() {

@@ -156,14 +156,18 @@ body.theme-day .level-card-extra { color: #0369a1; }
     animation: roundOverlayBgInstant 1400ms ease-out forwards;
 }
 @keyframes roundOverlayBg {
+    /* [290726b] Hold at FULL opacity. At 0.94 the glowing gold COLLECT THE
+       SET label and the HUD behind it read straight through the level
+       transition — that 6% was the "text coming through at the side". */
     0%   { background: rgba(0,0,0,0); }
-    20%  { background: rgba(0,0,0,0.94); }
-    80%  { background: rgba(0,0,0,0.94); }
+    20%  { background: rgba(0,0,0,1); }
+    80%  { background: rgba(0,0,0,1); }
     100% { background: rgba(0,0,0,0); }
 }
 @keyframes roundOverlayBgInstant {
-    0%   { background: rgba(0,0,0,0.94); }
-    70%  { background: rgba(0,0,0,0.94); }
+    /* [290726b] Same full-opacity hold as roundOverlayBg. */
+    0%   { background: rgba(0,0,0,1); }
+    70%  { background: rgba(0,0,0,1); }
     100% { background: rgba(0,0,0,0); }
 }
 .round-overlay-bonus {
@@ -432,8 +436,13 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
 }
 .set-band-label { align-items: flex-start; }
 @keyframes setThrob {
-    0%, 100% { opacity: 0.72; transform: scale(1); }
-    50%      { opacity: 1;    transform: scale(1.036); }   /* [270726zo] −20% */
+    /* [290726c] Throb is now OPACITY ONLY. The animated transform promoted
+       this row to its own compositing layer, which on some browsers paints
+       above the opaque welcome/game-over overlays regardless of z-index --
+       that is why COLLECT THE SET ghosted through the welcome page. The
+       breathing still reads; it just no longer scales. */
+    0%, 100% { opacity: 0.72; }
+    50%      { opacity: 1; }
 }
 body.theme-day .set-band-label { color: #b45309; text-shadow: none; }
 /* [270726u] SET row: six fixed 2×2 sockets on one line, scaling to fit.
@@ -1006,6 +1015,125 @@ body.theme-day .objective-text {
    axis so the title literally performs the rotation it describes. */
 .flip-r { display: inline-block; transform: scaleX(-1); }
 
+/* ── [290726o] THE WORDMARK RITUAL (welcome) ────────────────────────────────
+   Five real letters, five object colours, animated as one 70s palindrome:
+   ROTOЯ → middles fold, the R's meet nose-to-nose → the pair shows both
+   faces in colour → a flip turns everything steel through the edge → the
+   steel pair shows both faces → expands to ЯOTOR in metal → folds → the
+   return flip restores colour → ROTOЯ. All change happens mid-flip; the
+   mirrored letter is a genuine rotateY(180), never a font glyph.
+   Colours ride CSS variables so the day theme can re-pitch the steel. */
+:root { --wm-steel: #b8c9d9; }
+body.theme-day { --wm-steel: #8fa3b8; }
+.wm-ritual {
+    display: inline-flex; align-items: flex-start;
+    letter-spacing: normal !important;
+    perspective: 620px;
+}
+.wm-ritual .wl {
+    display: inline-flex; justify-content: center;
+    width: 1.15em; margin-right: 0.55em; overflow: visible;
+    backface-visibility: visible;      /* past 90° the glyph mirrors itself */
+    text-shadow: 0 0 0.22em currentColor;
+    will-change: transform, width, color;
+}
+.wm-ritual .wl:last-child { margin-right: 0; }
+.wm-ritual .w0 { color: #22d3ee; animation: wmR0 70s linear infinite; }
+.wm-ritual .w1 { color: #a3e635; animation: wmM1 70s linear infinite; }
+.wm-ritual .w2 { color: var(--wm-steel); animation: wmM2 70s linear infinite; }
+.wm-ritual .w3 { color: #e8b96a; animation: wmM3 70s linear infinite; }
+.wm-ritual .w4 { color: #ef4444; animation: wmR4 70s linear infinite; }
+/* [290726s] THE GALLERY CYCLE (70s). Every distinct display now holds for a
+   full 10 seconds: the colour word, both colour monograms (nose-to-nose and
+   back-to-back), both steel monograms, and the steel word — six exhibits,
+   each earned by one flip or fold. The return leg (steel word → colour word)
+   passes through its pair states briefly rather than holding, since both
+   were already shown. Timeline in seconds → %% of 70:
+     0–10 ROTOЯ colour · fold · 10.8–20.8 pair IN colour · flip ·
+     21.6–31.6 pair OUT colour · steel flip · 32.4–42.4 pair IN steel ·
+     flip · 43.2–53.2 pair OUT steel · expand · 54–64 ЯOTOR steel ·
+     fold · colour flip · expand · loop. */
+@keyframes wmM1 {
+    0%,0.71% { transform: rotateY(0); width: 1.15em; margin-right: 0.55em; color: #a3e635; }
+    2.14%    { transform: rotateY(360deg); }
+    14.29%   { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; }
+    15.43%,76% { transform: rotateY(450deg); width: 0; margin-right: 0; }
+    45.14%   { color: #a3e635; }
+    46.29%,94.71% { color: var(--wm-steel); }
+    77.14%,91.43% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
+    92.57%,98% { transform: rotateY(630deg); width: 0; margin-right: 0; }
+    95.86%,100% { color: #a3e635; }
+    99.14%,100% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; }
+}
+@keyframes wmM2 {
+    0%,0.71% { transform: rotateY(0); width: 1.15em; margin-right: 0.55em; }
+    2.14%    { transform: rotateY(360deg); }
+    14.29%   { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; }
+    15.43%,76% { transform: rotateY(450deg); width: 0; margin-right: 0; }
+    77.14%,91.43% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
+    92.57%,98% { transform: rotateY(630deg); width: 0; margin-right: 0; }
+    99.14%,100% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; }
+}
+@keyframes wmM3 {
+    0%,0.71% { transform: rotateY(0); width: 1.15em; margin-right: 0.55em; color: #e8b96a; }
+    2.14%    { transform: rotateY(360deg); }
+    14.29%   { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; }
+    15.43%,76% { transform: rotateY(450deg); width: 0; margin-right: 0; }
+    45.14%   { color: #e8b96a; }
+    46.29%,94.71% { color: var(--wm-steel); }
+    77.14%,91.43% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
+    92.57%,98% { transform: rotateY(630deg); width: 0; margin-right: 0; }
+    95.86%,100% { color: #e8b96a; }
+    99.14%,100% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; }
+}
+@keyframes wmR0 {
+    0%,0.71% { transform: rotateY(0); margin-right: 0.55em; color: #22d3ee; }
+    2.14%    { transform: rotateY(360deg); }
+    14.29%   { transform: rotateY(360deg); margin-right: 0.55em; }
+    15.43%   { margin-right: -0.43em; }
+    29.71%   { transform: rotateY(360deg); }
+    30.86%   { transform: rotateY(540deg); }
+    45.14%   { transform: rotateY(540deg); color: #22d3ee; }
+    46.29%   { transform: rotateY(720deg); color: var(--wm-steel); }
+    60.57%   { transform: rotateY(720deg); }
+    61.71%,76% { transform: rotateY(900deg); margin-right: -0.43em; }
+    77.14%,91.43% { margin-right: 0.55em; }
+    92.57%,94.71% { margin-right: -0.43em; }
+    94.71%   { transform: rotateY(900deg); color: var(--wm-steel); }
+    95.86%   { transform: rotateY(1080deg); color: #22d3ee; }
+    98%      { margin-right: -0.43em; }
+    99.14%,100% { transform: rotateY(1080deg); margin-right: 0.55em; color: #22d3ee; }
+}
+@keyframes wmR4 {
+    0%,0.71% { transform: rotateY(180deg); color: #ef4444; }
+    2.14%    { transform: rotateY(540deg); }
+    29.71%   { transform: rotateY(540deg); }
+    30.86%   { transform: rotateY(720deg); }
+    45.14%   { transform: rotateY(720deg); color: #ef4444; }
+    46.29%   { transform: rotateY(900deg); color: var(--wm-steel); }
+    60.57%   { transform: rotateY(900deg); }
+    61.71%   { transform: rotateY(1080deg); }
+    94.71%   { transform: rotateY(1080deg); color: var(--wm-steel); }
+    95.86%,100% { transform: rotateY(1260deg); color: #ef4444; }
+}
+/* ── [290726o] MINI WORDMARK (game screen) ──────────────────────────────────
+   Still during play — anything looping above a live puzzle steals attention.
+   The Я performs ONE flip when a level arrives (class added by
+   showRoundOverlay), so the mark celebrates with you and then sits still. */
+.wm-mini .ml { display: inline-block; }
+.wm-mini .c0 { color: #22d3ee; }
+.wm-mini .c1 { color: #a3e635; }
+.wm-mini .c2 { color: var(--wm-steel); }
+.wm-mini .c3 { color: #e8b96a; }
+.wm-mini .c4 { color: #ef4444; transform: rotateY(180deg); }
+.wm-mini { perspective: 300px; }
+.wm-mini .c4.lvl-spin { animation: wmMiniSpin 0.9s cubic-bezier(0.4, 0, 0.2, 1) 1; }
+@keyframes wmMiniSpin { from { transform: rotateY(180deg); } to { transform: rotateY(540deg); } }
+@media (prefers-reduced-motion: reduce) {
+    .wm-ritual .wl { animation: none !important; }
+    .wm-mini .c4.lvl-spin { animation: none !important; }
+}
+
 /* ============ DAY MODE ============
    White canvas + floor cells outlined in gray. Peach visited trails,
    pale slate-blue player, lime greens, dark navy walls. Hazards
@@ -1436,6 +1564,19 @@ body.theme-day .howto-caption { color: #475569; }
 }
 .cog-btn:hover { background: rgba(30,41,59,0.9); transform: rotate(45deg); }
 .cog-btn svg { width: 22px; height: 22px; display: block; }
+/* [290726p] Welcome-page day/night toggle — one tap, no settings trip. Sits
+   top-LEFT, mirroring the cog top-right. Shows the theme you would SWITCH TO
+   (sun while dark, moon while light) — the convention phones use. */
+.theme-btn {
+    position: absolute; top: 12px; left: 12px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(15,23,42,0.6); border: 1px solid rgba(56,189,248,0.35);
+    color: #fde68a; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 30; font-size: 18px; line-height: 1;
+    transition: transform .25s ease, background .2s;
+}
+.theme-btn:hover { background: rgba(30,41,59,0.9); transform: rotate(20deg); }
+body.theme-day .theme-btn { background: rgba(255,255,255,0.75); border-color: rgba(29,42,58,0.2); color: #475569; }
 body.theme-day .cog-btn { background: rgba(255,255,255,0.75); border-color: rgba(29,42,58,0.2); color: #0369a1; }
 
 .settings-overlay {
@@ -1485,17 +1626,96 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
     background: #22d3ee; color: #06222b; font-weight: 700; font-size: 14px; cursor: pointer;
 }
 .settings-done:hover { background: #38dcf0; }
+
+/* ── [290726d] LEVEL TALLY ────────────────────────────────────────────────
+   The between-levels scorecard. Sits over the game container (above the
+   round overlay), counts the level's earnings in one line at a time, then
+   totals them. Tap anywhere to skip straight to the total. */
+.level-tally {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: rgba(4, 8, 18, 0.97);
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    opacity: 0; pointer-events: none; transition: opacity 260ms ease;
+}
+.level-tally.show { opacity: 1; pointer-events: auto; }
+.level-tally.hidden { display: none; }
+body.theme-day .level-tally { background: rgba(248, 250, 252, 0.97); }
+.tally-head {
+    font-size: 13px; letter-spacing: 4px; color: #64748b;
+    text-transform: uppercase; margin-bottom: 4px;
+}
+.tally-title {
+    font-size: 26px; font-weight: 800; letter-spacing: 2px;
+    color: #7dd3fc; margin-bottom: 22px; text-align: center;
+    text-shadow: 0 0 26px rgba(125, 211, 252, 0.45);
+}
+body.theme-day .tally-title { color: #0369a1; text-shadow: none; }
+.tally-rows { width: min(300px, 82%); }
+.tally-row {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; padding: 7px 0; font-size: 14px; color: #cbd5e1;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 220ms ease, transform 220ms ease;
+}
+.tally-row.in { opacity: 1; transform: translateY(0); }
+.tally-row + .tally-row { border-top: 1px solid rgba(148,163,184,0.12); }
+body.theme-day .tally-row { color: #334155; }
+.tally-icon {
+    width: 20px; height: 20px; flex: none; margin-right: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.tally-icon svg { display: block; width: 20px; height: 20px; }
+.tally-left { display: flex; align-items: center; min-width: 0; flex: 1; }
+.tally-label { letter-spacing: 1px; text-transform: uppercase; font-size: 12px; color: #94a3b8; }
+body.theme-day .tally-label { color: #475569; }
+.tally-count { font-variant-numeric: tabular-nums; color: #e2e8f0; font-weight: 600; }
+body.theme-day .tally-count { color: #1e293b; }
+.tally-pts {
+    font-variant-numeric: tabular-nums; font-weight: 800;
+    color: #ffd60a; min-width: 62px; text-align: right;
+}
+body.theme-day .tally-pts { color: #b45309; }
+.tally-row.gold .tally-label, .tally-row.gold .tally-count { color: #ffd60a; }
+.tally-total {
+    margin-top: 18px; width: min(300px, 82%);
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-top: 2px solid rgba(255, 214, 10, 0.45); padding-top: 12px;
+    opacity: 0; transform: scale(0.9);
+    transition: opacity 260ms ease, transform 320ms cubic-bezier(0.34,1.56,0.64,1);
+}
+.tally-total.in { opacity: 1; transform: scale(1); }
+.tally-total-label { font-size: 12px; letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; }
+.tally-total-value {
+    font-size: 34px; font-weight: 800; letter-spacing: 1px;
+    font-variant-numeric: tabular-nums; color: #ffd60a;
+    text-shadow: 0 0 22px rgba(255, 214, 10, 0.5);
+}
+body.theme-day .tally-total-value { color: #b45309; text-shadow: none; }
+.tally-continue {
+    margin-top: 22px; padding: 12px 30px;
+    font-size: 14px; font-weight: 700; letter-spacing: 3px;
+    border: none; border-radius: 10px; cursor: pointer;
+    background: #22d3ee; color: #06222b;
+    opacity: 0; pointer-events: none; transform: translateY(6px);
+    transition: opacity 260ms ease, transform 260ms ease;
+}
+.tally-continue.in { opacity: 1; pointer-events: auto; transform: translateY(0); }
+body.theme-day .tally-continue { background: #0ea5e9; color: #ffffff; }
 </style>
 </head>
 <body>
 
 <!-- Start Screen -->
 <div class="screen-overlay" id="startScreen">
+    <button class="theme-btn" id="welcomeThemeBtn" onclick="toggleThemeFromWelcome()" title="Switch theme" aria-label="Switch between day and night theme">☀</button>
     <button class="cog-btn" onclick="openSettings()" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div class="welcome-box">
         <div class="welcome-row full">
             <div class="title-block">
-                <div class="screen-title"><span class="fitline">ROTO<span class="flip-r">R</span></span></div>
+                <div class="screen-title"><span class="fitline wm-ritual" aria-label="ROTOR"><span class="wl w0">R</span><span class="wl w1">O</span><span class="wl w2">T</span><span class="wl w3">O</span><span class="wl w4">R</span></span></div>
                 <p class="objective-verbs"><span class="fitline">FLIP · NAVIGATE · EVOLVE</span></p>
             </div>
         </div>
@@ -1560,7 +1780,7 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
 </div>
 
 <!-- Main Game -->
-<h1>ROTO<span class="flip-r">R</span></h1>
+<h1 class="wm-mini" aria-label="ROTOR"><span class="ml c0">R</span><span class="ml c1">O</span><span class="ml c2">T</span><span class="ml c3">O</span><span class="ml c4">R</span></h1>
 
 <div class="game-container">
     <div class="hud set-only-hud">
@@ -1643,6 +1863,19 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
                 <div class="round-overlay-set" id="roundOverlaySet"></div>
             </div>
         </div>
+    </div>
+    <!-- [290726d] Between-levels scorecard. Populated and driven by
+         showLevelTally(); sits above the round overlay inside the game
+         container so it covers the board but not the page. -->
+    <div class="level-tally hidden" id="levelTally" onclick="skipLevelTally()">
+        <div class="tally-head">Level Complete</div>
+        <div class="tally-title" id="tallyTitle">LEVEL 1</div>
+        <div class="tally-rows" id="tallyRows"></div>
+        <div class="tally-total" id="tallyTotal">
+            <span class="tally-total-label">Level total</span>
+            <span class="tally-total-value" id="tallyTotalValue">0</span>
+        </div>
+        <button class="tally-continue" id="tallyContinue" onclick="event.stopPropagation(); finishLevelTally();">▶ CONTINUE</button>
     </div>
     <div class="pause-panel hidden" id="pausePanel">
         <span class="scrub-counter" id="reviewCounter">Move 0 / 0</span>
@@ -1925,7 +2158,172 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
 // green floor mirroring TRIM SUPPLY, replacing the legacy "skip half the
 // green rolls" nerf that stacked with MAX_VISIBLE_GREENS and starved
 // evolution.
-const BUILD_VERSION = '290726-1040 ROTOЯ';
+// 290726-1416: SLOT DROUGHT FIX — slotProgress now only resets when
+// trySpawnSlot() actually places a slot. Previously the cadence counter
+// reset on every attempt, so a blocked placement (heavy wall cover, the
+// inter-slot buffer rules, 4 tries x 7 candidate rows exhausted) cost a
+// FULL cadence — up to 20 landings on later levels — before the game
+// would try again. This is why boards could show zero slots for minutes
+// (see the level 3/4 screenshots). On failure the counter now stays at
+// threshold and retries on the next landing.
+// Also: round-transition overlay holds at FULL black (was 0.94, which let
+// the glowing gold COLLECT THE SET label read through during level
+// changes), and the set-band throb is opacity-only (the animated
+// transform promoted that row to its own compositing layer, which paints
+// above the opaque welcome overlay regardless of z-index — the cause of
+// COLLECT THE SET ghosting onto the welcome page).
+// 290726-1455: BETWEEN-LEVELS TALLY. Level completion now runs a scorecard
+// before the level rolls over: coverage grade, greens banked, rows, claims,
+// best combo, trims, lives lost, set bonus, then a level total. Rows land one
+// at a time; tap once to fast-forward to the total, again to continue; it
+// auto-continues if left alone. GREENS NOW BANK: stomping a green still pays
+// its +5 immediately and additionally counts toward a 5 x level per-green
+// bonus paid on the tally, so a green landing that changes nothing outwardly
+// is still worth taking. New per-level counters (roundGreens, roundRows,
+// roundBestCombo, _levelStartScore) reset alongside the existing round
+// trackers. The advance/round-overlay chain is unchanged, just deferred
+// behind the tally callback.
+// (Stamp verified against GitHub's HTTP Date header, converted to UK time
+// with BST applied — not typed from memory.)
+// 290726-1444: EDGE PROXIMITY BORDER. The bottom-only danger gradient and the
+// pulsing red floor line are gone. All four boundaries now report distance in
+// the same language: nothing at 3+ cells, green at 2, amber at 1, red on the
+// last row/column, drawn as a border OUTSIDE the 10x10 so the playfield is
+// never tinted. On the last cell a hard hairline marks the boundary itself.
+// The audio ramp follows the NEAREST edge rather than only the floor, beeping
+// faster as the gap closes; the top border keeps its octave-up voice so the
+// ear can tell ceiling from floor. Groundwork for making mistakes cost a life
+// — the boundary has to be visible before it can be lethal.
+// 290726-1541: EDGE WARNING RETUNED + TALLY ICONS AND COUNT-UP.
+// Edges: warning now starts at TWO cells (gentle, slow tick), turns insistent
+// at one cell and on the edge itself. Amber is the warning colour throughout
+// and RED is reserved for actually being out of bounds, so red never cries
+// wolf. All tiers throb gently (520-1400ms periods) rather than blink.
+// Death line: falling now triggers at half a square over, not a full one, so
+// the last row can be ridden right up to the tipping point.
+// Tally: every line carries a board-language icon (covered floor, green,
+// hourglass, rows, slot, combo, trim, lives, set), a POINTS IN PLAY line is
+// added so play and bonuses add up visibly, and each row's points spin up
+// from zero while the level total climbs by the same amount in step. Tap once
+// to fast-forward, again to continue.
+// 290726-1551: IMPACT COSTS CUBES. The void kills you; the furniture wears you
+// down. Bumping a wall, a side, or the ceiling now costs the cubes that made
+// contact — one per touching cube, two if two land together (IMPACT x2). A
+// SINGLE cube has nothing to give and keeps the old answer: recoil, denial
+// wall. Survivors devolve IN PLACE and deliberately do NOT advance into the
+// blocked square — if a sacrificed cube bought passage, walls would stop being
+// barriers. If nothing would survive it is a life, not a shape of nothing; if
+// survivors end up disconnected (a J losing its middle cube) the largest
+// connected group is kept and the orphans go with the casualties. New CUBES
+// LOST line on the level tally.
+// 290726-1554: CONNECTIVITY FIX. The impact-devolve fallback was treating cubes
+// as connected only orthogonally, which is the wrong definition here — the
+// diagonal pair is a first-class shape, so corner contact joins. A J-shape
+// losing its middle cube leaves a legal DIAGONAL, not two orphans. Now 8-way.
+// (Verified: every single-cube subtraction from every shape in the vocabulary
+// yields a legal shape, so the orphan-dropping path should never fire.)
+// 290726-1557: ADJACENCY AUDIT. Swept every neighbour loop in the file against
+// the rule that corner contact counts (the diagonal pair is a real shape).
+// Fixed: the green "considered, didn't fit" pulse used a 4-way ring while the
+// fusion test it reports on (findFusionAt) is 8-way, so diagonally adjacent
+// greens were examined and rejected in silence. Verified already correct:
+// findFusionAt, the spawn access flood fill, the tricky-obstacle ring, and
+// connectedGroups. Left alone deliberately: the slot buffer (orthogonal for
+// all slots, diagonal additionally for same-type — documented intent).
+// 290726-1558: ADJACENCY AUDIT, PART 2 — the three scoring/supply sites brought
+// in line with corner-counts-too. inPeril() now fires on diagonal walls and
+// reds (you can flip diagonally onto them, so they are real danger).
+// slotClaimReward counts diagonal obstacles at HALF a unit — straight 8-way
+// would have doubled every squeeze bonus in the game; a fully boxed cell now
+// scores 6 units instead of 4. The adjacent-red trim guarantee will now plant
+// on the diagonal as well as the face.
+// 290726-1648: SHIFTERS ARE METAL. The deep teal sat in the busiest part of the
+// palette — it fought the player's cyan and the square slot's #12cfb2, and
+// every hue on the wheel is already claimed. Shifters now separate by
+// MATERIAL: steel at night (#b8c9d9), pewter by day (#8fa3b8) so it holds
+// against the white floor. Glyph ink flips to whichever value the metal is
+// not, so the arrows read on both. SHIFTER_FAMILY_COLOR follows, which
+// carries the change into every burst, edge glow and gauge that references
+// it. The hourglass keeps its sand — the family now reads as metal and sand
+// rather than a single hue.
+// 290726-1702: SCORECARD IS A REST POINT. The between-levels tally no longer
+// auto-continues — play resumes only when the player presses the CONTINUE
+// button (a body tap still fast-forwards the counting, but never dismisses).
+// The level card that precedes it drops its score figures ("CLEAN SLATE! +60"
+// is now just "CLEAN SLATE!"): numbers appear once, in the tally, at the
+// moment they are counted.
+// 290726-1704: EDGE AUDIO RETUNED. The proximity sound was a metronome — on a
+// 10-wide board you are within two cells of some edge most of the time, and
+// three of the four edges cannot kill you. Now: sound is BOTTOM-ONLY (the one
+// lethal edge), starts at ONE cell not two, and is APPROACH-TRIGGERED — a
+// short burst of ticks on arriving at a tier (2 ticks at one cell, 4 on the
+// last row), then silence; re-armed only by moving closer or leaving and
+// returning. The visual border on all four edges is unchanged.
+// 290726-1718: ROSE LINE CUT + HAZARD PROVENANCE. The "one more run — the rose
+// is waiting" consolation is removed. And to settle the "consumed red came
+// back" report: every red now records who placed it (terrain / trim supply /
+// adjacent-red guarantee) and on which move, every consumption records the
+// same, and the REPLAY overlay prints the provenance of every red visible in
+// the snapshot. Investigation so far: both trim paths verifiably delete the
+// red they consume; terrain can only write to freshly generated rows; so a
+// red reappearing at a cleared cell mid-view should be impossible from the
+// paths audited — the provenance line will name the culprit on its next
+// appearance.
+// 290726-1729: SCRUB CORRUPTION FIXED (the returning red). Two defects in the
+// scrub-back-then-resume flow the player confirmed using:
+// 1) drawSnapshot swaps the snapshot's world/slots/etc into the live globals,
+//    draws, then restores — but scrub renders run INSIDE the main loop's
+//    try/catch, so a draw() exception was silently swallowed AFTER the swap
+//    and BEFORE the restore, leaving the snapshot's OLD world live: consumed
+//    reds resurrected at their original cells, no error visible. The swap is
+//    now wrapped in try/finally — the restore is unconditional.
+// 2) togglePause's unpause path scheduled a frame AND called exitScrub which
+//    scheduled another — every review session added a parallel loop chain.
+//    A generation token (scheduleLoop) now guarantees exactly one chain.
+// Hazard provenance from -1718 stays in: if a red ever returns again, the
+// replay overlay names its source and move.
+// 290726-1810: THE WORDMARK GOES LIVE. Welcome title is now the animated ritual
+// in pure CSS — five real letters in the five object colours (cyan / lime /
+// steel / sand / red), 13s palindrome: middles fold, the R's meet nose-to-
+// nose and touch, the pair shows both faces in colour, a flip turns
+// everything steel through the edge-on moment, the steel pair shows both
+// faces, expands to ЯOTOR in metal, and the return flip restores colour.
+// The mirrored Я is a genuine rotateY(180) of a real R — no scaleX, no
+// Cyrillic. Game-screen title: same five colours, STILL during play, and the
+// Я performs exactly one flip when a level arrives (showRoundOverlay).
+// prefers-reduced-motion disables all of it. Day theme re-pitches the steel
+// to pewter via --wm-steel.
+// 290726-1836: WELCOME THEME BUTTON. One-tap day/night switch on the welcome
+// page, top-left, mirroring the settings cog top-right — no settings trip
+// needed. The icon shows the theme a tap takes you TO (sun while dark, moon
+// while light). Delegates to settingTheme so the settings modal's segments
+// and the saved preference stay in sync; icon synced at startup from the
+// saved theme.
+// 290726-1840: SHIFTER SUPPLY HALVED. Landing-driven cadence threshold doubled
+// (every level's shifterEveryLandings ×2) and the anti-flood floor raised
+// from 2 to 4 landings so high charge cannot claw the halving back. The
+// overflow factory (surplus momentum → gears) is left untouched — it is a
+// skill reward, not the ambient supply. Side effect intended: fewer consumed
+// shifters means fewer WALL_ON_CONSUME walls crowding late boards.
+// 290726-1843: WORDMARK PAIR NOW MEETS. The CSS ritual's folded middle letters
+// collapsed their WIDTHS but kept their MARGINS — three invisible letters
+// still held 3 x 0.55em of spacing open, so the R's never came together the
+// way the approved GIF showed. Margins now fold with the widths, and the left
+// R's closing margin deepens to -0.43em: nose-to-nose in colour, back-to-back
+// in steel, actual contact in both.
+// 290726-1844: WORDMARK RESTS BETWEEN LOOPS. The welcome ritual is now a 23s
+// cycle: the 13s palindrome plays, then the finished colour ROTOЯ holds for
+// 10 seconds before the next pass — the mark performs, then it is simply the
+// title for a while. All keyframes rescaled onto the longer timeline; the
+// hold costs nothing since final keyframe values persist to 100%.
+// 290726-1848: WORDMARK GALLERY CYCLE. The welcome ritual is now a 70-second
+// cycle with a 10-second hold at every distinct display: colour ROTOЯ, the
+// colour monogram nose-to-nose, the colour monogram back-to-back, the steel
+// monogram nose-to-nose, the steel monogram back-to-back, and the steel
+// ЯOTOR — six exhibits, each reached by one flip or fold. The return leg
+// (steel word back to colour word) passes through its pair states briefly
+// rather than holding, since both were already shown on the way out.
+const BUILD_VERSION = '290726-1848 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
@@ -1938,9 +2336,12 @@ const BUILD_VERSION = '290726-1040 ROTOЯ';
 // icons. White with the same day/night alpha as the green's "+".
 function drawShifterGlyph(gcx, gcy, item, meta) {
     ctx.save();
-    ctx.globalAlpha = currentTheme === 'day' ? 0.9 : 0.95;
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';   // solid arrowheads
+    // [290726j] Glyph ink is always the OPPOSITE value to the metal beneath:
+    // dark on the light steel of night, white on the darker pewter of day.
+    const ink = currentTheme === 'day' ? '#ffffff' : '#101729';
+    ctx.globalAlpha = currentTheme === 'day' ? 0.92 : 0.88;
+    ctx.strokeStyle = ink;
+    ctx.fillStyle = ink;   // solid arrowheads
     ctx.lineWidth = 3.6;   // [270726n] welcome-legend weight
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -2473,8 +2874,10 @@ function momentumBands() { return Math.min(3, Math.ceil(momentumRemaining() / BA
 // last row/column pay x1.5 — difficulty priced by where you were.
 function inPeril() {
     if (nearPlayEdge()) return true;
+    // [290726i] 8-WAY. You can flip diagonally onto a red, so a red on the
+    // corner is real danger and should price the same as one on the face.
     for (const c of getPlayerCells())
-        for (const dd of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        for (const dd of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) {
             const w = world[`${c.x + dd[0]},${c.y + dd[1]}`];
             if (w === 'hazard' || w === 'wall') return true;
         }
@@ -2492,7 +2895,16 @@ const bullet = { active: false, timer: 0, charge: 0, stock: 0 };
 const SHIFTER_EVERY_LANDINGS = 4;
 const SHIFTER_WEIGHTS = { green: 32, pivot: 28, slip: 45, warp: 6 };  // hourglass back on (rare): +20s pickup wearing the new icon art
 // (Shifter expiry retired 2014 the auto-scroll/void is the one universal deadline.)
-const SHIFTER_FAMILY_COLOR = '#0891b2';                       // deep teal-blue — distinctly darker than the player's bright cyan/teal for visual discernment
+// [290726j] SHIFTERS ARE METAL. The old deep teal sat in the most crowded
+// part of the palette: it fought the player's cyan AND the square slot's
+// #12cfb2. Every hue on the wheel is already spoken for (cyan = player and
+// single slot, magenta = pairs, violet = diagonals, indigo = J-shapes,
+// teal-green = squares, lime = greens, red = hazards, gold = rewards, sand =
+// the hourglass, which is family). So the shifters are separated by MATERIAL
+// instead: near-zero saturation, high value. Nothing else on the board is
+// metal, the level washes tint the void rather than the objects so it holds
+// across all ten levels, and it suits the only machined things in the game.
+const SHIFTER_FAMILY_COLOR = '#b8c9d9';                       // steel
 // 50% chance a consumed/expired shifter leaves a wall behind. The other
 // 50% the cell quietly reverts to plain floor. Halves the total number of
 // walls appearing in the world over a run.
@@ -2846,6 +3258,17 @@ function settingFullscreen(on) {
     toggleFullscreen();
     saveSettings();
 }
+// [290726p] Welcome-page one-tap theme switch. Delegates to settingTheme so
+// the settings modal's segment highlight and the saved preference both stay
+// in sync; the button's icon always shows the theme a tap would take you TO.
+function toggleThemeFromWelcome() {
+    settingTheme(currentTheme === 'day' ? 'night' : 'day');
+    syncWelcomeThemeBtn();
+}
+function syncWelcomeThemeBtn() {
+    const b = document.getElementById('welcomeThemeBtn');
+    if (b) b.textContent = currentTheme === 'day' ? '\u{1F319}' : '\u2600';
+}
 function settingTheme(t) {
     setTheme(t);
     // Update ONLY the theme segment highlight. Calling the full syncSettingsUI()
@@ -2856,6 +3279,7 @@ function settingTheme(t) {
     const day   = document.getElementById('setThemeDay');
     if (night) night.classList.toggle('active', t === 'night');
     if (day)   day.classList.toggle('active', t === 'day');
+    syncWelcomeThemeBtn();   // [290726p] keep the welcome button's icon honest
     saveSettings();
 }
 
@@ -3995,7 +4419,7 @@ function togglePause() {
         if (scrubbing) exitScrub();
         // Reset timing so dt doesn't spike after unpause
         lastTime = performance.now();
-        requestAnimationFrame(loop);
+        scheduleLoop();
     }
 }
 
@@ -4087,6 +4511,7 @@ function captureSnapshot(dir) {
         score: game.score,
         trail: game.trail.slice(-25),
         world: { ...world },        // values are strings → shallow copy is a true copy
+        hazardBorn: { ...hazardBorn },   // [290726m] provenance travels with the snapshot
         visited: new Set(visited),
         // ── BOARD STATE beyond `world` ────────────────────────────────────
         // `world` covers walls, hazards, pivots, slips, pickups — but the
@@ -4155,9 +4580,14 @@ function drawSnapshot(snap) {
     slotProgress = snap.slotProgress;
     shifterProgress = snap.shifterProgress;
 
-    draw();
-    drawScrubOverlay(snap);
-
+    // [290726n] try/finally: if draw() throws mid-render, the restore below
+    // MUST still run — without it the snapshot's OLD world (old reds and all)
+    // was left as the live game state, which is precisely a "consumed red
+    // comes back" bug when the player scrubs back and then resumes.
+    try {
+        draw();
+        drawScrubOverlay(snap);
+    } finally {
     // Restore live state
     game.playerX = saved.playerX;
     game.playerY = saved.playerY;
@@ -4178,6 +4608,7 @@ function drawSnapshot(snap) {
     bullet.stock = saved.bulletStock;
     slotProgress = saved.slotProgress;
     shifterProgress = saved.shifterProgress;
+    }   // [290726n] end finally
 }
 
 function drawScrubOverlay(snap) {
@@ -4202,6 +4633,22 @@ function drawScrubOverlay(snap) {
     ctx.fillText(`${shapeName}-${snap.shapeConfig}   anchor (${snap.playerX},${snap.playerY})   move: ${snap.dir}`, 10, y + 38);
     ctx.fillStyle = '#64748b';
     ctx.fillText('← / →  step    Esc or ▶  resume', 10, y + 52);
+    // [290726m] Red provenance line — every hazard in this snapshot, with who
+    // placed it and on which move. A red that "came back" will show a LATER
+    // move number than its neighbours, and name its source.
+    {
+        const reds = [];
+        for (const k in snap.world) if (snap.world[k] === 'hazard')
+            reds.push(`(${k}) ${(snap.hazardBorn && snap.hazardBorn[k]) || '?'}`);
+        if (reds.length) {
+            ctx.save();
+            ctx.fillStyle = '#f87171';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('reds: ' + reds.slice(0, 4).join('  '), 200, y + 20);
+            ctx.restore();
+        }
+    }
     ctx.restore();
 }
 
@@ -4225,7 +4672,7 @@ function exitScrub() {
     if (game.running) {
         game.paused = false;
         lastTime = performance.now();
-        requestAnimationFrame(loop);
+        scheduleLoop();
     } else {
         // Dead — re-show the game over screen
         document.getElementById('gameOverScreen').classList.remove('hidden');
@@ -4452,6 +4899,13 @@ function tryDevolve(playerCells, hitCellIndex) {
 // ============ THE WORLD ============
 // VERTICAL SCROLLING: World indexed by "x,y" where y increases downward
 let world = {};
+// [290726m] HAZARD PROVENANCE — every red records who placed it and on which
+// move, and every red consumption records the same. Written to diagnose the
+// "consumed red came back" report: with this, the replay overlay can say
+// whether a red at a cell is the ORIGINAL (terrain@move) or a REPLACEMENT
+// (supply/guarantee@move), which settles the question the moment it recurs.
+let hazardBorn = {};    // key -> 'terrain@N' | 'supply@N' | 'guarantee@N'
+let hazardGone = {};    // key -> 'trim@N' | 'shift@N' (last consumption)
 let worldGenY = 0;  // Changed from worldGenX
 let visited = new Set();
 
@@ -4686,6 +5140,7 @@ function generateChunk(fromY, toY) {
                 if (!rowRed && Math.random() < hazardChance &&
                     countRedsWindow(y) < MAX_VISIBLE_REDS) {
                     world[key] = 'hazard';
+                    hazardBorn[key] = 'terrain@' + replayMoveCount;
                     rowRed = true;
                 }
                 if (!world[key]) game.cellsGenerated++;
@@ -5015,6 +5470,7 @@ function spawnShifter() {
         const needTrim = SHAPES[game.shapeType].mult > minNeed;
         if ((needTrim && vis < 2) || (SHAPES[game.shapeType].mult === 4 && vis === 0)) {
             world[k] = 'hazard';
+            hazardBorn[k] = 'supply@' + replayMoveCount;
             addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ef4444');
             return { kind: 'hazard', key: k };
         }
@@ -5132,15 +5588,20 @@ function slotClaimReward(slot) {
     const base = 100 * size;
     const orientations = SLOT_DEFS[slot.type].configs.length;
     const orientationBonus = (orientations - 1) * 60 * size;
+    // [290726i] 8-WAY. Approach is eight-directional, so an obstacle on the
+    // corner constrains the approach too. Diagonals count HALF a unit: going
+    // from four neighbours to eight would otherwise double every squeeze
+    // bonus in the game. A fully boxed cell now scores 6 units rather than 4.
     let constrained = 0;
     for (const c of slot.cells) {
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) {
             const item = world[`${c.x+dx},${c.y+dy}`];
             const oob = (c.x+dx < 0 || c.x+dx >= VIEW_W);
-            if (item === 'wall' || item === 'hazard' || oob) constrained++;
+            if (item === 'wall' || item === 'hazard' || oob)
+                constrained += (dx && dy) ? 0.5 : 1;
         }
     }
-    const squeezeBonus = constrained * 25 * size;
+    const squeezeBonus = Math.round(constrained * 25 * size);
     return { total: base + orientationBonus + squeezeBonus, squeezeBonus, orientationBonus };
 }
 
@@ -5421,6 +5882,11 @@ function showRoundOverlay(roundNum, instant = false) {
         game._lastLevelBonus = 0;   // shown once; game start shows nothing
     }
     updateOverlayMission();
+    // [290726o] The game-screen wordmark celebrates the new level with one
+    // Я-flip, then sits still — no looping motion above live play.
+    { const ya = document.querySelector('.wm-mini .c4');
+      if (ya) { ya.classList.remove('lvl-spin'); void ya.offsetWidth; ya.classList.add('lvl-spin');
+                setTimeout(() => ya.classList.remove('lvl-spin'), 1000); } }
     overlay.classList.remove('active', 'active-instant');
     overlay.classList.toggle('day', currentTheme === 'day');
     void overlay.offsetWidth;
@@ -5784,12 +6250,231 @@ function slotColorFor(type, config, difficulty) {
     return (def.configColors && def.configColors[config]) || def.color;
 }
 
+// ── [290726d] BETWEEN-LEVELS TALLY ──────────────────────────────────────────
+// The level's earnings, counted out one line at a time, then totalled. This is
+// where banked greens are paid: they cost nothing to collect and add up to a
+// visible reward here, so a green landing that changes nothing outwardly is
+// still worth taking. Tap anywhere to skip to the total; auto-continues.
+let _tallyTimers = [];
+let _tallyDone = null;
+let _tallySkipped = false;
+
+function clearTallyTimers() { for (const t of _tallyTimers) clearTimeout(t); _tallyTimers = []; }
+
+// [290726f] Little board-language icons, so each line is recognisable before
+// it is read: the covered floor in its own hue, a green square for greens, the
+// hourglass for banked time, and so on. Drawn as inline SVG at 20px.
+function tallyIcon(kind) {
+    const sq = (fill, stroke) =>
+        `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5"
+          fill="${fill}" ${stroke ? `stroke="${stroke}" stroke-width="1.6"` : ''}/></svg>`;
+    switch (kind) {
+        case 'play':   return `<svg viewBox="0 0 20 20"><path d="M10 2.2 17.8 10 10 17.8 2.2 10z" fill="#ffd60a"/></svg>`;
+        case 'covered':return sq('#c9a0f5');
+        case 'green':  return sq('#a3e635');
+        case 'warp':   return `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5" fill="#e8b96a"/>
+                                 <path d="M7 6h6l-3 4 3 4H7l3-4z" fill="#3b2a12"/></svg>`;
+        case 'rows':   return `<svg viewBox="0 0 20 20"><rect x="2" y="4" width="16" height="3.2" rx="1.4" fill="#7dd3fc"/>
+                                 <rect x="2" y="8.4" width="16" height="3.2" rx="1.4" fill="#7dd3fc" opacity="0.7"/>
+                                 <rect x="2" y="12.8" width="16" height="3.2" rx="1.4" fill="#7dd3fc" opacity="0.45"/></svg>`;
+        case 'slot':   return sq('rgba(125,211,252,0.15)', '#7dd3fc');
+        case 'combo':  return `<svg viewBox="0 0 20 20"><path d="M11.6 2 5 11h4l-.6 7L15 9h-4z" fill="#fb923c"/></svg>`;
+        case 'trim':   return `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5" fill="#c0392b"/>
+                                 <rect x="5.5" y="8.8" width="9" height="2.4" rx="1.2" fill="#ffe3e0"/></svg>`;
+        case 'impact': return `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5"
+                                 fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4 3"/>
+                                 <path d="M6 6l8 8M14 6l-8 8" stroke="#94a3b8" stroke-width="1.6"/></svg>`;
+        case 'lives':  return `<svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.2" fill="none" stroke="#ff6b9d" stroke-width="2.4"
+                                 stroke-dasharray="30 15"/></svg>`;
+        case 'set':    return `<svg viewBox="0 0 20 20"><rect x="2" y="2" width="7" height="7" rx="1.8" fill="#ffd60a"/>
+                                 <rect x="11" y="2" width="7" height="7" rx="1.8" fill="#ffd60a" opacity="0.65"/>
+                                 <rect x="2" y="11" width="7" height="7" rx="1.8" fill="#ffd60a" opacity="0.65"/>
+                                 <rect x="11" y="11" width="7" height="7" rx="1.8" fill="#ffd60a"/></svg>`;
+        default:       return '';
+    }
+}
+
+// Ease a number from 0 to `to` over `ms`, calling back each frame. Returns a
+// cancel function so a skip-tap can jump straight to the end.
+function countUp(to, ms, onFrame, onDone) {
+    const t0 = performance.now();
+    let raf = 0, cancelled = false;
+    const step = () => {
+        if (cancelled) return;
+        const t = Math.min(1, (performance.now() - t0) / ms);
+        const eased = 1 - Math.pow(1 - t, 3);
+        onFrame(Math.round(to * eased));
+        if (t < 1) raf = requestAnimationFrame(step);
+        else if (onDone) onDone();
+    };
+    raf = requestAnimationFrame(step);
+    return () => { cancelled = true; cancelAnimationFrame(raf); onFrame(to); if (onDone) onDone(); };
+}
+
+function buildTallyRows() {
+    const lvl = advancedRound;
+    const rows = [];
+    const cov = Math.min(100, Math.round(game.coverage || 0));
+    const grade = game._lastCovGrade || 'C';
+    rows.push({ icon: 'play', label: 'Points in play', count: '',
+                pts: game._levelPlayPoints || 0 });
+    rows.push({ icon: 'covered', label: 'Ground covered', count: cov + '%  ' + grade,
+                pts: game._lastCovBonus || 0, gold: grade === 'S' });
+    if (game.roundGreens > 0)
+        rows.push({ icon: 'green', label: 'Greens banked', count: '\u00d7' + game.roundGreens,
+                    pts: 5 * lvl * game.roundGreens, pay: true });
+    if (game.roundWarps > 0)
+        rows.push({ icon: 'warp', label: 'Hourglasses', count: '\u00d7' + game.roundWarps, pts: 0 });
+    if (game.roundRows > 0)
+        rows.push({ icon: 'rows', label: 'Rows completed', count: '\u00d7' + game.roundRows, pts: 0 });
+    if (game.roundClaims > 0)
+        rows.push({ icon: 'slot', label: 'Slots claimed', count: '\u00d7' + game.roundClaims, pts: 0 });
+    if ((game.roundBestCombo || 0) >= 1.5)
+        rows.push({ icon: 'combo', label: 'Best combo', count: '\u00d7' + (game.roundBestCombo).toFixed(1), pts: 0 });
+    if (game.roundTrims > 0)
+        rows.push({ icon: 'trim', label: 'Trims', count: '\u00d7' + game.roundTrims, pts: 0 });
+    if (game.roundImpacts > 0)
+        rows.push({ icon: 'impact', label: 'Cubes lost', count: '\u00d7' + game.roundImpacts, pts: 0 });
+    if (game.roundLivesLost > 0)
+        rows.push({ icon: 'lives', label: 'Lives lost', count: '\u00d7' + game.roundLivesLost, pts: 0 });
+    rows.push({ icon: 'set', label: 'Set complete', count: '', pts: game._lastLevelBonus || 0 });
+    return rows;
+}
+
+let _tallyCancels = [];
+let _tallyRunning = 0;
+
+function showLevelTally(onDone) {
+    const el = document.getElementById('levelTally');
+    if (!el) { if (onDone) onDone(); return; }
+    _tallyDone = onDone; _tallySkipped = false;
+    clearTallyTimers();
+    _tallyCancels = [];
+    _tallyRunning = 0;
+
+    const title = document.getElementById('tallyTitle');
+    if (title) title.textContent = 'LEVEL ' + advancedRound;
+    const host = document.getElementById('tallyRows');
+    const totalEl = document.getElementById('tallyTotal');
+    const totalVal = document.getElementById('tallyTotalValue');
+    const hint = document.getElementById('tallyContinue');
+    if (hint) hint.classList.remove('in');
+    if (host) host.innerHTML = '';
+    if (totalVal) totalVal.textContent = '0';
+    if (totalEl) totalEl.classList.add('in');   // total is visible from the off, and climbs
+
+    const rows = buildTallyRows();
+    const nodes = [];
+    for (const r of rows) {
+        const d = document.createElement('div');
+        d.className = 'tally-row' + (r.gold ? ' gold' : '');
+        d.innerHTML = '<span class="tally-left"><span class="tally-icon"></span>' +
+                      '<span class="tally-label"></span></span>' +
+                      '<span class="tally-count"></span>' +
+                      '<span class="tally-pts"></span>';
+        d.querySelector('.tally-icon').innerHTML = tallyIcon(r.icon);
+        d.querySelector('.tally-label').textContent = r.label;
+        d.querySelector('.tally-count').textContent = r.count;
+        d.querySelector('.tally-pts').textContent = r.pts ? '+0' : '';
+        if (host) host.appendChild(d);
+        nodes.push({ node: d, row: r });
+    }
+
+    el.classList.remove('hidden');
+    void el.offsetWidth;
+    el.classList.add('show');
+
+    const setTotal = v => { if (totalVal) totalVal.textContent = v.toLocaleString(); };
+    let banked = 0;   // total from rows already finished counting
+
+    // Each row lands, then its points spin up from zero — and the level total
+    // climbs by exactly that amount at the same time, so you watch the number
+    // being built rather than being told it.
+    const STEP = 460;
+    nodes.forEach((n, i) => {
+        _tallyTimers.push(setTimeout(() => {
+            n.node.classList.add('in');
+            if (sfx.seat) sfx.seat(); else if (sfx.collect) sfx.collect();
+            if (n.row.pay && n.row.pts) scoreGain(n.row.pts, false);
+            if (!n.row.pts) return;
+            const ptsEl = n.node.querySelector('.tally-pts');
+            const base = banked;
+            _tallyRunning++;
+            const cancel = countUp(n.row.pts, 420, v => {
+                if (ptsEl) ptsEl.textContent = '+' + v;
+                setTotal(base + v);
+            }, () => { banked = base + n.row.pts; _tallyRunning--; setTotal(banked); });
+            _tallyCancels.push(cancel);
+        }, 240 + i * STEP));
+    });
+
+    const endAt = 240 + nodes.length * STEP + 300;
+    _tallyTimers.push(setTimeout(() => {
+        if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
+        if (sfx.gold) sfx.gold();
+    }, endAt));
+    // [290726k] NO auto-continue: the scorecard is a rest point. Play only
+    // resumes when the player presses CONTINUE.
+    _tallyTimers.push(setTimeout(() => { if (hint) hint.classList.add('in'); }, endAt + 400));
+}
+
+// Tap handler: first tap fast-forwards every remaining row and lands the
+// total; a second tap dismisses.
+function skipLevelTally() {
+    if (!_tallySkipped) {
+        _tallySkipped = true;
+        clearTallyTimers();
+        for (const c of _tallyCancels) { try { c(); } catch (e) {} }
+        _tallyCancels = [];
+        const host = document.getElementById('tallyRows');
+        const rows = buildTallyRows();
+        let total = 0;
+        if (host) {
+            const nodes = host.querySelectorAll('.tally-row');
+            nodes.forEach((n, i) => {
+                const r = rows[i];
+                if (!r) return;
+                if (!n.classList.contains('in')) {
+                    n.classList.add('in');
+                    if (r.pay && r.pts) scoreGain(r.pts, false);
+                }
+                const ptsEl = n.querySelector('.tally-pts');
+                if (r.pts && ptsEl) ptsEl.textContent = '+' + r.pts;
+                total += r.pts || 0;
+            });
+        }
+        const totalEl = document.getElementById('tallyTotal');
+        const totalVal = document.getElementById('tallyTotalValue');
+        const hint = document.getElementById('tallyContinue');
+        if (totalVal) totalVal.textContent = total.toLocaleString();
+        if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
+        if (hint) hint.classList.add('in');
+        return;   // [290726k] wait for CONTINUE — a body tap never dismisses
+    }
+    // Second body tap: still no dismiss — only the button continues.
+}
+
+function finishLevelTally() {
+    clearTallyTimers();
+    const el = document.getElementById('levelTally');
+    if (el) {
+        el.classList.remove('show');
+        setTimeout(() => el.classList.add('hidden'), 280);
+    }
+    const cb = _tallyDone; _tallyDone = null;
+    if (cb) cb();
+}
+
 function completeSet() {
     // Hard input lock the instant the advance condition is met — no further
     // player move can occur before the transition takes hold (independent of the
     // paused/celebrating flags set below, which the setTimeout chain relies on).
     game.inputLocked = true;
     setsCompleted++;
+    // [290726f] Points earned DURING play this level, banked before any
+    // end-of-level bonus lands, so the tally can show play and bonuses as
+    // separate lines that add up to the level total.
+    game._levelPlayPoints = game.score - (game._levelStartScore || 0);
     // Proportionate level bonus: 50 × the level just cleared — announced on
     // the level overlay so the escalation is visible, not silent.
     const bonus = 50 * advancedRound;
@@ -5841,8 +6526,9 @@ function completeSet() {
                 // [270726z] % coverage dropped from the card; titles get
                 // their exclamation mark.
                 title: campaignDone ? 'MISSION COMPLETE!' : `LEVEL ${advancedRound} COMPLETE!`,
-                covText: gold ? `CLEAN SLATE!  +${game._lastCovBonus}`
-                              : (game._lastCovBonus ? `COVERAGE BONUS  +${game._lastCovBonus}` : ''),
+                // [290726k] No score figures on the card — numbers appear
+                // only in the tally, at the moment they are counted.
+                covText: gold ? 'CLEAN SLATE!' : '',
                 gold,
                 praise: celebration,
                 extra: campaignDone ? 'ENDLESS MODE UNLOCKED' : ''
@@ -5859,7 +6545,9 @@ function completeSet() {
         // sees the new SET targets when the overlay fades out. Slots are
         // also seeded at the top so the player sees real targets the
         // moment the overlay clears, not just empty board.
-        setTimeout(() => {
+        // [290726d] The advance is now a callback: the TALLY runs first, and
+        // only when it is dismissed does the level roll over.
+        const _advanceNow = () => {
             hideLevelCard();   // [270726r] card yields to the fade-to-black overlay
             advancedRound++;
             // LEVEL COMPLETE = FULL RECHARGE (Momentum): the ring refills to
@@ -5867,6 +6555,9 @@ function completeSet() {
             game.speedTimer = LEVEL_TIME_LIMIT - MOMENTUM_MAX;
             overflowPts = 0;
             game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false;
+            // [290726d] tally counters reset with the rest of the round trackers
+            game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+            game._levelStartScore = game.score;
             game._elapsedLevel = 0; game._lastTimeMark = 0;   // [270726za] fresh reminder clock
             game.speedOffset = 0;
             lastTickSecond = 999;
@@ -5918,13 +6609,21 @@ function completeSet() {
             // on the spawn cube (you can't legally be inside a slot).
             nudgeSpawnClearOfSlots();
             showRoundOverlay(advancedRound);
-        }, 3200);
-        // Resume play just as the overlay finishes fading out
+        };
+        // [290726d] Level card holds briefly, then the tally takes over. When
+        // the player dismisses it (or it auto-continues) the level advances
+        // and the round overlay plays as before; play resumes as it fades.
         setTimeout(() => {
-            game.paused = false;
-            game.celebrating = false;
-            game.inputLocked = false;   // new level is live — moves allowed again
-        }, 5000);
+            hideLevelCard();
+            showLevelTally(() => {
+                _advanceNow();
+                setTimeout(() => {
+                    game.paused = false;
+                    game.celebrating = false;
+                    game.inputLocked = false;   // new level is live — moves allowed again
+                }, 1800);
+            });
+        }, 2200);
     } else {
         // ROUND 5 — finale. Full celebration, then endGame win.
         // Staggered finale text — "MISSION COMPLETE" first, then the
@@ -6246,7 +6945,11 @@ function tryFuseAlongPath(dir) {
     // that ON-GREEN destruction path in checkCollisions is untouched.)
     if (EVO[shapeType] && EVO[shapeType].length > 0) {
         const landedCellSet = new Set(landedCells.map(c => `${c.x},${c.y}`));
-        const EDGES = [[1,0],[-1,0],[0,1],[0,-1]];
+        // [290726h] 8-WAY, to match findFusionAt. The fusion test itself
+        // considers every diagonal neighbour (a single + a diagonal green is a
+        // legal diagonal pair), so a 4-way feedback ring would stay silent on
+        // greens the game had genuinely examined and rejected.
+        const EDGES = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
         for (const pc of landedCells) {
             for (const [edx, edy] of EDGES) {
                 const ax = pc.x + edx, ay = pc.y + edy;
@@ -6672,6 +7375,15 @@ function move(dir) {
             else if (wv === 'hazard') redIdx.push(i);
         });
         if (refuse) {
+            // [290726g] More than one cube? The contact costs you the cubes
+            // that touched. A single keeps the old recoil-and-wall answer.
+            const impactIdx = [];
+            probeCells.forEach((c, i) => {
+                if (c.x < 0 || c.x >= VIEW_W) { impactIdx.push(i); return; }
+                const wv = world[`${c.x},${c.y}`];
+                if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) impactIdx.push(i);
+            });
+            if (applyImpactDevolve(impactIdx, 'wall')) return;
             showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
             { const v = HINT_DIR_VEC[dir];                     // [270726x] recoil + wall at impact
               if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) spawnDenialWall(probeCells); }
@@ -6711,6 +7423,12 @@ function move(dir) {
         //   recoil and NO wall — a barrier would shield the player from
         //   the one hazard that is meant to catch them. The Move Guide
         //   marks these moves with the red ✕.
+        {
+            // [290726g] Ceiling contact costs cubes too, on the same rule.
+            const ceilIdx = [];
+            proposedCells.forEach((c, i) => { if (c.y < topRowWorld) ceilIdx.push(i); });
+            if (ceilIdx.length && applyImpactDevolve(ceilIdx, 'ceiling')) return;
+        }
         for (const c of proposedCells) {
             if (c.y < topRowWorld) {
                 showMoveGhost(newX, newY, newConfig, 'top', dir);   // red ghost at the refused cells
@@ -6722,6 +7440,7 @@ function move(dir) {
             }
         }
         if (proposedCells.some(c => c.y > bottomRowWorld)) {
+            if (!game.testDrive) flagOutOfBounds('bottom');
             if (game.testDrive) {
                 // Garage rule: the void takes no one. The bottom edge refuses
                 // like the top — bonk, no wall, no death.
@@ -6985,6 +7704,7 @@ function checkCollisions() {
                 continue;
             }
             delete world[hit.key];
+            hazardGone[hit.key] = 'trim@' + (replayMoveCount + 1);
             markCovered(hit.key, true);   // red-born cell becomes real floor
         }
         
@@ -7223,6 +7943,7 @@ function checkCollisions() {
         const key = `${cell.x},${cell.y}`;
         if (world[key] === 'warp') {
             delete world[key];
+            game.roundWarps = (game.roundWarps || 0) + 1;   // [290726f] for the tally
             markCovered(key);
             scoreGain(3, false);   // hourglass garnish (pays time + 3)
             momentumAddSeconds(20);
@@ -7253,6 +7974,10 @@ function checkCollisions() {
         const gk = `${cell.x},${cell.y}`;
         if (world[gk] === 'pickup') {
             delete world[gk];
+            // [290726d] Banked for the between-levels tally: a stomped green
+            // pays its +5 now AND counts toward the end-of-level green bonus,
+            // so a landing that changes nothing outwardly still adds up.
+            game.roundGreens = (game.roundGreens || 0) + 1;
             scoreGain(5, false);
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2, '#a3e635');
             addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL, '+5', '#a3e635');
@@ -7298,7 +8023,12 @@ function checkCollisions() {
             // L1 opens generous (Candy Crush model): ~40% more frequent spawns
             // so the first minute rains greens, shifters and hourglasses.
             const roundEase = advancedRound === 1 ? 0.7 : 1;
-            const effectiveThreshold = Math.max(2, Math.round(getShifterEveryLandings() * roundEase / chargeBoost));
+            // [290726q] HALF THE SHIFTERS: doubled base cadence (×2 on every
+            // level's shifterEveryLandings) and the anti-flood floor raised
+            // 2 → 4 so the chargeBoost cannot claw the halving back at high
+            // charge. Fewer machines also means fewer consumed-shifter walls
+            // (WALL_ON_CONSUME_CHANCE), which was crowding late boards.
+            const effectiveThreshold = Math.max(4, Math.round(getShifterEveryLandings() * 2 * roundEase / chargeBoost));
             if (!game.testDrive && shifterProgress >= effectiveThreshold) {
                 shifterProgress = 0;
                 spawnShifter();
@@ -7308,8 +8038,15 @@ function checkCollisions() {
             // the pace so each slot earned feels harder-won.
             slotProgress++;
             if (!game.testDrive && slotProgress >= getSlotEveryLandings()) {
-                slotProgress = 0;
-                trySpawnSlot();
+                // [290726a] SLOT DROUGHT FIX — only reset the cadence counter
+                // when a slot ACTUALLY lands. Previously the counter reset on
+                // every attempt, so a blocked placement (heavy wall cover,
+                // buffer rules, 4 tries x 7 rows exhausted) cost a full
+                // cadence — up to 20 landings on later levels — before the
+                // game would even try again. That is why boards could show
+                // zero slots for minutes at a time. On failure the counter
+                // stays at threshold, so it retries on the next landing.
+                if (trySpawnSlot()) slotProgress = 0;
             }
             // Bullet-time stock is now pickup-driven (WARP cells) — no
             // automatic per-cell charge. See checkCollisions for the collection
@@ -7338,6 +8075,8 @@ function checkCollisions() {
             game.comboMult = getComboMult(game.combo);
             game.comboTimer = COMBO_DURATION;
             if (game.comboMult > game.bestCombo) game.bestCombo = game.comboMult;
+            // [290726d] per-LEVEL best, for the tally (game.bestCombo is per-run)
+            if (game.comboMult > (game.roundBestCombo || 0)) game.roundBestCombo = game.comboMult;
             // GOOD SKILLS: a hot movement streak stepping up to a new high tier
             // (x2.5+) — sustained precise play, distinct from the mechanic-chain
             // "NICE COMBO!". Fires once per tier-up, dedup'd with combos.
@@ -7446,6 +8185,8 @@ function showCombo(sx, sy, text, color) {
 }
 
 function celebrateLineBand(newRows) {
+    // [290726d] rows completed this level, for the tally
+    game.roundRows = (game.roundRows || 0) + newRows.length;
     for (const r of newRows) rowsCelebrated.add(r);
     // Expand through already-completed neighbours (either side) to find the band
     let lo = Math.min(...newRows), hi = Math.max(...newRows);
@@ -7617,6 +8358,104 @@ function checkStreakBonuses(cx, cy) {
 }
 
 // Handle multiple cell removals at once (e.g., J-shape hitting 2 hazards)
+// ── [290726g] IMPACT DEVOLVE ────────────────────────────────────────────────
+// The furniture wears you down; the void kills you. Bumping a wall or the
+// side/ceiling of the board costs you the cubes that made contact — one per
+// touching cube, two if two land at once. A SINGLE cube has nothing to give,
+// so it keeps the old behaviour: recoil, and a denial wall forms.
+//
+// The survivors devolve IN PLACE, at the position they already occupied. They
+// deliberately do NOT advance into the blocked square: if sacrificing a cube
+// bought you passage, walls would stop being barriers and players would tunnel
+// through them. You bumped, you paid, you did not get through.
+//
+// CONNECTED means 8-WAY here, not 4-way: the diagonal pair is a first-class
+// shape in this game, so two cubes touching only at a corner are joined. A
+// J-shape losing its middle cube leaves exactly a diagonal pair — legal, and
+// no orphan to drop.
+function connectedGroups(cells) {
+    const key = c => `${c.x},${c.y}`;
+    const left = new Map(cells.map(c => [key(c), c]));
+    const groups = [];
+    while (left.size) {
+        const startKey = left.keys().next().value;
+        const stack = [left.get(startKey)];
+        left.delete(startKey);
+        const group = [];
+        while (stack.length) {
+            const c = stack.pop();
+            group.push(c);
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1],
+                                    [1,1],[1,-1],[-1,1],[-1,-1]]) {
+                const k = `${c.x + dx},${c.y + dy}`;
+                if (left.has(k)) { stack.push(left.get(k)); left.delete(k); }
+            }
+        }
+        groups.push(group);
+    }
+    return groups;
+}
+
+function applyImpactDevolve(hitIndices, label) {
+    if (game.testDrive) return false;
+    if (game.shapeType === 'single') return false;
+    if (!hitIndices || !hitIndices.length) return false;
+    const cells = getPlayerCells();
+    if (hitIndices.length >= cells.length) {
+        // Nothing would survive — that is a life, not a shape of nothing.
+        captureSnapshot('\u2716 crushed');
+        handleDeath('impact');
+        return true;
+    }
+    let idx = hitIndices.slice();
+    let result = tryMultiDevolve(cells, idx);
+    if (!result) {
+        // Survivors are disconnected (a J-shape losing its middle cube leaves
+        // two cubes that do not touch). Keep the largest connected group and
+        // let the orphans go with the casualties.
+        const survivors = cells.filter((_, i) => !idx.includes(i));
+        const groups = connectedGroups(survivors).sort((a, b) => b.length - a.length);
+        if (!groups.length) return false;
+        const keep = new Set(groups[0].map(c => `${c.x},${c.y}`));
+        idx = cells.map((_, i) => i).filter(i => !keep.has(`${cells[i].x},${cells[i].y}`));
+        if (idx.length >= cells.length) { handleDeath('impact'); return true; }
+        result = tryMultiDevolve(cells, idx);
+    }
+    if (!result) return false;   // no legal survivor shape — caller falls back to a refusal
+
+    const prevType = game.shapeType;
+    game.shapeType = result.shapeType;
+    game.shapeConfig = result.config;
+    game.playerX = result.anchorX;
+    game.playerY = result.anchorY;
+    game.roundImpacts = (game.roundImpacts || 0) + 1;
+
+    // Uncouple FX — fling each lost cube from the seam it shared with its
+    // nearest surviving neighbour, matching the red-trim presentation.
+    const survivors = cells.filter((_, i) => !idx.includes(i));
+    for (const i of idx) {
+        const cas = cells[i];
+        const cubeX = cas.x * CELL + CELL/2, cubeY = (cas.y - game.cameraY) * CELL;
+        let seamX = cubeX, seamY = cubeY, best = Infinity;
+        for (const sv of survivors) {
+            const sx = sv.x * CELL + CELL/2, sy = (sv.y - game.cameraY) * CELL;
+            const d = (sx - cubeX) ** 2 + (sy - cubeY) ** 2;
+            if (d < best) { best = d; seamX = (sx + cubeX) / 2; seamY = (sy + cubeY) / 2; }
+        }
+        addFusion(seamX, seamY, cubeX, cubeY, 'uncouple');
+        addBurst(cubeX, cubeY, '#94a3b8');
+    }
+    if (sfx.devolve) sfx.devolve();
+    signalSizeChange(prevType, result.shapeType, true);
+    triggerShake(5, 220);
+    flashPlayerDenied();
+    const at = cells[idx[0]];
+    addFloat(at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL,
+        idx.length > 1 ? `IMPACT x${idx.length}!` : 'IMPACT!', '#94a3b8');
+    showTip('devolve');
+    return true;
+}
+
 function tryMultiDevolve(playerCells, hitIndices) {
     // Remaining (surviving) cells after the hit cubes are removed
     const remaining = playerCells.filter((_, i) => !hitIndices.includes(i));
@@ -7779,6 +8618,7 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
         // destination cells (last-cube-standing grind) are left untouched.
         if (world[rk] !== 'hazard') continue;
         delete world[rk];
+        hazardGone[rk] = 'shift@' + (replayMoveCount + 1);
         markCovered(rk, true);   // red-born cell becomes real floor
     }
     const prevType = game.shapeType;
@@ -8836,6 +9676,120 @@ function applyTips(on) {
 function toggleTips() { applyTips(!game.tipsOn); }
 try { applyTips(localStorage.getItem('rotor_tips_on') !== '0'); } catch (e) { applyTips(true); }
 
+// ── [290726e] EDGE PROXIMITY ────────────────────────────────────────────────
+// One shared readout for every boundary. Distance is measured in whole cells
+// from the nearest cube of the shape to each edge of the play area:
+//   3+ cells -> nothing;  2 -> green;  1 -> amber;  0 (on the last row or
+//   column) -> red.
+// The border is drawn OUTSIDE the 10x10 as an inset frame, so the playfield
+// itself is never tinted and the warning can never be mistaken for terrain.
+const EDGE_WARN_CELLS = 2;          // warning begins two cells out
+const EDGE_BAND_PX    = 7;          // thickness of the border strip
+// Amber is the WARNING colour and red is the OUT OF BOUNDS colour — red is
+// never shown for merely being close, so it keeps its meaning. Everything
+// breathes rather than blinks: `throb` is the period in ms, higher = calmer.
+const EDGE_TIERS = [
+    { max: 0, color: [251, 146, 60], throb: 520,  gain: 1.00 },  // on the last row/column
+    { max: 1, color: [251, 146, 60], throb: 900,  gain: 0.62 },  // one cell out
+    { max: 2, color: [163, 230, 53], throb: 1400, gain: 0.42 }   // two cells out — gentle
+];
+const EDGE_OOB_COLOR  = [239, 68, 68];   // out of bounds — only ever red here
+const EDGE_OOB_MS     = 900;             // how long the red border holds
+let edgeOobT0 = 0, edgeOobSide = null;
+// Called the moment the player crosses a boundary (a fall, or a refused move
+// that tried to leave the board) so the border can answer in red.
+function flagOutOfBounds(side) { edgeOobT0 = performance.now(); edgeOobSide = side || null; }
+function edgeTier(dist) {
+    for (const t of EDGE_TIERS) if (dist <= t.max) return t;
+    return null;
+}
+// Distances to each edge, in cells. Negative is impossible in normal play
+// (the borders refuse or kill first), so everything clamps at zero.
+function edgeDistances() {
+    const cells = getPlayerCells();
+    if (!cells.length) return null;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const c of cells) {
+        if (c.x < minX) minX = c.x;
+        if (c.x > maxX) maxX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.y > maxY) maxY = c.y;
+    }
+    const topRow    = topLawfulRow();
+    const bottomRow = Math.floor(game.cameraY) + VIEW_H - 1;
+    return {
+        top:    Math.max(0, minY - topRow),
+        bottom: Math.max(0, bottomRow - maxY),
+        left:   Math.max(0, minX),
+        right:  Math.max(0, (VIEW_W - 1) - maxX)
+    };
+}
+// The single worst edge — what the audio ramp and any copy should react to.
+function nearestEdge() {
+    const d = edgeDistances();
+    if (!d) return null;
+    let side = 'bottom', dist = d.bottom;
+    for (const k of ['top', 'left', 'right']) if (d[k] < dist) { side = k; dist = d[k]; }
+    return { side, dist };
+}
+function drawEdgeProximity() {
+    const d = edgeDistances();
+    if (!d) return;
+    const now = performance.now();
+    const oobAge = edgeOobT0 ? now - edgeOobT0 : Infinity;
+    const oob = oobAge < EDGE_OOB_MS;
+    ctx.save();
+    for (const side of ['top', 'bottom', 'left', 'right']) {
+        const dist = d[side];
+        const sideOob = oob && (!edgeOobSide || edgeOobSide === side);
+        if (dist > EDGE_WARN_CELLS && !sideOob) continue;
+        const tier = edgeTier(Math.min(dist, EDGE_WARN_CELLS));
+        if (!tier && !sideOob) continue;
+        // OUT OF BOUNDS overrides everything on that side: solid red, fading.
+        const [r, g, b] = sideOob ? EDGE_OOB_COLOR : tier.color;
+        const beat = tier ? 0.68 + 0.32 * Math.sin(now / tier.throb * Math.PI) : 1;
+        const strength = sideOob
+            ? (1 - oobAge / EDGE_OOB_MS)
+            : tier.gain * beat;
+        const horizontal = (side === 'top' || side === 'bottom');
+        let x0, y0, w, h, gx0, gy0, gx1, gy1;
+        if (side === 'top')    { x0 = 0; y0 = 0; w = LOGICAL_W; h = EDGE_BAND_PX;
+                                 gx0 = 0; gy0 = 0; gx1 = 0; gy1 = EDGE_BAND_PX; }
+        if (side === 'bottom') { x0 = 0; y0 = LOGICAL_H - EDGE_BAND_PX; w = LOGICAL_W; h = EDGE_BAND_PX;
+                                 gx0 = 0; gy0 = LOGICAL_H; gx1 = 0; gy1 = LOGICAL_H - EDGE_BAND_PX; }
+        if (side === 'left')   { x0 = 0; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
+                                 gx0 = 0; gy0 = 0; gx1 = EDGE_BAND_PX; gy1 = 0; }
+        if (side === 'right')  { x0 = LOGICAL_W - EDGE_BAND_PX; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
+                                 gx0 = LOGICAL_W; gy0 = 0; gx1 = LOGICAL_W - EDGE_BAND_PX; gy1 = 0; }
+        const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
+        grad.addColorStop(0, `rgba(${r},${g},${b},${(0.92 * strength).toFixed(3)})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x0, y0, w, h);
+        // A hard hairline right on the boundary once you are on the last
+        // cell — the death line is a LINE, and it should look like one.
+        if (dist === 0 || sideOob) {
+            ctx.save();
+            ctx.globalAlpha = (sideOob ? 1 : 0.5) * (0.55 + 0.45 * beat);
+            ctx.strokeStyle = `rgb(${r},${g},${b})`;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = `rgb(${r},${g},${b})`;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            if (horizontal) {
+                const ly = side === 'top' ? 1 : LOGICAL_H - 1;
+                ctx.moveTo(0, ly); ctx.lineTo(LOGICAL_W, ly);
+            } else {
+                const lx = side === 'left' ? 1 : LOGICAL_W - 1;
+                ctx.moveTo(lx, 0); ctx.lineTo(lx, LOGICAL_H);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+    ctx.restore();
+}
+
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
 
@@ -9038,9 +9992,12 @@ function draw() {
                 drawHourglassIcon(sx, sy);
             } else if (item === 'pivot' || item === 'slip') {
                 if (currentTheme === 'day') {
-                    // Day pivot/slip — bright teal cyan flat fill, dark glyph.
+                    // [290726j] Day pivot/slip — PEWTER. The same metal, taken
+                    // darker so it holds against the white floor; the glyph
+                    // stays white here for the same reason it goes dark at
+                    // night — always the opposite value to the fill.
                     const meta = shifterMeta[key];   // spin/arrow data (expiry retired)
-                    roundedSq(sx, sy, CELL_SIZE, 'rgb(45,212,191)', '#0d9488', 1);
+                    roundedSq(sx, sy, CELL_SIZE, 'rgb(143,163,184)', '#5c7086', 1);
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
                     drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
                     continue;
@@ -9050,9 +10007,9 @@ function draw() {
                 // (no expiry — the void is their only deadline).
                 const meta = shifterMeta[key];   // spin/arrow data (expiry retired)
                 const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);
-                const r = 8, g = 145, b = 178;
+                const r = 184, g = 201, b = 217;   // [290726j] steel
                 ctx.save();
-                ctx.globalAlpha = 0.56;
+                ctx.globalAlpha = 0.74;            // metal should read bright, not dim
                 ctx.shadowColor = `rgb(${r},${g},${b})`;
                 ctx.shadowBlur  = 6 + 6 * pulse;
                 roundedSq(sx, sy, CELL_SIZE, `rgb(${r},${g},${b})`, null);
@@ -9496,31 +10453,12 @@ function draw() {
     }
     ctx.restore();
     
-    // Danger gradient + rising-floor line: gameplay pressure signals — the
-    // garage has no pressure, so neither appears in test drive.
-    if (!game.testDrive) {
-        // Danger gradient at BOTTOM — cold deep indigo (cold scheme)
-        const grad = ctx.createLinearGradient(0, LOGICAL_H - CELL * 2.5, 0, LOGICAL_H);
-        grad.addColorStop(0, 'rgba(56, 89, 120, 0)');
-        grad.addColorStop(1, 'rgba(40, 70, 110, 0.5)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, LOGICAL_H - CELL * 2.5, LOGICAL_W, CELL * 2.5);
-
-        // Rising floor indicator — a glowing line creeping up
-        const floorPulse = 0.6 + 0.4 * Math.sin(Date.now() / 400 * Math.PI);
-        const floorY = LOGICAL_H - CELL * 0.5;
-        ctx.save();
-        ctx.globalAlpha = floorPulse * 0.8;
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
-        ctx.shadowColor = '#ef4444';
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.moveTo(0, floorY);
-        ctx.lineTo(LOGICAL_W, floorY);
-        ctx.stroke();
-        ctx.restore();
-    }
+    // [290726e] PROXIMITY BORDER — replaces the old bottom-only danger
+    // gradient and the pulsing red floor line. All four edges now report how
+    // close you are, in the same language: safe green at three cells, amber
+    // at two, red on the last one. The garage has no pressure, so it shows
+    // nothing.
+    if (!game.testDrive) drawEdgeProximity();
     
     // [270726s] DENIED FLASH — red glow over the shape, fading out over
     // ~300ms. Refusals never move the shape, so its resting cells are the
@@ -10038,7 +10976,15 @@ let lastTime = 0;
 const FIRST_SPEED_DELAY = 5;
 const SPEED_INTERVAL = 10;
 
-function loop(time) {
+// [290726n] SINGLE LOOP GUARD. togglePause's unpause path called exitScrub
+// (which schedules a frame) and then scheduled a second frame itself — every
+// scrub-then-resume added a parallel loop chain, doubling per-frame work each
+// review session. A generation token makes stale chains drop out: only the
+// most recently scheduled chain survives.
+let _loopGen = 0;
+function scheduleLoop() { const g = ++_loopGen; requestAnimationFrame(t => loop(t, g)); }
+function loop(time, gen) {
+    if (gen !== undefined && gen !== _loopGen) return;   // stale chain — let it die
     if (!game.running) return;
     
     const dt = time - lastTime;
@@ -10058,7 +11004,7 @@ function loop(time) {
             // this isn't a player pause, it's a celebration freeze.
             if (!game.celebrating) drawPauseOverlay();
         }
-        requestAnimationFrame(loop);
+        scheduleLoop();
         return;
     }
     
@@ -10066,7 +11012,7 @@ function loop(time) {
     if (game.frozenTimer > 0) {
         game.frozenTimer -= dt;
         draw();
-        requestAnimationFrame(loop);
+        scheduleLoop();
         return;
     }
     
@@ -10129,8 +11075,9 @@ function loop(time) {
           const camI = Math.floor(game.cameraY);
           let hasAdj = false;
           const candidates = [];
+          // [290726i] 8-WAY: a diagonal red is just as reachable for a trim.
           for (const c of cellsA) {
-              for (const dd of [[1,0],[-1,0],[0,1],[0,-1]]) {
+              for (const dd of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) {
                   const ax = c.x + dd[0], ay = c.y + dd[1];
                   const key = `${ax},${ay}`;
                   if (body.has(key)) continue;
@@ -10146,6 +11093,7 @@ function loop(time) {
           if (!hasAdj && candidates.length) {
               const pick = candidates[(Math.random() * candidates.length) | 0];
               world[pick.key] = 'hazard';
+              hazardBorn[pick.key] = 'guarantee@' + replayMoveCount;
               addBurst(pick.x * CELL + CELL/2, (pick.y - game.cameraY) * CELL + CELL/2, '#ef4444');
           }
       }
@@ -10338,7 +11286,7 @@ function loop(time) {
         // doesn't stall. This missing reschedule was the freeze players had to
         // pause/play to escape. After a FINAL death endGame stops the game, so
         // guard on game.running (don't reschedule a dead game).
-        if (game.running) requestAnimationFrame(loop);
+        if (game.running) scheduleLoop();
         return;
     }
 
@@ -10376,32 +11324,58 @@ function loop(time) {
     // Bottom edge: player scrolled off the bottom of the viewport — costs a
     // life (or ends the game if it was the last one).
     const playerScreenY = game.playerY - game.cameraY;
-    if (playerScreenY > VIEW_H) {
+    // [290726f] HALF A SQUARE OVER THE LINE. Was VIEW_H — a whole cell clear
+    // of the board before it counted. Now the scroll takes you the moment
+    // more than half the cube has left the screen, so you can ride the last
+    // row right up to the tipping point and no further.
+    if (playerScreenY > VIEW_H - 0.5) {
+        flagOutOfBounds('bottom');
         captureSnapshot('↓ fell out');
         handleDeath('void');
-        if (game.running) requestAnimationFrame(loop);   // same freeze fix as the death branch
+        if (game.running) scheduleLoop();   // same freeze fix as the death branch
         return;
     }
     
-    // Danger warning — bottom edge
-    const dangerThreshold = VIEW_H - 2.5;
-    if (!game.testDrive && playerScreenY > dangerThreshold) {
-        const dangerLevel = Math.min(1, (playerScreenY - dangerThreshold) / 2.5);
-        const beepInterval = 400 - 250 * dangerLevel;
-        if (!game.lastDangerSound || Date.now() - game.lastDangerSound > beepInterval) {
-            sfx.danger(dangerLevel);
-            game.lastDangerSound = Date.now();
+    // [290726l] EDGE AUDIO, RETUNED — the always-on version was a metronome:
+    // on a 10-wide board you are within two cells of SOME edge more than half
+    // the time, and three of the four edges cannot even kill you. New rules:
+    //   · SOUND IS BOTTOM-ONLY. The one lethal edge gets the voice; sides
+    //     and ceiling stay visual-only (the border still shows all four).
+    //   · STARTS AT ONE CELL, not two — eyes get the early warning from the
+    //     border, ears only for the emergency.
+    //   · APPROACH-TRIGGERED: a short burst of ticks when you ARRIVE at a
+    //     tier (capped, then silence), re-armed only by moving closer or by
+    //     leaving the zone and coming back. Standing your ground near the
+    //     edge is often correct play — it should not nag.
+    if (!game.testDrive) {
+        const d = edgeDistances();
+        const dist = d ? d.bottom : Infinity;
+        if (dist <= 1) {
+            const prev = (game._edgeAudioTier === undefined) ? Infinity : game._edgeAudioTier;
+            if (dist < prev) {
+                // Entered a closer tier — arm a fresh burst.
+                game._edgeAudioTier = dist;
+                game._edgeTicksLeft = dist === 0 ? 4 : 2;
+            }
+            const iv = dist === 0 ? 300 : 560;
+            if ((game._edgeTicksLeft || 0) > 0 &&
+                (!game.lastDangerSound || Date.now() - game.lastDangerSound > iv)) {
+                if (sfx.danger) sfx.danger(dist === 0 ? 1.0 : 0.55);
+                game.lastDangerSound = Date.now();
+                game._edgeTicksLeft--;
+            }
+        } else {
+            // Clear of the zone — disarm and re-arm for the next approach.
+            game._edgeAudioTier = undefined;
+            game._edgeTicksLeft = 0;
         }
     }
-
-    // (V9: top proximity warning removed — the ceiling refuses moves with a
-    // muted bonk instead of killing, so no danger escalation is needed.)
     
     draw();
-    requestAnimationFrame(loop);
+    scheduleLoop();
     } catch (err) {
         console.error('[ROTOR] frame error (recovered, game continues):', err);
-        if (game.running) requestAnimationFrame(loop);
+        if (game.running) scheduleLoop();
     }
 }
 
@@ -10434,6 +11408,9 @@ function startGame(testDrive = false) {
     if (!testDrive) startCoachTips();
     game.flipCount = 0; game.diagCount = 0;
     game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false;
+    // [290726d] tally counters reset with the rest of the round trackers
+    game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+    game._levelStartScore = 0;   // fresh run: the object is rebuilt below with score 0
     displayScore = 0; scoreRecordShown = false;
     chain.n = 0; chain.lastT = 0;
     _rotorVel = 0;   // the wheel starts from a dead stop
@@ -10585,7 +11562,7 @@ function startGame(testDrive = false) {
     }
     
     lastTime = performance.now();
-    requestAnimationFrame(loop);
+    scheduleLoop();
 }
 
 function endGame(reason = 'death') {
@@ -10680,8 +11657,7 @@ function endGame(reason = 'death') {
         };
         const CONSOLATIONS = [
             'Every flipping legend loses a few cubes on the way.',
-            'The flips are in you now. Go again.',
-            'One more run — the rose is waiting.'
+            'The flips are in you now. Go again.'
         ];
         const causeLine = CAUSE_LINES[reason] || 'The run ended.';
         const consolation = (advancedRound >= 8)
@@ -11694,7 +12670,7 @@ function demoLoop(time) {
 }
 
 // Apply saved settings (theme, volumes, toggles) before the welcome shows
-try { loadSettings(); } catch (e) {}
+try { loadSettings(); syncWelcomeThemeBtn(); } catch (e) {}   // [290726p] icon reflects the saved theme at startup
 
 // Start the demo when page loads
 lastDemoTime = performance.now();

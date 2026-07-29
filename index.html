@@ -982,6 +982,14 @@ body.theme-day .td-shape.active rect { fill: #0d9488; }
    theme toggle on the welcome screen. Muted so it doesn't compete with
    the title, but readable. Theme-aware via the body.theme-day override
    below. */
+/* [290726-0938] Build stamp on the welcome screen — glance-checkable
+   version identity; populated from BUILD_VERSION (single source of truth). */
+.build-stamp {
+    margin-top: 6px; font-size: 11px; letter-spacing: 1.5px;
+    color: #64748b; text-align: center; font-variant-numeric: tabular-nums;
+}
+body.theme-day .build-stamp { color: #94a3b8; }
+
 .objective-text {
     margin: 14px 0 4px 0;
     font-size: 14px;
@@ -1529,6 +1537,7 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
         </div>
         <div class="welcome-row full">
             <button class="start-btn" onclick="startGame()">▶ PLAY</button>
+            <div class="build-stamp" id="buildStamp"></div>
         </div>
         <!-- Theme, Music, Sound and Fullscreen now live on the Settings (⚙)
              panel. These stay in the DOM (hidden) as the backing state that the
@@ -1877,7 +1886,50 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: #0d9488; border
 // boundary loosened half a square: a row is lawful while no more than
 // half of it is clipped (topLawfulRow), applied across move/drag/guide/
 // trap/recoil/shift-band/solver.
-const BUILD_VERSION = '270726zo ROTOЯ';
+// ════════════════════════════════════════════════════════════════════════
+// WORKING PRACTICES — read this before changing the game (for any AI chat
+// or human editor picking this file up):
+//  · BUILD_VERSION is DDMMYY-HHMM in UK time, set at build time (get real
+//    time from a trusted source — the sandbox clock is unreliable). Add one
+//    changelog comment line above it per build. It renders on the welcome
+//    screen under PLAY.
+//  · Source of truth is github.com/greenpark1/rotor — index.html (never
+//    rename it; GitHub Pages serves it). Compare BUILD_VERSION of what you
+//    fetched against what Jake says he's on; if GitHub is behind, STOP and
+//    ask him to push before editing.
+//  · Deliverable is always this single index.html (frames.js is separate,
+//    rarely touched). Jake drags it into ~/Projects/rotor/, tests over
+//    file://, then uploads to GitHub with the build stamp as the commit
+//    message.
+//  · Verify before shipping: at minimum node --check both inline scripts;
+//    for behaviour/render changes, run the game headlessly (jsdom + a real
+//    canvas) and exercise the changed path.
+//  · Game terminology: TURN shift (rotate), STEP shift (nudge), red minus
+//    cell, trim/devolve, the SHAVE, hourglass (+20s), COLLECT THE SET.
+// ════════════════════════════════════════════════════════════════════════
+// 290726-0938: naming convention switches to DDMMYY-HHMM (UK time). The
+// build stamp now displays on the welcome screen under PLAY, so any copy
+// identifies itself at a glance — check it against the newest build in
+// chat before working.
+// 290726-0952: WORKING PRACTICES block added above so the file carries its
+// own conventions into any chat or editor.
+// 290726-1040: MERGE — the 0952 build-stamp/practices work joined with the
+// TEST DRIVE + JOYSTICK line (they had forked onto separate copies).
+// Brings in: Settings > Practice test-drive arena (parity checkerboard,
+// shape selector, half-speed radar, tap-to-fly, no walls/clock/hazards/
+// text); the monochrome virtual JOYSTICK in gameplay (draggable input,
+// filled/hollow direction ticks, red refusal flash, tilt, motion trail,
+// idle fade) with Settings > Joystick show/opacity/side/auto-dodge; the
+// pill row retired into Settings; hourglass amber lifted to sand (it
+// muddied to olive over the navy void); and GROW SUPPLY — a demand-keyed
+// green floor mirroring TRIM SUPPLY, replacing the legacy "skip half the
+// green rolls" nerf that stacked with MAX_VISIBLE_GREENS and starved
+// evolution.
+const BUILD_VERSION = '290726-1040 ROTOЯ';
+{
+    const bs = document.getElementById('buildStamp');
+    if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
+}
 
 // ── HOURGLASS ICON ──────────────────────────────────────────────────────
 // [270726l] Step/turn shift glyphs as stroked vectors — ONE uniform 2.4px

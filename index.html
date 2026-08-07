@@ -433,6 +433,20 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
    would sit on top of the welcome screen's own pair. */
 .play-corner { display: none; }
 body.in-play .play-corner { display: flex; position: fixed; bottom: 12px; z-index: 40; }
+/* [070826e] The stick pad, beneath the board and only on touch. Hidden outside
+   a run, and in the garage — that screen keeps its corner stick, because the
+   shape selector needs the space below. */
+#stickPad { display: none; }
+@media (pointer: coarse) {
+    body.in-play #stickPad {
+        display: block;
+        width: min(100%, 420px);
+        height: auto; aspect-ratio: 260 / 210;
+        margin: 6px auto 0;
+        touch-action: none;
+    }
+    body.in-play.test-drive #stickPad { display: none; }
+}
 body.in-play.test-drive .play-corner { display: none; }
 
 .hud-left, .hud-right {
@@ -696,6 +710,14 @@ body.theme-day .rotor-secs.bleeding { color: #b91c1c; text-shadow: none; }
 .life-pip.spent svg path { fill: none; stroke: rgba(148,163,184,0.8); stroke-width: 2.4px; }
 /* The moment of loss is announced: the pip flares white and swells before it
    collapses into a hole. Class added by updateLivesHUD when the count drops. */
+/* [060826c] The pip beats with the heartbeat — the same signal seen as well as
+   heard, and aimed at the resource rather than the boundary. */
+.life-pip.beat { animation: pipBeat 420ms ease-out; }
+@keyframes pipBeat {
+    0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,45,149,0)); }
+    28%  { transform: scale(1.45); filter: drop-shadow(0 0 10px rgba(255,45,149,0.95)); }
+    100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,45,149,0)); }
+}
 .life-pip.losing { animation: pipLost 750ms ease-out; }
 @keyframes pipLost {
     0%   { transform: scale(1);    color: #ffffff; filter: drop-shadow(0 0 18px rgba(255,255,255,0.95)); }
@@ -2100,7 +2122,7 @@ body.theme-day .keymap-what { color: #475569; }
        and the button is always the last thing at the bottom rather than being
        pushed past it. overflow stays as a safety net for the tallest cards on
        the shortest screens. */
-    padding: clamp(10px, 3cqw, 22px) 0 clamp(8px, 2cqw, 14px);
+    padding: clamp(10px, 3cqw, 22px) 0 clamp(6px, 1.6cqw, 12px);
     justify-content: space-between;
     overflow-y: auto;
     /* Fully opaque: at 0.97 the board and HUD read faintly through a card that
@@ -2268,10 +2290,18 @@ body.theme-day .tally-rank-label { color: #64748b; }
 }
 body.theme-day .tally-rank-name { color: #5c7086; }
 body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shadow: none; }
+/* [060826n] Sized on the PLAY button. CONTINUE was a 14px label in a pill that
+   hugged its own text — the smallest thing on a card whose whole purpose is to
+   be dismissed, and the one control the player is looking for. It now takes the
+   same shape as PLAY: full width of the card's column, type on the same clamp,
+   the same generous padding. The two are the same act — "carry on" — so they
+   should be the same object. */
 .tally-continue {
-    margin-top: clamp(8px, 2.4cqw, 18px); padding: clamp(8px, 2.4cqw, 13px) clamp(20px, 7cqw, 32px);
-    font-size: 14px; font-weight: 700; letter-spacing: 3px;
-    border: none; border-radius: 10px; cursor: pointer;
+    width: min(300px, 82%);
+    margin-top: clamp(10px, 3cqw, 20px);
+    padding: clamp(9px, 2.6cqw, 18px) 24px;
+    font-size: clamp(16px, 4.6cqw, 28px); font-weight: 700; letter-spacing: 3px;
+    border: none; border-radius: 12px; cursor: pointer;
     background: #22d3ee; color: #06222b;
     opacity: 0; pointer-events: none; transform: translateY(6px);
     transition: opacity 260ms ease, transform 260ms ease;
@@ -2465,6 +2495,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         <button class="td-shape" data-shape="square" onclick="tdSetShape('square')" title="Square"><svg viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" rx="2"/><rect x="13" y="1" width="10" height="10" rx="2"/><rect x="1" y="13" width="10" height="10" rx="2"/><rect x="13" y="13" width="10" height="10" rx="2"/></svg></button>
     </div>
     <canvas id="canvas" class="game-canvas"></canvas>
+    <!-- [070826e] The joystick's own surface, beneath the board. Present only on
+         touch devices; a mouse keeps the in-board stick, where there is no
+         thumb to occlude anything. -->
+    <canvas id="stickPad" width="260" height="210" aria-hidden="true"></canvas>
     <!-- [040826i] Move Guide and Tips as BOTTOM-CORNER icons in play, matching
          the welcome screen exactly — guide bottom-left, tips bottom-right, with
          home top-left and settings top-right. Four corners, same four controls,
@@ -2606,6 +2640,13 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
             <label class="settings-row">
                 <span>Move Guide</span>
                 <input type="checkbox" id="setHints" onchange="settingHints(this.checked)">
+            </label>
+            <label class="settings-row">
+                <!-- [060826m] Off by default on nothing — shown to everyone, but
+                     the API simply does not exist on iOS Safari, so the control
+                     is honest about doing nothing there rather than hidden. -->
+                <span>Vibration</span>
+                <input type="checkbox" id="setHaptics" checked onchange="settingHaptics(this.checked)">
             </label>
             <label class="settings-row">
                 <span>Tips</span>
@@ -4462,7 +4503,457 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 //     drawing, which is what makes it read as a wheel with teeth on it rather
 //     than teeth with a wheel behind.
 // The bore stays open at r18, so the card still shows through.
-const BUILD_VERSION = '050826-1751 ROTOЯ';
+// 060826-0757: THE ROUTE, HALF SPEED AND FILLED. Each move now takes 460ms to
+// arrive instead of 230 and the finished route holds 2.2s instead of 1.1 — the
+// sequence had been building faster than it could be read, so the player saw
+// MOTION rather than an order. A four-move route now takes 1.8s to draw and
+// cycles every 4s.
+// The ghosts are also FILLED, not merely outlined. An outline against a board
+// already full of outlined cells asks the eye to pick one rectangle out of a
+// grid of rectangles; a filled shape reads as an object sitting ON the board.
+// Fill alpha stays well under the stroke's — 30% for the trail, 55% for the
+// goal — so the route still reads as a ghost rather than as pieces already
+// placed, and the one square that matters is the strongest thing in it.
+// 060826-1007: THE VOID WARNING IS BACK, AND REWRITTEN. I removed the edge audio
+// at 010826a alongside the proximity BORDER — only the border had been asked
+// for. Nothing replaced it, so the one boundary that actually KILLS has had no
+// warning since.
+// The old rules deserved rewriting rather than restoring. They warned about the
+// NEAREST edge, and on a 10-wide board you are near a side almost always — so
+// it cried wolf constantly and meant nothing. Sides and the ceiling merely
+// REFUSE a move; only the BOTTOM takes a heart.
+// Now bottom-only, escalating: one soft tick at 2 rows, a double at 1, an
+// urgent triple on the last line, each higher than the last. It fires only when
+// you have moved CLOSER — parking on the edge goes quiet instead of nagging,
+// and it re-arms when you retreat, so the sound marks a CHANGE rather than a
+// state. Pitched well above the countdown tick, so "about to fall off" can
+// never be mistaken for "running out of time".
+// Checked from the LOOP as well as on landing: the scroll closes the gap with
+// no input at all, which is the most dangerous case and exactly the one a
+// landing-only check would miss.
+// 060826-1018: ONE DANGER SIGNAL — A HEARTBEAT AND A CLOSING VIGNETTE.
+// The ticks were point EVENTS: they fired once as you crossed a line, so a
+// player looking at their piece, or mid-flip, or reading a float simply missed
+// them — and nothing said afterwards that the danger was still there. Danger is
+// a STATE.
+// Everything now reads ONE number, dangerLevel(), taken from whichever threat
+// is nearer: the clock (0 at 30s, full at zero) or the void (0 at 3 rows, full
+// on the last line). Two deaths, one consequence, one vocabulary — previously
+// they warned in unrelated languages for the same loss.
+//   HEARD: two low thumps, quickening from 1100ms apart at the threshold to
+//     340ms at the brink. The quickening IS the information.
+//   SEEN: the heart pip that would be spent NEXT swells on every beat, so the
+//     image points at the resource rather than the boundary.
+//   FELT: a vignette closes in from the edges, riding the same number and
+//     BREATHING on each beat, so sound and picture are one signal. Heavier
+//     along the bottom when the void is the nearer threat, so it says WHICH
+//     danger. Warm-tinted in day, where black at the edge of a white board
+//     reads as damage rather than atmosphere.
+// The MASTER LAMP is retired into it: both darkened the board as danger rose,
+// so together they were two systems fighting for one signal — and the lamp's
+// flat wash dimmed the very thing you are trying to see, where a vignette
+// leaves the centre clear. Capped at 0.46 so nothing on the board is ever lost.
+// 060826-1023: THE RED LINE ON ALL FOUR SIDES, AND AS A STATE. It already
+// existed, but only as an EVENT — a flash when you HIT an edge, which tells you
+// what you just did rather than what is about to happen. It now also lights
+// while you are NEAR one, and stays lit for as long as you are.
+// Why this works where the old green/amber/red border did not: that lit on ALL
+// sides whenever you were within two cells, which on a 10-wide board is most of
+// the time, so it never meant anything. This lights ONE side — the one you are
+// close to — and the BOTTOM is deliberately louder and reaches three rows where
+// the others reach one, because it is the only edge that takes a heart. The
+// picture says which KIND of trouble you are in.
+// A hard hairline appears once you are actually against a boundary, and the
+// contact flash still fires over the top: state underneath, event on top.
+// The heartbeat AUDIO is parked behind a flag (HEARTBEAT_AUDIO) while this is
+// tried — two new danger signals at once and neither can be judged. The pip
+// beat stays, since it costs nothing and points at the resource.
+// 060826-1026: THE GAME GETS QUIETER AS THE DANGER RISES. Most games get louder;
+// this one ducks. Everything the game plays now passes through one gain node,
+// so as dangerLevel() climbs the whole mix recedes — 100% clear, 45% at the
+// brink — and a low drone rises into the space it leaves.
+// Quiet is harder to tune out than noise: the ear keeps reaching for what is
+// missing. And the drone becomes audible less by getting loud than by being the
+// last thing still there, which is why the two belong together.
+// Three things that keep it safe: the duck is PARTIAL (45%, never near silence,
+// so the feedback telling you what just happened survives); the drone sits
+// BELOW everything else in pitch and passes a lowpass, so it never masks a cue;
+// and it does NOT pass through the duck bus, or it would duck itself.
+// Released on game over, so the end screen does not inherit a muffled mix and a
+// hum from the run that just finished.
+// 060826-1031: ONE RULE FOR EVERY BOUNDARY, AND A SHARP WARNING IN THE HUSH.
+// The red line is now identical on all four sides — same 2-cell reach, same
+// weight, same colour, and a thicker 4.5px hairline once you are against it.
+// The bottom had reached further and drawn heavier because it is the only edge
+// that takes a heart, but that meant learning two versions of one signal, and a
+// player at the left wall got a fainter warning than the rules deserved. A red
+// line means "you are at a boundary"; the boundary decides what it costs.
+// VIGNETTE REMOVED: with the lines doing the work it was a second visual system
+// saying the same thing less precisely — THAT you are in trouble, where a line
+// says WHICH. And a game whose edges kill you should not darken its edges.
+// AUDIO: the drone is off, and muffle now pairs with a SINGLE SHARP WARNING.
+// The ducking makes a hush; one clean tone cuts through the quiet it just
+// created. A sharp sound in a busy mix is one more noise — the same sound in a
+// hush you did not consciously notice is unmissable. A drone fills the space
+// the duck clears, which works against it.
+// It fires ONCE at the brink (danger 0.82: about 5s left, or hard against the
+// edge) and re-arms only after you climb back out, so escaping and returning
+// warns you again while sitting in danger does not. Two flat notes, not a
+// phrase: an interval reads as an alarm, and a phrase invites you to listen
+// where an alarm makes you act.
+// 060826-1037: THREE RISING WARNINGS, MAPPED TO THREE REAL COSTS.
+//   1 APPROACH — two cells off any boundary. One soft mid note.
+//   2 CONTACT  — against a side or the ceiling. Two notes, higher, firmer: a
+//                penalty is one move away.
+//   3 THE VOID — nearing the bottom. Three rising notes on a hard square wave.
+// Each tier is the one below plus another note and another step up, so they
+// read as one escalating family rather than three unrelated signals.
+// ONE DEPARTURE FROM THE BRIEF, deliberately: the ceiling shares tiers 1 and 2
+// with the sides rather than joining the bottom on 3. Mechanically top and
+// sides are IDENTICAL — a flip into either is refused for 2s, a push out of
+// either costs 10s — and only the bottom takes a HEART. Putting the ceiling on
+// the top tier would teach a danger that is not there, and would make the one
+// lethal boundary share its warning with a harmless one. If the ceiling should
+// feel worse, the honest fix is making it worse, not warning about a cost that
+// does not exist.
+// Fires on CHANGE: entering a tier sounds once, holding there is silent,
+// retreating re-arms it. A warning that repeats while you sit still becomes
+// furniture inside one level.
+// 060826-1042: THE "RANDOM" WARNING WAS ARITHMETIC, NOT PROXIMITY. edgeDistances()
+// derives its boundaries by ROUNDING the camera — topLawfulRow is
+// ceil(cameraY - 0.5), the bottom is floor(cameraY) + VIEW_H - 1 — and both jump
+// a whole row as the camera scrolls smoothly past an integer. So with the
+// player standing perfectly still, the measured distance changed on its own,
+// the tier fell and rose again, and the warning refired. It was not the player
+// nearing anything; it was the maths flickering underneath them.
+// Three fixes: distances now come from the RAW cameraY (fractional, no step);
+// each tier is entered at one threshold and left at a looser one, so a shape
+// resting on a boundary cannot oscillate across it; and a 900ms floor between
+// warnings catches the remaining case where a flip crosses a line and a tier
+// ticks twice within a frame or two.
+// 060826-1045: THE EDGE WARNING BECOMES LIGHT RATHER THAN PAINT. Three reasons
+// it read as a hard bar: the proximity gradient ran LINEARLY from full alpha to
+// zero, so its brightest point sat as a visible edge on the boundary; the band
+// was too shallow for anything to soften within; and the contact line was a
+// flat filled rectangle.
+// Now: extra colour stops bend the falloff into a real decay — intense at the
+// source, dropping fast, trailing off — the band is twice as deep so the
+// softness has room to happen, and the contact line is a BLOOM, a bright core
+// fading over three times its width, drawn with additive blending so it reads
+// as light ON the board instead of paint OVER it.
+// 060826-1054: MUSIC PAUSES, THE WALL DRONES, AND TEN LIFTS ARRIVE.
+// PAUSE: the soundtrack played straight through a pause — the one moment the
+// player has deliberately stopped everything, so music carrying on is the game
+// ignoring the instruction it was just given. It now ducks to silence and
+// returns on resume, rather than stopping, so the phrase is picked up where it
+// left off instead of restarting.
+// THE WALL: the bonk was three stacked notes and read as a percussive TAP —
+// right for something breaking, wrong for a wall, which does not strike you so
+// much as stop you. Now a short low swell of two detuned sawtooths beating
+// against each other (that beating is what gives a drone its grain) over a
+// slow-decaying body note.
+// TEN PIECES, one per level, generated rather than sourced — every note comes
+// from the same oscillators as the sound effects, so there is nothing to
+// licence and nothing to download: Ground Floor, Mezzanine, Third Landing,
+// Glass Atrium, Machine Room, Service Shaft, Cold Store, Deep Plant, Sub Level,
+// The Core. They descend from a hotel lobby into the machinery, each with its
+// own tempo, mode, chords, rhythm and swing. The Music toggle still governs the
+// lot.
+// Also removed an unreachable block: two bonk bodies had accumulated, the first
+// returning before the second could run.
+// 060826-1058: THE WALL DRONE DROPS 10% UNDER THE MOVE SOUND. It had been sitting
+// at 96% of the move sound's peak (0.121 against 0.126) — essentially level
+// with it, so hitting a wall was as loud as moving. Now 90%: just under the
+// thing you do constantly rather than just over it.
+// All three layers scale by the same factor. Trimming only the lead would have
+// weakened the detuned pair against the body, and it is that beating between
+// the two saws that gives the drone its grain.
+// 060826-1100: HAPTICS, where the device allows them. Wall bumps, out-of-bounds
+// pushes, red burns and lost hearts now buzz as well as sound.
+// THE IMPORTANT CAVEAT: the Vibration API works on ANDROID Chrome and Firefox,
+// and iOS SAFARI DOES NOT SUPPORT IT on any version — Apple has never exposed
+// the taptic engine to the web, and there is no polyfill. So iPhone and iPad
+// get nothing here regardless of what the hardware can do. Everything is
+// therefore attached to events that ALREADY carry a sound and a picture: touch
+// is a bonus layer, never a signal the player needs.
+// The patterns are graded by COST, the same principle the warning tiers use, so
+// touch agrees with sound instead of inventing its own scale: an 18ms tap for a
+// 2s bump, 30ms for a 10s push, a broken triple for a 20s red burn, and the
+// longest buzz in the set for a lost heart. Duration is the whole vocabulary —
+// a phone motor cannot do pitch.
+// A 60ms floor between buzzes stops a held direction against a wall turning the
+// phone into a hum, and a Vibration switch in Settings persists the choice.
+// 060826-1102: CONTINUE IS SIZED ON PLAY. It had been a fixed 14px label in a pill
+// that hugged its own text — the smallest thing on a card whose entire purpose
+// is to be dismissed, and the one control the player is actually looking for.
+// It now takes PLAY's shape: the full width of the card's column, type on the
+// same clamp(16px, 4.6cqw, 28px), the same generous padding. The two are the
+// same act — "carry on" — so they should be the same object.
+// The card's bottom padding is trimmed slightly to pay for the extra height,
+// since that card was only just fitting without scrolling.
+// 060826-1236: THE WALL DRONE, 10% SHORTER — saws 0.20 -> 0.18, body 0.16 ->
+// 0.144, all three cut by the same tenth so the envelope keeps its shape.
+// The DETUNING is deliberately untouched. The two saws sit 1.2% apart, which
+// beats about every 380ms; at 180ms you still hear roughly half a beat cycle,
+// and that partial swell is the grain. Trim much further and the beat has no
+// time to happen at all — the sound would get shorter and simultaneously stop
+// being a drone. This is close to the floor.
+// 060826-1240: THE MUSIC REALLY CHANGES EACH LEVEL NOW. It technically already
+// did — the scheduler read levelMusic() live — but two of the three things that
+// distinguish a piece were being ignored:
+//   TEMPO did nothing. Every piece carries one, but the scheduler advanced by
+//     the fixed M_STEP, so all ten played at identical speed. Step length now
+//     divides by the piece's tempo, which is what makes the later tracks feel
+//     heavier rather than merely sound different.
+//   THE MELODY was still reading M_MELODY, the original fixed C pentatonic. So
+//     a minor or diminished level played its tune over the same eight cheerful
+//     notes while the chords moved underneath — which is exactly why the darker
+//     pieces did not sound as dark as their harmony. It now uses each piece's
+//     own scale.
+// And the handover is CLEAN: the piece is latched for a bar and swaps only on a
+// bar line, so the old progression finishes its phrase and the new one starts
+// from the top. Before, a new level took over on the very next eighth, mid-
+// phrase, with the previous chord's pad still ringing over it — it changed, but
+// it sounded like a splice rather than a transition.
+// 060826-1246: TWO TRACKS, AND THE GAMEPLAY ONE IS ACTUALLY UPBEAT. The ten
+// descended into diminished chords and slow tempi, which read as gloom rather
+// than depth — a game you might play for twenty minutes should not be scoring
+// its own funeral. Now:
+//   LOBBY — welcome, settings and the level card. The old lounge feel, kept,
+//     because it suits a screen where nobody is under pressure.
+//   DRIVE — gameplay. Lydian, brisk, and ARRANGED differently rather than just
+//     played faster: tempo alone makes gloom hurried. What makes music upbeat is
+//     short notes, a moving bass and weight on the off-beat — so the pad is
+//     clipped instead of sustained, the bass WALKS (root, fifth, octave, fifth)
+//     instead of holding one note for the bar, and an off-beat lift lands on the
+//     fourth and eighth. Movement in the low end is most of what makes a piece
+//     feel like it is going somewhere; a held root makes it feel like it is
+//     waiting.
+// The tension layers still swell with danger, so the music can get urgent
+// without ever turning sad. Which track plays is decided by whether a run is in
+// progress, so the level card gets Lobby and the board gets Drive.
+// 060826-1250: THE GAMEPLAY TRACK IS NOW A MARCH, AT DOUBLE TEMPO. At 1.22 it was
+// the lobby piece hurried — same lilt, same swing, same seventh chords, just
+// faster — which is exactly why the two still sounded related. Four changes,
+// each removing something that made it lounge:
+//   TEMPO 1.22 -> 2.00 (88bpm -> 192).
+//   SWING to ZERO. Swing is what makes music saunter; a march is straight.
+//   TRIADS instead of sevenths. The seventh is the note that makes a chord
+//     sound reclined — there was not a single plain triad in the shape table,
+//     so maj and min were added. A bare major triad is a brass band.
+//   STACCATO throughout. Long notes make music drift; a march works because
+//     everything stops before the next step lands.
+// Plus the two devices that make it a march rather than a fast tune: the bass
+// alternates ROOT and FIFTH on every beat — left, right, left, right, the oldest
+// trick in the form — and a tick lands on the BACKBEAT, beats two and four,
+// which is what turns a walking bass into a march instead of a stroll.
+// 060826-1252: A TRUE WALKING BASS ON THE GAMEPLAY TRACK. Root-and-fifth was a
+// march STEP — it bounces in place. A walking line goes somewhere: one note per
+// beat, climbing root, third, fifth, and then leaning on a CHROMATIC APPROACH
+// NOTE a semitone below wherever the next bar is going.
+// That approach note is the whole device. It pulls the ear across the bar line
+// before the chord has changed, which is what makes a walking line feel
+// inevitable rather than merely busy — without it you have an arpeggio.
+// The notes are also lengthened to nearly touch: a walking line is LEGATO where
+// a march is staccato, and the downbeat root now matches the other three so all
+// four read as one phrase instead of a punch followed by three steps.
+// The backbeat tick stays, so it still marches — it just walks while it does.
+// 060826-1254: TWELVE-BAR BLUES ON THE GAMEPLAY TRACK.
+//   I  IV  I  I   IV IV  I  I   V  IV  I  V
+// The four-bar loop was short enough to notice itself — you heard it come
+// round. Twelve bars is long enough that the repeat stops announcing itself
+// (about 15 seconds at this tempo), and it is the most familiar shape in
+// popular music, so it feels known on first hearing.
+// With the two variations that make it sound like the blues rather than a
+// textbook: the QUICK CHANGE in bar 2, where the IV arrives early, and the
+// TURNAROUND in bar 12, a V that throws you back to the top instead of letting
+// the phrase settle — which is exactly what a looping game track needs.
+// Dominant sevenths return: banished from the march as lounge chords, but in
+// the blues the seventh is not a flavour, it IS the idiom.
+// The BASS walks in blues rather than major — the third is FLATTENED, and that
+// blue note over a major chord is the single thing separating a blues line from
+// an exercise. Root, flat third, sixth, chromatic approach. Comping stabs
+// shorten and lose their square edge: a blues chord is flicked and released.
+// 060826-1256: BOOGIE-WOOGIE. The twelve-bar form was right and the feel was
+// wrong, because the defining feature was missing: EIGHT TO THE BAR. A walking
+// line plays four notes and breathes between them; boogie plays eight and never
+// stops, and that relentlessness IS the genre — the left hand becomes an engine
+// and everything above it rides.
+// The figure is the classic one: root, third, fifth, SIXTH, flat seventh, and
+// back down. The sixth rocking up to the flat seventh and back is the sound
+// your ear recognises before any melody arrives, and it cannot be done with
+// four notes a bar — which is why the walking line could never get there.
+// Three things around it: SWING to 0.30, a real shuffle, since boogie is played
+// in triplets and 0.12 was a lean where this needs a roll; the right hand OUT
+// OF THE WAY, because with eight bass notes a bar the low end is already full
+// and a chord on every downbeat only muddies it; and the comping stabs moved
+// OFF the beat, to the and of two and the and of four, where the figure is at
+// its lightest.
+// 060826-1300: MOTORIK AND SATIE — two tracks that are opposites in every
+// dimension, so moving between them reads as a change of STATE rather than a
+// change of tune.
+// DRIVE is krautrock motorik: one bass note in straight eighths that never
+// varies, a tick on every off-beat, and a chord that changes twice a minute.
+// It fits this game better than boogie or blues for three reasons. ROTOЯ is a
+// SCROLLER — the world advances whether the player moves or not — and motorik
+// is the music of constant forward motion. It is HYPNOTIC rather than
+// demanding, and personality competes with concentration on a puzzle. And its
+// harmony barely moves, so the danger layers carry the emotion while the pulse
+// stays neutral. A twelve-bar keeps announcing where you are in the form;
+// motorik never does, which is what a loop should do.
+// The pulse depends on never varying — the moment the bass moves, the ear
+// listens TO it rather than THROUGH it — and each note is clipped short so there
+// is a gap: the gap is what makes it a pulse rather than a drone. Every
+// off-beat, not the backbeat: backbeat says march, off-beat says machine.
+// LOBBY is Satie — slow, spacious, unresolved, sixths and ninths that hang
+// rather than land. The opposite of lounge music, which fills a room; this
+// leaves it empty, giving those screens stillness rather than pleasantness.
+// 060826-1412: THE CEILING WAS FREE, AND SILENT. There were no callouts to
+// position, because none were being made: the top refusal read
+// `if (!denialRecoil(...)) bumpCost()`, and denialRecoil SUCCEEDS at the ceiling
+// — there is almost always a free cell to nudge sideways into — so bumpCost
+// never ran. No charge, no float, nothing on screen. The top was the one
+// boundary you could hit for nothing, which also explains why it never felt
+// like a boundary. The recoil still happens; it just no longer excuses the cost.
+// It also flags out-of-bounds now, so the red edge line lights on contact like
+// the other three.
+// POSITIONING: charge floats are born at the player's own cell, and at the
+// ceiling that is the one place with no board above it — floats RISE, so it
+// would have spent its whole life pinned against the clamp where it is hardest
+// to read. They now start a cell BELOW the contact point, so there is board
+// beneath them to travel through.
+// 060826-1415: THE WALL DRONE, HALVED — 0.18 to 0.09, body 0.144 to 0.072 — with
+// the DETUNE widened from 1.2% to 4.0% to pay for it.
+// That second part is the whole trick, and without it this would have been a
+// downgrade rather than a trim. The grain in this sound is the BEAT between the
+// two saws, and a beat takes time to occur: 1.2% apart they beat every 379ms,
+// so a 90ms note would carry barely a quarter of one cycle and the drone would
+// land as a flat buzz. At 4.0% they beat every 114ms, so 90ms still holds most
+// of a cycle. Shorter sound, faster wobble, same character.
+// 060826-1417: THE TRACKS SHARED ONE ARRANGEMENT — that is why neither sounded
+// like itself. Both ran through the same engine with the same WANDERING RANDOM
+// MELODY on top, and that melody was the loudest thing in the mix, so no amount
+// of changing chords underneath could make them different pieces. They were one
+// generator with two settings.
+// MOTORIK NOW HAS NO TUNE, which is the point: it is a texture, not a song, and
+// a melody over it turns it into a jam over a pulse. One long held fifth every
+// other bar, entering and fading; at high tension a single repeated note — not
+// a melody, a signal, and unnerving precisely because it never changes. Tempo
+// 125 -> 155bpm, since motorik lives at 140-160 and below that it plods.
+// SATIE gets the real device: the bass note and the chord are struck A BEAT
+// APART, never together. That separation is the whole sound of the Gymnopedies
+// — played as a block it becomes a hymn. Its melody steps by ONE degree and
+// rests most of the time, where the old wander jumped two in either direction,
+// which is why it sounded like noodling rather than composition.
+// 060826-1424: A REAL BEAT UNDER THE MOTORIK. It was monotone because nothing
+// marked where the BAR was — a bass note every eighth and a tick on every
+// off-beat, all identical, which gives pulse but no measure.
+// Motorik has a specific anatomy and it is the interplay that drives, not the
+// eighth notes alone:
+//   KICK on 1 and 3 — a sine whose pitch DROPS as it decays, which is what
+//     makes it read as a drum rather than a low note.
+//   SNARE on the backbeat, 2 and 4 — three detuned squares an odd interval
+//     apart, close enough to noise to pass without needing a sample.
+//   HATS on every eighth now, not just off-beats: the constant shimmer is what
+//     the kick and snare cut THROUGH. Off-beats stay slightly louder, and that
+//     is where the forward lean comes from.
+// The bass pulse also ACCENTS beat one — perfectly even eighths were most of
+// what made it a hum. A small emphasis tells the ear where the bar starts
+// without the bass ever leaving its note, which is the constraint that keeps
+// this motorik rather than a riff.
+// 060826-1427: TWO FIELDS EVERY TRACK DECLARED AND NOTHING EVER READ.
+// RHYTHM: each piece has carried a `rhythm` array since the ten-track version,
+// and the code used one global M_RHYTHM for all of them. Satie asks for a note
+// on the DOWNBEAT ONLY — [1,0,0,0,0,0,0,0] — and was being handed the global
+// [1,0,1,1,0,1,1,0]: four notes a bar where it wanted one. That is why it kept
+// sounding busy however far the tempo dropped.
+// SWING: same story. Every piece declares one; the scheduler advanced in
+// perfectly even steps, so a shuffle and a machine were timed identically. Odd
+// eighths are now pushed late by the piece's own value — and motorik's zero
+// finally MEANS something, because there is now something for it to be zero
+// against.
+// These two are most of why the tracks would not separate: I kept changing
+// settings that were being thrown away, which is also why each fix seemed to
+// land and nothing changed.
+// 070826-0814: NINE TRACKS, CYCLING BY LEVEL, MUSIC AT 50%.
+// Pizzicato → Waltz → Baroque → Harp → Chiptune → Tarantella → Ambient → Bossa
+// → Xylophone, one per level, wrapping after nine.
+// Each track now OWNS its arrangement — a function saying what happens on every
+// eighth — instead of being a set of numbers fed through one shared engine. That
+// engine is why nothing ever sounded like itself: a bossa and a march came out
+// as the same generator with different settings. It is more code and far less
+// clever, and it is the only version that has worked.
+// The scheduler also reads each track's own BPM, which range 104 to 168; a
+// shared step would flatten a tarantella and a harp to the same speed.
+// Pizzicato drops the bowed note that sat under it, as asked — all pluck now,
+// which is also what an oscillator does most convincingly.
+// Default music volume 0.42 -> 0.50 (saved settings still win).
+// The whole retired engine is DELETED, not left dormant: MUSIC_TRACKS,
+// levelMusic, levelChords, levelMelody, currentPiece and _pieceNow. Two music
+// systems in one file with only one running is how the last week of confusion
+// started.
+// 070826-0818: MUSIC TO 30%, A MENU TRACK, AND CROSSFADES BETWEEN SCREENS.
+// 30% because music is the BED, not the event — at 50 it was competing with the
+// sound effects, and those are the layer that actually tells the player things.
+// FOYER: one slow piece (68bpm) for every non-game screen — welcome, settings,
+// the level card, game over — so moving between them is continuous rather than a
+// series of restarts. It is the Harp at two-thirds speed with the sparkle
+// removed, and deliberately the same FAMILY as the suite rather than a different
+// world: the change should read as the music stepping back, not as a different
+// game starting. One rolled chord a bar, a single melody note every other bar,
+// silence otherwise — the silence is the point; a menu should not fill the room.
+// CROSSFADE: 700ms down, swap, 700ms up — and the swap happens at the BOTTOM,
+// while nothing is audible. Cutting between two pieces mid-note is what makes a
+// soundtrack feel like a website; fading out, changing, and fading back is what
+// makes it feel like one score paying attention. The new track also restarts at
+// its own bar one, so it never begins halfway through a phrase.
+// 070826-0827: FAST TRACKS FOR PLAY, SLOW ONES FOR THE MENUS, SHUFFLED.
+// The nine were cycling strictly in order, so a level could land on Harp
+// (104bpm) or Ambient (124) — pieces written to sit under a menu — with the
+// clock running. Sorted by tempo they fall into two obvious groups:
+//   PLAY  (138-168): Tarantella, Baroque, Waltz, Chiptune, Pizzicato, Xylophone
+//   MENUS (68-132):  Foyer, Harp, Ambient, Bossa
+// Bossa is 132 but belongs with the slow group by CHARACTER — it saunters, and a
+// track that saunters under a countdown works against the game.
+// ROTATION is a shuffled BAG, not an index and not pure random. Straight
+// rotation means every player meets the same track on level 3; pure random
+// repeats. A bag deals each track exactly once before any comes round again,
+// and the reshuffle checks it has not dealt the same one across the join — so
+// no two consecutive levels can share a track. The calm rotation advances once
+// per level too, so returning to the welcome screen is never the music you just
+// left.
+// 070826-0944: THE JOYSTICK MOVES BELOW THE BOARD ON iPHONE AND iPAD, AT 4x AREA.
+// It was drawn INTO the game canvas at a 45px radius, bottom-left — so on a
+// phone a thumb covers the very corner of the board it is being used to escape,
+// and the bottom-left corner is where the void takes you. A control that hides
+// the danger it exists to avoid is the wrong control.
+// It now has its OWN canvas beneath the board: radius 45 -> 90, which is four
+// times the AREA as asked, with nothing behind it.
+// Two existing seams made this possible without rewriting the renderer —
+// everything draws relative to stickCentre() and every touch maps through
+// stickClientToLogical(), so redirecting those two moves the whole thing. The
+// draw swaps `ctx` for the pad's context and swaps it BACK on exit; without
+// that restore the leak would send the HUD and every later frame to the pad and
+// the board would freeze.
+// Corner-dodging is gone with the move — there is nothing behind it to dodge —
+// which also removes a behaviour the player had to learn, the stick sliding
+// across the board as their shape approached.
+// Desktop is untouched: with a mouse there is no occlusion, and a pad below
+// would only be further to travel.
+// 070826-0948: CHECKED THE JOYSTICK MOVE — AND IT WOULD NOT HAVE WORKED.
+// All seven pieces from 070826-0944 were present and correct: markup, radius,
+// centring, hit-test mapping, render target, context restore, CSS. But every
+// touch handler was bound to the GAME CANVAS, and the pad is a separate
+// element. The enlarged stick would have drawn perfectly and been completely
+// dead to the finger — the kind of fault that looks like nothing is wrong until
+// someone tries it on a phone.
+// Fixed with addStickAware(), which attaches each listener to BOTH surfaces.
+// Nothing downstream changes, because stickClientToLogical() already resolves
+// coordinates against whichever surface the stick is on.
+// Worth recording as a pattern: verifying that edits LANDED is not the same as
+// verifying the feature WORKS. Everything I checked was there; the thing that
+// was missing was never edited in the first place.
+const BUILD_VERSION = '070826-0948 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
@@ -5249,6 +5740,43 @@ function chooseShifterKind() {
     return 'warp';
 }
 
+// ── [060826m] HAPTICS ───────────────────────────────────────────────────────
+// The Vibration API, where it exists. Worth knowing what that means in
+// practice: ANDROID Chrome and Firefox support it; iOS SAFARI DOES NOT, on any
+// version, so iPhone and iPad get nothing here whatever the device is capable
+// of. There is no polyfill — Apple has never exposed the taptic engine to the
+// web. Everything below therefore has to be a bonus, never a signal the player
+// needs, which is exactly why it is attached to events that ALREADY have a
+// sound and a picture.
+// A single gate, so it can be switched off by anyone who finds it intrusive,
+// and so a device that lies about support cannot buzz continuously.
+const HAPTICS = {
+    ok: () => (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function'),
+    on: true,
+    last: 0,
+    fire(pattern, minGap = 60) {
+        if (!this.on || !this.ok()) return;
+        if (typeof game !== 'undefined' && game && game.testDrive) return;
+        const now = performance.now();
+        // A floor between buzzes. Without it, holding a direction against a wall
+        // would fire on every repeat and the phone would simply hum.
+        if (now - this.last < minGap) return;
+        this.last = now;
+        try { navigator.vibrate(pattern); } catch (e) {}
+    }
+};
+// The vocabulary, matched to what each event COSTS — the same principle the
+// warning tiers use, so touch agrees with sound rather than inventing its own
+// scale. Duration is the whole language here: a phone motor cannot do pitch.
+const HAPTIC = {
+    bump:     [18],              // wall or ceiling — a tap. 2s.
+    oob:      [30],              // pushed out of bounds — firmer. 10s.
+    red:      [22, 40, 22],      // burned through a red — broken, because it cost you 20s.
+    trim:     [14, 30, 14],      // lost a cube
+    claim:    [12, 24, 12],      // a claim — light and quick, a good thing
+    heart:    [50, 60, 90],      // a heart gone — the longest thing in the set
+    levelUp:  [22, 40, 22, 40, 60]
+};
 function initAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -5258,7 +5786,7 @@ function initAudio() {
             const b = audioCtx.createBuffer(1, 1, 22050);
             const s = audioCtx.createBufferSource();
             s.buffer = b;
-            s.connect(audioCtx.destination);
+            s.connect(duckBus());   // [060826e]
             s.start(0);
         } catch (e) { /* non-fatal */ }
     }
@@ -5292,7 +5820,92 @@ const M_CHORDS = [                          // I – vi – IV – V
 ];
 const M_MELODY = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25]; // C pentatonic
 const M_RHYTHM = [1, 0, 1, 1, 0, 1, 1, 0];  // which eighths carry a melody note
-const MUSIC_VOLUME = 0.42;                  // master music level (tweak to taste)
+
+// ── [060826k] TEN PIECES, ONE PER LEVEL ─────────────────────────────────────
+// Written in code rather than sourced: every note is synthesised by the same
+// oscillators the sound effects use, so these are genuinely the game's own
+// music — no files, no licences, nothing to clear. That also keeps the whole
+// game one HTML file, which is the point of the project.
+// Each level gets a key, a progression, a scale, a rhythm and a tempo. They
+// share the lounge-jazz manner — seventh chords, soft pads, a lazy melody — so
+// the run feels like one record, and they DARKEN as the levels climb: major and
+// open at the start, minor and chromatic by the end. The music tells you how
+// deep you are without a word.
+// Frequencies are given as semitone offsets from C2 (65.41 Hz) and converted at
+// build time, which keeps the table readable and the transposition exact.
+const M_ROOT = 65.41;
+function ht(semi) { return M_ROOT * Math.pow(2, semi / 12); }
+function chordOf(rootSemi, shape) {
+    return { bass: ht(rootSemi), pad: shape.map(function (iv) { return ht(rootSemi + 12 + iv); }) };
+}
+const SH = {                      // chord shapes, in semitones above the root
+    maj7:  [0, 4, 7, 11],
+    min7:  [0, 3, 7, 10],
+    dom7:  [0, 4, 7, 10],
+    min9:  [0, 3, 10, 14],
+    maj9:  [0, 4, 11, 14],
+    dim7:  [0, 3, 6, 9],
+    sus4:  [0, 5, 7, 10],
+    min6:  [0, 3, 7, 9],
+    // [060826r] Plain TRIADS for the march. Every shape here was a seventh — and
+    // a seventh is a lounge chord: it is the note that makes a chord sound
+    // reclined. A bare major triad is the sound of a brass band, a fanfare, a
+    // parade. Nothing else in the table could have made the gameplay track stop
+    // sounding like the hotel it came from.
+    maj:   [0, 4, 7, 12],
+    min:   [0, 3, 7, 12]
+};
+const SCALES = {
+    pent:      [0, 2, 4, 7, 9, 12, 14, 16],          // major pentatonic — open, sunny
+    minPent:   [0, 3, 5, 7, 10, 12, 15, 17],         // minor pentatonic — bluesy
+    dorian:    [0, 2, 3, 5, 7, 9, 10, 12],           // minor with a lifted sixth — cool jazz
+    mixo:      [0, 2, 4, 5, 7, 9, 10, 12],           // dominant — lounge staple
+    lydian:    [0, 2, 4, 6, 7, 9, 11, 12],           // raised fourth — floating, dreamy
+    harmMinor: [0, 2, 3, 5, 7, 8, 11, 12],           // the tense one
+    whole:     [0, 2, 4, 6, 8, 10, 12, 14]           // whole tone — no home, unmoored
+};
+// ── [060826q] TWO TRACKS, NOT TEN ───────────────────────────────────────────
+// The ten descended from a hotel lobby into diminished chords and slow tempi,
+// which read as gloom rather than depth — and a game you might play for twenty
+// minutes should not be scoring your own funeral. They are replaced by two
+// pieces with clearly separate jobs:
+//   LOBBY — the non-game pages: welcome, settings, the level card. Warm, slow,
+//     unhurried. This is the old lounge feel, kept because it suits a screen
+//     where nobody is under pressure.
+//   DRIVE — gameplay. Major throughout, brisk, with a walking bass and an
+//     off-beat push: it should feel like something you are RIDING rather than
+//     something closing in. The tension layers still swell with danger, so the
+//     music can get urgent without ever turning sad.
+// ── [060826v] MOTORIK AND SATIE ─────────────────────────────────────────────
+// Two tracks that are opposites in every dimension — relentless against
+// spacious, no harmony against all harmony, machine against hand — so moving
+// between them reads as a genuine change of state rather than a change of tune.
+//
+// DRIVE (gameplay) — KRAUTROCK MOTORIK. One pulse, unvarying: a single bass
+// note in straight eighths, an off-beat tick, and a chord that shifts twice a
+// minute. Neu!, early Kraftwerk, driving at night.
+// It suits this game better than anything tried so far for three reasons.
+// ROTOЯ is a SCROLLER — the world advances at a constant rate whether the
+// player moves or not — and motorik is literally the music of constant forward
+// motion. It is HYPNOTIC rather than demanding: boogie and blues both have
+// personality, and personality competes with concentration on a puzzle. And its
+// harmony barely moves, so the danger layers carry all the emotion while the
+// pulse stays neutral underneath. A twelve-bar keeps announcing where you are
+// in the form; motorik never does, which is exactly what a loop should do.
+//
+// LOBBY (welcome, settings, level card) — SATIE. Slow, spacious, unresolved:
+// two notes, a long silence, two more. The opposite of lounge music, which
+// fills a room; this leaves it empty. It gives those screens STILLNESS rather
+// than pleasantness, which suits a moment where the player is reading a score
+// and deciding whether to go again.
+// [070826b] MUSIC_TRACKS, levelMusic, levelChords and levelMelody removed. That
+// engine expressed every piece through ONE shared arrangement, which is exactly
+// why none of them sounded like itself — and leaving it would mean two music
+// systems in one file with only one of them running. The suite owns the job now.
+
+// [070826c] 30%. Music is the bed, not the event — at 50 it was competing with
+// the sound effects, which are the layer that actually tells the player things.
+const MUSIC_VOLUME = 0.30;                  // master music level
 
 let musicGain = null;
 let musicPlaying = false;
@@ -5333,59 +5946,302 @@ function musicTargetIntensity() {
     return Math.max(0, Math.min(1, 0.55 * speedNorm + 0.30 * levelTension + 0.15 * clockAccent));
 }
 
+// [060826p] A CLEAN HANDOVER. levelMusic() is read live, so a new level's piece
+// took over on the very next EIGHTH — mid-bar, mid-phrase, with the pad from the
+// old chord still ringing over the new one. It changed, but it sounded like a
+// mistake rather than a new track.
+// The piece is now latched for the duration of a bar and swapped only on a bar
+// line, so the old progression finishes its phrase and the new one starts from
+// the top. The player hears a transition instead of a splice.
+// (currentPiece and _pieceNow removed at 070826b — the suite latches its own
+//  track in currentTrack(), so this was a second, unreachable latch.)
+
+// ── [070826a] NINE TRACKS ON A CYCLE ────────────────────────────────────────
+// The old engine tried to express every piece through ONE arrangement driven by
+// shared chord/rhythm/scale fields, and that is why nothing sounded like itself:
+// a bossa and a march came out as the same generator with different numbers.
+// These nine each own their arrangement outright \u2014 every track is a function
+// that says what happens on each eighth. It is more code and far less clever,
+// and it is the only version that has actually worked.
+// They cycle by LEVEL, so a run walks through the suite.
+
+// A pluck: 4ms attack, fast decay. That envelope is the entire difference
+// between a plucked string and a held note.
+function mPluck(freq, time, dur, peak, type) {
+    if (!audioCtx || !musicGain) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || 'triangle';
+    o.frequency.value = freq;
+    o.connect(g); g.connect(musicGain);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(peak, time + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    o.start(time); o.stop(time + dur + 0.03);
+}
+// Vibrato on the PITCH plus a slow swell \u2014 the cheapest way to make a sustained
+// tone read as bowed or blown rather than generated.
+function mBowed(freq, time, dur, peak, wave) {
+    if (!audioCtx || !musicGain) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    const lfo = audioCtx.createOscillator(), lg = audioCtx.createGain();
+    o.type = wave || 'sawtooth'; o.frequency.value = freq;
+    lfo.type = 'sine'; lfo.frequency.value = 5.0; lg.gain.value = freq * 0.005;
+    lfo.connect(lg); lg.connect(o.frequency);
+    o.connect(g); g.connect(musicGain);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.linearRampToValueAtTime(peak, time + Math.min(0.18, dur * 0.3));
+    g.gain.setValueAtTime(peak, time + dur * 0.72);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    o.start(time); o.stop(time + dur + 0.05);
+    lfo.start(time); lfo.stop(time + dur + 0.05);
+}
+// A drum needs a FALLING pitch; a fixed low note reads as a bass, not a kick.
+function mKick(time, peak) {
+    if (!audioCtx || !musicGain) return;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(120, time);
+    o.frequency.exponentialRampToValueAtTime(44, time + 0.09);
+    g.gain.setValueAtTime(peak, time);
+    g.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+    o.connect(g); g.connect(musicGain);
+    o.start(time); o.stop(time + 0.16);
+}
+// Three clashing squares stand in for noise well enough at this length.
+function mSnare(time, peak) {
+    musicNote(1670, time, 0.035, 'square', peak);
+    musicNote(2080, time, 0.030, 'square', peak * 0.8);
+    musicNote(2730, time, 0.022, 'square', peak * 0.6);
+}
+const mHt = (s) => 261.63 * Math.pow(2, s / 12);
+
+// [070826c] THE MENU TRACK. Every non-game screen — welcome, settings, the level
+// card, game over — shares one slow piece, so moving between them is continuous
+// rather than a series of restarts. It is the Harp at two-thirds speed with the
+// sparkle removed: unhurried, unresolved, and deliberately the same FAMILY as
+// the suite rather than a different world, so the change of screen reads as the
+// music stepping back rather than a different game beginning.
+const MENU_TRACK = { name: 'Foyer', bpm: 68, len: 32, play(i, t, S, I) {
+    const prog = [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]];
+    const ch = prog[Math.floor(i / 8) % 4];
+    // One rolled chord per bar, spread across the beat rather than struck — the
+    // spread is what stops a slow chord sounding like a hymn.
+    if (i % 8 === 0) {
+        ch.forEach((iv, n) => mPluck(mHt(iv), t + n * 0.075, S * 5, 0.058 - n * 0.007, 'sine'));
+        mPluck(mHt(ch[0] - 12), t, S * 7, 0.062, 'sine');
+    }
+    // A single melody note every other bar, and silence otherwise. The silence
+    // is the point: a menu should not be filling the room.
+    if (i % 16 === 6) mPluck(mHt(24 + ch[2]), t, S * 4, 0.040, 'sine');
+} };
+const MUSIC_SUITE = [
+    // 1 \u2014 PIZZICATO. Plucked, staccato, creeping upward: cartoon caper. The
+    // held bowed note that used to sit under this is GONE, as asked \u2014 it is all
+    // pluck now, which is also the thing an oscillator does most convincingly.
+    { name: 'Pizzicato', bpm: 142, len: 32, play(i, t, S, I) {
+        const line = [0, 3, 5, 7, 5, 3, 0, -2];
+        const bass = [-12, -12, -5, -5, -7, -7, -12, -12];
+        mPluck(mHt(12 + line[i % 8]), t, S * 0.7, 0.075 + 0.02 * I);
+        if (i % 2 === 0) mPluck(mHt(bass[Math.floor(i / 2) % 8]), t, S * 0.9, 0.095, 'sine');
+    }},
+    // 2 \u2014 WALTZ. Three-four: BASS, chord, chord. The metre carries it entirely.
+    { name: 'Waltz', bpm: 150, len: 24, play(i, t, S, I) {
+        const prog = [[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]];
+        const ch = prog[Math.floor(i / 6) % 4];
+        if (i % 3 === 0) mPluck(mHt(ch[0] - 12), t, S * 1.4, 0.095, 'sine');
+        else ch.forEach(iv => mPluck(mHt(iv), t, S * 0.8, 0.038 + 0.01 * I));
+        const mel = [12, null, null, 16, null, null, 14, null, null, 12, null, null];
+        const m = mel[i % 12];
+        if (m !== null) mPluck(mHt(m + ch[0]), t, S * 2.4, 0.060, 'sine');
+    }},
+    // 3 \u2014 BAROQUE INVENTION. A canon: the second voice plays the first, eight
+    // eighths behind. All the interest is in how the two lines collide.
+    { name: 'Baroque', bpm: 152, len: 32, play(i, t, S, I) {
+        const subj = [0, 2, 4, 5, 7, 5, 4, 2, 7, 5, 4, 2, 0, 2, 4, 0];
+        mPluck(mHt(12 + subj[i % 16]), t, S * 0.85, 0.062 + 0.02 * I);
+        if (i >= 8) mPluck(mHt(subj[(i - 8 + 32) % 16] - 5), t, S * 0.85, 0.050);
+        if (i % 8 === 0) mPluck(mHt(subj[i % 16] - 24), t, S * 2, 0.070, 'sine');
+    }},
+    // 4 \u2014 HARP AND CELESTE. A struck bell really is close to a sine with a long
+    // tail, so almost nothing here is being faked.
+    { name: 'Harp', bpm: 104, len: 32, play(i, t, S, I) {
+        const prog = [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]];
+        const ch = prog[Math.floor(i / 8) % 4];
+        const shape = [0, 1, 2, 3, 2, 1, 2, 3];
+        mPluck(mHt(12 + ch[shape[i % 8]]), t, S * 3.2, 0.055, 'sine');
+        if (i % 8 === 0) mPluck(mHt(ch[0] - 12), t, S * 5, 0.070, 'sine');
+        if (i % 16 === 6) mPluck(mHt(36 + ch[2]), t, S * 2, 0.028 + 0.015 * I, 'sine');
+    }},
+    // 5 \u2014 CHIPTUNE. Arpeggios are the language: a chip voice cannot hold a
+    // chord, so it spells one out fast instead. That constraint IS the sound.
+    { name: 'Chiptune', bpm: 150, len: 16, play(i, t, S, I) {
+        const prog = [0, 0, 9, 9, 5, 5, 7, 7];
+        const root = prog[Math.floor(i / 2) % 8];
+        const arp = [0, 4, 7, 12, 7, 4];
+        musicNote(mHt(root + 24 + arp[i % 6]), t, S * 0.5, 'square', 0.075);
+        if (i % 2 === 0) musicNote(mHt(root), t, S * 0.7, 'triangle', 0.11);
+        if (i % 8 === 4) musicNote(mHt(root + 12), t, S * 0.4, 'square', 0.05 + 0.02 * I);
+        if (i % 4 === 2) mSnare(t, 0.022);
+        if (i % 4 === 0) mKick(t, 0.13);
+    }},
+    // 6 \u2014 TARANTELLA. Six-eight and fast: relentless in a joyful way. The metre
+    // does all the driving, with no drum kit anywhere.
+    { name: 'Tarantella', bpm: 168, len: 36, play(i, t, S, I) {
+        const prog = [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7];
+        const r = prog[i % 12];
+        const fig = [0, 3, 5, 7, 5, 3];
+        mPluck(mHt(12 + r + fig[i % 6]), t, S * 0.6, 0.068);
+        if (i % 3 === 0) mPluck(mHt(r - 12), t, S * 0.9, 0.090, 'sine');
+        if (i % 6 === 3) mPluck(mHt(r - 5), t, S * 0.7, 0.055, 'sine');
+        if (i % 6 === 4) musicNote(5200, t, 0.02, 'square', 0.018 + 0.01 * I);
+    }},
+    // 7 \u2014 AMBIENT TECHNO. Almost nothing happens, on purpose: the kick is the
+    // song and the pad is the weather.
+    { name: 'Ambient', bpm: 124, len: 32, play(i, t, S, I) {
+        if (i % 4 === 0) mKick(t, 0.16);
+        if (i % 4 === 2) musicNote(9500, t, 0.02, 'square', 0.012);
+        if (i % 16 === 0) {
+            const root = (i % 32 === 0) ? 0 : 10;
+            [0, 7, 14].forEach(iv => musicNote(mHt(root + iv), t, S * 15, 'sine', 0.030));
+        }
+        if (i % 8 === 6) musicNote(mHt(10 + 24), t, S * 3, 'triangle', 0.022 + 0.015 * I);
+    }},
+    // 8 \u2014 BOSSA NOVA. The clave: notes land BETWEEN the beats, which is what
+    // makes it saunter rather than march.
+    { name: 'Bossa', bpm: 132, len: 16, play(i, t, S, I) {
+        const prog = [[0, 'maj7'], [10, 'dom7'], [3, 'maj7'], [8, 'dom7']];
+        const SHP = { maj7: [0, 4, 7, 11], dom7: [0, 4, 7, 10] };
+        const pr = prog[Math.floor(i / 4) % 4], r = pr[0];
+        if (i % 4 === 0) musicNote(mHt(r - 12), t, S * 1.6, 'sine', 0.10);
+        if (i % 4 === 2) musicNote(mHt(r - 5), t, S * 1.2, 'sine', 0.075);
+        if (i % 8 === 3 || i % 8 === 6)
+            SHP[pr[1]].forEach(iv => mPluck(mHt(r + 12 + iv), t, S * 0.8, 0.030));
+        if (i % 16 === 10) musicNote(mHt(r + 28), t, S * 2, 'sine', 0.045 + 0.015 * I);
+    }},
+    // 9 \u2014 XYLOPHONE POP. Bright wooden tone, a short singable phrase, bouncing
+    // bass. The child-friendly register.
+    { name: 'Xylophone', bpm: 138, len: 16, play(i, t, S, I) {
+        const mel = [0, 2, 4, 5, 7, 5, 4, 2, 0, 4, 7, 4, 5, 2, 0, null];
+        const prog = [0, 0, 5, 5, 7, 7, 0, 0];
+        const root = prog[Math.floor(i / 2) % 8];
+        const m = mel[i % 16];
+        if (m !== null) mPluck(mHt(24 + m), t, S * 1.1, 0.085, 'triangle');
+        mPluck(mHt(root + (i % 2 ? 7 : 0)), t, S * 0.55, 0.095, 'sine');
+        if (i % 4 === 2) mSnare(t, 0.016);
+    }}
+];
+
+// The suite advances one track per LEVEL and wraps, so a long run hears all
+// nine and then begins again. Latched per bar rather than read per note, so a
+// level change cannot cut a phrase in half.
+// ── [070826c] CROSSFADING BETWEEN SCREENS ───────────────────────────────────
+// Which track SHOULD be playing: the menu piece on every non-game screen, and
+// the level's own piece during a run.
+// [070826d] FAST FOR PLAY, SLOW FOR EVERYTHING ELSE. The nine were cycling
+// strictly in order, so a level could land on Harp (104bpm) or Ambient (124) —
+// pieces written to sit under a menu — while the clock was running. Sorted by
+// tempo, they fall into two obvious groups, and the split matches the job:
+//   PLAY  (132-168): Tarantella, Baroque, Waltz, Chiptune, Pizzicato, Xylophone
+//   MENUS (68-124):  Foyer, Harp, Ambient, Bossa
+// Bossa sits at 132 but belongs with the slow group by CHARACTER — it saunters,
+// and a track that saunters under a countdown is working against the game.
+const GAME_TRACKS = ['Tarantella', 'Baroque', 'Waltz', 'Chiptune', 'Pizzicato', 'Xylophone']
+    .map(n => MUSIC_SUITE.find(t => t.name === n));
+const CALM_TRACKS = [MENU_TRACK]
+    .concat(['Harp', 'Ambient', 'Bossa'].map(n => MUSIC_SUITE.find(t => t.name === n)));
+
+// A shuffled BAG rather than an index. Straight rotation means a player always
+// meets the same track on level 3, and pure random repeats — a bag gives every
+// track exactly one outing before any repeats, and the reshuffle simply checks
+// it did not deal the same one twice across the join.
+let _gameBag = [], _lastGame = null, _calmIdx = 0;
+function dealGameTrack() {
+    if (!_gameBag.length) {
+        _gameBag = GAME_TRACKS.slice();
+        for (let i = _gameBag.length - 1; i > 0; i--) {
+            const j = (Math.random() * (i + 1)) | 0;
+            [_gameBag[i], _gameBag[j]] = [_gameBag[j], _gameBag[i]];
+        }
+        // Never the same track twice running, even across a reshuffle.
+        if (_gameBag[0] === _lastGame && _gameBag.length > 1) {
+            [_gameBag[0], _gameBag[1]] = [_gameBag[1], _gameBag[0]];
+        }
+    }
+    _lastGame = _gameBag.shift();
+    return _lastGame;
+}
+let _playTrack = null, _playForLevel = -1;
+function wantedTrack() {
+    const inRun = (typeof game !== 'undefined' && game && game.running &&
+                   !game.celebrating &&
+                   !document.body.classList.contains('tally-open'));
+    if (!inRun) {
+        // The calm tracks advance one per visit, so returning to the welcome
+        // screen after a run is not the same music you just left.
+        return CALM_TRACKS[_calmIdx % CALM_TRACKS.length];
+    }
+    // One draw per level, remembered — otherwise every call would deal again and
+    // the track would change on every frame.
+    if (_playForLevel !== advancedRound || !_playTrack) {
+        _playForLevel = advancedRound;
+        _playTrack = dealGameTrack();
+        _calmIdx++;   // move the calm rotation on for the NEXT menu screen
+    }
+    return _playTrack;
+}
+// The swap happens at the BOTTOM of a fade, never while anything is audible.
+// Cutting between two pieces mid-note is the thing that makes a soundtrack feel
+// like a website; fading out, changing, and fading back in is what makes it feel
+// like one continuous score that is paying attention.
+let _suiteLatch = null, _fadeState = 'idle', _fadeAt = 0;
+const MUSIC_FADE_MS = 700;
+function currentTrack(step) {
+    if (!_suiteLatch) _suiteLatch = wantedTrack();
+    return _suiteLatch;
+}
+function updateMusicFade() {
+    if (!audioCtx || !musicGain || !musicPlaying) return;
+    const want = wantedTrack();
+    const now = performance.now();
+    const t = audioCtx.currentTime;
+    if (_fadeState === 'idle') {
+        if (want === _suiteLatch) return;            // nothing to change
+        _fadeState = 'out'; _fadeAt = now;
+        musicGain.gain.cancelScheduledValues(t);
+        musicGain.gain.setValueAtTime(musicGain.gain.value, t);
+        musicGain.gain.linearRampToValueAtTime(0.0001, t + MUSIC_FADE_MS / 1000);
+    } else if (_fadeState === 'out' && now - _fadeAt >= MUSIC_FADE_MS) {
+        // Silent — change the piece and restart its clock, so the new track
+        // begins at its own bar one rather than halfway through a phrase.
+        _suiteLatch = want;
+        musicStep = 0;
+        _fadeState = 'in'; _fadeAt = now;
+        musicGain.gain.cancelScheduledValues(t);
+        musicGain.gain.setValueAtTime(0.0001, t);
+        musicGain.gain.linearRampToValueAtTime(musicVolume, t + MUSIC_FADE_MS / 1000);
+    } else if (_fadeState === 'in' && now - _fadeAt >= MUSIC_FADE_MS) {
+        _fadeState = 'idle';
+    }
+}
+
 function scheduleMusicStep(step, time) {
-    // Ease intensity toward the live tension so layers fade in/out musically.
-    musicIntensity += (musicTargetIntensity() - musicIntensity) * 0.12;
-    const I = musicIntensity;
-
-    const bar = Math.floor(step / 8) % M_CHORDS.length;
-    const inBar = step % 8;
-    const chord = M_CHORDS[bar];
-
-    if (inBar === 0) {
-        // Sustained pad + bass for the whole bar — swells slightly with tension.
-        for (const f of chord.pad) musicNote(f, time, M_BAR * 0.96, 'sine', 0.05 + 0.02 * I);
-        musicNote(chord.bass, time, M_BAR * 0.96, 'sine', 0.11 + 0.05 * I);
-        // Sub-octave weight when things get tense.
-        if (I > 0.55) musicNote(chord.bass / 2, time, M_BAR * 0.96, 'sine', 0.05 * I);
-    }
-
-    // Driving offbeat bass pulse once the run heats up.
-    if (I > 0.5 && inBar === 4) {
-        musicNote(chord.bass, time, M_STEP * 0.9, 'triangle', 0.06 * I);
-    }
-
-    if (M_RHYTHM[inBar]) {
-        // Wandering pentatonic melody — brighter and louder as intensity rises.
-        musicMelIdx = Math.max(0, Math.min(M_MELODY.length - 1,
-            musicMelIdx + (Math.floor(Math.random() * 5) - 2)));
-        const melType = I > 0.6 ? 'square' : 'triangle';
-        musicNote(M_MELODY[musicMelIdx], time, M_STEP * 1.5, melType, 0.09 + 0.05 * I);
-        // Octave-up sparkle at high tension.
-        if (I > 0.7) musicNote(M_MELODY[musicMelIdx] * 2, time, M_STEP * 1.2, 'triangle', 0.03 * I);
-    } else if (I > 0.6 && Math.random() < (I - 0.5)) {
-        // Fill notes on the off-steps — denser, faster-feeling at high tension.
-        musicMelIdx = Math.max(0, Math.min(M_MELODY.length - 1,
-            musicMelIdx + (Math.floor(Math.random() * 3) - 1)));
-        musicNote(M_MELODY[musicMelIdx], time, M_STEP * 1.1, 'triangle', 0.05 * I);
-    }
-
-    // Hi-hat tick — rhythmic drive that grows in. Offbeats at mid tension, every
-    // eighth when it's really on.
-    if (I > 0.35) {
-        const hatPeak = 0.02 * (I - 0.3);
-        const playHat = I > 0.7 ? true : (inBar % 2 === 1);
-        if (playHat && hatPeak > 0.002) musicNote(2000, time, M_STEP * 0.16, 'square', hatPeak);
-    }
+    const T = currentTrack(step);
+    const S = (60 / T.bpm) / 2;
+    T.play(step % T.len, time, S, musicIntensity);
 }
 
 function musicScheduler() {
     if (!musicPlaying || !audioCtx) return;   // music plays on through pause (the bed waits with you)
     resumeAudio();
+    updateMusicFade();   // [070826c] swap tracks at the bottom of a fade
     const ahead = 0.25;
     while (musicNextTime < audioCtx.currentTime + ahead) {
         scheduleMusicStep(musicStep, musicNextTime);
-        musicNextTime += M_STEP;
+        // [070826a] The step length comes from the CURRENT TRACK's own tempo.
+        // Each of the nine sets its own, and they range from 104 to 168bpm — a
+        // shared step would flatten a tarantella and a harp into the same speed,
+        // which is most of what went wrong with every earlier attempt.
+        musicNextTime += (60 / currentTrack(musicStep).bpm) / 2;
         musicStep++;
     }
 }
@@ -5484,6 +6340,15 @@ function settingSound(on) {
 }
 function settingHints(on) { applyHints(on); saveSettings(); }
 function settingTips(on)  { applyTips(on);  saveSettings(); }
+// [060826m] Vibration preference. Persisted with the rest; a confirming buzz on
+// switch-on, which is also the only way to find out whether the device does it.
+function settingHaptics(on) {
+    HAPTICS.on = !!on;
+    try { localStorage.setItem('rotor_haptics', on ? '1' : '0'); } catch (e) {}
+    if (on) HAPTICS.fire(HAPTIC.claim, 0);
+    saveSettings();
+}
+try { HAPTICS.on = localStorage.getItem('rotor_haptics') !== '0'; } catch (e) {}
 function settingFullscreen(on) {
     const fc = document.getElementById('fullscreenCheck');
     if (fc) fc.checked = on;
@@ -5587,6 +6452,117 @@ function loadSettings() {
 // when no other effect is sounding. Music uses musicNote() and never touches it.
 let audioBusyUntil = 0;
 
+// ── [060826e] THE DUCK AND THE DRONE ────────────────────────────────────────
+// Most games get LOUDER to signal danger. This one gets quieter: as the danger
+// rises, everything else recedes and a low drone rises into the space it
+// leaves. Quiet is harder to tune out than noise, because the ear keeps
+// reaching for what is missing — and the drone becomes audible not by getting
+// louder on its own but by being the last thing still there.
+// Every sound in the game now passes through _duckBus, so ducking is one gain
+// node rather than a change to each sound.
+// The duck is PARTIAL by design — it bottoms out at 45%%, never near silence.
+// Killing the audio would take away the feedback that tells you what just
+// happened at exactly the moment you most need it.
+let _duckBus = null, _droneOsc = null, _droneGain = null, _droneFilter = null;
+function duckBus() {
+    if (!_duckBus) {
+        _duckBus = audioCtx.createGain();
+        _duckBus.gain.value = 1;
+        _duckBus.connect(audioCtx.destination);
+    }
+    return _duckBus;
+}
+function updateDangerAudio(dz) {
+    if (!audioCtx) return;
+    const on = document.getElementById('soundCheck');
+    if (on && !on.checked) return;
+    const t = audioCtx.currentTime;
+    // DUCK: 1.0 clear, easing to 0.45 at the brink.
+    duckBus().gain.setTargetAtTime(1 - 0.55 * dz, t, 0.25);
+    // [060826f] THE DRONE IS OFF. Muffle now pairs with a SINGLE SHARP WARNING
+    // instead: the ducking creates a hush, and one clear tone cuts through the
+    // quiet it just made. That is the stronger pairing — a sharp sound in a busy
+    // mix is one more noise; the same sound in a hush you did not consciously
+    // notice is unmissable. A drone fills the space the duck clears, which
+    // works against it.
+    if (false && !_droneOsc) {
+        _droneOsc = audioCtx.createOscillator();
+        _droneGain = audioCtx.createGain();
+        _droneFilter = audioCtx.createBiquadFilter();
+        _droneFilter.type = 'lowpass';
+        _droneFilter.frequency.value = 220;
+        _droneOsc.type = 'sawtooth';
+        _droneOsc.frequency.value = 55;
+        _droneGain.gain.value = 0;
+        _droneOsc.connect(_droneFilter);
+        _droneFilter.connect(_droneGain);
+        // NOT through the duck bus — it must not duck itself.
+        _droneGain.connect(audioCtx.destination);
+        try { _droneOsc.start(); } catch (e) {}
+    }
+    if (_droneGain) _droneGain.gain.setTargetAtTime(0, t, 0.20);
+}
+// ── [060826g] THREE TIERS, MAPPED TO THREE REAL CONSEQUENCES ────────────────
+// The tiers follow what a boundary actually COSTS, not merely how near it is —
+// otherwise the sound teaches a danger that is not there.
+//   TOP and SIDES are mechanically IDENTICAL: a flip into either is refused for
+//     2s, a shifter push out of either costs 10s. They share tiers 1 and 2.
+//   THE BOTTOM is the only boundary that takes a HEART, so it alone gets tier 3,
+//     and it starts warning a cell earlier.
+// (If the ceiling should feel more dangerous than a side, the honest fix is
+// making it more dangerous — not warning about a cost that does not exist.)
+// Fires on CHANGE, not continuously: entering a tier sounds once, and holding
+// there is silent. Move closer and the next tier speaks. Retreat and it re-arms,
+// so the same approach warns you again. A warning that repeats while you sit
+// still becomes furniture within one level.
+let _edgeTier = 0, _edgeWarnAt = 0;
+// [060826h] MEASURED IN CONTINUOUS ROWS, not rounded ones. The distances came
+// from edgeDistances(), which derives its boundaries by ROUNDING the camera:
+// topLawfulRow is ceil(cameraY - 0.5) and the bottom is floor(cameraY) + VIEW_H
+// - 1. Both JUMP by a whole row as the camera scrolls smoothly past an integer
+// — so with the player standing perfectly still, the measured distance changed
+// on its own, the tier fell and rose again, and the warning refired. That is
+// the "random de-de-dah": not the player nearing anything, but arithmetic
+// flickering underneath them.
+// Using the raw cameraY removes the step entirely.
+function edgeTierNow() {
+    const cells = getPlayerCells();
+    if (!cells.length) return 0;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const c of cells) {
+        if (c.x < minX) minX = c.x;
+        if (c.x > maxX) maxX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.y > maxY) maxY = c.y;
+    }
+    const bottom = (game.cameraY + VIEW_H - 1) - maxY;   // fractional, no jump
+    const top    = minY - game.cameraY;
+    const side   = Math.min(minX, (VIEW_W - 1) - maxX);
+    // HYSTERESIS: a tier is entered at one threshold and left at a looser one,
+    // so a shape sitting exactly on a boundary cannot oscillate across it.
+    const inT3 = _edgeTier >= 3 ? bottom < 2.6 : bottom < 1.8;
+    if (inT3) return 3;
+    const nearest = Math.min(top, side);
+    const inT2 = _edgeTier >= 2 ? nearest < 0.7 : nearest < 0.35;
+    if (inT2) return 2;
+    const inT1 = _edgeTier >= 1 ? (nearest < 2.6 || bottom < 3.6)
+                                : (nearest < 1.8 || bottom < 2.8);
+    return inT1 ? 1 : 0;
+}
+function dangerWarning() {
+    if (!game.running || game.paused || game.testDrive) return;
+    const tier = edgeTierNow();
+    const now = performance.now();
+    // A floor of 900ms between warnings. Even with the flicker fixed, a shape
+    // crossing a boundary mid-flip can tick a tier twice in a frame or two, and
+    // two of these on top of each other is the noise being complained about.
+    if (tier > _edgeTier && now - _edgeWarnAt > 900 && sfx.edgeWarn) {
+        sfx.edgeWarn(tier);
+        _edgeWarnAt = now;
+    }
+    _edgeTier = tier;
+}
+
 function playTone(freq, dur, type = 'sine', vol = 0.2, pan = 0, isMove = false) {
     if (!document.getElementById('soundCheck').checked || !audioCtx) return;
     resumeAudio();
@@ -5608,7 +6584,7 @@ function playTone(freq, dur, type = 'sine', vol = 0.2, pan = 0, isMove = false) 
     const panner = audioCtx.createStereoPanner();
     osc.connect(gain);
     gain.connect(panner);
-    panner.connect(audioCtx.destination);
+    panner.connect(duckBus());   // [060826e] every sound ducks together
     osc.type = type;
     osc.frequency.value = freq;
     gain.gain.value = vol * sfxVolume;
@@ -5634,7 +6610,7 @@ function playSweep(startFreq, endFreq, dur, type = 'sine', vol = 0.2, pan = 0, i
     const panner = audioCtx.createStereoPanner();
     osc.connect(gain);
     gain.connect(panner);
-    panner.connect(audioCtx.destination);
+    panner.connect(duckBus());   // [060826e] every sound ducks together
     osc.type = type;
     const t0 = audioCtx.currentTime;
     if (!isMove) audioBusyUntil = Math.max(audioBusyUntil, t0 + dur + 0.03);
@@ -5814,6 +6790,45 @@ const sfx = {
         setTimeout(() => playTone(NOTE.A2, 0.34, WAVE.peril, VOL.major * 0.7), 290);
     },
 
+    // [060826c] THE HEARTBEAT. The tick it replaces was a point EVENT — it fired
+    // once as you crossed a line, so a player looking at their piece, or
+    // mid-flip, or reading a float, simply missed it, and nothing told them
+    // afterwards that they were still in danger. Danger is a STATE.
+    // A heartbeat is a state: two low thumps, repeating, quickening as things
+    // worsen. You cannot miss it, it keeps telling you while the danger lasts,
+    // it needs no teaching, and it refers to the very thing you are about to
+    // lose. ONE vocabulary now covers both deaths — the void and the clock —
+    // which previously warned in two unrelated ways for one consequence.
+    // [060826g] THREE RISING WARNINGS — one per real consequence, so the sound
+    // tells you WHAT it will cost, not merely that something is near.
+    //   1 APPROACH  — two cells off any boundary. One soft mid note. Noticed,
+    //                  not obeyed.
+    //   2 CONTACT   — against a side or the ceiling. Two notes, higher and
+    //                  firmer: a penalty is one move away.
+    //   3 THE VOID  — nearing the bottom. Three notes, rising, loud, on a hard
+    //                  square wave. The only boundary that takes a heart, and
+    //                  the only one that sounds like it.
+    // Each tier is the one below plus another note and another step up, so a
+    // player hears them as one escalating family rather than three signals.
+    edgeWarn: (tier) => {
+        if (tier === 1) {
+            playTone(NOTE.A4, 0.06, WAVE.ui, VOL.ui * 1.1);
+        } else if (tier === 2) {
+            playTone(NOTE.C5, 0.06, WAVE.ui, VOL.event * 0.8);
+            setTimeout(() => playTone(NOTE.E5, 0.08, WAVE.ui, VOL.event * 0.85), 90);
+        } else {
+            playTone(NOTE.E5, 0.07, 'square', VOL.event * 0.9);
+            setTimeout(() => playTone(NOTE.A5, 0.07, 'square', VOL.event), 95);
+            setTimeout(() => playTone(NOTE.E6, 0.16, 'square', VOL.major * 0.85), 190);
+        }
+    },
+
+    heartbeat: (intensity) => {
+        const v = VOL.event * (0.5 + 0.5 * intensity);
+        playTone(NOTE.A2, 0.085, 'sine', v);
+        setTimeout(() => playTone(NOTE.E3 * 0.5, 0.11, 'sine', v * 0.8), 145);
+    },
+
     gold: () => {
         playTone(NOTE.C6, 0.08, WAVE.reward, VOL.event);
         setTimeout(() => playTone(NOTE.E6, 0.08, WAVE.reward, VOL.event), 60);
@@ -5879,9 +6894,27 @@ const sfx = {
     // and it is why this now sits alongside the movement sound instead of under
     // it.
     bonk: () => {
-        playTone(NOTE.E4, 0.045, WAVE.ui, VOL.event * 0.95);   // the knock — where the ear is sharpest
-        playTone(NOTE.C3, 0.075, WAVE.ui, VOL.event * 0.85);   // body
-        playTone(NOTE.A2, 0.095, WAVE.ui, VOL.event * 0.70);   // weight underneath
+        // [060826j] A DRONE, not a knock. The mid-range E4 gave it a percussive
+        // "tap" — right for something breaking, wrong for a wall, which does not
+        // strike you so much as stop you. It is now a short low swell: two close
+        // frequencies beating against each other, which is what gives a drone
+        // its grain, over a body note that decays slowly.
+        // [060826l] Sat at 96%% of the move sound's peak; now 90%%, so the wall is
+        // just under the thing you do constantly rather than just over it.
+        // All three layers scale together — trimming only the lead would have
+        // thinned the beating that gives the drone its grain.
+        // [060826x] HALVED: 0.18 -> 0.09, body 0.144 -> 0.072. And the DETUNE is
+        // widened from 1.2%% to 4.0%% to pay for it — which is the whole trick.
+        // The grain in this sound is the BEAT between the two saws, and a beat
+        // takes time to happen: at 1.2%% apart the pair beat every 379ms, so in a
+        // 90ms note you would hear barely a quarter of one cycle and the drone
+        // would arrive as a flat buzz. At 4.0%% they beat every 114ms, so a
+        // 90ms note still carries most of a cycle.
+        // Shorter sound, faster wobble, same character — rather than a shorter
+        // sound that has quietly stopped being a drone.
+        playTone(NOTE.A2,        0.09, 'sawtooth', VOL.event * 0.515);
+        playTone(NOTE.A2 * 1.040, 0.09, 'sawtooth', VOL.event * 0.422);  // detuned — the beat
+        playTone(NOTE.C3,        0.072, 'sine',    VOL.event * 0.562);   // body
     },
     // [050826d] Lifted to match the wall thud — these are the same class of
     // event (a refused move) and were both sitting under the movement sound.
@@ -6988,11 +8021,26 @@ function togglePause() {
     const panel = document.getElementById('pausePanel');
     if (panel) panel.classList.toggle('hidden', !game.paused);
     if (game.paused) {
+        // [060826j] The music pauses with the game. It had played straight
+        // through a pause — which is the one moment the player has deliberately
+        // stopped everything, so a soundtrack carrying on is the game ignoring
+        // the instruction it was just given. It ducks to silence rather than
+        // stopping, so resuming picks the phrase up rather than restarting it.
+        if (musicGain && audioCtx) {
+            musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+            musicGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.12);
+        }
+        if (typeof updateDangerAudio === 'function') updateDangerAudio(0);   // release the duck too
         // Prime the reviewCounter label so it reads sensibly before the player
         // hits Back/Fwd (without entering scrub mode automatically).
         const lbl = document.getElementById('reviewCounter');
         if (lbl) lbl.textContent = `Move ${replayMoveCount} / ${replayMoveCount}`;
     } else {
+        // [060826j] — and comes back on resume.
+        if (musicPlaying && musicGain && audioCtx) {
+            musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+            musicGain.gain.setTargetAtTime(musicVolume, audioCtx.currentTime, 0.25);
+        }
         // Unpausing: if we were scrubbing through history, exit cleanly first
         if (scrubbing) exitScrub();
         // Reset timing so dt doesn't spike after unpause
@@ -9263,6 +10311,7 @@ let _tallyCancels = [];
 let _tallyRunning = 0;
 
 function showLevelTally(onDone) {
+    document.body.classList.add('tally-open');   // [060826q] lobby track over the card
     const el = document.getElementById('levelTally');
     if (!el) { if (onDone) onDone(); return; }
     _tallyDone = onDone; _tallySkipped = false;
@@ -9451,6 +10500,7 @@ function skipLevelTally() {
 }
 
 function finishLevelTally() {
+    document.body.classList.remove('tally-open');   // [060826q] back to Drive
     clearTallyTimers();
     const el = document.getElementById('levelTally');
     if (el) {
@@ -10440,6 +11490,7 @@ function handleDeath(reason = 'death') {
     // when the hearts are gone OR the clock empties — two independent ways to
     // lose, which is what lets time and lives be tuned separately at last.
     lives = Math.max(0, lives - 1);
+    HAPTICS.fire(HAPTIC.heart, 200);   // [060826m] the longest buzz in the set
     updateLivesHUD();
     // [030826ah] A heart lost to the void or a red gets its own wind-down — it
     // had no sound of its own at all, only whatever the death path happened to
@@ -10539,6 +11590,7 @@ function redBump(dir, probeCells, redIdx) {
     // separate constant is gone — one rule, one number, nothing to drift.
     {
         const rc = probeCells[redIdx[0]];
+        HAPTICS.fire(HAPTIC.red, 120);   // [060826m]
         bumpCost(RED_BURN_COST_SEC, rc.x * CELL + CELL/2, (rc.y - game.cameraY) * CELL);
     }
     startFlip(dir, getPlayerCells(), game.faceParity, true);   // repel bounce
@@ -10608,7 +11660,12 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
         const cs = getPlayerCells();
         const c = cs.length ? cs[0] : null;
         const sx = atX !== null ? atX : (c ? c.x * CELL + CELL/2 : LOGICAL_W/2);
-        const sy = atY !== null ? atY : (c ? (c.y - game.cameraY) * CELL : LOGICAL_H/2);
+        // [060826w] Pushed a cell DOWN from the contact point, so a callout at
+        // the ceiling has board beneath it to sit on. Floats rise, so one born
+        // at the very top edge spends its whole life pinned against the clamp
+        // where it is hardest to read.
+        const sy = atY !== null ? atY
+                 : (c ? (c.y - game.cameraY) * CELL + CELL * 1.2 : LOGICAL_H/2);
         addFloat(sx, sy, `\u2212 ${sec} SECONDS`, '#f87171', false, { fall: true });
         const clockEl = document.getElementById('rotorSecs');
         if (clockEl) {
@@ -10713,6 +11770,7 @@ function move(dir) {
             else { const v = HINT_DIR_VEC[dir];
               if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) bumpCost(); }
             triggerShake(3, 90);
+            HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
             return;
         }
@@ -10781,10 +11839,25 @@ function move(dir) {
         for (const c of proposedCells) {
             if (c.y < topRowWorld) {
                 showMoveGhost(newX, newY, newConfig, 'top', dir);   // red ghost at the refused cells
-                { const v = HINT_DIR_VEC[dir];                      // [270726x] recoil + wall at impact
-                  if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) bumpCost(); }
+                // [060826w] THE CEILING NOW CHARGES LIKE EVERY OTHER BOUNDARY.
+                // It used to read `if (!denialRecoil(...)) bumpCost()` — and
+                // denialRecoil SUCCEEDS at the ceiling (there is almost always a
+                // free cell to nudge into), so bumpCost never ran. No charge, no
+                // float, nothing on screen: the top was the one boundary you
+                // could hit for free, and silently.
+                // The recoil still happens; it simply no longer excuses the cost.
+                { const v = HINT_DIR_VEC[dir];
+                  denialRecoil(v ? { dx: v[0], dy: v[1] } : null);
+                  if (!game.testDrive) bumpCost(); }
+                // Announce it ABOVE the shape, where there is board to draw on —
+                // the float defaults to the player's own cell, which at the
+                // ceiling is the one place with nothing above it. The clamp
+                // would rescue it, but a callout pinned to the very top edge
+                // reads as an error rather than as feedback.
+                flagOutOfBounds('top');
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 return;
             }
         }
@@ -10795,7 +11868,8 @@ function move(dir) {
                 // like the top — bonk, no wall, no death.
                 showMoveGhost(newX, newY, newConfig, 'top', dir);
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 return;
             }
             triggerShake(6, 300);
@@ -10909,6 +11983,7 @@ function applyDrag(dt) {
             { const v = HINT_DIR_VEC[game.dragDir];   // [270726x] recoil + wall at impact
               denialRecoil(v ? { dx: v[0], dy: v[1] } : null); }
             triggerShake(3, 90);
+            HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();   // wall-blocked drag — one audible refusal
             stopDrag();                 // then the drag ends (original behaviour)
             return;
@@ -10926,7 +12001,8 @@ function applyDrag(dt) {
                 { const v = HINT_DIR_VEC[game.dragDir];
                   denialRecoil(v ? { dx: v[0], dy: v[1] } : null); }
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 stopDrag();
                 return;
             }
@@ -11146,7 +12222,8 @@ function checkCollisions() {
                 delete shifterMeta[triggerKey];
                 denialRecoil(null);                   // [270726x] recoil + wall at impact
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             } else {
             // [270726p] Solids trim, last cube standing — the turn always
@@ -11237,7 +12314,8 @@ function checkCollisions() {
                 denialRecoil(null);
                 scoreGain(2, false);   // engaged a mechanism
                 triggerShake(3, 110);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             }
             }
@@ -11258,7 +12336,8 @@ function checkCollisions() {
                 delete shifterMeta[triggerKey];
                 denialRecoil({ dx: v.dx, dy: v.dy });   // [270726x] v = this slip's vector
                 triggerShake(3, 90);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             } else {
             // [270726p] Solids trim, last cube standing — the step always
@@ -11282,6 +12361,7 @@ function checkCollisions() {
                         flagOutOfBounds(newX < game.playerX ? 'left'
                                       : newX > game.playerX ? 'right'
                                       : newY > game.playerY ? 'bottom' : 'top');
+                        HAPTICS.fire(HAPTIC.oob);   // [060826m] pushed off the board
                         bumpCost(SHIFT_OOB_COST_SEC,
                                  triggerCell.x * CELL + CELL/2,
                                  (triggerCell.y - game.cameraY) * CELL);
@@ -11331,7 +12411,8 @@ function checkCollisions() {
                 denialRecoil({ dx: v.dx, dy: v.dy });
                 scoreGain(2, false);   // engaged a mechanism
                 triggerShake(3, 110);
-                if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
+                HAPTICS.fire(HAPTIC.bump);   // [060826m]
+            if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 cells = getPlayerCells();
             }
             }
@@ -12541,6 +13622,12 @@ function drawParityMark(slot) {
     ctx.restore();
 }
 
+// [050826s] The ghosts are FILLED now, not just outlined. An outline against a
+// board already full of outlined cells asks the eye to separate one rectangle
+// from a grid of rectangles; a filled shape reads as an object sitting on the
+// board. The fill is kept well under the stroke's alpha so the route still
+// reads as a ghost rather than as pieces already placed — and the goal, which
+// is the one square that matters, takes the strongest fill of all.
 function drawRouteGhost(cells, color, alpha, solid) {
     const inset = currentTheme === 'day' ? 1 : 2;
     // [040826l] A heavier stroke in day: an outline that reads clearly against
@@ -12561,6 +13648,11 @@ function drawRouteGhost(cells, color, alpha, solid) {
             roundedSq(sx, sy, CELL - inset * 2, null, '#ffffff', w + 3);
             ctx.restore();
         }
+        // Fill first, outline over it.
+        ctx.save();
+        ctx.globalAlpha *= (solid ? 0.55 : 0.30);
+        roundedSq(sx, sy, CELL - inset * 2, color, null);
+        ctx.restore();
         roundedSq(sx, sy, CELL - inset * 2, null, color, w);
     }
     ctx.restore();
@@ -12604,9 +13696,14 @@ function drawMoveGuideRoute() {
     // step 3, each holding once it has arrived, until the whole route stands
     // complete. It holds there long enough to be read, then replays.
     // The eye follows the construction, so the ORDER is the message.
-    const STAGGER_MS = 230;    // gap between one ghost arriving and the next
-    const FADE_MS    = 170;    // how long each takes to arrive
-    const HOLD_MS    = 1100;   // complete route held before it replays
+    // [050826s] HALF SPEED. Each move now takes almost half a second to arrive
+    // and the finished route holds for over two — the sequence was building
+    // faster than it could be read, so the player saw motion rather than an
+    // order. Slower also means the loop repeats less often, which matters for
+    // something that sits under a live board.
+    const STAGGER_MS = 460;    // gap between one ghost arriving and the next
+    const FADE_MS    = 340;    // how long each takes to arrive
+    const HOLD_MS    = 2200;   // complete route held before it replays
     const cycle = steps * STAGGER_MS + HOLD_MS;
     const t = performance.now() % cycle;
 
@@ -12735,8 +13832,22 @@ function tdTapAt(clientX, clientY) {
 //   whenever the player's shape closes in, so it never hides the action.
 // • IDLE FADE — dims to half after a second untouched; wakes instantly.
 const TD_ROSE_VEC = { N:[0,-1], NE:[1,-1], E:[1,0], SE:[1,1], S:[0,1], SW:[-1,1], W:[-1,0], NW:[-1,-1] };
-const STICK_R = 45;      // base pad radius
-const STICK_KR = 25;     // knob radius (dominant)
+// ── [070826e] THE STICK MOVES BELOW THE BOARD ON TOUCH DEVICES ──────────────
+// It was drawn INTO the game canvas, bottom-left, at a 45px radius — which on a
+// phone means your thumb covers the very corner of the board you are trying to
+// escape from, and the bottom-left corner is where the void takes you. A control
+// that hides the danger it is used to avoid is the wrong control.
+// On touch it now lives on its OWN canvas beneath the board, four times the
+// area, where nothing is behind it. Two seams made this possible without
+// rewriting the renderer: everything draws relative to stickCentre(), and every
+// touch maps through stickClientToLogical() — so redirecting those two functions
+// moves the whole thing.
+// Desktop keeps the in-board stick: with a mouse there is no occlusion, and a
+// separate pad below would just be further to travel.
+const STICK_TOUCH = (typeof window !== 'undefined') &&
+    window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+const STICK_R  = STICK_TOUCH ? 90 : 45;    // 4x the AREA, so twice the radius
+const STICK_KR = STICK_TOUCH ? 50 : 25;    // knob keeps its proportion
 let _tdKnob = { x: 0, y: 0, t: 0 };                       // smoothed knob offset + frame time
 let _stickUI = { tgt: 0, dodge: 0, fade: 1, lastAct: 0 }; // corner dodge + idle fade state
 let _stickTouch = { active: false, ox: 0, oy: 0, dir: null, pendDir: null, pendT: 0 };
@@ -12744,16 +13855,27 @@ let _stickDeny = { dir: null, t: 0 };
 function stickDeny(dir) { if (dir) { _stickDeny.dir = dir; _stickDeny.t = performance.now(); } }
 
 function stickCentre() {
+    // [070826e] On its own canvas it is simply centred — no corner-dodging,
+    // because there is nothing behind it to dodge away from. That also removes
+    // a whole behaviour the player had to learn: the stick used to slide across
+    // the board when their shape came near it.
+    if (STICK_TOUCH) return { x: STICK_PAD_W / 2, y: STICK_PAD_H / 2 };
     const leftX = STICK_R + 14;
     if (game.testDrive) return { x: stickSide === 'right' ? LOGICAL_W - STICK_R - 14 : leftX,
                                  y: STICK_R + 14 };   // garage: top corner, same side as gameplay
     const rightX = LOGICAL_W - STICK_R - 14;
     return { x: leftX + (rightX - leftX) * _stickUI.dodge, y: LOGICAL_H - STICK_R - 14 };
 }
+const STICK_PAD_W = 260, STICK_PAD_H = 210;
 function stickClientToLogical(clientX, clientY) {
-    const rect = canvas.getBoundingClientRect();
-    return { x: (clientX - rect.left) * (LOGICAL_W / rect.width),
-             y: (clientY - rect.top) * (LOGICAL_H / rect.height) };
+    // [070826e] Maps against whichever surface the stick is actually on.
+    const el = STICK_TOUCH ? document.getElementById('stickPad') : canvas;
+    if (!el) return { x: -999, y: -999 };
+    const rect = el.getBoundingClientRect();
+    const W = STICK_TOUCH ? STICK_PAD_W : LOGICAL_W;
+    const H = STICK_TOUCH ? STICK_PAD_H : LOGICAL_H;
+    return { x: (clientX - rect.left) * (W / rect.width),
+             y: (clientY - rect.top) * (H / rect.height) };
 }
 // 8-way direction from a knob offset (screen coords, y-down); null = deadzone.
 function stickDirFromOffset(ox, oy) {
@@ -12804,6 +13926,18 @@ function drawJoystickGuide() {
         }
     }
     _stickUI.dodge += (_stickUI.tgt - _stickUI.dodge) * (1 - Math.exp(-dtms / 450));
+    // [070826e] On touch the whole stick renders into its OWN context. Swapping
+    // `ctx` for the duration means the entire renderer below — every ring, arrow,
+    // heat glow and knob — works unchanged; it never needs to know where it is.
+    const _mainCtx = ctx;
+    let _padCtx = null;
+    if (STICK_TOUCH) {
+        const pad = document.getElementById('stickPad');
+        if (!pad) return;
+        _padCtx = pad.getContext('2d');
+        _padCtx.clearRect(0, 0, STICK_PAD_W, STICK_PAD_H);
+        ctx = _padCtx;
+    }
     const sc = stickCentre();
     const cx = sc.x, cy = sc.y;
 
@@ -12975,6 +14109,11 @@ function drawJoystickGuide() {
     }
     ctx.restore();
     ctx.restore();
+    // [070826e] ALWAYS restore. Without this the swap leaks: every draw after
+    // the stick — the whole HUD, every later frame — would go to the pad canvas
+    // and the board would simply stop updating. The one early return above sits
+    // BEFORE the swap, so this is the only exit that needs it.
+    if (_padCtx) ctx = _mainCtx;
 }
 
 // Shape selector — swap the machine on the test stand. Repositions to the
@@ -13320,7 +14459,78 @@ function edgeDistances() {
         right:  Math.max(0, (VIEW_W - 1) - maxX)
     };
 }
-// The single worst edge — what the audio ramp and any copy should react to.
+// ── [060826a] THE VOID WARNING, REBUILT ─────────────────────────────────────
+// I removed the edge audio at 010826a alongside the proximity BORDER. Only the
+// border had been asked for; the sound went with it and nothing replaced it, so
+// the one boundary that actually kills has had no warning at all since.
+// The old rules warned about the NEAREST edge, which was the flaw: on a 10-wide
+// board you are near a side almost always, so it cried wolf constantly and told
+// you nothing. Sides and the ceiling merely REFUSE a move — the player learns
+// that in a second and pays 2s. Only the BOTTOM takes a heart.
+// So the warning is bottom-only, and it escalates:
+//   2 rows — a single soft tick. You are entering the danger zone.
+//   1 row  — a double tick, higher. You are in it.
+//   0 rows — an urgent triple on the last line. Move.
+// It fires only when you have MOVED CLOSER, so parking on the last row goes
+// quiet rather than nagging, and it re-arms the moment you retreat — the sound
+// marks a CHANGE, not a state, which is what stops it becoming wallpaper.
+// Pitched well above the countdown tick so "about to fall off" can never be
+// mistaken for "running out of time".
+// ── [060826c] ONE DANGER SIGNAL: THE HEARTBEAT ──────────────────────────────
+// Two deaths, one consequence — the void takes a heart, the clock takes a heart
+// — but they used to warn in completely different languages: ticks for one,
+// amber digits for the other. A player had to learn two vocabularies for the
+// same loss. This is one signal for both, and it speaks in the currency at
+// risk.
+// dangerLevel() returns 0..1 from whichever threat is nearer, and everything
+// downstream — the beat, its tempo, the heart pips, the vignette — reads that
+// single number, so sound and image can never disagree.
+function dangerLevel() {
+    if (!game.running || game.paused || game.testDrive) return 0;
+    // The CLOCK: nothing under 30s, rising to full at zero.
+    const rem = momentumRemaining();
+    const byTime = rem > 30 ? 0 : Math.min(1, (30 - rem) / 30);
+    // The VOID: nothing beyond 3 rows, rising to full on the last line.
+    const d = edgeDistances();
+    const byVoid = !d ? 0 : (d.bottom > 3 ? 0 : Math.min(1, (3 - d.bottom) / 3));
+    return Math.max(byTime, byVoid);
+}
+const HEARTBEAT_AUDIO = false;   // [060826d] flip to true to hear it again
+let _beatAt = 0;
+function runHeartbeat() {
+    const dz = dangerLevel();
+    updateDangerAudio(dz);   // [060826e] duck the mix
+    dangerWarning();         // [060826g] and the three-tier edge warning
+    if (dz <= 0.05) return;
+    // 1100ms between beats at the threshold, down to 340ms at the brink — the
+    // quickening IS the information, so it must be felt before it is counted.
+    const gap = 1100 - 760 * dz;
+    const now = performance.now();
+    if (now - _beatAt < gap) return;
+    _beatAt = now;
+    // [060826d] The heartbeat AUDIO is off while the red edge lines are tried —
+    // the visual is the part that was missing, and two new danger signals at
+    // once would make it impossible to tell which is doing the work. The pip
+    // beat below stays: it costs nothing and points at the resource.
+    if (HEARTBEAT_AUDIO && sfx.heartbeat) sfx.heartbeat(dz);
+    // The HUD pips beat with it: same signal, seen as well as heard. The pip
+    // that would be spent next takes the swell, so the image points at the
+    // resource rather than at the boundary.
+    const wrap = document.getElementById('lifePips');
+    if (wrap) {
+        const live = wrap.querySelectorAll('.life-pip:not(.spent)');
+        const el = live[live.length - 1];
+        if (el) {
+            el.classList.remove('beat');
+            void el.offsetWidth;
+            el.classList.add('beat');
+            setTimeout(() => el.classList.remove('beat'), 420);
+        }
+    }
+}
+
+
+// The single worst edge — what any copy should react to.
 function nearestEdge() {
     const d = edgeDistances();
     if (!d) return null;
@@ -13334,32 +14544,132 @@ function nearestEdge() {
 // the part that reports an EVENT rather than a state: a red flash on the side
 // you actually crossed.
 function drawEdgeProximity() {
-    if (!edgeOobT0) return;
+    // [060826d] THE RED LINE BECOMES A PROXIMITY STATE, on all four sides.
+    // It already existed, but only as an EVENT — a flash when you actually hit
+    // an edge, which tells you what you just did rather than what is about to
+    // happen. Now it also lights while you are NEAR one, and it stays lit for as
+    // long as you are: a state you can glance at, not a moment you can miss.
+    // Why this beats the old green/amber/red border: that lit on ALL sides
+    // whenever you were within two cells, which on a 10-wide board is most of
+    // the time, so it never meant anything. This lights ONE side — the one you
+    // are close to — and only at one cell.
+    // The BOTTOM is deliberately louder and reaches further: it is the only edge
+    // that takes a heart. The other three cost seconds, so they get a thinner,
+    // dimmer line. The picture says which kind of trouble you are in.
     const now = performance.now();
-    const age = now - edgeOobT0;
-    if (age >= EDGE_OOB_MS) return;
-    const strength = 1 - age / EDGE_OOB_MS;
-    const [r, g, b] = EDGE_OOB_COLOR;
     ctx.save();
-    for (const side of ['top', 'bottom', 'left', 'right']) {
-        if (edgeOobSide && edgeOobSide !== side) continue;
-        let x0, y0, w, h, gx0, gy0, gx1, gy1;
-        if (side === 'top')    { x0 = 0; y0 = 0; w = LOGICAL_W; h = EDGE_BAND_PX;
-                                 gx0 = 0; gy0 = 0; gx1 = 0; gy1 = EDGE_BAND_PX; }
-        if (side === 'bottom') { x0 = 0; y0 = LOGICAL_H - EDGE_BAND_PX; w = LOGICAL_W; h = EDGE_BAND_PX;
-                                 gx0 = 0; gy0 = LOGICAL_H; gx1 = 0; gy1 = LOGICAL_H - EDGE_BAND_PX; }
-        if (side === 'left')   { x0 = 0; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
-                                 gx0 = 0; gy0 = 0; gx1 = EDGE_BAND_PX; gy1 = 0; }
-        if (side === 'right')  { x0 = LOGICAL_W - EDGE_BAND_PX; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
-                                 gx0 = LOGICAL_W; gy0 = 0; gx1 = LOGICAL_W - EDGE_BAND_PX; gy1 = 0; }
-        const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
-        grad.addColorStop(0, `rgba(${r},${g},${b},${(0.95 * strength).toFixed(3)})`);
-        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x0, y0, w, h);
+    const d = (game.running && !game.paused) ? edgeDistances() : null;
+    if (d) {
+        // [060826f] ONE RULE FOR ALL FOUR. The bottom used to reach further and
+        // draw heavier because it is the only edge that takes a heart — but that
+        // meant learning two versions of one signal, and a player near the left
+        // wall got a fainter warning than the rules deserved. Same reach, same
+        // weight, same colour on every side: a red line means "you are at a
+        // boundary", and the boundary itself decides what that costs.
+        const SIDES = [
+            { k: 'bottom', reach: 2, weight: 1 },
+            { k: 'top',    reach: 2, weight: 1 },
+            { k: 'left',   reach: 2, weight: 1 },
+            { k: 'right',  reach: 2, weight: 1 }
+        ];
+        for (const sd of SIDES) {
+            const dist = d[sd.k];
+            if (dist > sd.reach) continue;
+            const near = 1 - (dist / (sd.reach + 1));          // 0..1, worst at the line
+            // A slow pulse only when you are ON the line — otherwise it holds
+            // steady, so movement in the corner of the eye means "it got worse".
+            const pulse = dist === 0 ? 0.75 + 0.25 * Math.sin(now / 260) : 1;
+            const a = 0.62 * near * sd.weight * pulse;
+            const band = EDGE_BAND_PX * 1.9;   // [060826i] deeper: a soft edge needs room
+            let x0, y0, w, h, gx0, gy0, gx1, gy1;
+            if (sd.k === 'top')    { x0 = 0; y0 = 0; w = LOGICAL_W; h = band;
+                                     gx0 = 0; gy0 = 0; gx1 = 0; gy1 = band; }
+            if (sd.k === 'bottom') { x0 = 0; y0 = LOGICAL_H - band; w = LOGICAL_W; h = band;
+                                     gx0 = 0; gy0 = LOGICAL_H; gx1 = 0; gy1 = LOGICAL_H - band; }
+            if (sd.k === 'left')   { x0 = 0; y0 = 0; w = band; h = LOGICAL_H;
+                                     gx0 = 0; gy0 = 0; gx1 = band; gy1 = 0; }
+            if (sd.k === 'right')  { x0 = LOGICAL_W - band; y0 = 0; w = band; h = LOGICAL_H;
+                                     gx0 = LOGICAL_W; gy0 = 0; gx1 = LOGICAL_W - band; gy1 = 0; }
+            // [060826i] A GLOW, not a bar. The gradient ran straight from full
+            // alpha to zero — linear, so the eye reads its brightest point as a
+            // hard edge sitting on the boundary. Real light does not fall off in
+            // a straight line: it is intense at the source and decays fast, so
+            // the extra stops here bend the curve. And the band is deeper, since
+            // a soft edge needs distance to be soft in.
+            const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
+            grad.addColorStop(0.00, `rgba(239, 68, 68, ${a.toFixed(3)})`);
+            grad.addColorStop(0.18, `rgba(239, 68, 68, ${(a * 0.62).toFixed(3)})`);
+            grad.addColorStop(0.45, `rgba(239, 68, 68, ${(a * 0.24).toFixed(3)})`);
+            grad.addColorStop(0.72, `rgba(239, 68, 68, ${(a * 0.07).toFixed(3)})`);
+            grad.addColorStop(1.00, 'rgba(239, 68, 68, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(x0, y0, w, h);
+            // A hard hairline right on the boundary once you are against it —
+            // the difference between "close" and "there".
+            if (dist === 0) {
+                // [060826i] The contact line is a BLOOM now rather than a bar:
+                // a bright core fading out over three times its width, drawn
+                // with additive blending so it reads as light on the board
+                // instead of paint over it. The hard rectangle was the main
+                // thing making the whole signal look pasted on.
+                const W = 5;
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                const core = (x0b, y0b, wb, hb, dir) => {
+                    const gg = dir === 'v'
+                        ? ctx.createLinearGradient(x0b, y0b, x0b + wb, y0b)
+                        : ctx.createLinearGradient(x0b, y0b, x0b, y0b + hb);
+                    gg.addColorStop(0.00, 'rgba(255, 120, 120, 0.85)');
+                    gg.addColorStop(0.22, 'rgba(239, 68, 68, 0.45)');
+                    gg.addColorStop(1.00, 'rgba(239, 68, 68, 0)');
+                    ctx.fillStyle = gg;
+                    ctx.fillRect(x0b, y0b, wb, hb);
+                };
+                if (sd.k === 'top')    core(0, 0, LOGICAL_W, W * 3, 'h');
+                if (sd.k === 'bottom') { const gg = ctx.createLinearGradient(0, LOGICAL_H, 0, LOGICAL_H - W * 3);
+                    gg.addColorStop(0.00, 'rgba(255, 120, 120, 0.85)');
+                    gg.addColorStop(0.22, 'rgba(239, 68, 68, 0.45)');
+                    gg.addColorStop(1.00, 'rgba(239, 68, 68, 0)');
+                    ctx.fillStyle = gg; ctx.fillRect(0, LOGICAL_H - W * 3, LOGICAL_W, W * 3); }
+                if (sd.k === 'left')   core(0, 0, W * 3, LOGICAL_H, 'v');
+                if (sd.k === 'right')  { const gg = ctx.createLinearGradient(LOGICAL_W, 0, LOGICAL_W - W * 3, 0);
+                    gg.addColorStop(0.00, 'rgba(255, 120, 120, 0.85)');
+                    gg.addColorStop(0.22, 'rgba(239, 68, 68, 0.45)');
+                    gg.addColorStop(1.00, 'rgba(239, 68, 68, 0)');
+                    ctx.fillStyle = gg; ctx.fillRect(LOGICAL_W - W * 3, 0, W * 3, LOGICAL_H); }
+                ctx.restore();
+            }
+        }
+    }
+    // The existing CONTACT flash still fires over the top — it marks the event
+    // where the lines above mark the state.
+    if (edgeOobT0) {
+        const age = now - edgeOobT0;
+        if (age < EDGE_OOB_MS) {
+            const strength = 1 - age / EDGE_OOB_MS;
+            const [r, g, b] = EDGE_OOB_COLOR;
+            for (const side of ['top', 'bottom', 'left', 'right']) {
+                if (edgeOobSide && edgeOobSide !== side) continue;
+                let x0, y0, w, h, gx0, gy0, gx1, gy1;
+                if (side === 'top')    { x0 = 0; y0 = 0; w = LOGICAL_W; h = EDGE_BAND_PX;
+                                         gx0 = 0; gy0 = 0; gx1 = 0; gy1 = EDGE_BAND_PX; }
+                if (side === 'bottom') { x0 = 0; y0 = LOGICAL_H - EDGE_BAND_PX; w = LOGICAL_W; h = EDGE_BAND_PX;
+                                         gx0 = 0; gy0 = LOGICAL_H; gx1 = 0; gy1 = LOGICAL_H - EDGE_BAND_PX; }
+                if (side === 'left')   { x0 = 0; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
+                                         gx0 = 0; gy0 = 0; gx1 = EDGE_BAND_PX; gy1 = 0; }
+                if (side === 'right')  { x0 = LOGICAL_W - EDGE_BAND_PX; y0 = 0; w = EDGE_BAND_PX; h = LOGICAL_H;
+                                         gx0 = LOGICAL_W; gy0 = 0; gx1 = LOGICAL_W - EDGE_BAND_PX; gy1 = 0; }
+                const grad = ctx.createLinearGradient(gx0, gy0, gx1, gy1);
+                grad.addColorStop(0, `rgba(${r},${g},${b},${(0.95 * strength).toFixed(3)})`);
+                grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+                ctx.fillStyle = grad;
+                ctx.fillRect(x0, y0, w, h);
+            }
+        }
     }
     ctx.restore();
 }
+
 
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
@@ -13857,28 +15167,13 @@ function draw() {
     // MASTER LAMP (Momentum Stage 1): the rotor powers the lights — the
     // ambience dims as the ring empties. Capped at 0.36 so gameplay stays
     // readable; the player and everything after this draws at full bright.
-    if (game.running && !game.spinUp) {
-        const remL = momentumRemaining();
-        const dimA = remL > 2 * BAND_SEC ? 0 : remL > BAND_SEC ? 0.12 : remL > 15 ? 0.24 : 0.36;
-        if (dimA > 0) {
-            // [040826s] THIS was greying the later levels. The master lamp lays a
-            // dark navy wash over the whole board as momentum drains — fine on
-            // night's navy, where dimming reads as the lights going down, but on
-            // WHITE it simply turns every clean cell grey. And since later levels
-            // start with less time and grant less, the wash is on almost
-            // permanently by level 5 — exactly the "latter levels turn grey"
-            // symptom, and nothing to do with the tile colour itself.
-            // Day now warms and desaturates instead: a pale amber wash, so the
-            // board reads as light FADING rather than paper going dirty, and the
-            // cells stay brilliant white underneath.
-            ctx.save();
-            ctx.fillStyle = currentTheme === 'day'
-                ? `rgba(255, 214, 170, ${dimA * 0.55})`
-                : `rgba(2, 6, 20, ${dimA})`;
-            ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
-            ctx.restore();
-        }
-    }
+    // [060826f] VIGNETTE REMOVED. With the red lines doing the work on all four
+    // sides, the vignette was a second visual danger system saying the same
+    // thing less precisely — it told you THAT you were in trouble where a line
+    // tells you WHICH boundary. And a game whose edges kill you should not be
+    // darkening its edges. The master lamp it replaced stays retired: one
+    // signal, not three.
+
 
     // Player faces — same cyan hue, two brightness levels, with a metallic sheen.
     // During a move the shape PIVOT-FLIPS (render-only): the shown pose foreshortens
@@ -14942,6 +16237,9 @@ function loop(time, gen) {
     // not the player moves — and a player with a fully covered board may have
     // stopped moving precisely because there is nothing left to do. Throttled to
     // twice a second; the function's own guards make repeat calls cheap.
+    // [060826c] The heartbeat runs from the LOOP, which is the only place it can
+    // — it is a state, and the scroll closes on you with no input at all.
+    if (game.running && !game.paused) runHeartbeat();
     if (game.running && !game.paused && !game._reprieveGiven) {
         const nowRp = performance.now();
         if (!game._reprieveAt || nowRp - game._reprieveAt > 500) {
@@ -15328,6 +16626,9 @@ function startGame(testDrive = false) {
 }
 
 function endGame(reason = 'death') {
+    // [060826e] Release the duck and kill the drone — otherwise the game-over
+    // screen inherits a muffled mix and a hum from the run that just ended.
+    if (typeof updateDangerAudio === 'function') updateDangerAudio(0);
     game.inputLocked = true;   // no further player move once the game is ending
     game.running = false;
     stopMusic();
@@ -15673,7 +16974,21 @@ let pendingTouchSince = 0;
 // hit-tests the ghost landings instead of being ignored.
 let tdTapX = 0, tdTapY = 0, tdTapOk = false;
 const DIRECTION_SETTLE_MS = 220;
-canvas.addEventListener('touchstart', e => {
+// [070826f] One binding for both surfaces. On touch the joystick lives on its
+// own canvas beneath the board, and every touch handler was attached to the
+// GAME canvas only — so the bigger stick rendered correctly and was completely
+// dead to the finger. Both elements now receive the same listeners, and because
+// stickClientToLogical() already resolves coordinates against whichever surface
+// the stick is on, nothing downstream needs to know which one was touched.
+function addStickAware(type, fn, opts) {
+    canvas.addEventListener(type, fn, opts);
+    const pad = document.getElementById('stickPad');
+    if (pad) pad.addEventListener(type, fn, opts);
+}
+// [070826f] Bound to the STICK PAD as well as the board. The pad is a
+// separate element, so handlers on the canvas alone never saw it — the
+// enlarged stick would have been drawn perfectly and done nothing.
+addStickAware('touchstart', e => {
     // iOS Safari requires the audio context to be created/resumed from a
     // user gesture. Touchstart is the earliest reliable hook.
     initAudio();
@@ -15708,7 +17023,10 @@ canvas.addEventListener('touchstart', e => {
     e.preventDefault();
 }, { passive: false });
 
-canvas.addEventListener('touchmove', e => {
+// [070826f] Bound to the STICK PAD as well as the board. The pad is a
+// separate element, so handlers on the canvas alone never saw it — the
+// enlarged stick would have been drawn perfectly and done nothing.
+addStickAware('touchmove', e => {
     game._touchMoved = true;   // [300726aj] any drag disqualifies the pause tap
     if (!game.running || game.paused) return;
     
@@ -15795,7 +17113,10 @@ canvas.addEventListener('touchmove', e => {
     e.preventDefault();
 }, { passive: false });
 
-canvas.addEventListener('touchend', e => {
+// [070826f] Bound to the STICK PAD as well as the board. The pad is a
+// separate element, so handlers on the canvas alone never saw it — the
+// enlarged stick would have been drawn perfectly and done nothing.
+addStickAware('touchend', e => {
     if (!game.running) { startGame(); return; }
 
     // [300726aj] TAP ON EMPTY BOARD = PAUSE. Mobile lost its pause button when

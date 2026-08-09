@@ -421,6 +421,10 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
     display: flex; align-items: center; justify-content: center;
     gap: 12px; flex-wrap: wrap;
     min-width: 0;
+    /* [070826n] Nothing in a HUD row may exceed the panel. Belt and braces
+       behind the set-row fix above — an overflowing row is a layout bug, but it
+       should never become a VISUAL one that spills across the board. */
+    max-width: 100%;
 }
 /* [040826d] PILLS RESTORED, under the canvas: Move Guide left, Tips right.
    Their markup had been lost in the HUD clear-out while the JS that drives them
@@ -464,7 +468,28 @@ body.in-play.test-drive .play-corner { display: none; }
    optical margin), while COLLECT THE SET moves IN by ~2 characters — so the
    status row frames the panel and the objective sits inside it. */
 .hud-row-controls { margin-left: -11px; margin-right: -11px; }
-.hud-row-set { padding-left: 2ch; }
+/* [070826n] COLLECT THE SET COULD SPILL OUT OF THE HUD. The row is a flex box
+   with two children that both refuse to shrink — a fixed-size label and a
+   socket grid — so when their combined width exceeded the panel, neither gave
+   way and the content simply overflowed the box. flex-wrap could not help
+   either: the sockets are one item and cannot break internally.
+   The 2ch indent made it worse, since ch scales with the HUD font, so the
+   indent grew at exactly the sizes where space was already short.
+   Now: both children may shrink, the label has a floor so it never collapses to
+   nothing, and the row cannot exceed its container. It reads the same at
+   comfortable sizes and degrades instead of escaping at tight ones.
+   (Not a day-mode fault — the only day rule on this row is a colour. The pale
+   board simply made the overflow visible where the dark one hid it.) */
+.hud-row-set {
+    padding-left: clamp(6px, 1.4cqw, 16px);
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+.hud-row-set > * { min-width: 0; }
+.hud-row-set .set-band-label { flex: 0 1 auto; }
+.hud-row-set .set-band-icons { flex: 1 1 auto; min-width: 0; }
 /* [300726ac] The buttons' own row: right-aligned, never wrapping. */
 /* [300726ag] Third row now, beneath the objective rather than under the clock:
    these are utilities (pause, settings, review, exit), not primary controls,
@@ -498,7 +523,12 @@ body.in-play.test-drive .play-corner { display: none; }
        row height, golden, with a gentle throb as a standing reminder. */
     display: flex; flex-direction: column; align-items: center;
     /* [300726k] 10% smaller relative to the set sockets beside it. */
-    font-size: var(--hud-set); font-weight: 800; letter-spacing: 2px;
+    /* [070826n] Scales with the BOARD, not just the viewport, and has a floor.
+       At --hud-set it was a fixed size next to a socket grid that grows with the
+       set size, so a three-slot set on a narrow screen had nowhere to go. */
+    font-size: min(var(--hud-set), clamp(10px, 3.4cqw, 20px));
+    font-weight: 800; letter-spacing: 1.5px;
+    white-space: nowrap;
     /* [010826a] LIGHT yellow — the score keeps the deeper gold, so the standing
        instruction and the running value are no longer the same colour. */
     color: #ffe97a; text-shadow: 0 0 12px rgba(255, 233, 122, 0.35);
@@ -1252,7 +1282,12 @@ body.theme-day .objective-text {
    four corner icons and their outlines, the pills, every rule that reads
    var(--wm-c0). One change, whole theme. */
 body.theme-day {
-    --text-steel: #5c7086;
+    /* [070826p] #5c7086 gave 5.1:1 against white where NIGHT runs at 11.1:1 —
+       day was scraping past the WCAG minimum while night sat comfortably at
+       AAA, which is exactly the gap being seen. #334155 is 10.4:1, so the two
+       themes now read at the same strength rather than one being a faded copy
+       of the other. */
+    --text-steel: #334155;
     --wm-c0: #4ba3e3;
 }
 /* [290726t] Day re-inks the wordmark: the night palette is tuned for glow on
@@ -1262,6 +1297,39 @@ body.theme-day {
    --wm-steel keeps its day pewter for the BOARD, mini-mark and tiles; the
    ritual's multicolour T uses a fixed steel so the exhibit matches night. */
 body.theme-day { --wm-steel: #8fa3b8; }
+/* ── [070826p] DAY TEXT NEEDS MORE WEIGHT THAN NIGHT, not just more contrast ──
+   Light text on a dark ground appears BOLDER than it is: the bright strokes
+   bleed outward into the dark. Dark text on a light ground appears THINNER, for
+   the same reason in reverse. So identical font-weights genuinely do not read
+   equally between the themes — day has always been about one step light.
+   These add that step back where it matters, and restore a faint WHITE HALO to
+   stand in for the glow night text carries. Several day rules set
+   `text-shadow: none`, which removed that reinforcement without replacing it. */
+body.theme-day .hud-label,
+body.theme-day .tally-label,
+body.theme-day .tally-total-label,
+body.theme-day .tally-rank-label,
+body.theme-day .tally-rank-next,
+body.theme-day .screen-hint,
+body.theme-day .coach-tip { font-weight: 600; }
+
+body.theme-day .hud-value,
+body.theme-day .tally-title,
+body.theme-day .tally-rank-name,
+body.theme-day .tally-grand-value,
+body.theme-day .go-score { font-weight: 800; }
+
+/* A 1px white halo: invisible as a shadow, but it thickens a dark stroke against
+   a pale ground the way night's glow thickens a light one. */
+body.theme-day .hud-label,
+body.theme-day .hud-value,
+body.theme-day .tally-label,
+body.theme-day .tally-count,
+body.theme-day .tally-total-label,
+body.theme-day .tally-grand-label,
+body.theme-day .screen-hint {
+    text-shadow: 0 0 1px rgba(255,255,255,0.9), 0 1px 0 rgba(255,255,255,0.75);
+}
 /* [050826a] The ritual's blue phases follow the day blue too — they read
    var(--wm-c0), which the rule above now redefines for the whole theme. */
 :root { --wm-title-steel: #b8c9d9; }
@@ -2122,7 +2190,13 @@ body.theme-day .keymap-what { color: #475569; }
        and the button is always the last thing at the bottom rather than being
        pushed past it. overflow stays as a safety net for the tallest cards on
        the shortest screens. */
-    padding: clamp(10px, 3cqw, 22px) 0 clamp(6px, 1.6cqw, 12px);
+    /* [070826h] Room under CONTINUE. The foot was clamp(6px, 1.6cqw, 12px) — I
+       had trimmed it to buy height when the card was overflowing, and with the
+       button since grown to PLAY's size that left it sitting almost on the
+       card's edge. Roughly tripled, plus the iOS home-indicator inset, so the
+       button has somewhere to sit on a phone as well as a desktop. */
+    padding: clamp(10px, 3cqw, 22px) 0
+             calc(clamp(18px, 5cqw, 34px) + env(safe-area-inset-bottom, 0px));
     justify-content: space-between;
     overflow-y: auto;
     /* Fully opaque: at 0.97 the board and HUD read faintly through a card that
@@ -2298,7 +2372,10 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shad
    should be the same object. */
 .tally-continue {
     width: min(300px, 82%);
-    margin-top: clamp(10px, 3cqw, 20px);
+    /* [070826h] A little more air ABOVE the button as well — space-between pushes
+       it to the floor of the panel, so without this it reads as attached to the
+       line above it rather than as its own thing. */
+    margin-top: clamp(14px, 4cqw, 26px);
     padding: clamp(9px, 2.6cqw, 18px) 24px;
     font-size: clamp(16px, 4.6cqw, 28px); font-weight: 700; letter-spacing: 3px;
     border: none; border-radius: 12px; cursor: pointer;
@@ -4953,7 +5030,136 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // Worth recording as a pattern: verifying that edits LANDED is not the same as
 // verifying the feature WORKS. Everything I checked was there; the thing that
 // was missing was never edited in the first place.
-const BUILD_VERSION = '070826-0948 ROTOЯ';
+// 070826-1027: THE IMMINENT-DEATH WARNING NOW REPEATS AND QUICKENS. The three
+// tiers were still wired and still firing — but only ONCE, on entering a tier.
+// So at the exact moment death became imminent the player got a single beep and
+// then silence, while the gap went on closing. A one-off cannot describe a
+// worsening situation; that is the event-versus-state problem again, and I had
+// only half-solved it.
+// Tier 3 now repeats on an interval that shortens with the gap: ~900ms at three
+// cells, down to 260ms with the wall on top of you. The QUICKENING is the
+// information, so nobody has to count cells.
+// Tier 3 also covers the CEILING, not just the floor. The bottom takes a heart,
+// but the ceiling is what "catching up" actually feels like — the scroll closes
+// that gap on its own while the player is doing nothing wrong, and being
+// crushed from above with no warning is the same death from where they sit,
+// whatever the ledger says.
+// Thresholds widened too: 1.8 cells was under a second of scroll at speed, so
+// the warning was arriving about when it stopped being useful. 3.2 gives time
+// to act, which is the only thing a warning is for. Tiers 1 and 2 stay one-shot
+// — they mark a line being crossed, and repeating for a 2-second penalty would
+// just be nagging.
+// 070826-1030: ROOM UNDER THE CONTINUE BUTTON. The card's foot was
+// clamp(6px, 1.6cqw, 12px) — trimmed at 030826ae to buy height back when the
+// card was overflowing and cropping the button. That was the right trade then,
+// but the button has since grown to PLAY's size, so the saving stopped being
+// worth it and left it sitting almost on the card's edge.
+// Roughly tripled to clamp(18px, 5cqw, 34px), plus env(safe-area-inset-bottom)
+// so it clears the iOS home indicator on a phone. A little more air above it
+// too: space-between pushes the button to the floor of the panel, so without
+// that it reads as attached to the line above rather than as its own thing.
+// 070826-1034: THE TIME CAP IS GONE — every collected second counts. Time above
+// the full ring was silently discarded, so an hourglass taken near the top paid
+// nothing: the player made a detour, read "+30 SECONDS", and received some or
+// none of it. Feedback that lies about a reward is worse than no reward, because
+// it teaches that PICKUPS are unreliable rather than that the ring was full.
+// The cap existed because surplus used to convert back into factory points, and
+// that route was retired long ago — so it had been enforcing a constraint that
+// no longer had anything behind it.
+// MOMENTUM_MAX now describes the ring's SPAN rather than a ceiling: the gauge
+// sits full while there is surplus behind it, which reads honestly as "more than
+// the dial can show". The level card's forecast is uncapped with it — that line
+// was the last place still promising the player less than they will get.
+// 070826-1037: THE SCORE RATTLE THAT WOULD NOT STOP. Two faults, and the second
+// is the one being heard.
+// (1) It fired on any large DIFFERENCE, including a negative one. So when a run
+//     ends and game.score resets to zero, the display counted all the way DOWN
+//     from fifteen thousand — roughly 130 frames, over two seconds of rattling,
+//     on the welcome screen with nobody watching. A score going down is not a
+//     payout and should never have sounded like one. Resets now SNAP.
+// (2) No ceiling. A long roll-up ticked until it finished, however long that
+//     took. Capped at 14 ticks: enough to read as a rattle, short of becoming a
+//     drone. The counter re-arms when the roll-up settles.
+// It is also gated to moments that warrant it — an active run or a counting
+// tally — so it can no longer fire on a menu at all.
+// 070826-1041: THE EDGE WARNING STARTS LATER, AND RISES A TONE ON THE LAST ROW.
+// 3.2 cells was too eager — I widened it last build so the warning would arrive
+// in time to act on, and overshot: it was sounding while the player still had
+// most of the board in hand.
+//   over 1.55 rows : silent
+//   1.0 to 1.55    : the warning, every 620ms
+//   under 1.0      : the SAME figure a whole tone up, every 340ms
+// Two states rather than a sliding scale. The raised version is deliberately
+// not a new sound — the player should hear the same warning getting worse,
+// which the ear reads instantly, rather than having to learn a second alarm at
+// the moment they have least attention to spare.
+// The tier-4 decision lives in the repeat branch, not in edgeTierNow, so the
+// hysteresis still governs ONE boundary rather than two — which is what stopped
+// it oscillating when the camera scrolled.
+// 070826-1043: THE EDGE WARNING SOUND IS OFF. Removed rather than tuned again —
+// it has been reinstated, widened, narrowed, made to repeat and given a second
+// pitch across four builds, and none of those landed. That is usually the sign
+// that the sound itself is wrong rather than its settings.
+// Nothing much is lost: the VISUAL signal is the stronger of the two anyway. A
+// red glow on the exact side you are close to says WHICH boundary; a tone can
+// only ever say THAT something is wrong, which the player can already see.
+// One flag, EDGE_WARN_AUDIO. The tier logic and the sound are both left intact
+// behind it, so it is a single word to restore if the edge feels too quiet.
+// The duck bus is untouched — the mix still recedes as danger rises, which was
+// never the part being complained about.
+// 070826-1045: COVERED GROUND IS PROPER BUBBLEGUM PINK IN DAY — a solid #ffc3e0
+// instead of a 12% wash. Over a white cell that wash composited to
+// rgb(254,238,246): six per cent off pure white, which is why it read as no
+// colour rather than as pink.
+// The lesson is one I got backwards two builds ago when asked to lighten it:
+// any alpha low enough to feel gentle against white is also low enough to
+// vanish. On a white board the answer is a LIGHT COLOUR AT FULL STRENGTH, never
+// a strong colour at low strength.
+// It now sits clear of everything around it — white cells, lilac grout, mint
+// walls, magenta pair slots.
+// 070826-1048: COLLECT THE SET NO LONGER SPILLS OUT OF THE HUD. The row is a flex
+// box with two children that both refuse to shrink — a fixed-size label and a
+// socket grid — so once their combined width passed the panel's, neither gave
+// way and the content simply overflowed. flex-wrap could not save it either:
+// the sockets are a single item and cannot break internally. The 2ch indent
+// compounded it, since ch scales with the HUD font, so the indent grew at
+// exactly the sizes where space was already short.
+// Both children may now shrink, the label scales with the BOARD and has a floor
+// so it never collapses, and neither the row nor any HUD row can exceed the
+// panel.
+// NOT a day-mode fault, incidentally — the only day rule on this row is a
+// colour change. The pale board just made the overflow visible where the dark
+// one had been hiding it, which is worth remembering: day mode has been a good
+// detector of layout bugs that were always there.
+// 070826-1101: THE MOVE GUIDE, 20% SLOWER AGAIN, AND THE GHOSTS LINGER.
+// All three timings scale together — 552ms between arrivals, 408ms to fade in,
+// a 2.6s hold — so the shape of the sequence is unchanged and only its pace
+// moves. A four-move route now builds over 2.2s and cycles every 4.8.
+// The bigger change is the LINGER. Each ghost began fading the instant it
+// arrived and lost 35%, so by the time the fourth move landed the first was
+// down to 65% and still falling: the player was being asked to REMEMBER the
+// start of the sequence rather than read it. Now each holds full brightness for
+// 420ms before any decay and loses only 22% after — the first ghost is still at
+// 100% when the fourth lands, so the whole route stays legible while it builds.
+// The newest move still leads the eye, because it is the one that just moved.
+// 070826-1104: DAY TEXT NOW READS AS STRONGLY AS NIGHT. Measured rather than
+// guessed: night ran at 11.1:1 against its background, day at 5.1:1 — less than
+// half, scraping past the WCAG minimum where night sat comfortably at AAA.
+// (1) --text-steel #5c7086 -> #334155, which is 10.4:1. One variable, and most
+//     of the text follows.
+// (2) MORE WEIGHT, not only more contrast. Light text on dark appears BOLDER
+//     than it is — bright strokes bleed outward into the dark ground — and dark
+//     text on light appears THINNER for the same reason reversed. Identical
+//     font-weights genuinely do not read equally between themes, so day has
+//     always been about one step light. Labels go to 600, values to 800.
+// (3) A 1px WHITE HALO behind day text. Night text carries a glow that thickens
+//     it; several day rules set text-shadow:none, removing that reinforcement
+//     without replacing it. The halo is invisible as a shadow but thickens a
+//     dark stroke against a pale ground the way the glow thickens a light one.
+// Checked the risk this created: prose #334155 against control blue #4ba3e3 is
+// 3.8:1, so "dark ink for what you read, blue for what you tap" still holds —
+// the two did not converge.
+const BUILD_VERSION = '070826-1104 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
@@ -5484,7 +5690,11 @@ const LEVEL_TIME_LIMIT = 60;      // speed-ramp reference (unchanged). Survival 
 // routing well could hit the wall and lose the very reward they had earned.
 // The ring still reads as 3 bands (BAND_SEC each); beyond three bands the
 // surplus banks and shows as overflow, so collecting is never wasted.
-const MOMENTUM_MAX = 600;         // ring reads 3 bands; surplus banks beyond
+// [070826i] Still the RING's span — what a full gauge represents — but no longer
+// a ceiling on the clock. Time above it is held and spent normally; the ring
+// simply sits full until the surplus is used, which is the honest reading:
+// "more than the gauge can show" rather than "you lost the rest".
+const MOMENTUM_MAX = 600;         // ring span (not a cap on collected time)
 const BAND_SEC = 60;              // one heart-band of charge
 // [300726an] 8 -> 22. This was the real source of runaway time: EVERY point
 // converted to momentum, so an 80-point claim paid 10 free seconds, and
@@ -5530,13 +5740,16 @@ function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedT
 // bands/lives refreshed, wheel kicked. Bypassing this (the old raw
 // speedTimer -= 20) could push the ring past its 3:00 maximum.
 function momentumAddSeconds(sec) {
-    // [300726aq] The ONLY source of time in the game now. Hourglasses only.
-    // Surplus above the full ring is simply clamped — it no longer converts
-    // back into factory points, which would have re-opened the score<->time
-    // link from the other end.
-    const fullAt = LEVEL_TIME_LIMIT - MOMENTUM_MAX;
+    // [070826i] THE CAP IS GONE. Time above the full ring used to be silently
+    // discarded, so an hourglass collected near the top paid nothing — the
+    // player took a risk, saw "+30 SECONDS", and received some or none of it.
+    // Feedback that lies about a reward is worse than no reward: it teaches
+    // that pickups are unreliable rather than that the ring was full.
+    // Every second collected now counts, and the ring simply reads full while
+    // there is surplus behind it. What made the cap necessary in the first
+    // place — surplus converting back into factory points — was retired long
+    // ago, so nothing depends on this any more.
     game.speedTimer -= sec;
-    if (game.speedTimer < fullAt) game.speedTimer = fullAt;
     // [300726aa] Lives are their OWN quantity now — gaining time no longer
     // hands back a life, so a mistake is permanent for the run.
     game._rotorKick = performance.now();
@@ -6515,6 +6728,16 @@ function updateDangerAudio(dz) {
 // there is silent. Move closer and the next tier speaks. Retreat and it re-arms,
 // so the same approach warns you again. A warning that repeats while you sit
 // still becomes furniture within one level.
+// [070826l] THE EDGE WARNING AUDIO IS OFF. Removed rather than tuned again —
+// it has been reinstated, widened, narrowed, made to repeat and given a second
+// pitch across four builds, and none of those landed. That is usually the sign
+// that the sound itself is the problem rather than its settings.
+// The visual signal stays and is the stronger of the two anyway: a red glow on
+// the exact side you are close to says WHICH boundary, where a tone can only say
+// THAT something is wrong. Nothing is lost by dropping the audio.
+// The tier logic and the sound are both left intact behind this one flag, so it
+// is a single word to bring back if the board feels too quiet at the edge.
+const EDGE_WARN_AUDIO = false;
 let _edgeTier = 0, _edgeWarnAt = 0;
 // [060826h] MEASURED IN CONTINUOUS ROWS, not rounded ones. The distances came
 // from edgeDistances(), which derives its boundaries by ROUNDING the camera:
@@ -6540,23 +6763,65 @@ function edgeTierNow() {
     const side   = Math.min(minX, (VIEW_W - 1) - maxX);
     // HYSTERESIS: a tier is entered at one threshold and left at a looser one,
     // so a shape sitting exactly on a boundary cannot oscillate across it.
-    const inT3 = _edgeTier >= 3 ? bottom < 2.6 : bottom < 1.8;
+    // [070826g] TIER 3 IS BOTH ENDS NOW, not just the floor. The bottom takes a
+    // heart, but the CEILING is what "catching up" actually feels like: the
+    // scroll closes that gap on its own while the player is doing nothing wrong,
+    // and being crushed from above with no warning is the same death from the
+    // player's side even if the ledger disagrees.
+    // Thresholds widened as well — 1.8 cells is under a second of scroll at
+    // speed, so the old warning arrived at roughly the moment it stopped being
+    // useful. 3.2 gives time to act, which is the only thing a warning is for.
+    // [070826k] LATE AND TWO-STEP. 3.2 cells was too eager — I widened it last
+    // build so the warning would arrive in time to act on, and overshot: it was
+    // sounding while the player still had most of the board.
+    // Now it starts at ONE ROW from the edge and rises a tone on the LAST row.
+    // Two states, not a slide: "you are close" and "the next scroll takes you".
+    const closing = Math.min(bottom, top);
+    // (edgeTierNow only ever returns 3 here; the repeat branch decides whether
+    //  this is the last row and asks for the raised tier-4 pitch. Keeping the
+    //  distinction there means the hysteresis above governs one boundary, not
+    //  two, which is what stopped it oscillating in the first place.)
+    const inT3 = _edgeTier >= 3 ? closing < 2.1 : closing < 1.55;
     if (inT3) return 3;
     const nearest = Math.min(top, side);
-    const inT2 = _edgeTier >= 2 ? nearest < 0.7 : nearest < 0.35;
+    const inT2 = _edgeTier >= 2 ? nearest < 1.6 : nearest < 1.0;
     if (inT2) return 2;
     const inT1 = _edgeTier >= 1 ? (nearest < 2.6 || bottom < 3.6)
                                 : (nearest < 1.8 || bottom < 2.8);
     return inT1 ? 1 : 0;
 }
 function dangerWarning() {
+    if (!EDGE_WARN_AUDIO) return;   // [070826l] visual red lines only
     if (!game.running || game.paused || game.testDrive) return;
     const tier = edgeTierNow();
     const now = performance.now();
-    // A floor of 900ms between warnings. Even with the flicker fixed, a shape
-    // crossing a boundary mid-flip can tick a tier twice in a frame or two, and
-    // two of these on top of each other is the noise being complained about.
-    if (tier > _edgeTier && now - _edgeWarnAt > 900 && sfx.edgeWarn) {
+    if (tier >= 3) {
+        // [070826g] TIER 3 REPEATS, AND QUICKENS. This is the fix that matters.
+        // Every tier fired ONCE on entry, so at the exact moment death became
+        // imminent the player got a single beep and then silence — while the gap
+        // went on closing. A one-off cannot describe a worsening situation.
+        // The interval now shortens with the gap: about 900ms at three cells
+        // down to 260ms when the wall is on top of you. The QUICKENING is the
+        // information; the player never has to count cells.
+        const cells = getPlayerCells();
+        let minY = Infinity, maxY = -Infinity;
+        for (const c of cells) { if (c.y < minY) minY = c.y; if (c.y > maxY) maxY = c.y; }
+        const gap = Math.max(0, Math.min((game.cameraY + VIEW_H - 1) - maxY,
+                                         minY - game.cameraY));
+        // [070826k] TWO STEPS, A TONE APART. One row out gives the warning at
+        // pitch; on the LAST row — the one where the next scroll takes you — it
+        // rises a whole tone and quickens. A player learns two sounds, not a
+        // sliding scale, and can tell without looking whether they still have a
+        // row in hand.
+        const last = gap < 1.0;
+        const interval = last ? 340 : 620;
+        if (now - _edgeWarnAt > interval && sfx.edgeWarn) {
+            sfx.edgeWarn(last ? 4 : 3);
+            _edgeWarnAt = now;
+        }
+    } else if (tier > _edgeTier && now - _edgeWarnAt > 900 && sfx.edgeWarn) {
+        // Tiers 1 and 2 stay one-shot: they mark a line being crossed, and a
+        // repeating warning for a 2-second penalty would be nagging.
         sfx.edgeWarn(tier);
         _edgeWarnAt = now;
     }
@@ -6817,9 +7082,15 @@ const sfx = {
             playTone(NOTE.C5, 0.06, WAVE.ui, VOL.event * 0.8);
             setTimeout(() => playTone(NOTE.E5, 0.08, WAVE.ui, VOL.event * 0.85), 90);
         } else {
-            playTone(NOTE.E5, 0.07, 'square', VOL.event * 0.9);
-            setTimeout(() => playTone(NOTE.A5, 0.07, 'square', VOL.event), 95);
-            setTimeout(() => playTone(NOTE.E6, 0.16, 'square', VOL.major * 0.85), 190);
+            // [070826k] Tier 4 is tier 3 A WHOLE TONE UP — same figure, same
+            // rhythm, pitched higher. Deliberately not a different sound: the
+            // player should hear the SAME warning getting worse, which is a
+            // thing the ear reads instantly, rather than having to learn a
+            // second alarm at the moment they have least attention to spare.
+            const up = (tier >= 4) ? Math.pow(2, 2 / 12) : 1;
+            playTone(NOTE.E5 * up, 0.07, 'square', VOL.event * 0.9);
+            setTimeout(() => playTone(NOTE.A5 * up, 0.07, 'square', VOL.event), 95);
+            setTimeout(() => playTone(NOTE.E6 * up, 0.16, 'square', VOL.major * 0.85), 190);
         }
     },
 
@@ -9017,7 +9288,13 @@ const PALETTES = {
         // its weight and does the work of marking the cell — which is the right
         // division: covered ground is a record of where you have been, not a
         // thing you have to look at while playing.
-        visitedFill:  'rgba(244, 114, 182, 0.12)',   // bubblegum pink wash where you have been
+        // [070826m] A SOLID bubblegum pink, not a wash. At 12%% alpha over a white
+        // cell this composited to rgb(254,238,246) — six per cent off pure white,
+        // which is why it read as no colour rather than as pink. Any alpha low
+        // enough to feel gentle on white is also low enough to disappear; the
+        // answer is a light colour at full strength, not a strong one at low
+        // strength.
+        visitedFill:  '#ffc3e0',                     // bubblegum pink where you have been
         // [040826p] MINT, not magenta. Candy magenta sat in the same hue family
         // as the PAIR slot (#e935ac) — the single most confusable pairing on the
         // board, since one is a target and the other is an obstacle. Mint is
@@ -9857,18 +10134,47 @@ function updateScoreDisplay() {
     if (displayScore !== game.score) {
         const diff = game.score - displayScore;
         const mag = Math.abs(diff);
+        // [070826j] A RESET SNAPS. Rolling the display down to zero between runs
+        // is not a celebration and there is nobody watching it — it was only ever
+        // an artefact of using one animation for both directions.
+        if (diff < 0 && mag > 150) {
+            displayScore = game.score;
+            el.textContent = displayScore;
+            updateScoreDisplay._ticks = 0;
+            return;
+        }
         // V9 (Block Blast lesson): BIG payouts ROLL UP over ~1.5-2s — the
         // tally itself is the celebration. Small gains stay snappy.
         const rate = mag > 150 ? 0.06 : 0.22;
         displayScore += (mag <= 2) ? diff : (diff > 0 ? Math.ceil(diff * rate) : Math.floor(diff * rate));
         el.textContent = displayScore;
-        // V9 — the roll-up RATTLES: soft high ticks while a big payout counts.
-        if (mag > 150 && audioCtx) {
+        // [070826j] THE RATTLE THAT WOULD NOT STOP. Two faults, and the second
+        // is the one being heard:
+        //   1. It fired on ANY large difference, including a NEGATIVE one — so
+        //      when a run ends and game.score resets to zero, the display counts
+        //      all the way DOWN from fifteen thousand, rattling for two solid
+        //      seconds on the welcome screen. A score going down is not a
+        //      payout and should never have sounded like one.
+        //   2. It had no ceiling. A long roll-up simply ticked until it
+        //      finished, however long that took.
+        // Now: gains only, in play or on the tally only, and capped at 14 ticks
+        // per roll-up — enough to read as a rattle, short of becoming a drone.
+        // The counter resets whenever the roll-up finishes or restarts.
+        // _tallyRunning is declared further down the file, but both are top-level
+        // and this only runs from the frame loop — long after the script has
+        // finished executing — so it is always initialised here. (A `typeof`
+        // guard would be misleading: on a `let` in the dead zone it throws too,
+        // so it would not have protected anything.)
+        const rolling = _tallyRunning > 0 || (game.running && !game.paused);
+        if (diff > 0 && mag > 150 && audioCtx && rolling) {
             const nowTk = performance.now();
             if (!updateScoreDisplay._lastTick || nowTk - updateScoreDisplay._lastTick > 70) {
                 updateScoreDisplay._lastTick = nowTk;
-                if (sfx.tallyTick) sfx.tallyTick();
+                updateScoreDisplay._ticks = (updateScoreDisplay._ticks || 0) + 1;
+                if (updateScoreDisplay._ticks <= 14 && sfx.tallyTick) sfx.tallyTick();
             }
+        } else if (mag <= 150) {
+            updateScoreDisplay._ticks = 0;   // roll-up over — re-arm for the next
         }
     }
     // V9 — score badge tiers: a small emblem beside the score that upgrades
@@ -10386,10 +10692,11 @@ function showLevelTally(onDone) {
     {
         const el = document.getElementById('tallyStart');
         if (el) {
+            // [070826i] No longer clamped — with the cap gone this line was the
+            // last place still promising less than the player will actually get.
             const carried = Math.round(momentumRemaining());
             const grant = levelTimeGrant();
-            const cap = Math.round(MOMENTUM_MAX);
-            const start = Math.min(cap, carried + grant);
+            const start = carried + grant;
             el.textContent = `Starting level ${advancedRound + 1} with ${start}s   (${carried}s carried + ${grant}s)`;
             el.classList.add('in');
         }
@@ -13701,9 +14008,11 @@ function drawMoveGuideRoute() {
     // faster than it could be read, so the player saw motion rather than an
     // order. Slower also means the loop repeats less often, which matters for
     // something that sits under a live board.
-    const STAGGER_MS = 460;    // gap between one ghost arriving and the next
-    const FADE_MS    = 340;    // how long each takes to arrive
-    const HOLD_MS    = 2200;   // complete route held before it replays
+    // [070826o] Another 20%% slower, all three together so the shape of the
+    // sequence is unchanged — only its pace.
+    const STAGGER_MS = 552;    // gap between one ghost arriving and the next
+    const FADE_MS    = 408;    // how long each takes to arrive
+    const HOLD_MS    = 2640;   // complete route held before it replays
     const cycle = steps * STAGGER_MS + HOLD_MS;
     const t = performance.now() % cycle;
 
@@ -13722,7 +14031,16 @@ function drawMoveGuideRoute() {
             const arrive = Math.min(1, age / FADE_MS);
             // A ghost is brightest as it lands, then settles — so the newest
             // move is always the one drawing the eye.
-            const settle = 1 - 0.35 * Math.min(1, Math.max(0, (age - FADE_MS) / 260));
+            // [070826o] Ghosts hold their landing brightness LONGER and dim less
+            // when they do. Each one used to start fading the instant it
+            // arrived and drop 35%%, so by the time the fourth move landed the
+            // first was already faint — the player was being asked to remember
+            // the start of the sequence rather than read it. Now a 420ms hold
+            // at full before any decay, and only 22%% off after: the whole route
+            // stays legible while it builds, and the newest move still leads
+            // because it is the one that just moved.
+            const settle = 1 - 0.22 * Math.min(1,
+                Math.max(0, (age - FADE_MS - 420) / 340));
             const isGoal = (i === path.length - 1);
             const base = isGoal ? 0.95 : (0.30 + 0.34 * (i / steps));
             drawRouteGhost(path[i].cells, isGoal ? goalCol : routeCol,

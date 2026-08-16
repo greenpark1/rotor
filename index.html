@@ -53,22 +53,82 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
        between them. They now share the formula, dvh overriding vh where
        supported (on iOS 100vh means the viewport with the browser bars HIDDEN,
        so it overflows while they show). */
-    max-width: min(100vw, calc((100vh - 12px) * 9 / 16));
-    max-width: min(100vw, calc((100dvh - 12px) * 9 / 16));
-    display: block;
+    /* [090826a] THE PLAY SCREEN NOW FITS THE VIEWPORT, and the joystick has its
+       own zone at the bottom. Previously the container had a max-WIDTH but no
+       height limit: the canvas filled whatever it needed, the stick pad went
+       below it, and on a phone that landed past the fold. The stick was not
+       missing — it was off the bottom of the page, which is also why the top and
+       bottom of the board needed scrolling to see.
+       As a flex COLUMN with a bounded height, the three parts share the screen:
+       the HUD takes what it needs, the stick zone is reserved, and the BOARD
+       takes the rest — shrinking rather than overflowing. A smaller board that
+       is entirely visible beats a larger one you have to scroll. */
+    display: flex;
+    flex-direction: column;
+    /* [150826b] A little air between HUD and board. They were flush, so the
+       board's top partial row — normal in a scroller — read as the grid being
+       clipped by the panel above rather than as the world scrolling in. */
+    /* [150826g] The gap is now a MINIMUM — space-evenly adds to it. Kept small so
+       it only matters when the frame is tight and there is no slack to spread. */
+    gap: clamp(4px, 1vh, 8px);
+    align-items: center;
+    /* [150826g] EVEN DISTRIBUTION. Measured off the phone, the gaps down the
+       frame ran 10 / 50 / 170 / 280 — the HUD jammed against the top edge while
+       the slack piled up under the joystick. flex-start pushes every child up
+       and leaves the remainder at the end; space-evenly gives every gap the same
+       size INCLUDING the two at the ends, so the frame breathes equally top and
+       bottom and neither edge reads as cramped. */
+    justify-content: space-evenly;
+    /* [150826b] MAX-height, not height. Forcing the full viewport left the box
+       taller than its contents — on an iPhone the board is limited by WIDTH to
+       371px, so HUD + board came to 601 of 882 and the remaining 281 sat empty
+       below the grid. A fixed height cannot shrink to fit; a maximum can. */
+    /* [150826f] The maximum must match the MARGINS, or the frame outgrows the
+       space its own margins reserve. This still subtracted the pre-150826c
+       values (37 + 20) while the margins now take 60 + 60 — 63px too tall on a
+       phone, which is exactly why the frame ran down PAST the bottom buttons
+       instead of stopping above them. One --frame-gap so the two can never
+       disagree again. */
+    max-height: calc(100vh - var(--frame-gap) - var(--frame-gap-bottom)
+                     - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - var(--frame-gap) - var(--frame-gap-bottom)
+                     - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     background: rgba(30, 41, 59, 0.6);
-    padding: 8px;
-    padding-bottom: 12px;
+    /* [150826g] Even padding all round. The 8/10 split was invisible in itself
+       but it tilted every measurement below it, and the frame's own inset is the
+       one thing that should obviously be symmetrical. */
+    padding: 10px;
     border-radius: 12px;
     /* [030826m] More air above the game. 10px put the wordmark hard against the
        top of the screen — and the fixed corner buttons sit at top:12px, so the
        title was crowding them too. Responsive rather than fixed, and it uses
        safe-area-inset-top so it clears the notch on a phone instead of tucking
        under it. */
-    margin: calc(clamp(18px, 4vh, 40px) + env(safe-area-inset-top, 0px)) auto 20px;
+    /* [150826c] CLEAR OF THE CORNER BUTTONS. They are fixed at top:12px and are
+       40px tall, so their lower edge is at 52 — while the container began at 37
+       on a phone. Its top border ran straight THROUGH both buttons, which is the
+       crossing lines in the screenshot: a rounded rectangle and two circles
+       intersecting for no reason anyone could read.
+       60px clears them with room. The board no longer pays for it, since the
+       container is max-height now and was leaving space below anyway. */
+    /* [150826e] SYMMETRIC. Last build cleared the TOP buttons with a 60px margin
+       and left the bottom at 10 — so the move-guide and tips buttons, fixed at
+       bottom:12px and 40px tall, sat on the frame's lower edge exactly as the
+       top pair had sat on its upper one. Half a fix looks worse than none: three
+       corners agreed and one did not.
+       All four buttons now sit OUTSIDE the frame, evenly. The container is
+       max-height, so the space comes from what was empty anyway. */
+    margin: calc(var(--frame-gap) + env(safe-area-inset-top, 0px))
+            auto
+            calc(var(--frame-gap-bottom) + env(safe-area-inset-bottom, 0px));
     border: 1px solid rgba(56, 189, 248, 0.15);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-    width: 90%;   /* 5% breathing margin each side */
+    /* [150826b] 96%%, not 90%%. On a phone the board is WIDTH-limited, so every
+       point given away at the sides is a smaller grid — and a 5%% margin each
+       side costs about 40px of board on a 430pt screen while the container sits
+       inside a viewport that already has room. The desktop cap does the work of
+       keeping it sensible on a large display. */
+    width: 96%;
     /* Width cap by both desktop ideal AND viewport height. Canvas is
        square (480×480), so the container's width also drives its height.
        Reserve ~180px for: body padding (20), h1 title (35), container
@@ -76,7 +136,12 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
        safety margin (~35). Mobile-controls is gone — pause lives in
        the HUD now. On tall iPads this gives the 620px ideal; in tight
        embeds it auto-shrinks. */
-    max-width: min(620px, calc(100vh - 180px));
+    /* [090826a] ONE max-width. There were THREE, and the last silently won:
+       min(620px, calc(100vh - 180px)) — deriving WIDTH from viewport height,
+       which now fights the explicit height budget above and squeezes the whole
+       screen narrow on a short display. The board flexes to fit the height on
+       its own now, so width only needs a desktop ceiling. */
+    max-width: min(100vw, 560px);
     box-sizing: border-box;
     transition: box-shadow 0.1s ease;
     position: relative;   /* so .pause-panel can centre on the canvas */
@@ -114,8 +179,47 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
     display: block; 
     background: #0f172a; 
     border-radius: 8px;
-    width: 100%;
+    /* [090826b] WIDTH-DRIVEN, HEIGHT-CAPPED. The previous attempt set
+       `width: auto; height: 100%` — but this canvas carries NO width/height
+       attributes (the bitmap is sized in JS), so `width: auto` fell back to the
+       300px default while `height: 100%` demanded the entire container. The
+       board came out the wrong shape and claimed all the vertical space, which
+       is why the stick pad had none left and never appeared.
+       Back to the arrangement that was always correct — width fills, height
+       follows the aspect — with a max-height so it yields to the stick zone
+       instead of overrunning it. flex-shrink 1 with min-height 0 is what lets
+       that cap actually take effect. */
+    /* [090826i] THE BOARD GROWS WHEN THE STICK ZONE GOES. It was width: 100%%
+       with a max-height, so it could never use freed vertical space — turning the
+       joystick off just left a gap.
+       The play zone is 10x10, so an explicit 1/1 aspect-ratio lets width resolve
+       from height as well as the other way round: whichever axis is tighter
+       decides, and the board takes everything the layout will give it. That
+       also makes `width: auto` safe here, where it broke at 090826b — the ratio
+       is stated now rather than being inferred from a canvas with no attributes. */
+    /* [090826k] flex-grow must be ZERO. With `flex: 1 1 auto` in a column
+       container the flexbox RESOLVES a main size (the height) by stretching, and
+       a resolved flex main size beats aspect-ratio — so the box grew taller than
+       square and the canvas stretched its bitmap to fill it. That is the
+       distortion: cells taller than wide, hourglasses stretched.
+       With grow at 0 the canvas keeps its intrinsic square shape and is simply
+       BOUNDED by max-width and max-height, so whichever axis is tighter decides
+       and the grid stays true. It still fills freed space, because both maxima
+       rise when the stick zone goes. */
+    flex: 0 1 auto;
+    min-height: 0;
+    /* [090826j] The ratio comes from a VARIABLE the code sets from VIEW_W/VIEW_H,
+       not a hardcoded 1/1. They happen to both be 10 today, so the literal was
+       correct — and would have silently STRETCHED the board the first time the
+       play zone stopped being square, with a canvas bitmap that never lies and a
+       CSS box that does. Tying it to the source means the distortion cannot
+       happen at all. */
+    aspect-ratio: var(--board-ratio, 1 / 1);
+    width: auto;
     height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 0 auto;
     /* Prevent iOS Safari from interpreting canvas drags as page scrolls
        or pinch-zoom gestures — the canvas owns all touch input. */
     touch-action: none;
@@ -390,7 +494,10 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
 }
 .round-overlay.day .round-overlay-label { color: #64748b; }
 @media (max-width: 768px) {
-    .game-container { max-width: 90% !important; padding: 4px !important; }
+    /* [090826d] max-width dropped here too — 90%% of the viewport fights the
+       560px ceiling and the flex budget, and !important meant it always won.
+       Padding is fine to keep. */
+    .game-container { padding: 4px !important; }
     body { padding: 4px !important; }
     .set-only-hud { padding: 6px 10px !important; }
 }
@@ -436,21 +543,73 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
    welcome ones, and shown only while a run is in progress — otherwise they
    would sit on top of the welcome screen's own pair. */
 .play-corner { display: none; }
-body.in-play .play-corner { display: flex; position: fixed; bottom: 12px; z-index: 40; }
+/* [150826e] Matches the top pair: inset 14px from the side and lifted clear of
+   the home indicator, so all four corner controls are placed by one rule. */
+body.in-play .play-corner {
+    display: flex; position: fixed;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+}
+/* [090826a] No page scroll during a run. The screen is budgeted to fit now, so
+   any scrollbar that appears is a layout fault rather than content — and being
+   able to scroll a game board is worse than the fault itself, because the
+   player can lose the grid entirely mid-move. */
+body.in-play { overflow: hidden; }
 /* [070826e] The stick pad, beneath the board and only on touch. Hidden outside
    a run, and in the garage — that screen keeps its corner stick, because the
    shape selector needs the space below. */
+/* [070826q] ONE RULE, NO MEDIA QUERY. The pad was inside @media (pointer:
+   coarse) while the JS did its own matchMedia check — two independent tests of
+   the same thing, and on any device where they disagreed the pad was hidden by
+   CSS while the JS drew into it. That is how the stick disappeared.
+   It now shows whenever a run is in progress, on every device, and SCALES with
+   the board rather than the device class:
+     · width follows the game container, so it is never wider than the board
+     · a min keeps it usable on a small phone
+     · a max stops it becoming a dinner plate on a desktop
+   aspect-ratio holds the pad's proportions at any width, so the drawing inside
+   never distorts. */
 #stickPad { display: none; }
-@media (pointer: coarse) {
-    body.in-play #stickPad {
-        display: block;
-        width: min(100%, 420px);
-        height: auto; aspect-ratio: 260 / 210;
-        margin: 6px auto 0;
-        touch-action: none;
-    }
-    body.in-play.test-drive #stickPad { display: none; }
+body.in-play #stickPad {
+    /* [140826f] THE SQUASH, fixed. `max-height` was clamping the box's height
+       while its width stood, so aspect-ratio lost and the 300x300 bitmap
+       flattened — on an 844-tall screen to 300x219, about 73%% of its proper
+       height. Everything drawn inside compressed with it, which is why the ring
+       and knob were ellipses and why adjusting the arrow numbers never helped.
+       The height budget now caps the WIDTH instead, so whichever constraint is
+       tighter shrinks the pad as a WHOLE. There is no max-height at all now: it
+       cannot fight the ratio if it is not there.
+       flex-shrink stays 0 so the zone keeps its space and the board yields
+       first — a board you can see but cannot steer is useless, and so is the
+       reverse. */
+    display: block;
+    flex: 0 0 auto;
+    /* [140826g] 20%% bigger: 190/78/330 → 228/94/396, and the height budget with
+       it, 26dvh → 31dvh. Both caps have to move together or the taller screens
+       grow and the shorter ones stay exactly where they were — whichever
+       constraint is tighter is the one that decides the size. */
+    /* [150826g] 31dvh -> 22dvh. The board is HEIGHT-bound on a phone, so every
+       point the stick takes is a NARROWER board — and a square board leaves that
+       width unused at the sides, which is the sparseness either side of the grid.
+       At 31 the board could only reach 340 of its possible 397; at 22 it reaches
+       377 and the side margins nearly close. The stick is still 205px, well over
+       the 190 floor, so the control loses little while the board gains a lot. */
+    width: min(clamp(210px, 88%, 396px), 22dvh);
+    height: auto;
+    aspect-ratio: var(--stick-ratio, 1 / 1);
+    /* [150826g] Horizontal centring only. `margin: auto` on a flex child absorbs
+       the free space around it, which is what put 170px above the pad and 280
+       below — it was competing with the container for the same slack. */
+    margin: 0 auto;
+    touch-action: none;
+    cursor: pointer;
 }
+
+body.in-play.test-drive #stickPad { display: none; }
+/* [090826d] Joystick off — the zone goes with it and the board takes the height.
+   Toggled from Settings; the keyboard still works either way, which is why this
+   is worth having on a laptop as well as a tablet. */
+body.stick-off #stickPad { display: none !important; }
 body.in-play.test-drive .play-corner { display: none; }
 
 .hud-left, .hud-right {
@@ -986,10 +1145,17 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     h1 { font-size: 14px; margin-bottom: 2px; }
     .subtitle { display: none; }
 }
-/* Board is square: bounding container width by (viewport height - HUD
-   estimate) keeps HUD + board inside the window naturally; the JS scaler
-   below is the exact safety net for whatever remains. */
-.game-container { max-width: min(92vw, calc(100svh - 300px)) !important; }
+/* [090826d] THIS WAS THE JOYSTICK BUG, and it is why nothing I changed in the
+   main .game-container rule ever took effect. An !important max-width deriving
+   the container's WIDTH from viewport HEIGHT, minus a 300px guess at the HUD.
+   On a tall iPad that computes to a narrow column, so the board and the pad were
+   squeezed into a fraction of the width — which is exactly the small joystick
+   sitting off to one side.
+   It solved a problem that no longer exists: the board is now a flex child with
+   max-height, so it fits the height by SHRINKING rather than by having its width
+   guessed at from the outside. Two systems were budgeting the same space and the
+   one with !important won.
+   (The "JS scaler" the comment refers to is long gone too.) */
 /* V9: the END screen is translucent — the final board stays visible behind
    it as the reference for WHY you lost. (Welcome stays fully opaque.) */
 #gameOverScreen { background: rgba(15, 23, 42, 0.78); }
@@ -1268,6 +1434,20 @@ body.theme-day .objective-text {
     --hud-set:   calc(var(--hud-base) * 1.15);
     --hud-label: calc(var(--hud-base) * 0.78);
 }
+/* [150826f] ONE number for the band the corner buttons live in. They are 40px
+   tall at a 12px inset, so 60 clears them with 8 to spare — and because the
+   frame's MARGINS and its MAX-HEIGHT both read this, the frame can never grow
+   into the buttons again. That mismatch is what put the bottom pair inside the
+   zone while the top pair sat outside it. */
+/* [150826t] TWO gaps, not one. They were a single 60px, which is correct by
+   arithmetic — top margin and bottom margin both add gap + their safe-area inset,
+   and max-height subtracts both — and yet the bottom gap measured 6px against the
+   top's 14. The culprit is 100dvh: inside an in-app webview it reports the
+   viewport WITHOUT the host's chrome, so the box extends a little lower than the
+   visible area and eats the clearance at that end.
+   Rather than trusting a unit that is lying, the bottom simply gets the 8px back.
+   The frame's max-height subtracts both, so the box still fits. */
+:root { --frame-gap: 60px; --frame-gap-bottom: 68px; }
 :root { --wm-steel: #b8c9d9; --wm-c0: #22d3ee; --wm-c1: #a3e635; --wm-c3: #e8b96a; --wm-c4: #ef4444;
         /* [300726d] Steel is the voice of the interface: main text on the
            welcome and game screens speaks in the shifter metal. Day uses a
@@ -1621,46 +1801,59 @@ body.theme-day .toggle-box {
 @keyframes bestPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
 /* Game-over message hierarchy: score · best · fact → reason → arm-around-shoulder */
-.taunt-box .go-rank {
-    display: block; font-size: 15px; font-weight: 800; letter-spacing: 3px;
-    color: #b8c9d9; margin-top: 2px;
+/* ── [160826c] GAME OVER: THREE TIERS ────────────────────────────────────────
+   Six lines at six sizes meant nothing led. Now: the score alone and largest,
+   two matched facts beside each other, then prose. Labels borrow the level
+   card's quiet grey; values carry the weight. */
+.taunt-box .go-lbl {
+    display: block;
+    font-size: clamp(10px, 2.6cqw, 13px); font-weight: 700;
+    letter-spacing: 4px; color: #64748b;
 }
-.taunt-box .go-rank-next { display: block; font-size: 11px; letter-spacing: 1px; color: #64748b; margin-bottom: 4px; }
-body.theme-day .taunt-box .go-rank { color: #475569; }
-body.theme-day .taunt-box .go-rank-next { color: #64748b; }
+.taunt-box .go-scorewrap { display: block; }
 .taunt-box .go-score {
-    display: block;
-    font-size: 24px; font-weight: 800; letter-spacing: 2px;
+    display: block; margin-top: 2px;
+    font-size: clamp(40px, 12cqw, 64px); font-weight: 800; letter-spacing: 1px;
     font-variant-numeric: tabular-nums;
-    color: #e2e8f0;
+    color: #e2e8f0; line-height: 1.05;
 }
-.taunt-box .go-best {
-    display: block; margin-top: 4px;
-    font-size: 14px; font-weight: 600; letter-spacing: 1px;
-    font-variant-numeric: tabular-nums;
-    color: #94a3b8;
+.taunt-box .go-newbest {
+    display: inline-block; margin-top: 6px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: clamp(10px, 2.6cqw, 12px); font-weight: 800; letter-spacing: 3px;
+    background: rgba(255,214,10,0.14); color: #ffd60a;
+    border: 1px solid rgba(255,214,10,0.45);
 }
-.taunt-box .go-best.new-best { color: #ffd60a; text-shadow: 0 0 10px rgba(255,214,10,0.5); }
-body.theme-day .taunt-box .go-score { color: #1e293b; }
-body.theme-day .taunt-box .go-best { color: #475569; }
-body.theme-day .taunt-box .go-best.new-best { color: #b45309; text-shadow: none; }
-.taunt-box .go-score + .go-best + .go-level, .taunt-box .go-score + .go-level { margin-top: 12px; }
-.taunt-box .go-level {
-    display: block;
-    font-size: 20px; font-weight: 700; letter-spacing: 2px;
-    color: #e2e8f0;
+/* RANK and LEVEL sit SIDE BY SIDE. They are the same kind of fact — where you
+   got to — and stacking them made each read as a separate announcement. */
+.taunt-box .go-stats {
+    display: flex; justify-content: center; gap: clamp(22px, 9cqw, 54px);
+    margin-top: clamp(16px, 4cqw, 26px);
 }
+.taunt-box .go-stat { display: flex; flex-direction: column; align-items: center; }
+.taunt-box .go-val {
+    display: block; margin-top: 3px;
+    font-size: clamp(18px, 5.4cqw, 26px); font-weight: 800; letter-spacing: 2px;
+    color: #e2e8f0; line-height: 1.1;
+}
+/* The two prose lines, at ONE size. They are the same voice; only their colour
+   distinguishes what happened from what to make of it. */
+.taunt-box .go-prose { margin-top: clamp(16px, 4cqw, 26px); }
 .taunt-box .go-cause {
-    display: block; margin-top: 8px;
-    font-size: 15px; font-weight: 600; letter-spacing: 1px;
+    display: block;
+    font-size: clamp(13px, 3.6cqw, 16px); font-weight: 600; letter-spacing: 1px;
     color: #94a3b8;
 }
 .taunt-box .go-consolation {
-    display: block; margin-top: 12px;
-    font-size: 14px; font-style: italic;
+    display: block; margin-top: 6px;
+    font-size: clamp(13px, 3.6cqw, 16px); font-style: italic;
     color: #7dd3fc;
 }
-body.theme-day .taunt-box .go-level { color: #1e293b; }
+body.theme-day .taunt-box .go-score,
+body.theme-day .taunt-box .go-val { color: #1e293b; }
+body.theme-day .taunt-box .go-lbl { color: #64748b; }
+body.theme-day .taunt-box .go-newbest { color: #b45309; background: rgba(180,83,9,0.10); border-color: rgba(180,83,9,0.4); }
+
 body.theme-day .taunt-box .go-cause { color: #475569; }
 body.theme-day .taunt-box .go-consolation { color: #1e293b; }
 .taunt-box {
@@ -1926,8 +2119,12 @@ body.theme-day .cog-btn:hover { background: var(--wm-c0); color: #ffffff; }
 .cog-btn svg { width: 22px; height: 22px; display: block; }
 /* [030826ab] Play-screen pair: home left, settings right, same disc as the
    welcome cog. Fixed rather than absolute, since the game container scrolls. */
-.play-home-btn { position: fixed; top: 12px; left: 12px; right: auto; z-index: 40; }
-.play-cog-btn  { position: fixed; top: 12px; right: 12px; z-index: 40; }
+/* [150826c] Nudged in from the very corner and pushed below the notch. At
+   left:12px on a phone they sat over the container's rounded corner, where the
+   border curve and the button circle fought each other. The safe-area inset also
+   keeps them clear of the status bar on a notched device. */
+.play-home-btn { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 14px; right: auto; z-index: 40; }
+.play-cog-btn  { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; z-index: 40; }
 /* [040826o] Home fills on hover as well, so all four behave alike. */
 .play-home-btn:hover {
     background: var(--wm-c0); color: #06222b; border-color: var(--wm-c0);
@@ -2038,8 +2235,8 @@ body.theme-day .corner-toggle:hover { background: var(--wm-c0); color: #ffffff; 
     45%  { transform: translateY(-4px); }
     100% { transform: translateY(0); }
 }
-.wc-guide { left: 12px; }
-.wc-tips  { right: 12px; }
+.wc-guide { left: 14px; }
+.wc-tips  { right: 14px; }
 /* [040826i] The WELCOME pair are absolute inside the overlay; the PLAY pair are
    fixed and gated on body.in-play. Both share wc-guide / wc-tips for their
    left/right placement, so the corner they occupy is identical on either
@@ -2177,9 +2374,23 @@ body.theme-day .keymap-what { color: #475569; }
        BESIDE the card, not under it: the "C" over "T" of COLLECT THE SET on the
        left and the combo chip's "×1" on the right. -16px clears the overhang
        with room to spare. */
-    position: absolute; inset: -16px; z-index: 30;
+    /* [150826h] The card no longer reaches OUTSIDE its frame. inset:-16px was
+       added at 040826g so it would cover the HUD's -11px side overhang — but it
+       pushed the card 16px past the container on every side, into the band the
+       corner buttons occupy. The buttons are position:fixed at z-index 40, above
+       the card's 30, so they floated over the scores.
+       Sides keep the overhang, since that is what it was for. TOP and BOTTOM sit
+       flush with the frame, which is where the buttons are — the same rule the
+       play screen follows: content inside the frame, controls outside it. */
+    position: absolute;
+    top: 0; bottom: 0; left: -16px; right: -16px;
+    z-index: 30;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
+    /* [150826h] One justify-content, not two. `flex-start` was declared here and
+       `space-between` again below — the later silently winning — which is the same
+       trap as the three max-widths on the container. space-evenly matches the
+       play screen: equal gaps, including at the ends. */
+    align-items: center;
     /* [030826aa] Headroom. The card was vertically centred, which pinned the
        badge hard against the top edge once it grew — and a medal needs air
        above it to read as one. Now top-aligned with real padding, and
@@ -2195,9 +2406,12 @@ body.theme-day .keymap-what { color: #475569; }
        button since grown to PLAY's size that left it sitting almost on the
        card's edge. Roughly tripled, plus the iOS home-indicator inset, so the
        button has somewhere to sit on a phone as well as a desktop. */
-    padding: clamp(10px, 3cqw, 22px) 0
-             calc(clamp(18px, 5cqw, 34px) + env(safe-area-inset-bottom, 0px));
-    justify-content: space-between;
+    /* [150826h] Even padding top and bottom now the card is flush with the frame.
+       The old asymmetry existed to clear the home indicator, which the CONTAINER
+       already handles via --frame-gap — so it was being paid for twice. */
+    /* [160826b] Less padding, since the content is doing the filling now. */
+    padding: clamp(10px, 3cqw, 20px) 0;
+    justify-content: space-evenly;
     overflow-y: auto;
     /* Fully opaque: at 0.97 the board and HUD read faintly through a card that
        is meant to be a separate screen. */
@@ -2214,15 +2428,15 @@ body.theme-day .level-tally { background: #f8fafc; }
    is gone; the title carries it as "LEVEL 5 COMPLETE". */
 .tally-head { display: none; }
 .tally-title {
-    font-size: clamp(15px, 4.4cqw, 21px); font-weight: 800; letter-spacing: 2px;
+    font-size: clamp(19px, 6cqw, 30px); font-weight: 800; letter-spacing: 2px;
     color: #7dd3fc; margin: 0 0 8px; text-align: center;
     text-shadow: 0 0 26px rgba(125, 211, 252, 0.45);
 }
 body.theme-day .tally-title { color: var(--wm-c0); text-shadow: none; }
-.tally-rows { width: min(300px, 82%); }
+.tally-rows { width: min(420px, 92%); }
 .tally-row {
     display: flex; align-items: baseline; justify-content: space-between;
-    gap: 10px; padding: clamp(3px, 1cqw, 6px) 0; font-size: clamp(11px, 3.3cqw, 14px); color: #cbd5e1;
+    gap: 10px; padding: clamp(7px, 2cqw, 14px) 0; font-size: clamp(14px, 4.4cqw, 21px); color: #cbd5e1;
     opacity: 0; transform: translateY(6px);
     transition: opacity 220ms ease, transform 220ms ease;
 }
@@ -2256,36 +2470,36 @@ body.theme-day .tally-count { color: #1e293b; }
 body.theme-day .tally-pts { color: #e8a800; }   /* [050826a] night gold, not burnt orange */
 .tally-row.gold .tally-label, .tally-row.gold .tally-count { color: #ffd60a; }
 .tally-total {
-    margin-top: clamp(6px, 2cqw, 14px); width: min(300px, 82%);
+    margin-top: clamp(6px, 2cqw, 14px); width: min(420px, 92%);
     display: flex; align-items: baseline; justify-content: space-between;
     border-top: 2px solid rgba(255, 214, 10, 0.45); padding-top: clamp(5px, 1.6cqw, 10px);
     opacity: 0; transform: scale(0.9);
     transition: opacity 260ms ease, transform 320ms cubic-bezier(0.34,1.56,0.64,1);
 }
 .tally-total.in { opacity: 1; transform: scale(1); }
-.tally-total-label { font-size: 12px; letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; }
+.tally-total-label { font-size: clamp(13px, 3.8cqw, 18px); letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; }
 .tally-total-value {
-    font-size: clamp(22px, 7cqw, 34px); font-weight: 800; letter-spacing: 1px;
+    font-size: clamp(34px, 11cqw, 56px); font-weight: 800; letter-spacing: 1px;
     font-variant-numeric: tabular-nums; color: #ffd60a;
     text-shadow: 0 0 22px rgba(255, 214, 10, 0.5);
 }
 body.theme-day .tally-total-value { color: #e8a800; text-shadow: none; }   /* [050826a] */
 .tally-note {
-    width: min(300px, 82%); margin-top: clamp(4px, 1.4cqw, 10px);
+    width: min(420px, 92%); margin-top: clamp(4px, 1.4cqw, 10px);
     font-size: 11px; letter-spacing: 0.4px; color: #64748b; text-align: center;
     opacity: 0; transition: opacity 300ms ease;
 }
 .tally-note.in { opacity: 1; }
 body.theme-day .tally-note { color: #64748b; }
 .tally-grand {
-    margin-top: 10px; width: min(300px, 82%);
+    margin-top: 10px; width: min(420px, 92%);
     display: flex; align-items: baseline; justify-content: space-between;
     opacity: 0; transition: opacity 300ms ease;
 }
 .tally-grand.in { opacity: 1; }
 .tally-grand-label { font-size: 11px; letter-spacing: 2px; color: #94a3b8; text-transform: uppercase; }
 .tally-grand-value {
-    font-size: 20px; font-weight: 800; letter-spacing: 1px;
+    font-size: clamp(22px, 6.5cqw, 34px); font-weight: 800; letter-spacing: 1px;
     font-variant-numeric: tabular-nums; color: #e2e8f0;
 }
 body.theme-day .tally-grand-value { color: #1e293b; }
@@ -2293,7 +2507,7 @@ body.theme-day .tally-grand-value { color: #1e293b; }
    rather than another score. It flares gold on the level where you cross into a
    new rank, which is the only moment it is news. */
 .tally-start {
-    width: min(300px, 82%); margin-top: clamp(4px, 1.4cqw, 9px); text-align: center;
+    width: min(420px, 92%); margin-top: clamp(4px, 1.4cqw, 9px); text-align: center;
     font-size: clamp(10px, 3cqw, 12px); letter-spacing: 1px; color: #86efac;
     opacity: 0; transition: opacity 300ms ease;
 }
@@ -2304,7 +2518,7 @@ body.theme-day .tally-start { color: #15803d; }
    the rung number, the name beneath in full size, then the ladder position and
    the distance to the next. It updates LIVE as the points count up below. */
 .tally-rank {
-    width: min(300px, 82%); margin: 0 0 14px;
+    width: min(420px, 92%); margin: 0 0 14px;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     opacity: 0; transition: opacity 300ms ease;
 }
@@ -2315,7 +2529,7 @@ body.theme-day .tally-start { color: #15803d; }
 .tally-rank { flex-direction: row !important; justify-content: center; gap: 12px; margin: 0 0 4px !important; }
 .rank-badge {
     position: relative; flex: 0 0 auto;
-    width: clamp(52px, 15cqw, 78px); height: clamp(52px, 15cqw, 78px);
+    width: clamp(76px, 22cqw, 116px); height: clamp(76px, 22cqw, 116px);
     display: flex; align-items: center; justify-content: center;
     filter: drop-shadow(0 0 12px rgba(184,201,217,0.30));
 }
@@ -2335,15 +2549,17 @@ body.theme-day .tally-start { color: #15803d; }
    metal in both themes. */
 .cog-hub { fill: none; stroke: #b8c9d9; stroke-width: 2; }
 /* (.rank-badge-num retired at 040826h with the number it styled.) */
-.rank-text { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.rank-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
 .tally-rank-name {
-    font-size: clamp(17px, 5cqw, 25px);
+    /* [160826b] The loud half of a label/value pair, so it can be big — it is the
+       one word on this card the player keeps. */
+    font-size: clamp(26px, 8.5cqw, 44px);
     font-weight: 800; letter-spacing: 2.5px; line-height: 1;
     color: #e8eef5; text-transform: uppercase;
 }
 body.theme-day .tally-rank-name { color: #1e293b; }
 .rank-text .tally-rank-label, .rank-text .tally-rank-next { text-align: left; }
-.tally-rank-label { font-size: 10px; letter-spacing: 3px; color: #64748b; text-transform: uppercase; }
+.tally-rank-label { font-size: clamp(11px, 3.2cqw, 15px); letter-spacing: 4px; color: #64748b; text-transform: uppercase; }
 .tally-rank-next { font-size: 11px; letter-spacing: 1px; color: #64748b; }
 body.theme-day .tally-rank-label { color: #64748b; }
 /* Promotion: the disc turns GOLD and the name with it. The one moment on this
@@ -2371,7 +2587,7 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shad
    the same generous padding. The two are the same act — "carry on" — so they
    should be the same object. */
 .tally-continue {
-    width: min(300px, 82%);
+    width: min(420px, 92%);
     /* [070826h] A little more air ABOVE the button as well — space-between pushes
        it to the floor of the panel, so without this it reads as attached to the
        line above it rather than as its own thing. */
@@ -2575,7 +2791,15 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     <!-- [070826e] The joystick's own surface, beneath the board. Present only on
          touch devices; a mouse keeps the in-board stick, where there is no
          thumb to occlude anything. -->
-    <canvas id="stickPad" width="260" height="210" aria-hidden="true"></canvas>
+    <canvas id="stickPad" width="300" height="300" aria-hidden="true"></canvas>
+    <!-- [090826e] A visible error readout. "Uncaught Error: Script error." is
+         what a browser reports when it will not disclose the real message, so
+         three builds have now been spent guessing. This prints the actual
+         message, file and line on screen, once per distinct error. Remove it
+         once the cause is found. -->
+    <div id="errBanner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;
+         background:#7f1d1d;color:#fff;font:11px/1.4 monospace;padding:6px 8px;
+         max-height:38vh;overflow:auto;white-space:pre-wrap"></div>
     <!-- [040826i] Move Guide and Tips as BOTTOM-CORNER icons in play, matching
          the welcome screen exactly — guide bottom-left, tips bottom-right, with
          home top-left and settings top-right. Four corners, same four controls,
@@ -2640,9 +2864,15 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
                      stamped through it reads as a token, not an emblem. The hub
                      is now just a hub. -->
             </div>
+            <!-- [160826b] LABEL ABOVE VALUE, and the label comes FIRST. Every
+                 other line on this card is a quiet label with a loud value —
+                 POINTS IN PLAY / +360 — so the rank now speaks the same grammar
+                 instead of being a special case. The rung NUMBER is gone with it:
+                 it named a position on a ladder the player cannot see, where COG
+                 is the thing they actually earned and will remember. -->
             <div class="rank-text">
+                <span class="tally-rank-label">RANK</span>
                 <span class="tally-rank-name" id="tallyRankName">COG</span>
-                <span class="tally-rank-label" id="tallyRankLabel">RANK 1 OF 10</span>
                 <span class="tally-rank-next" id="tallyRankNext"></span>
             </div>
         </div>
@@ -5159,7 +5389,678 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // Checked the risk this created: prose #334155 against control blue #4ba3e3 is
 // 3.8:1, so "dark ink for what you read, blue for what you tap" still holds —
 // the two did not converge.
-const BUILD_VERSION = '070826-1104 ROTOЯ';
+// 090826-0750: THE JOYSTICK IS BACK, BELOW THE BOARD, ON EVERY DEVICE.
+// It vanished because the same question was asked TWICE and independently: JS
+// checked `pointer: coarse` via matchMedia for the geometry, CSS checked it
+// again in a media query for visibility. On any device where those disagreed —
+// a touchscreen laptop, a tablet in desktop mode, a browser reporting a fine
+// pointer over a touch panel — the CSS hid the pad while the JS carried on
+// drawing into it. Nothing on screen, no error.
+// The fork is deleted rather than repaired. One stick, one place, below the
+// board, and it SCALES with the container instead of the device class:
+//   iPhone 242px · iPad 340px · laptop 340px, aspect-ratio locked so the drawing
+//   never distorts, with a floor for small phones and a ceiling for desktops.
+// Detection was never the point; the layout was.
+// MOUSE SUPPORT added in the same build, not after: every stick handler was
+// touch-only, so on a laptop the pad would have rendered perfectly and done
+// nothing — precisely the fault caught at 070826f. Move and release listen on
+// the WINDOW rather than the pad, so a drag that leaves the pad keeps steering
+// and a release anywhere lets go.
+// 090826-0759: THE STICK WAS NEVER MISSING — IT WAS BELOW THE FOLD. The container
+// had a max-WIDTH but no height limit, so the canvas took whatever it wanted,
+// the pad went underneath, and on a phone that landed off the bottom of the
+// page. Same cause as needing to scroll to see the top and bottom of the board.
+// The play screen is now a bounded FLEX COLUMN and the three parts share the
+// viewport:
+//   HUD        takes what it needs
+//   STICK ZONE reserved, flex-shrink 0 — it keeps its height whatever happens
+//   BOARD      takes the rest, and SHRINKS rather than overflowing
+// That priority is deliberate: a board you can see but cannot steer is useless,
+// and so is the reverse. A smaller grid that is entirely visible beats a larger
+// one you have to scroll to.
+// min-height:0 on the canvas is what actually permits the shrink — without it a
+// flex child refuses to go below its content size and the overflow returns.
+// The old 9:16 width cap is dropped: it derived width FROM viewport height,
+// which now fights the explicit budget and squeezed the screen narrow. And
+// body.in-play sets overflow:hidden — with the layout budgeted, any scrollbar is
+// a fault, and scrolling a live game board is worse than the fault, since the
+// player can lose the grid mid-move.
+// 090826-0803: THE JOYSTICK WAS INVISIBLE BECAUSE I BROKE THE BOARD'S SIZING.
+// Last build I switched the game canvas from `width: 100%; height: auto` to
+// `width: auto; height: 100%` — but that canvas carries NO width/height
+// attributes; its bitmap is sized in JS. So `width: auto` fell back to the
+// browser's 300px default while `height: 100%` claimed the entire container.
+// The board came out the wrong shape AND took all the vertical space, leaving
+// the stick zone with nothing. The pad was in the DOM, styled, and allocated
+// zero height.
+// Both canvases are now sized the same way — WIDTH LEADS, height follows the
+// aspect ratio — with the board capped by max-height so it yields to the stick
+// zone rather than overrunning it. flex-shrink 1 plus min-height 0 is what lets
+// that cap bite; flex-shrink 0 on the pad means the board always gives way
+// first.
+// The pad also gets an explicit clamped width instead of `auto`. Auto happened
+// to work — it resolved to the 260px attribute — but only by accident, and it
+// would never have scaled. Two canvases sized by opposite rules is exactly how
+// this fault hid in the first place.
+// 090826-0808: THE CONSOLE ERRORS WERE THE JOYSTICK. `ctx` is declared
+// ── [090826e] REAL ERROR MESSAGES ON SCREEN ─────────────────────────────────
+// The console has been showing "Uncaught Error: Script error." on repeat, which
+// is the browser refusing to disclose details — it does that for scripts it
+// treats as cross-origin, which is what a GitHub Pages preview inside another
+// app can look like. Three builds have gone on guessing from that.
+// window.onerror gets the message, source and line directly, before any of that
+// redaction. Deduplicated, so a per-frame throw prints once instead of flooding.
+// [090826f] window.onerror alone was not enough — it reported "Script error. at
+// ?:?:?", because the browser withholds details for scripts it deems
+// cross-origin, which is what a preview app's blob/data URL makes of an external
+// file. A CAUGHT error carries its full message regardless of origin, so the
+// frame loop is wrapped below as well. Belt and braces, and it is the caught
+// path that would have found this in one build rather than four.
+(function () {
+    const seen = new Set();
+    const show = (txt) => {
+        if (seen.has(txt)) return;
+        seen.add(txt);
+        const el = document.getElementById('errBanner');
+        if (!el) return;
+        el.style.display = 'block';
+        el.textContent += (el.textContent ? '\n' : '') + txt;
+    };
+    window.addEventListener('error', e => {
+        show('ERR: ' + (e.message || '?') +
+             '\n  at ' + (e.filename || '?') + ':' + (e.lineno || '?') + ':' + (e.colno || '?') +
+             (e.error && e.error.stack ? '\n  ' + String(e.error.stack).split('\n').slice(0, 3).join('\n  ') : ''));
+    });
+    window.addEventListener('unhandledrejection', e => {
+        show('PROMISE: ' + String(e.reason && e.reason.message || e.reason));
+    });
+})();
+// `const ctx = canvas.getContext('2d')`, and my pad rendering reassigned it — so
+// every frame threw "Assignment to constant variable", which is exactly the
+// repeating "Uncaught Error: Script error" in the screenshot. The throw landed
+// BEFORE a single ring was drawn, so the pad reserved its space perfectly and
+// rendered nothing. Blank, not missing.
+// The renderer now takes its target as a local (pctx) rather than swapping a
+// global. Better regardless: nothing to leak, no restore to forget, and an
+// early return cannot strand the game drawing into the wrong surface.
+// FOUND WHILE RENAMING, and older than any of this: `g.shadowOffsetY = 2` — set
+// on the gradient instead of the context, and on a `const g` not declared until
+// the following line. A temporal-dead-zone throw every frame the knob drew,
+// sitting in the file unnoticed because it was inside a try-free draw path that
+// already appeared to work.
+// 090826-0814: THE JOYSTICK ZONE, AND THE !IMPORTANT THAT WAS HIDING IT.
+// The screenshot showed the stick DRAWING correctly but small and off to one
+// side — which meant the container itself was wrong, not the pad. Line 1053:
+//   .game-container { max-width: min(92vw, calc(100svh - 300px)) !important; }
+// An !important cap deriving the container's WIDTH from viewport HEIGHT, minus a
+// 300px guess at the HUD. It overrode every change I made to the main rule for
+// the last four builds, squeezing the board and pad into a narrow column. A
+// second, older rule did the same at max-width 768px.
+// Both are gone. They solved a problem that no longer exists: the board is a
+// flex child with max-height now, so it fits the height by SHRINKING rather than
+// by having its width guessed from outside. Two systems were budgeting the same
+// space and the one with !important won silently.
+// THE ZONE IS NOW TOGGLEABLE, as asked. The existing Joystick setting hides the
+// band and the BOARD RECLAIMS THE HEIGHT — leaving an empty 200px strip would be
+// worse than useless. The saved choice is applied before the first frame, so a
+// player who turned it off last session never sees it flash in and out.
+// 090826-0818: STOP GUESSING — PRINT THE ACTUAL ERROR. Three builds have now been
+// spent inferring a cause from "Uncaught Error: Script error.", which is the
+// browser REFUSING to disclose the message (it does that for scripts it treats
+// as cross-origin, and a Pages preview inside another app can look exactly like
+// that). Every fix has been a hypothesis tested by asking Jake to look again.
+// window.onerror receives the message, file and line before that redaction, so
+// they now print in a red banner at the bottom of the screen, deduplicated so a
+// per-frame throw shows once rather than flooding. It comes out once the cause
+// is known.
+// Also removed a confound: `rotor_stick` persists from the in-board stick era,
+// and if it was ever switched off the new body.stick-off rule hides the pad
+// completely — indistinguishable from the bug being chased. It is forced on.
+// One screenshot of that banner will say more than the last three builds did.
+// 090826-0822: THE ERRORS WERE NEVER THE JOYSTICK. Your screenshot of the WELCOME
+// screen — which has no joystick on it — showed them firing anyway, and the demo
+// box sitting empty. That was the answer.
+// FB_FRAMES lives in frames.js, a SEPARATE file, and fbTick read `FB_FRAMES.length`
+// with no guard from inside requestAnimationFrame. Whenever only index.html gets
+// published, which is most of these builds, that threw SIXTY TIMES A SECOND from
+// an external script the browser refuses to describe — hence "Script error." with
+// no file and no line, even through window.onerror.
+// Guarded in both places (fbTick and fbFrame), the loop now stops instead of
+// throwing, and the script tag handles the missing file at source.
+// Three builds went on chasing that error around the joystick because the two
+// appeared together and I assumed a shared cause. The welcome screen ruled the
+// joystick out in one glance; I should have asked for that screenshot first.
+// 090826-0831: JOYSTICK CENTRED, RIGID EIGHT, AND A PLAY/PAUSE LAMP.
+// CENTRED: as the last flex item the pad sat immediately under the board with
+// all the leftover height beneath it. `margin: auto` hands that slack back
+// symmetrically, so the stick sits in the middle of its zone.
+// RIGID EIGHT: the INPUT was already snapped to eight directions — but the KNOB
+// followed the finger freely, so the picture implied a continuous stick while
+// the game only ever read one of eight values. The player was being shown a lie
+// about their own input, which is exactly why it felt like there was something
+// "in between". The knob now sits at one of eight positions at full throw, and
+// dead centre when nothing is engaged: what you see is precisely what the game
+// has.
+// PLAY/PAUSE at the top of the stick — a green triangle running, red bars
+// paused, and tappable. State and control in one place, on the pad the thumb is
+// already on. It reads as a status LAMP first and a button second, which is the
+// right order, since you glance at it far more often than you press it. Colour
+// carries the meaning rather than shape, because a triangle and two bars are
+// hard to separate at this size in a hurry.
+// The lamp's listener registers ahead of the stick grab, or the grab radius
+// would swallow it; and its hit area is published by the draw so input and
+// picture share one geometry rather than two copies that can drift.
+// 090826-0837: THE LAMP RIDES THE KNOB, AND ONE DIRECTION PER PUSH.
+// PLAY/PAUSE is drawn INTO the knob now rather than as a separate disc above the
+// ring — green triangle running, red bars paused. The control reports one thing:
+// where you are pushing, and whether the clock is turning.
+// That forces an interaction, and it is the right way round: a TAP on the knob
+// pauses, a DRAG steers. It resolves on RELEASE, not on press, which is what
+// lets both live in one spot — and means a player who starts to steer and
+// changes their mind does not accidentally pause the game.
+// ONE DIRECTION PER PUSH: the eight-way test was evaluated fresh every frame, so
+// sliding a thumb around the rim changed direction continuously — aiming for NE
+// could pass through N and E on the way and fire both. The direction now LOCKS
+// as it engages and holds until the thumb returns inside the dead zone, so
+// choosing another means coming back to centre first.
+// Deliberate rather than fluid, and it should be: this is a puzzle where each
+// move is a decision, not a stick steering a vehicle — and an accidental move
+// costs seconds off the clock.
+// 090826-0843: PLAY/PAUSE OFF THE KNOB, AND THE BOARD RESIZES WITH THE ZONE.
+// The lamp is gone, along with the tap-versus-drag rule it required. Right call:
+// it made the knob mean two things on one gesture and put that ambiguity on the
+// single control that has to be unmistakable. Pause belongs on the keyboard and
+// in Settings, where a deliberate action should live. _stickPP and the whole
+// tap/drag apparatus are deleted rather than left dormant.
+// SCALING: the board was `width: 100%` with a max-height, so it could never use
+// freed vertical space — switching the joystick off just left a gap where the
+// zone had been. The play zone is 10x10, so an explicit `aspect-ratio: 1/1` now
+// lets width resolve FROM height as well as the reverse: whichever axis is
+// tighter decides, and the board takes everything the layout will give it.
+// That also makes `width: auto` safe here, where it broke the layout at
+// 090826b — the ratio is stated now rather than inferred from a canvas that
+// carries no width or height attributes.
+// Toggling also dispatches a resize, so anything holding a cached rect updates
+// at once instead of waiting for the window to change.
+// 090826-0846: RATIOS TIED TO THEIR BITMAPS, AND NO JOYSTICK BY DEFAULT.
+// I checked both declared ratios against the real canvases: the board is
+// VIEW_W 10 x VIEW_H 10 against a CSS 1/1, and the pad is 260x210 against
+// 260/210. Both matched — but by COINCIDENCE, and a hardcoded 1/1 would silently
+// STRETCH the board the first time the play zone stopped being square. A canvas
+// scales its bitmap to whatever box CSS gives it and never complains.
+// Both ratios now come from CSS variables the code sets from the actual
+// dimensions (--board-ratio from VIEW_W/VIEW_H, --stick-ratio from the pad's own
+// width/height attributes), so distortion is not merely absent, it is
+// impossible.
+// JOYSTICK OFF BY DEFAULT. It is a comfort for touch play, not a requirement —
+// swipes and the keyboard both work without it — and a new player meets a bigger
+// board this way, which is the better first impression. A saved choice still
+// wins; the forced-on line from 090826e is removed, since the bug it was
+// isolating is fixed.
+// 090826-0850: THE GRID IS SQUARE AGAIN. flex-grow was the culprit. With
+// `flex: 1 1 auto` in a column container the flexbox RESOLVES a main size by
+// stretching the height — and a resolved flex main size beats aspect-ratio. So
+// the box grew taller than square, the canvas stretched its bitmap to fill it,
+// and every cell and hourglass came out elongated. Declaring the ratio last
+// build was necessary but not sufficient: something had to stop overriding it.
+// With flex-grow at 0 the canvas keeps its intrinsic square shape and is simply
+// BOUNDED by max-width and max-height — whichever axis is tighter decides, and
+// cells stay exactly as wide as they are tall. It still expands into freed space,
+// because both maxima rise when the stick zone disappears.
+// KNOB: STICK_KR 50 -> 34. At 50 the knob was 56% of the ring radius and read as
+// a ball with a rim around it; 38% is where a joystick knob normally sits — big
+// enough to grab, small enough that the eight directions are what you see first.
+// 140826-1809: SMALLER RING, MUCH BIGGER ARROWS, SAME STICK.
+// The ring radius and the THROW distance were one constant, so halving it would
+// have left about 8px between centre and full deflection — the stick would have
+// looked right and become unusable. They are separated now: STICK_R keeps the
+// input geometry (grab, throw, dead zone) and STICK_RING is only what is drawn,
+// at half. The knob is untouched.
+// ARROWS 5x: 11 units long against a 90-unit radius made them a detail on the
+// rim rather than a signal. Now 55 long and 30 across, sitting OUTSIDE the
+// smaller ring where there is room — they become the most prominent thing on the
+// pad, which is right. The directions are the information; the ring is the frame.
+// The pad canvas grows 260x210 -> 300x300 to hold them: at 5x the tips reach
+// radius 108 and the old canvas gave only 105 from centre, so the top and bottom
+// arrows would have been sliced in half. Square also suits a control whose reach
+// is equal in every direction — 260x210 had quietly given the diagonals less
+// room than the cardinals.
+// 140826-1821: DIRECTION ARROWS 20% SMALLER — 55/30 down to 44/24. Both
+// dimensions scale together, so the arrowhead keeps its proportions instead of
+// turning into a needle or a stub. Tips now reach radius 97 in a 300-unit pad,
+// clearing the edge by 53 rather than 42, so there is more air around them too.
+// 140826-1822: DIRECTION ARROWS DOWN ANOTHER 20% — 44/24 to 35/19. That is
+// 55 → 44 → 35 across the last three builds, about two-thirds of where the 5x
+// enlargement put them, and now roughly 78% of the drawn ring's radius rather
+// than 120%. Both dimensions scale together so the head keeps its shape.
+// 140826-1829: THE ARROWS WERE TOO WIDE, NOT TOO LONG — which is why two rounds
+// of shrinking them made so little difference. Measured it this time: at half
+// width 19 each arrow spans 38 units, and the arc between adjacent directions at
+// that radius is 42. FOUR units of clearance. Scaling length and width together
+// preserved that ratio exactly, so the crowding survived every reduction.
+// Half-width 19 -> 11, giving 20 units between neighbours — about half the arc
+// free, so each arrow is plainly its own mark. Length only 35 -> 30, because a
+// long thin arrow points better than a short fat one, and pointing is the job.
+// The active arrow also stops WIDENING when a direction lights up (it grew 15%),
+// which at this spacing was enough on its own to close the gap. It reaches
+// further instead: pointing harder rather than swelling.
+// 140826-1830: BLUNTER ARROWS. The apex was 40 degrees — a dart. Shortening to 21
+// while widening to 13 takes it to about 63, which reads as a chevron MARKING a
+// direction rather than a spike threatening one.
+// Also rounded the corners: three straight lines meet in a sharp vertex however
+// wide the triangle is, so the pointiness was partly the corner itself and not
+// just the angle. A round join and cap softens all three at once, free.
+// Width still clears its neighbours — 26 units against 42 of arc leaves 16
+// between them, so blunter has not cost the separation won last build.
+// 140826-1834: THE JOYSTICK REALLY WAS SQUASHED — `max-height` was fighting
+// `aspect-ratio`. A max-height clamps the box's height while its width stands,
+// so the ratio loses and the 300x300 bitmap is flattened: on an 844-tall screen
+// to 300x219, about 73% of its proper height. Everything drawn in it — ring,
+// knob, arrows — came out compressed with it, which is exactly what you were
+// seeing, and no amount of adjusting the arrow numbers would have touched it.
+// The height budget now caps the WIDTH instead (min of the two), so whichever
+// constraint is tighter shrinks the pad as a whole rather than distorting it.
+// Same footprint, correct proportions.
+// Audited the other two canvases while there: the board has both maxima at 100%
+// and cannot distort, and the demo canvas is display:none — the 4:3 nearby
+// belongs to the video element, not to it. The pad was the only one affected.
+// 140826-1836: THE SQUASH FIX FROM 1834 NEVER LANDED. I wrote the changelog,
+// stamped it and published a file that still contained `max-height: 26dvh` —
+// the edit's search pattern did not match the file's actual whitespace, the
+// replace silently did nothing, and I did not check the RESULT before shipping.
+// So the last build described a fix it did not contain.
+// The rule is replaced wholesale this time and read back from disk to confirm.
+// The fault itself: max-height clamps the box's height while its width stands,
+// so aspect-ratio loses and the 300x300 bitmap flattens — on an 844-tall screen
+// to 300x219, about 73% of its height. That is why the ring and knob drew as
+// ELLIPSES, and why three rounds of adjusting arrow numbers changed nothing.
+// The height budget now caps the WIDTH, so whichever constraint is tighter
+// shrinks the pad as a whole. No max-height remains: it cannot fight the ratio
+// if it is not there.
+// 140826-1838: JOYSTICK 20% BIGGER — 190/78/330 to 228/94/396, and the height cap
+// 26dvh to 31dvh with it. BOTH had to move: whichever constraint is tighter
+// decides the size, so raising the width alone would have grown the pad on tall
+// screens and left short ones exactly as they were.
+// Scaling the CSS box rather than the drawing keeps every proportion intact —
+// ring, knob, arrows and their spacing all enlarge together, and the square
+// aspect-ratio still governs, so nothing can distort on the way up.
+// Measured after the edit rather than assumed, given 1834: 307->366 on a tall
+// iPad, 219->262 at 844, 182->217 at 700. Nineteen per cent throughout.
+// 150826-0728: THE STICK STOPS DEMANDING PRECISION. It was asking for MORE aim
+// than a swipe in three separate ways, which is why a swipe felt easier.
+// (1) FLOATING ORIGIN — the fix that matters. The centre was FIXED, so a thumb
+//     landing off-centre had to be dragged back before anything worked, and
+//     touches beyond a 102-unit radius did nothing at all. On a tablet held
+//     two-handed you cannot see where your thumb is landing. Now the whole pad
+//     grabs and the touch point BECOMES the centre: every direction is an equal
+//     short push from wherever you happened to land. A swipe does not care where
+//     it starts, and now neither does this.
+// (2) ENGAGE 45% -> 22%: 24 units of drag before anything happened, down to 12.
+// (3) RELEASE split from engage at 38%: you had to travel the same 24 units BACK
+//     to choose again — the full distance twice, on every move. Asymmetric on
+//     purpose: easy to commit, harder to lose by accident, which is the right
+//     way round when a wrong move costs seconds.
+// The knob still DRAWS at the resting centre, so the pad reads as a joystick;
+// only the input origin floats.
+// 150826-0736: THE WALLS THAT MOVED ON THEIR OWN. Found from the replay
+// sequence, and it is a live-play fault the replay was faithfully reproducing.
+// Level 1 re-stamped every guard maze EVERY 600ms — and stampGuardMaze skips any
+// cell the PLAYER occupies, then clears its path cells. So a wall the player was
+// standing on never got written; step away and 600ms later it appeared. Stand
+// somewhere else and a different one vanished. Terrain the generator had
+// legitimately placed inside a guard path was deleted the same way, on the same
+// tick. From the player's side: walls flickering in and out with no cause.
+// Now stamped ONCE per slot. The only cells that need re-asserting are those the
+// player was standing on at stamp time, so those are remembered and retried
+// until they land — targeted, finite, and silent once complete.
+// The original justification does not hold either: it was defending the route
+// against procedural generation, but worldGenY is a watermark, so a row is never
+// generated twice. It was churning the board to prevent something that could not
+// happen.
+// The rollback path clears the deferred list too, or a maze that was rolled back
+// for sealing its own slot would slowly rebuild that seal afterwards.
+// 150826-0746: THE DEAD BAND UNDER THE BOARD ON iPHONE. Measured it: the
+// container is 387x882, but the board is limited by WIDTH to 371 — so HUD plus
+// board came to 601 and the remaining 281px sat empty below the grid.
+// Two causes, both fixed. The container had a fixed HEIGHT of the full viewport,
+// which cannot shrink to its contents; it is a max-height now. And the board was
+// held to 90% width, which on a phone is the binding constraint — 5% a side
+// costs about 40px of grid. At 96% the board goes 371 -> 397, cells 37 -> 40px.
+// The desktop cap still keeps it sensible on a large display.
+// Also a small gap between HUD and board: they were flush, so the board's top
+// partial row — normal in a scroller — read as the grid being CLIPPED by the
+// panel above rather than as the world scrolling in.
+// 150826-0750: THE CORNER BUTTONS NO LONGER CROSS THE BOARD. They are fixed at
+// top:12px and 40px tall, so their lower edge sits at 52 — while the container
+// began at 37 on a phone. Its top border ran straight THROUGH both buttons: a
+// rounded rectangle and two circles intersecting for no reason a player could
+// read. The container now starts at 60px, clearing them with room, and the
+// buttons take the safe-area inset so they also clear the notch.
+// The board pays nothing for it: the container is max-height since 0746 and was
+// leaving space below anyway.
+// THE JOYSTICK IS NOT MISSING — it is OFF, which is the default set at 090826j
+// on request ("the default setting should be no joystick to start with").
+// Settings > Joystick > Show joystick turns it on and the choice persists; the
+// board gives back the height when it does.
+// 150826-0753: JOYSTICK ON BY DEFAULT, reversing 090826j. The right way round on
+// reflection: a control the player never sees is one they never learn exists,
+// and a bigger board is a poor trade for a first-timer who cannot work out how
+// to move. Swipes still work, but they have to be DISCOVERED — the stick is
+// visible from the first frame and explains itself.
+// Turning it off is the informed choice, made by someone who already knows the
+// swipe, so that is the one that belongs in Settings rather than in the default.
+// A saved preference still wins either way, so anyone who has already chosen
+// keeps their choice.
+// 150826-0803: ALL FOUR CORNERS OUTSIDE THE FRAME. Last build cleared the TOP
+// buttons with a 60px margin and left the bottom at 10 — so the move-guide and
+// tips buttons, fixed at bottom:12px and 40px tall, sat on the frame's lower
+// edge exactly as the top pair had sat on its upper one. Half a fix reads worse
+// than none: three corners agreed and one did not, which is precisely the kind
+// of inconsistency the eye catches without being able to name it.
+// The container's margins are symmetric now, both pairs take the safe-area
+// insets (notch above, home indicator below), and all four are inset 14px from
+// the sides by one rule rather than two.
+// The frame gets 812px of an 932pt phone; content wants 877, so the BOARD
+// shrinks about 65px to fit — which is the flex budget working as designed
+// rather than something overflowing.
+// 150826-0807: THE FRAME OUTGREW ITS OWN MARGINS. The bottom buttons sat inside
+// the zone while the top pair sat outside it because max-height was still
+// subtracting the PRE-150826c values (37 + 20) while the margins had moved to
+// 60 + 60 — 63px too tall on a phone, so the frame ran down past the buttons
+// instead of stopping above them. I changed the margins last build and left the
+// maximum that constrains them untouched.
+// Both now read ONE variable, --frame-gap. They cannot disagree again, and one
+// number moves all four corners.
+// SIZING TO THE JOYSTICK: already correct, and now visible. The container is
+// max-height with content-driven height, so with the stick ON the board shrinks
+// to fit (332px on a 932pt phone) and with it OFF the board takes its
+// width-limited 397 and the CONTAINER SHRINKS by the difference rather than
+// leaving 185px of empty frame. The zone is only ever as tall as what is in it.
+// 150826-0815: EVENING UP THE DISTRIBUTION. Measured off the screenshot first:
+// the gaps down the frame ran 10 / 50 / 170 / 280, and the board sat 700 wide in
+// a 1045 frame with 172 unused either side. Cramped at the top, sparse at the
+// bottom and hollow at the sides — three symptoms, two causes.
+// VERTICAL: flex-start pushed every child up and left the remainder at the end,
+// and the pad's `margin: auto` then took a share of that slack for itself. Now
+// space-evenly, which sizes every gap the same INCLUDING the two at the ends,
+// with the pad centring horizontally only. Container padding evened to 10 all
+// round — the old 8/10 split was invisible in itself but tilted everything below
+// it.
+// HORIZONTAL: the board is HEIGHT-bound on a phone, so every point the stick
+// zone takes makes the board NARROWER, and a square board leaves that width
+// unused at its sides. The stick drops 31dvh -> 22dvh: it keeps 205px, well
+// above its 190 floor, while the board goes 340 -> 377 of a possible 397 and the
+// side margins nearly close.
+// 150826-0819: THE LEVEL CARD STAYS INSIDE THE FRAME. It sat at inset:-16px —
+// added at 040826g to cover the HUD's -11px side overhang — which pushed it 16px
+// past the container on EVERY side, including into the band the corner buttons
+// occupy. Those are position:fixed at z-index 40, above the card's 30, so they
+// floated over the scores.
+// The sides keep their overhang, since that is what it was for. Top and bottom
+// are flush with the frame, which is the same rule the play screen and the
+// welcome page follow: content inside the frame, controls outside it.
+// Two things cleaned up with it. The card declared justify-content TWICE —
+// flex-start, then space-between lower down, the later silently winning — the
+// same trap as the three max-widths on the container; it is now one declaration,
+// space-evenly, matching the play screen. And its bottom padding carried a
+// safe-area inset that --frame-gap already provides, so the home indicator was
+// being cleared twice.
+// 150826-0939: ONE SQUARE OR A CRUISE — now two distinct gestures. The first
+// repeat and every one after it both waited 250ms, so a deliberate single push
+// and the start of continuous travel were the SAME gesture up to a quarter of a
+// second. There was nothing to feel for, which is why the two never separated.
+// This is keyboard key-repeat's problem, and it takes the same solution: a long
+// deliberate pause before the second move, then a fast rate once cruising.
+//   push and release inside 480ms -> exactly ONE square
+//   hold past 480ms               -> cruise begins
+//   while cruising                -> a move every 160ms, ramping to 107
+// And the threshold ANNOUNCES itself rather than being discovered by
+// overshooting: the moment cruising starts there is a soft tick, a short haptic,
+// and the active arrow extends from 21 to 32 so the pad itself shows which mode
+// you are in.
+// Caught while building: dragFirstMs was used in three places and defined in
+// none — undefined would have broken the repeat timer outright. Both game
+// initialisers now carry it.
+// 150826-0949: THE STICK WAS TOO SENSITIVE, in two ways — and the first was my
+// overcorrection at 140826h.
+// (1) ENGAGE 22% -> 40%. Converted to real units, 22% is EIGHT PHYSICAL PIXELS
+//     of thumb travel on a 205px pad, and a thumb resting on glass wanders 3-5px
+//     without being asked to. The control was firing on noise. I lowered it to
+//     stop the stick demanding precision, but the fix for "too hard to aim" is
+//     the floating origin, not a hair trigger. 40% is 14.5px — clear of any
+//     wobble, still a short push. Release drops to 30% so returning to centre
+//     stays easy.
+// (2) CARDINALS GET WIDER SECTORS. Eight even 45-degree wedges mean a push 23
+//     degrees off north is a DIAGONAL — and a thumb pushing "up" on glass is
+//     routinely 20 degrees out, so the wrong move fired constantly and felt like
+//     twitchiness rather than a mis-aim. Up, down, left and right now take 56
+//     degrees each and the diagonals 34. The diagonals are still reachable; they
+//     just have to be MEANT, which is right when every move costs seconds.
+//     Sectors sum to exactly 360, so there are no gaps or overlaps.
+// 150826-1116: JOYSTICK AND ARROWS 20% BIGGER, same pad. Everything DRAWN scales
+// inside the existing 300-unit canvas rather than the CSS box growing: ring
+// 45->54, knob 34->41, arrows 21->25 (38 cruising), half-width 13->16, standoff
+// 8->10.
+// STICK_R goes 90->97 with them, and that is the part that matters. Throw
+// distance is STICK_R - STICK_KR - 3, so growing the knob ALONE would have cut
+// the throw from 53 to 46 and made the stick 13% more sensitive — quietly
+// undoing the sensitivity work of the previous build. At 97 the throw stays
+// exactly 53, so the engage and release thresholds tuned there still mean the
+// same physical distance.
+// Checked it still fits: tips reach radius 89 in a 150-unit half-pad, and 18
+// units of clearance remain between neighbouring arrows.
+// 150826-1119: ANOTHER 20% ON THE JOYSTICK. Ring 54->65, knob 41->49, arrows
+// 25->30 (46 cruising), width 16->19, standoff 10->12. Same pad box; only the
+// drawing grows, so the zone is untouched.
+// STICK_R is SOLVED this time rather than scaled: throw is STICK_R - STICK_KR -
+// 3, and multiplying it by 1.2 with everything else would have taken the throw
+// from 53 to 64 — making the stick noticeably LESS sensitive, the opposite of
+// the correction two builds ago. 105 holds the throw at exactly 53, so engage
+// stays 21 units and nothing about the feel moves.
+// Fit checked: tips reach radius 107 of a 150 half-pad with 43 to spare, and 22
+// units of clearance between neighbouring arrows. The knob is 75% of the ring
+// now, which is as far as this can sensibly go — beyond it the ring stops
+// reading as a rim and becomes an outline round the knob.
+// 150826-1131: NO MORE SEALED POCKETS. Terrain is laid row by row — tunnels,
+// funnels, islands, barriers — and nothing ever checked whether the RESULT left
+// open floor completely walled in. It routinely did: an island landing beside a
+// tunnel wall closes the gap between them, and the player can never get in.
+// Two costs, and the second is the quiet one. A pocket can swallow a pickup or a
+// shifter outright. And every cell inside it counts toward cellsGenerated, which
+// is the COVERAGE DENOMINATOR — so 100% becomes arithmetically impossible and
+// the grade the player is chasing recedes for reasons they cannot see.
+// breachSealedPockets() flood-fills each generated band from its own edges,
+// finds every open cell the fill could not reach, and knocks ONE wall out of
+// each pocket. It prefers a CARDINAL neighbour — a diagonal-only gap is one no
+// square or J-shape can pass, which would be a breach in name only.
+// BREACHING rather than filling, deliberately: a pocket is space the level meant
+// to exist, so the repair is to let the player in, not to erase it.
+// Run after every chunk, after every island (the commonest cause), and inside
+// the guard maze before its approachability test — a maze should be a route, not
+// a lid. Verified against a synthetic ringed cell.
+// 150826-1204: THE WALL BUMP IS A QUACK NOW, on purpose. It had a hint of one by
+// accident — two detuned saws always sound a bit reedy — so this builds it from
+// what actually makes a quack rather than what happens to resemble one.
+//   FORMANTS: the nasal "aa" is two sharp resonant peaks, near 900Hz and 2.2kHz.
+//     This matters more than anything else, and the old sound ran a LOWPASS,
+//     which removes exactly those frequencies — it was filtering out the one
+//     thing that would have made it a quack. They run in PARALLEL, because in
+//     series the second could only ever subtract from the first, while a vocal
+//     tract's resonances add.
+//   PITCH: a duck's fundamental is 300-500Hz. A2 was 110 — an octave and a half
+//     too low to read as a bird at all.
+//   GLIDE: 430Hz falling to 250 across the sound. A steady tone reads as a
+//     machine; a quack falls.
+//   ENVELOPE: 12ms attack, 170ms total. A bark, not a note.
+// The two saws stay, detuned 1.1%: a real quack is not a clean tone, and that
+// roughness is what stops this sounding like a synth playing a note through a
+// filter. A little low body underneath keeps it landing as an impact.
+// 150826-1207: EVERY TRACK GAINS A SECOND SECTION. The loops ran 3.2 to 9.2
+// seconds — Chiptune came round NINETEEN TIMES A MINUTE, which is often enough
+// to be counted rather than heard. A loop stops announcing itself somewhere past
+// fifteen seconds.
+// Each of the nine now plays A A B A: the oldest form in popular music, and it
+// works because B arrives just as A is wearing thin and makes A welcome again.
+// Loops are now 12.8 to 36.9 seconds.
+// Each B reuses its own track's material rather than being a second piece bolted
+// on — the Baroque INVERTS its subject (every rise becomes a fall, Bach's own
+// device), the Waltz lifts to the relative minor as a middle strain traditionally
+// does, the Bossa plays a real ii-V turnaround, the Xylophone takes a second
+// strain starting higher the way nursery tunes are built. The piece grows; it
+// does not change.
+// FOYER gets four strains and is the only one that does NOT return to A — it
+// wanders A B C B and never quite settles. On a menu that is right: a piece that
+// resolves invites you to notice it has finished, and this should simply be
+// there. Its full form runs nearly a minute.
+// 150826-1212: THE OLD WALL DRONE IS BACK. I rebuilt it from quack acoustics —
+// parallel formants at 900Hz and 2.2kHz, a 430->250Hz glide, a 12ms attack — and
+// it came out LESS duck-like than the thing it replaced.
+// Worth recording why. The old sound is two sawtooths 4% apart at 110Hz through
+// a falling lowpass, and what makes it read as a quack is the BEATING between
+// them: an irregular warble that a real animal has and a cleanly synthesised
+// formant does not. I removed the accident and kept the theory, and the theory
+// was the weaker of the two.
+// Textbook-correct is not the same as convincing, and when a sound already works
+// the right question is what is CAUSING that — not what should cause it.
+// 150826-1237: REAL QUACKS. Four builds of formant theory could not beat a
+// recording, which was predictable in hindsight — what makes an animal sound like
+// an animal is IRREGULARITY, and irregularity is precisely what a synthesiser has
+// to fake.
+// Both clips needed trimming: the files were 2-3 seconds of mostly silence, and
+// the naming was reversed — "12-32-45" holds the single quack, "12-32-40" the
+// double. Cut to 0.29s and 0.55s, faded, loudness-matched to -14 LUFS, and
+// inlined as base64 (~9.6KB for the pair). Inlined rather than kept as separate
+// files on purpose: that is the frames.js trade, and frames.js going missing cost
+// three builds chasing a phantom bug. One file cannot be forgotten.
+// SINGLE quack for a wall bump, DOUBLE for a refused claim — a wrong shape on a
+// slot is a bigger "no" than brushing a wall, and two quacks say so without a new
+// sound to learn.
+// Pitch varies +/-6% per hit. A sample repeated identically becomes noticeable
+// within a minute because the ear locks onto the sameness, where the synthesised
+// version varied naturally. And the old drone stays as a FALLBACK if decoding
+// fails, so the sound can never simply vanish.
+// 150826-1244: THE QUACKS WERE NEVER DECODING. A guard latched before the work
+// it guarded could start:
+//     if (!audioCtx || _quackDecoding) return;
+//     _quackDecoding = true;
+// initAudio() called this at the TOP of the function, before audioCtx existed.
+// So the first call bailed at `!audioCtx` — fine — but on any path where it got
+// past that it set the flag and then failed, and every later call returned at
+// line one. The buffers stayed null for ever and bonk quietly used its synth
+// fallback, which is why the other effects played and this one did not.
+// Three fixes: the audioCtx test comes FIRST so an early call leaves the flag
+// alone; the flag is per-CLIP and cleared on failure, so one bad decode cannot
+// block the other or block a retry; and the decode is called at the END of
+// initAudio, where the context definitely exists.
+// The lesson is the ordering, not the flag: a guard that latches must be set
+// AFTER everything that could make the attempt pointless, or the first failed
+// attempt becomes permanent.
+// 150826-1249: THE QUACK FILES WERE SILENT. Decoded the embedded base64 back to
+// audio and measured it: PEAK ZERO. Both clips were digital silence, so the code
+// was working perfectly and playing nothing — which is why the last fix changed
+// the symptom not at all.
+// Two causes stacked. `loudnorm` needs about three seconds to analyse and was
+// handed 0.24, so it flattened the clip to nothing. And removing it did not help:
+// the libmp3lame encode ALSO produced silence at this length. The same trim
+// written to WAV came out at peak 29950, which is what proved the extraction was
+// fine and the ENCODER was the problem. Re-encoded as AAC in MP4: peaks 29996 and
+// 30422, verified by decoding the embedded string back to samples.
+// The quack also plays at 1.25 rather than 0.85 — a recording peaks well below
+// full scale where the synthesised effects are written to sit near their ceiling.
+// VOLUMES: music 30% -> 45%, SFX 100% -> 60%. Full-scale SFX was never a
+// considered choice, just the absence of one, and at 1.0 the loudest effects have
+// no headroom above them, so nothing can feel BIG.
+// Lesson: verify the ASSET, not just the code path. Three builds assumed the
+// audio was fine because the file existed and was the right size.
+// 150826-1304: THE BOTTOM BUTTONS GET THE SAME CLEARANCE AS THE TOP. Measured off
+// the screenshot: 14px at the top, 6px at the bottom.
+// What makes this one interesting is that the ARITHMETIC WAS ALREADY RIGHT. Both
+// margins add --frame-gap plus their own safe-area inset, and max-height
+// subtracts both, so the two ends should be identical — and on paper they are.
+// The lying quantity is 100dvh: inside an in-app webview it reports the viewport
+// WITHOUT the host's chrome, so the box extends slightly lower than the visible
+// area and eats the clearance at that end only.
+// So rather than trust the unit, the bottom takes its 8px back explicitly:
+// --frame-gap-bottom, 68 against the top's 60. max-height subtracts both, so the
+// box still fits exactly.
+// Worth remembering: when the maths says two things are equal and the screen says
+// they are not, the fault is in a MEASUREMENT, not in the arithmetic.
+// 150826-1830: RETRO QUACKS, SYNTHESISED — and the samples are gone with them
+// (~15KB back). A recording is more realistic, but realism was never the point:
+// everything else here is oscillators, and a real duck in that mix sounds like a
+// different game leaking in.
+// What makes a sound RETRO rather than merely synthetic, in order of importance:
+//   STEPPED PITCH. Old chips updated their period register once per frame, about
+//     60 times a second, so a slide came out as a STAIRCASE. That is the
+//     giveaway, and it is exactly what a modern smooth ramp gets wrong. Built
+//     with setValueAtTime per tread rather than a ramp: 9 steps for the small
+//     quack, 12 for the big one, each held 17ms.
+//   SQUARE waves — the NES and Game Boy had two square channels and little else.
+//   NO FILTERING, because those chips had none.
+//   HARD EDGES: no fade in, and a clip rather than a fade out.
+// The quack SHAPE survives — a fast fall through an open register with the two
+// voices 2% apart so they beat. That roughness is what made the original drone
+// read as an animal, and it costs nothing to keep.
+// Also: "OF 10" is off the rank labels, on the card and the game-over screen.
+// And the old two-note refusal is DELETED rather than left stranded behind a
+// return — this file has accumulated enough unreachable code.
+// 160826-0632: REBUILT FROM MEASUREMENTS OF THE ACTUAL CLIP. I had been
+// synthesising from what a duck is SUPPOSED to sound like. Analysing the
+// recording contradicted nearly all of it:
+//   PITCH ~530Hz and STEADY. I had 400 falling to 170 — a glide the recording
+//     does not have. The biggest error, and I asserted it three times.
+//   FLUTTER at ~96Hz. The envelope pulses hard — 0.74, 0.47, 0.71, 0.28, 0.52
+//     across 15ms slices. That rapid amplitude wobble IS the quack, and not one
+//     version I built had it in any form.
+//   BAND-LIMITED: 56% of the energy between 500 and 1500Hz, almost nothing above
+//     3kHz. A raw square is strong past 10kHz, which is why the retro attempt
+//     sounded like a buzzer rather than a bird.
+//   234ms with a 27ms ATTACK — not instant, and not the 150ms I used.
+// Retro character is kept where it does not fight the evidence: square
+// oscillators, and the flutter STEPPED rather than smooth.
+// The lesson is plain — the clip was analysable from the first message, and four
+// attempts of theory would have been one attempt of measurement.
+// 160826-0638: THE QUACK IS TWO SINES, NOT A SQUARE — measured the harmonic
+// series and it settles the argument.
+//   a square gives     1.00 / 0    / 0.33 / 0    / 0.20
+//   the recording gives 1.00 / 0.80 / 0.08 / 0.07 / 0.01
+// The second harmonic is nearly as loud as the first and then it stops dead.
+// That is two sine tones — 571Hz and 1142Hz — with almost nothing else present.
+// Spectral flatness measures 0.000: about as pure as a real sound gets.
+// So every square-wave attempt was wrong at the SOURCE, which is why filtering
+// them never rescued anything: I was cutting harmonics that should never have
+// been generated. Rebuilt from sines at the measured amplitudes, with the ~100Hz
+// flutter, a 27ms attack and no glide.
+// Also removed from the level card: the five-statistic footnote ("2 rows · 3
+// slots · x3.5 best combo · 1 trims · 3 cubes lost") and the "Starting level N
+// with 62s" line. Neither pays points, neither can be acted on, and the second
+// explains a number the player meets on the clock two seconds later. The card is
+// a reward, not a report.
+// 160826-0652: RANK: COG, and the card fills its space.
+// The rung NUMBER is gone. "RANK 1" named a position on a ladder the player
+// cannot see; COG is the thing they earned and will remember. It now reads as a
+// quiet RANK label above a large COG — which is the grammar every other line on
+// this card already uses (POINTS IN PLAY / +360), so the rank stops being a
+// special case.
+// SIZING: everything was capped at desktop values and boxed into
+// min(300px, 82%), so on a tall card it could not grow into the space. The
+// column goes to min(420px, 92%) and the type roughly doubles — rank name 25 ->
+// 44, level total 34 -> 56, rows 14 -> 21, badge 78 -> 116. All still clamped, so
+// a short screen shrinks them rather than overflowing.
+// 160826-0714: THE GAME OVER BOX, IN THREE TIERS. It had six lines at six
+// different sizes and weights, so nothing led and everything competed. Grouped
+// by KIND now, borrowing the level card's quiet-label/loud-value grammar:
+//   SCORE alone and largest — the one number of the run, with a NEW BEST pill
+//     under it rather than a separate "Best:" line repeating the same figure.
+//   RANK and LEVEL SIDE BY SIDE at matched sizes. They are the same kind of fact
+//     — where you got to — and stacking them made each read as its own
+//     announcement.
+//   The two prose lines at ONE size. Same voice; only colour separates what
+//     happened from what to make of it.
+// "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
+// an invitation to keep going, and this is the screen where a run has just
+// ended. The card still shows it, which is where it belongs.
+const BUILD_VERSION = '160826-0714 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
@@ -5292,6 +6193,15 @@ const LOGICAL_H = VIEW_H * CELL;
 const RENDER_SCALE = Math.min(3, Math.max(1, (window.devicePixelRatio || 1) * 1.5));
 canvas.width = LOGICAL_W * RENDER_SCALE;
 canvas.height = LOGICAL_H * RENDER_SCALE;
+// [090826j] Publish the TRUE bitmap ratio to CSS. The board's box is then shaped
+// by the same numbers that shape its contents, so the grid can never be
+// stretched or squashed — whatever VIEW_W and VIEW_H become.
+try {
+    document.documentElement.style.setProperty('--board-ratio', VIEW_W + ' / ' + VIEW_H);
+    const _sp = document.getElementById('stickPad');
+    if (_sp) document.documentElement.style.setProperty(
+        '--stick-ratio', _sp.width + ' / ' + _sp.height);
+} catch (e) {}
 
 // ============ SCREEN SHAKE ============
 let shake = { x: 0, y: 0, timer: 0, intensity: 0 };
@@ -6004,6 +6914,8 @@ function initAudio() {
         } catch (e) { /* non-fatal */ }
     }
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    // [150826u] Nothing to decode any more — the quacks are synthesised, so there
+    // is no asset to load, nothing to fail, and no fallback to maintain.
     return audioCtx;
 }
 
@@ -6118,7 +7030,9 @@ const SCALES = {
 
 // [070826c] 30%. Music is the bed, not the event — at 50 it was competing with
 // the sound effects, which are the layer that actually tells the player things.
-const MUSIC_VOLUME = 0.30;                  // master music level
+// [150826s] Music 30%% -> 45%%. With the quacks now actually audible the mix has
+// changed: effects carry more weight, so the bed can come up without competing.
+const MUSIC_VOLUME = 0.45;                  // master music level
 
 let musicGain = null;
 let musicPlaying = false;
@@ -6234,115 +7148,170 @@ const mHt = (s) => 261.63 * Math.pow(2, s / 12);
 // sparkle removed: unhurried, unresolved, and deliberately the same FAMILY as
 // the suite rather than a different world, so the change of screen reads as the
 // music stepping back rather than a different game beginning.
-const MENU_TRACK = { name: 'Foyer', bpm: 68, len: 32, play(i, t, S, I) {
-    const prog = [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]];
-    const ch = prog[Math.floor(i / 8) % 4];
+const MENU_TRACK = { name: 'Foyer',  bpm: 68, len: 128, play(i, t, S, I) {
+    // [150826o] Four strains rather than one, and the only track here that does
+    // NOT return to A — it wanders A B C B and never quite settles. On a menu
+    // that is the point: a piece that resolves invites you to notice it has
+    // finished, and this should simply be there. At 68bpm the full form runs
+    // nearly a minute, so nobody hears it come round while reading a score.
+    const sec = [0, 1, 2, 1][Math.floor(i / 32) % 4];
+    const k = i % 32;
+    const PROGS = [
+        [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]],
+        [[2, 7, 9, 14], [-5, 0, 4, 9], [-3, 2, 5, 9], [0, 4, 7, 11]],
+        [[-1, 4, 7, 11], [-6, -1, 2, 7], [2, 5, 9, 12], [-3, 2, 5, 9]]
+    ];
+    const ch = PROGS[sec][Math.floor(k / 8) % 4];
     // One rolled chord per bar, spread across the beat rather than struck — the
     // spread is what stops a slow chord sounding like a hymn.
-    if (i % 8 === 0) {
+    if (k % 8 === 0) {
         ch.forEach((iv, n) => mPluck(mHt(iv), t + n * 0.075, S * 5, 0.058 - n * 0.007, 'sine'));
         mPluck(mHt(ch[0] - 12), t, S * 7, 0.062, 'sine');
     }
     // A single melody note every other bar, and silence otherwise. The silence
-    // is the point: a menu should not be filling the room.
-    if (i % 16 === 6) mPluck(mHt(24 + ch[2]), t, S * 4, 0.040, 'sine');
+    // is the point: a menu should not fill the room.
+    if (k % 16 === 6) mPluck(mHt(24 + ch[2]), t, S * 4, 0.040, 'sine');
 } };
+// [150826o] EVERY TRACK GETS A SECOND SECTION. The loops ran 3.2 to 9.2
+// seconds, and the short ones came round often enough to be counted rather than
+// heard \u2014 Chiptune repeated nineteen times a minute. A loop stops announcing
+// itself somewhere past fifteen seconds, so each piece now has an A and a B
+// strain and plays A A B A: the oldest form in popular music, and it works
+// because the B arrives just as A is wearing thin and makes A welcome again.
+// `len` is the FULL form; `k` is the position inside the current eight-bar
+// strain and `sec` says which strain it is. Writing it that way means each
+// track's B section reuses its own material rather than being a second track
+// bolted on \u2014 the piece grows, it does not change.
 const MUSIC_SUITE = [
-    // 1 \u2014 PIZZICATO. Plucked, staccato, creeping upward: cartoon caper. The
-    // held bowed note that used to sit under this is GONE, as asked \u2014 it is all
-    // pluck now, which is also the thing an oscillator does most convincingly.
-    { name: 'Pizzicato', bpm: 142, len: 32, play(i, t, S, I) {
-        const line = [0, 3, 5, 7, 5, 3, 0, -2];
-        const bass = [-12, -12, -5, -5, -7, -7, -12, -12];
-        mPluck(mHt(12 + line[i % 8]), t, S * 0.7, 0.075 + 0.02 * I);
-        if (i % 2 === 0) mPluck(mHt(bass[Math.floor(i / 2) % 8]), t, S * 0.9, 0.095, 'sine');
+    // 1 \u2014 PIZZICATO. A creeps upward in minor; B answers it a fourth higher with
+    // wider leaps, then A returns.
+    { name: 'Pizzicato', bpm: 142, len: 128, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32;
+        const lineA = [0, 3, 5, 7, 5, 3, 0, -2];
+        const lineB = [5, 8, 12, 10, 8, 5, 3, 0];
+        const bassA = [-12, -12, -5, -5, -7, -7, -12, -12];
+        const bassB = [-7, -7, -3, -3, -5, -5, -7, -7];
+        const line = sec ? lineB : lineA, bass = sec ? bassB : bassA;
+        mPluck(mHt(12 + line[k % 8]), t, S * 0.7, 0.075 + 0.02 * I);
+        if (k % 2 === 0) mPluck(mHt(bass[Math.floor(k / 2) % 8]), t, S * 0.9, 0.095, 'sine');
     }},
-    // 2 \u2014 WALTZ. Three-four: BASS, chord, chord. The metre carries it entirely.
-    { name: 'Waltz', bpm: 150, len: 24, play(i, t, S, I) {
-        const prog = [[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]];
-        const ch = prog[Math.floor(i / 6) % 4];
-        if (i % 3 === 0) mPluck(mHt(ch[0] - 12), t, S * 1.4, 0.095, 'sine');
+    // 2 \u2014 WALTZ. B lifts into the relative minor and the melody turns downward,
+    // which is what a waltz's middle strain traditionally does.
+    { name: 'Waltz', bpm: 150, len: 96, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 24) % 4];
+        const k = i % 24;
+        const progA = [[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]];
+        const progB = [[9, 12, 16], [2, 5, 9], [7, 11, 14], [9, 12, 16]];
+        const ch = (sec ? progB : progA)[Math.floor(k / 6) % 4];
+        if (k % 3 === 0) mPluck(mHt(ch[0] - 12), t, S * 1.4, 0.095, 'sine');
         else ch.forEach(iv => mPluck(mHt(iv), t, S * 0.8, 0.038 + 0.01 * I));
-        const mel = [12, null, null, 16, null, null, 14, null, null, 12, null, null];
-        const m = mel[i % 12];
+        const melA = [12, null, null, 16, null, null, 14, null, null, 12, null, null];
+        const melB = [19, null, null, 16, null, null, 14, null, null, 12, null, null];
+        const m = (sec ? melB : melA)[k % 12];
         if (m !== null) mPluck(mHt(m + ch[0]), t, S * 2.4, 0.060, 'sine');
     }},
-    // 3 \u2014 BAROQUE INVENTION. A canon: the second voice plays the first, eight
-    // eighths behind. All the interest is in how the two lines collide.
-    { name: 'Baroque', bpm: 152, len: 32, play(i, t, S, I) {
-        const subj = [0, 2, 4, 5, 7, 5, 4, 2, 7, 5, 4, 2, 0, 2, 4, 0];
-        mPluck(mHt(12 + subj[i % 16]), t, S * 0.85, 0.062 + 0.02 * I);
-        if (i >= 8) mPluck(mHt(subj[(i - 8 + 32) % 16] - 5), t, S * 0.85, 0.050);
-        if (i % 8 === 0) mPluck(mHt(subj[i % 16] - 24), t, S * 2, 0.070, 'sine');
+    // 3 \u2014 BAROQUE. B inverts the subject: every rise becomes a fall. Bach's own
+    // device, and it keeps the canon recognisably the same piece.
+    { name: 'Baroque', bpm: 152, len: 128, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32;
+        const subjA = [0, 2, 4, 5, 7, 5, 4, 2, 7, 5, 4, 2, 0, 2, 4, 0];
+        const subjB = [12, 10, 8, 7, 5, 7, 8, 10, 5, 7, 8, 10, 12, 10, 8, 12];
+        const subj = sec ? subjB : subjA;
+        mPluck(mHt(12 + subj[k % 16]), t, S * 0.85, 0.062 + 0.02 * I);
+        if (k >= 8) mPluck(mHt(subj[(k - 8 + 32) % 16] - 5), t, S * 0.85, 0.050);
+        if (k % 8 === 0) mPluck(mHt(subj[k % 16] - 24), t, S * 2, 0.070, 'sine');
     }},
-    // 4 \u2014 HARP AND CELESTE. A struck bell really is close to a sine with a long
-    // tail, so almost nothing here is being faked.
-    { name: 'Harp', bpm: 104, len: 32, play(i, t, S, I) {
-        const prog = [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]];
-        const ch = prog[Math.floor(i / 8) % 4];
-        const shape = [0, 1, 2, 3, 2, 1, 2, 3];
-        mPluck(mHt(12 + ch[shape[i % 8]]), t, S * 3.2, 0.055, 'sine');
-        if (i % 8 === 0) mPluck(mHt(ch[0] - 12), t, S * 5, 0.070, 'sine');
-        if (i % 16 === 6) mPluck(mHt(36 + ch[2]), t, S * 2, 0.028 + 0.015 * I, 'sine');
+    // 4 \u2014 HARP. B thins to a suspended chord high up and lets the silences open,
+    // so the return of A feels like the piece resuming rather than repeating.
+    { name: 'Harp', bpm: 104, len: 128, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32;
+        const progA = [[0, 4, 7, 11], [-3, 2, 5, 9], [-7, -3, 0, 4], [-5, -1, 2, 7]];
+        const progB = [[2, 7, 9, 14], [-5, 0, 4, 9], [2, 7, 9, 14], [-1, 4, 7, 11]];
+        const ch = (sec ? progB : progA)[Math.floor(k / 8) % 4];
+        const shape = sec ? [0, 2, 3, 2, 3, 2, 1, 2] : [0, 1, 2, 3, 2, 1, 2, 3];
+        if (!sec || k % 2 === 0)
+            mPluck(mHt(12 + ch[shape[k % 8]]), t, S * 3.2, 0.055, 'sine');
+        if (k % 8 === 0) mPluck(mHt(ch[0] - 12), t, S * 5, 0.070, 'sine');
+        if (k % 16 === 6) mPluck(mHt(36 + ch[2]), t, S * 2, 0.028 + 0.015 * I, 'sine');
     }},
-    // 5 \u2014 CHIPTUNE. Arpeggios are the language: a chip voice cannot hold a
-    // chord, so it spells one out fast instead. That constraint IS the sound.
-    { name: 'Chiptune', bpm: 150, len: 16, play(i, t, S, I) {
-        const prog = [0, 0, 9, 9, 5, 5, 7, 7];
-        const root = prog[Math.floor(i / 2) % 8];
-        const arp = [0, 4, 7, 12, 7, 4];
-        musicNote(mHt(root + 24 + arp[i % 6]), t, S * 0.5, 'square', 0.075);
-        if (i % 2 === 0) musicNote(mHt(root), t, S * 0.7, 'triangle', 0.11);
-        if (i % 8 === 4) musicNote(mHt(root + 12), t, S * 0.4, 'square', 0.05 + 0.02 * I);
-        if (i % 4 === 2) mSnare(t, 0.022);
-        if (i % 4 === 0) mKick(t, 0.13);
+    // 5 \u2014 CHIPTUNE. The worst offender at 3.2 seconds, so it gets the most: a B
+    // that drops to the relative minor and doubles the arpeggio's speed.
+    { name: 'Chiptune', bpm: 150, len: 64, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 16) % 4];
+        const k = i % 16;
+        const progA = [0, 0, 9, 9, 5, 5, 7, 7];
+        const progB = [9, 9, 5, 5, 2, 2, 7, 7];
+        const root = (sec ? progB : progA)[Math.floor(k / 2) % 8];
+        const arp = sec ? [0, 3, 7, 12, 15, 12, 7, 3] : [0, 4, 7, 12, 7, 4];
+        musicNote(mHt(root + 24 + arp[k % arp.length]), t, S * 0.5, 'square', 0.075);
+        if (k % 2 === 0) musicNote(mHt(root), t, S * 0.7, 'triangle', 0.11);
+        if (k % 8 === 4) musicNote(mHt(root + 12), t, S * 0.4, 'square', 0.05 + 0.02 * I);
+        if (k % 4 === 2) mSnare(t, 0.022);
+        if (k % 4 === 0) mKick(t, 0.13);
     }},
-    // 6 \u2014 TARANTELLA. Six-eight and fast: relentless in a joyful way. The metre
-    // does all the driving, with no drum kit anywhere.
-    { name: 'Tarantella', bpm: 168, len: 36, play(i, t, S, I) {
-        const prog = [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7];
-        const r = prog[i % 12];
-        const fig = [0, 3, 5, 7, 5, 3];
-        mPluck(mHt(12 + r + fig[i % 6]), t, S * 0.6, 0.068);
-        if (i % 3 === 0) mPluck(mHt(r - 12), t, S * 0.9, 0.090, 'sine');
-        if (i % 6 === 3) mPluck(mHt(r - 5), t, S * 0.7, 0.055, 'sine');
-        if (i % 6 === 4) musicNote(5200, t, 0.02, 'square', 0.018 + 0.01 * I);
+    // 6 \u2014 TARANTELLA. B moves to the dominant and the figure turns over, so the
+    // whirl keeps its momentum without repeating its steps.
+    { name: 'Tarantella', bpm: 168, len: 144, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 36) % 4];
+        const k = i % 36;
+        const progA = [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7];
+        const progB = [5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0];
+        const r = (sec ? progB : progA)[k % 12];
+        const fig = sec ? [7, 5, 3, 0, 3, 5] : [0, 3, 5, 7, 5, 3];
+        mPluck(mHt(12 + r + fig[k % 6]), t, S * 0.6, 0.068);
+        if (k % 3 === 0) mPluck(mHt(r - 12), t, S * 0.9, 0.090, 'sine');
+        if (k % 6 === 3) mPluck(mHt(r - 5), t, S * 0.7, 0.055, 'sine');
+        if (k % 6 === 4) musicNote(5200, t, 0.02, 'square', 0.018 + 0.01 * I);
     }},
-    // 7 \u2014 AMBIENT TECHNO. Almost nothing happens, on purpose: the kick is the
-    // song and the pad is the weather.
-    { name: 'Ambient', bpm: 124, len: 32, play(i, t, S, I) {
-        if (i % 4 === 0) mKick(t, 0.16);
-        if (i % 4 === 2) musicNote(9500, t, 0.02, 'square', 0.012);
-        if (i % 16 === 0) {
-            const root = (i % 32 === 0) ? 0 : 10;
+    // 7 \u2014 AMBIENT. B is a real harmonic move rather than a new tune: the pad
+    // shifts down a fourth and a slow high line appears over it.
+    { name: 'Ambient', bpm: 124, len: 128, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32;
+        if (k % 4 === 0) mKick(t, 0.16);
+        if (k % 4 === 2) musicNote(9500, t, 0.02, 'square', 0.012);
+        if (k % 16 === 0) {
+            const root = sec ? (k % 32 === 0 ? 5 : 3) : (k % 32 === 0 ? 0 : 10);
             [0, 7, 14].forEach(iv => musicNote(mHt(root + iv), t, S * 15, 'sine', 0.030));
         }
-        if (i % 8 === 6) musicNote(mHt(10 + 24), t, S * 3, 'triangle', 0.022 + 0.015 * I);
+        if (k % 8 === 6) musicNote(mHt((sec ? 5 : 10) + 24), t, S * 3, 'triangle', 0.022 + 0.015 * I);
+        if (sec && k % 16 === 8) musicNote(mHt(29), t, S * 12, 'sine', 0.020 + 0.012 * I);
     }},
-    // 8 \u2014 BOSSA NOVA. The clave: notes land BETWEEN the beats, which is what
-    // makes it saunter rather than march.
-    { name: 'Bossa', bpm: 132, len: 16, play(i, t, S, I) {
-        const prog = [[0, 'maj7'], [10, 'dom7'], [3, 'maj7'], [8, 'dom7']];
-        const SHP = { maj7: [0, 4, 7, 11], dom7: [0, 4, 7, 10] };
-        const pr = prog[Math.floor(i / 4) % 4], r = pr[0];
-        if (i % 4 === 0) musicNote(mHt(r - 12), t, S * 1.6, 'sine', 0.10);
-        if (i % 4 === 2) musicNote(mHt(r - 5), t, S * 1.2, 'sine', 0.075);
-        if (i % 8 === 3 || i % 8 === 6)
+    // 8 \u2014 BOSSA. B is a proper turnaround \u2014 ii-V into a new key centre \u2014 which is
+    // exactly what the idiom does with a middle eight.
+    { name: 'Bossa', bpm: 132, len: 64, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 16) % 4];
+        const k = i % 16;
+        const progA = [[0, 'maj7'], [10, 'dom7'], [3, 'maj7'], [8, 'dom7']];
+        const progB = [[2, 'min7'], [7, 'dom7'], [0, 'maj7'], [5, 'maj7']];
+        const SHP = { maj7: [0, 4, 7, 11], dom7: [0, 4, 7, 10], min7: [0, 3, 7, 10] };
+        const pr = (sec ? progB : progA)[Math.floor(k / 4) % 4], r = pr[0];
+        if (k % 4 === 0) musicNote(mHt(r - 12), t, S * 1.6, 'sine', 0.10);
+        if (k % 4 === 2) musicNote(mHt(r - 5), t, S * 1.2, 'sine', 0.075);
+        if (k % 8 === 3 || k % 8 === 6)
             SHP[pr[1]].forEach(iv => mPluck(mHt(r + 12 + iv), t, S * 0.8, 0.030));
-        if (i % 16 === 10) musicNote(mHt(r + 28), t, S * 2, 'sine', 0.045 + 0.015 * I);
+        if (k % 16 === 10) musicNote(mHt(r + 28), t, S * 2, 'sine', 0.045 + 0.015 * I);
     }},
-    // 9 \u2014 XYLOPHONE POP. Bright wooden tone, a short singable phrase, bouncing
-    // bass. The child-friendly register.
-    { name: 'Xylophone', bpm: 138, len: 16, play(i, t, S, I) {
-        const mel = [0, 2, 4, 5, 7, 5, 4, 2, 0, 4, 7, 4, 5, 2, 0, null];
-        const prog = [0, 0, 5, 5, 7, 7, 0, 0];
-        const root = prog[Math.floor(i / 2) % 8];
-        const m = mel[i % 16];
+    // 9 \u2014 XYLOPHONE. A second strain, which is how nursery tunes are built: the
+    // same shape starting higher, so a child could sing along on first hearing.
+    { name: 'Xylophone', bpm: 138, len: 64, play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 16) % 4];
+        const k = i % 16;
+        const melA = [0, 2, 4, 5, 7, 5, 4, 2, 0, 4, 7, 4, 5, 2, 0, null];
+        const melB = [7, 9, 11, 12, 11, 9, 7, 5, 4, 5, 7, 9, 7, 4, 0, null];
+        const progA = [0, 0, 5, 5, 7, 7, 0, 0];
+        const progB = [5, 5, 0, 0, 7, 7, 0, 0];
+        const root = (sec ? progB : progA)[Math.floor(k / 2) % 8];
+        const m = (sec ? melB : melA)[k % 16];
         if (m !== null) mPluck(mHt(24 + m), t, S * 1.1, 0.085, 'triangle');
-        mPluck(mHt(root + (i % 2 ? 7 : 0)), t, S * 0.55, 0.095, 'sine');
-        if (i % 4 === 2) mSnare(t, 0.016);
+        mPluck(mHt(root + (k % 2 ? 7 : 0)), t, S * 0.55, 0.095, 'sine');
+        if (k % 4 === 2) mSnare(t, 0.016);
     }}
 ];
+
 
 // The suite advances one track per LEVEL and wraps, so a long run hears all
 // nine and then begins again. Latched per bar rather than read per note, so a
@@ -6501,7 +7470,11 @@ function toggleMusic() {
 // ============ SETTINGS PANEL (⚙) ============
 // One home for every tunable, opened by the cog on the welcome screen and in the
 // pause panel. Reflects live state on open, applies changes live, and persists.
-let sfxVolume = 1;                 // SFX master multiplier (0..1), applied in playTone/playSweep
+// [150826s] SFX default 100%% -> 60%%. Full scale was never a considered choice,
+// just the absence of one — and at 1.0 the louder effects sit right at the
+// ceiling with no room above them, so anything that should feel BIG cannot.
+// 60 leaves that headroom and lets a player raise it if they want more.
+let sfxVolume = 0.60;              // SFX master multiplier (0..1), applied in playTone/playSweep
 let musicVolume = MUSIC_VOLUME;    // live music level (0..1), seeded from the default
 
 function openSettings() {
@@ -6905,6 +7878,65 @@ function playSweep(startFreq, endFreq, dur, type = 'sine', vol = 0.2, pan = 0, i
 // The per-move/ambient tier (VOL.ambient) additionally DUCKS under every other
 // effect via audioBusyUntil. To add a new sound: pick a tier, a valence, a
 // scale degree and a timbre — if it doesn't have those four, it doesn't go in.
+// ── [160826a] TWO SINES, NOT A SQUARE ───────────────────────────────────────
+// Measured the harmonic series properly this time, and it settles the question.
+// A square wave gives harmonics at roughly 1.00 / 0 / 0.33 / 0 / 0.20.
+// The recording gives                      1.00 / 0.80 / 0.08 / 0.07 / 0.01.
+// The second harmonic is nearly as loud as the first and then it STOPS dead.
+// That is not a rich waveform at all — it is two sine tones, at 571Hz and
+// 1142Hz, with almost nothing else present. Spectral flatness is 0.000: as pure
+// as a measurement gets.
+// So every square-wave version was wrong at the source, which is why filtering
+// them never rescued the sound: the harmonics I was cutting should never have
+// been generated.
+// What survives from the measurements: pitch STEADY at ~571 (no glide), the
+// ~100Hz amplitude flutter, a 27ms attack, 234ms long. The flutter stays STEPPED,
+// which is the one retro touch that does not contradict the evidence.
+const QUACK_F0 = 571;              // measured fundamental
+const QUACK_FLUTTER_HZ = 100;      // measured envelope modulation
+
+function retroQuack(big) {
+    if (!audioCtx || !document.getElementById('soundCheck').checked) return;
+    resumeAudio();
+    const t = audioCtx.currentTime;
+    quackBurst(t, big ? QUACK_F0 * 0.94 : QUACK_F0, 0.23);
+    if (big) quackBurst(t + 0.26, QUACK_F0 * 0.86, 0.20);
+}
+
+function quackBurst(t0, f0, dur) {
+    const out = audioCtx.createGain();
+    out.connect(duckBus());
+
+    // THE FLUTTER. ~100Hz amplitude pulsing, stepped rather than smooth. This is
+    // what makes it an animal instead of a tone, and no earlier version had it.
+    const step = 1 / QUACK_FLUTTER_HZ;
+    const peak = VOL.event * 1.5 * sfxVolume;
+    out.gain.setValueAtTime(0.0001, t0);
+    out.gain.linearRampToValueAtTime(peak, t0 + 0.027);       // measured attack
+    for (let k = 0, tt = t0 + 0.027; tt < t0 + dur; k++, tt += step) {
+        const frac = (tt - t0) / dur;
+        const decay = (1 - frac) * (1 - frac);
+        const wob = (k % 2 === 0) ? 1 : 0.42;
+        out.gain.setValueAtTime(peak * decay * wob, tt);
+    }
+    out.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+
+    // Two SINES at the measured amplitudes — 1.00 and 0.80 — and nothing above
+    // them. The pair is very slightly detuned so they beat, which is the
+    // roughness a living thing has and a pure interval does not.
+    for (const [mult, level] of [[1, 0.55], [2.0, 0.44], [1.012, 0.30]]) {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f0 * mult, t0);
+        o.frequency.setValueAtTime(f0 * mult, t0 + dur * 0.78);
+        o.frequency.linearRampToValueAtTime(f0 * mult * 0.90, t0 + dur);  // slight end sag
+        g.gain.value = level;
+        o.connect(g); g.connect(out);
+        o.start(t0); o.stop(t0 + dur + 0.02);
+    }
+}
+
 const NOTE = {
     A2: 110.00, C3: 130.81, D3: 146.83, E3: 164.81, G3: 196.00, A3: 220.00,
     C4: 261.63, D4: 293.66, E4: 329.63, G4: 392.00, A4: 440.00,
@@ -7164,36 +8196,31 @@ const sfx = {
     // component is what makes a thud read as an impact rather than a rumble,
     // and it is why this now sits alongside the movement sound instead of under
     // it.
-    bonk: () => {
-        // [060826j] A DRONE, not a knock. The mid-range E4 gave it a percussive
-        // "tap" — right for something breaking, wrong for a wall, which does not
-        // strike you so much as stop you. It is now a short low swell: two close
-        // frequencies beating against each other, which is what gives a drone
-        // its grain, over a body note that decays slowly.
-        // [060826l] Sat at 96%% of the move sound's peak; now 90%%, so the wall is
-        // just under the thing you do constantly rather than just over it.
-        // All three layers scale together — trimming only the lead would have
-        // thinned the beating that gives the drone its grain.
-        // [060826x] HALVED: 0.18 -> 0.09, body 0.144 -> 0.072. And the DETUNE is
-        // widened from 1.2%% to 4.0%% to pay for it — which is the whole trick.
-        // The grain in this sound is the BEAT between the two saws, and a beat
-        // takes time to happen: at 1.2%% apart the pair beat every 379ms, so in a
-        // 90ms note you would hear barely a quarter of one cycle and the drone
-        // would arrive as a flat buzz. At 4.0%% they beat every 114ms, so a
-        // 90ms note still carries most of a cycle.
-        // Shorter sound, faster wobble, same character — rather than a shorter
-        // sound that has quietly stopped being a drone.
-        playTone(NOTE.A2,        0.09, 'sawtooth', VOL.event * 0.515);
-        playTone(NOTE.A2 * 1.040, 0.09, 'sawtooth', VOL.event * 0.422);  // detuned — the beat
-        playTone(NOTE.C3,        0.072, 'sine',    VOL.event * 0.562);   // body
-    },
+    // [150826q] A REAL QUACK — recorded, not synthesised. Four builds of formant
+    // theory could not beat a recording, which was predictable in hindsight: the
+    // thing that makes an animal sound like an animal is irregularity, and
+    // irregularity is exactly what a synthesiser has to fake.
+    // Inlined as base64 rather than kept as a separate file (~9.6KB for both).
+    // That is the same trade as frames.js, and frames.js going missing cost three
+    // builds chasing a phantom bug — one file cannot be forgotten.
+    // Two clips: a single quack for an ordinary wall bump, a double for the
+    // heavier refusals. The synthesised drone stays as a fallback if decoding
+    // fails, so the sound never simply disappears.
+    bonk: () => { retroQuack(false); },   // [150826u]
+
+
+
+
     // [050826d] Lifted to match the wall thud — these are the same class of
     // event (a refused move) and were both sitting under the movement sound.
     // [ui] wrong-shape-on-slot — short descending "nope" (E4 → A3).
-    wrongShape: () => {
-        playTone(NOTE.E4, 0.10, WAVE.ui, VOL.event * 0.85);
-        setTimeout(() => playTone(NOTE.A3, 0.12, WAVE.ui, VOL.event * 0.85), 70);
-    },
+    // [150826q] The DOUBLE quack for a refused claim — a wrong shape on a slot is
+    // a bigger "no" than brushing a wall, and two quacks say so without needing a
+    // different sound to be learned.
+    // [150826u] The bigger quack for a refused claim. The old descending two-note
+    // "nope" is gone rather than stranded behind a return — this file has grown
+    // enough unreachable code already.
+    wrongShape: () => { retroQuack(true); },
     // [peril · event] mid-game life loss — short descending stumble (A4 → E4)
     // with a questioning tail blip. Detuned triangle partner = brassy wobble.
     lifeLoss: () => {
@@ -7773,16 +8800,35 @@ function slotFootprint(type, config, ax, ay) {
 const GUARD_WALLS = [[-1,-1],[0,-1],[1,-1],[2,-1],[-1,0],[2,0],[-1,1],[0,1],[2,1],[2,2],[-1,3],[1,3],[2,3],[-1,4]];
 const GUARD_REDS  = [[-1,2],[1,4]];
 const GUARD_PATH  = [[1,0],[1,1],[0,2],[1,2],[0,3],[0,4],[0,5]];
+// [150826a] Finish a maze that could not be completed at stamp time because the
+// player was standing in it. Only the deferred cells are considered, and each is
+// dropped from the list once placed — so this goes quiet by itself rather than
+// churning the board for the rest of the level.
+function retryGuardCells(slot) {
+    if (!slot._guardPending || !slot._guardPending.length) return;
+    const playerK = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
+    slot._guardPending = slot._guardPending.filter(function (p) {
+        if (playerK.has(p.key)) return true;                 // still occupied — keep waiting
+        if (slots.some(sl => sl.keys.has(p.key))) return false;
+        if (p.type) { if (!world[p.key]) world[p.key] = p.type; }
+        else if (world[p.key]) { delete world[p.key]; if (shifterMeta[p.key]) delete shifterMeta[p.key]; }
+        return false;                                        // done with it
+    });
+}
+
 function stampGuardMaze(slot) {
     const ax = slot.cells[0].x, ay = slot.cells[0].y;
     const flip = slot.guardFlip ? -1 : 1;
     const playerK = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
+    slot._guardPending = [];
     const put = (list, type) => {
         for (const dd of list) {
             const x = ax + dd[0] * flip, y = ay + dd[1];
             if (x < 0 || x >= VIEW_W) continue;
             const key = `${x},${y}`;
-            if (playerK.has(key)) continue;
+            // [150826a] Defer rather than abandon — an unwritten cell used to be
+            // silently retried on every tick, which is what made walls flicker.
+            if (playerK.has(key)) { slot._guardPending.push({ key, type }); continue; }
             if (slots.some(sl => sl.keys.has(key))) continue;
             if (type) { if (!world[key]) world[key] = type; }
             else if (world[key]) { delete world[key]; if (shifterMeta[key]) delete shifterMeta[key]; }
@@ -7795,7 +8841,9 @@ function stampGuardMaze(slot) {
             const x = ax + dd[0] * flip, y = ay + dd[1];
             if (x < 0 || x >= VIEW_W) continue;
             const key = `${x},${y}`;
-            if (playerK.has(key)) continue;
+            // [150826a] Defer rather than abandon — an unwritten cell used to be
+            // silently retried on every tick, which is what made walls flicker.
+            if (playerK.has(key)) { slot._guardPending.push({ key, type }); continue; }
             if (slots.some(sl => sl.keys.has(key))) continue;
             if (!world[key]) { world[key] = type; written.push(key); }
         }
@@ -7811,9 +8859,21 @@ function stampGuardMaze(slot) {
     // delivered. A maze is meant to make a slot HARD to reach, never
     // impossible. If the slot is sealed, the whole maze is rolled back and the
     // slot is simply left open.
+    // [150826m] A maze is meant to be a route, not a lid — so any pocket it
+    // closed off is breached before the approachability test below decides
+    // whether the whole thing has to be rolled back.
+    {
+        const ys = slot.cells.map(c => c.y);
+        breachSealedPockets(Math.max(...ys) + 6, Math.min(...ys) - 6);
+    }
     if (!slotIsApproachable(slot.cells)) {
         for (const key of written) delete world[key];
         slot.guard = false;
+        // [150826a] Drop the deferred cells too. Without this a rolled-back maze
+        // would go on placing the walls it was blocked from writing, rebuilding
+        // the very seal the rollback just undid — slowly, and long after the
+        // decision was made.
+        slot._guardPending = [];
     }
 }
 
@@ -9077,6 +10137,13 @@ function maybePlaceIsland(y, safeZoneEnd) {
             }
     }
     for (const key of keys) world[key] = 'wall';
+    // [150826m] An island is the commonest way a pocket forms — it lands beside
+    // an existing wall and closes the gap between them. Breach the band it was
+    // written into, so the space it just enclosed is opened again.
+    {
+        const ys = keys.map(k => +k.split(',')[1]);
+        breachSealedPockets(Math.max(...ys) + 2, Math.min(...ys) - 2);
+    }
     // [030826t] Roll back if this island sealed any live slot away.
     for (const sl of slots) {
         if (sl.claimed || sl.retiring) continue;
@@ -9245,7 +10312,97 @@ function generateChunk(fromY, toY) {
     // minutes. Spending moved to spendSlotCredit(), called on landing, which
     // places into the band JUST above the view — still scrolling in whole,
     // but arriving in seconds.
+    // [150826m] BREACH ANY SEALED POCKET. Terrain is laid row by row — tunnels,
+    // funnels, islands, barriers — and nothing checked whether the RESULT left
+    // open floor completely walled in. It routinely did: an island landing beside
+    // a tunnel wall closes a pocket, and the player can never get in.
+    // Two costs, and the second is the quiet one. A pocket may hold a pickup or a
+    // shifter that is simply lost. And every cell in it counts toward
+    // cellsGenerated, which is the COVERAGE DENOMINATOR — so 100%% becomes
+    // arithmetically impossible, and the grade the player is chasing recedes for
+    // reasons they cannot see.
+    breachSealedPockets(fromY, toY);
     worldGenY = toY;
+}
+
+// Find open cells cut off from the main body of the band and knock one wall out
+// of each. BREACHING rather than filling: a pocket is space the level intended
+// to exist, so the right repair is to let the player in, not to erase it.
+function breachSealedPockets(fromY, toY) {
+    const top = toY, bot = fromY;                 // toY is the deeper (smaller) row
+    const open = (x, y) => {
+        const w = world[`${x},${y}`];
+        return w !== 'wall' && w !== 'hazard';
+    };
+    const seen = new Set();
+    const q = [];
+    // Seed from the band's own edges: anything touching them is connected to the
+    // rest of the world, so it is reachable by definition.
+    for (let x = 0; x < VIEW_W; x++) {
+        for (const y of [top, bot]) {
+            if (open(x, y) && !seen.has(`${x},${y}`)) { seen.add(`${x},${y}`); q.push([x, y]); }
+        }
+    }
+    let head = 0;
+    while (head < q.length) {
+        const [cx, cy] = q[head++];
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+            if (!dx && !dy) continue;
+            const nx = cx + dx, ny = cy + dy;
+            if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+            const k = `${nx},${ny}`;
+            if (seen.has(k) || !open(nx, ny)) continue;
+            seen.add(k); q.push([nx, ny]);
+        }
+    }
+    // Anything open and unseen is sealed. Group it, then breach each group once.
+    const done = new Set();
+    for (let y = top; y <= bot; y++) for (let x = 0; x < VIEW_W; x++) {
+        const k = `${x},${y}`;
+        if (seen.has(k) || done.has(k) || !open(x, y)) continue;
+        // Collect this pocket.
+        const pocket = [];
+        const pq = [[x, y]];
+        done.add(k);
+        let ph = 0;
+        while (ph < pq.length) {
+            const [px, py] = pq[ph++];
+            pocket.push([px, py]);
+            for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+                if (!dx && !dy) continue;
+                const nx = px + dx, ny = py + dy;
+                if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+                const nk = `${nx},${ny}`;
+                if (done.has(nk) || !open(nx, ny)) continue;
+                done.add(nk); pq.push([nx, ny]);
+            }
+        }
+        // Knock out the wall that joins it to the reachable side. Prefer a
+        // CARDINAL neighbour: a diagonal-only gap is one no square or J can use,
+        // which would be a breach in name only.
+        let cut = null;
+        for (const [px, py] of pocket) {
+            for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
+                const wx = px + dx, wy = py + dy;
+                if (wx < 0 || wx >= VIEW_W || wy < top || wy > bot) continue;
+                if (open(wx, wy)) continue;                    // not a wall
+                const bx = wx + dx, by = wy + dy;              // cell beyond it
+                if (bx < 0 || bx >= VIEW_W || by < top || by > bot) continue;
+                if (!seen.has(`${bx},${by}`)) continue;        // beyond is sealed too
+                cut = `${wx},${wy}`;
+                break;
+            }
+            if (cut) break;
+        }
+        if (cut) {
+            delete world[cut];
+            if (shifterMeta[cut]) delete shifterMeta[cut];
+            // The pocket joins the reachable set, so a neighbouring pocket can
+            // breach into it on this same pass rather than being missed.
+            for (const [px, py] of pocket) seen.add(`${px},${py}`);
+            seen.add(cut);
+        }
+    }
 }
 
 function ensureWorldGenerated(cameraY) {
@@ -9348,7 +10505,13 @@ let game = {
     
     dragDir: null,
     dragTimer: 0,
-    dragInterval: 250,
+    // [150826i] TWO intervals, not one. Both the first repeat and every one
+    // after it waited 250ms, so a single push and the start of a cruise were
+    // indistinguishable for a quarter-second — nothing to feel for. This is
+    // keyboard key-repeat's problem and takes its solution: a LONG deliberate
+    // pause before the second move, then a FAST rate once cruising.
+    dragFirstMs: 480,     // hold this long before a SECOND move happens
+    dragInterval: 160,    // every move after that comes this fast
     isTouching: false
 };
 
@@ -10664,14 +11827,13 @@ function showLevelTally(onDone) {
     void el.offsetWidth;
     el.classList.add('show');
 
-    // [300726ba] Fill the demoted-counts line; hide it entirely if empty.
+    // [160826a] The footnote line is gone — "2 rows · 3 slots · x3.5 best combo ·
+    // 1 trims · 3 cubes lost". Five statistics in one grey sentence that wrapped
+    // awkwardly, none of which the player can act on and none of which pays
+    // points. The card is a reward, not a report.
     {
         const note = document.getElementById('tallyNote');
-        if (note) {
-            const txt = tallyFootnote();
-            note.textContent = txt;
-            note.classList.toggle('in', !!txt);
-        }
+        if (note) { note.textContent = ''; note.classList.remove('in'); }
     }
     const grandEl = document.getElementById('tallyGrand');
     const grandVal = document.getElementById('tallyGrandValue');
@@ -10689,22 +11851,15 @@ function showLevelTally(onDone) {
     // [030826w] Show the number the player begins the next level with — what
     // survived PLUS the grant, clamped to the ring, so the arithmetic is done
     // for them rather than left half-shown.
+    // [160826a] The "Starting level N with 62s (23s carried + 39s)" line is gone
+    // too. It was arithmetic the player never asked to see, explaining a number
+    // they will meet on the clock two seconds later anyway.
     {
         const el = document.getElementById('tallyStart');
-        if (el) {
-            // [070826i] No longer clamped — with the cap gone this line was the
-            // last place still promising less than the player will actually get.
-            const carried = Math.round(momentumRemaining());
-            const grant = levelTimeGrant();
-            const start = carried + grant;
-            el.textContent = `Starting level ${advancedRound + 1} with ${start}s   (${carried}s carried + ${grant}s)`;
-            el.classList.add('in');
-        }
+        if (el) { el.textContent = ''; el.classList.remove('in'); }
     }
-    const rankLabel = document.getElementById('tallyRankLabel');
     const paintRank = total => {
         const rk = rankForScore(total);
-        if (rankLabel) rankLabel.textContent = `RANK ${rk.position} OF ${rk.total}`;
         paintRankBadge(rk.index);
         if (rankName) rankName.textContent = rk.name;
         if (rankNext) rankNext.textContent = rk.next
@@ -10791,8 +11946,6 @@ function skipLevelTally() {
             const rn = document.getElementById('tallyRankName');
             const rx = document.getElementById('tallyRankNext');
             const re_ = document.getElementById('tallyRank');
-            const rl = document.getElementById('tallyRankLabel');
-            if (rl) rl.textContent = `RANK ${rk.position} OF ${rk.total}`;
             paintRankBadge(rk.index);
             if (rn) rn.textContent = rk.name;
             if (rx) rx.textContent = rk.next ? (rk.next[0] - game.score).toLocaleString() + ' to ' + rk.next[1] : 'TOP RANK';
@@ -11267,7 +12420,8 @@ function commitFusion(cellsHere, fuse, dir) {
     game._lastMoveDir = dir;
     game._tdEchoDir = dir; game._tdEchoT = performance.now();   // joystick echo (all modes)
     game.dragDir = dir;
-    game.dragTimer = game.dragInterval;
+    game.dragTimer = game.dragFirstMs;   // [150826i] fresh push, long wait
+    game._cruising = false;
 }
 
 // Fusion resolution for a flip in `dir`. The model is now simply:
@@ -12246,7 +13400,9 @@ function move(dir) {
         trackDiagonalUse(dir);
 
         game.dragDir = dir;
-        game.dragTimer = game.dragInterval;
+        // [150826i] The FIRST wait is the long one — this is a fresh push.
+        game.dragTimer = game.dragFirstMs;
+        game._cruising = false;
         // Mark when this direction-hold started, so applyDrag can ramp the
         // speed up over time. Only RESET when the direction actually
         // changes — preserves the ramp during sustained holds.
@@ -12349,10 +13505,22 @@ function applyDrag(dt) {
             // Sustained-hold speed boost: cruising in one constant direction
             // ramps the move rate up to 50% faster than the base after ~1s of
             // holding. Direction change resets dragStartTime via move().
+            // [150826i] Past the first wait, the player has committed to a
+            // direction — so this and every later move uses the FAST rate, and
+            // the ramp accelerates from there.
             const heldMs = performance.now() - (game.dragStartTime || performance.now());
             const ramp = Math.min(1, heldMs / 1000);
             const boost = 1 + 0.5 * ramp;
             game.dragTimer = game.dragInterval / boost;
+            // The moment cruising begins is announced once: the player should be
+            // able to FEEL where single-stepping ends and travel starts, rather
+            // than discovering it by overshooting.
+            if (!game._cruising) {
+                game._cruising = true;
+                game._cruiseAt = performance.now();
+                if (sfx.seat) sfx.seat();
+                HAPTICS.fire([12], 0);
+            }
         }
     }
 }
@@ -14162,57 +15330,158 @@ const TD_ROSE_VEC = { N:[0,-1], NE:[1,-1], E:[1,0], SE:[1,1], S:[0,1], SW:[-1,1]
 // moves the whole thing.
 // Desktop keeps the in-board stick: with a mouse there is no occlusion, and a
 // separate pad below would just be further to travel.
-const STICK_TOUCH = (typeof window !== 'undefined') &&
-    window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-const STICK_R  = STICK_TOUCH ? 90 : 45;    // 4x the AREA, so twice the radius
-const STICK_KR = STICK_TOUCH ? 50 : 25;    // knob keeps its proportion
+// [070826q] THE FORK IS GONE. The stick was on its own pad only when
+// `pointer: coarse` matched, and that was evaluated in TWO places — once in JS
+// for the geometry, once in a CSS media query for visibility. Any device where
+// those disagreed (a touchscreen laptop, a tablet in desktop mode, a browser
+// reporting a fine pointer over a touch panel) got the pad hidden by CSS while
+// the JS still drew into it: the stick vanished completely, which is exactly
+// the symptom.
+// One place for the stick now, on every device — below the board. It scales
+// with the container rather than the device class, so a phone, a tablet and a
+// laptop each get a sensibly sized pad without anyone having to detect which is
+// which. Detection was never the point; the layout was.
+// [090826l] The RING and the THROW are separated. STICK_R is the input geometry
+// — grab radius, throw distance, dead zone — and must stay large or the control
+// becomes twitchy: halving it with the knob unchanged would leave about 8px of
+// travel between centre and full deflection.
+// STICK_RING is only what gets DRAWN. Shrinking that alone gives the tighter
+// collar asked for while the stick keeps the same size and the same feel.
+// [150826k] Everything DRAWN grows 20%%, inside the same pad box.
+// STICK_R moves with the knob deliberately: throw distance is
+// STICK_R - STICK_KR - 3, so growing the knob alone would have shrunk the throw
+// from 53 to 46 and made the stick 13%% MORE sensitive — quietly undoing the
+// sensitivity work of the last build. At 97 the throw stays exactly 53, so the
+// engage and release thresholds tuned there still mean the same thing.
+// [150826l] Another 20%% on everything drawn. STICK_R is SOLVED rather than
+// scaled: throw is STICK_R - STICK_KR - 3, and scaling it by 1.2 alongside the
+// knob would have taken the throw from 53 to 64 — making the stick noticeably
+// LESS sensitive, the opposite of the previous correction. 105 keeps the throw
+// at exactly 53, so engage stays 21 units and nothing about the feel moves.
+const STICK_R  = 105;     // input radius: grab, throw, dead zone
+const STICK_RING = 65;    // drawn ring radius
+// [090826k] 50 made the knob 56%% of the ring — it dominated the pad and read as
+// a ball with a rim round it. 34 puts it at 38%%, which is where a joystick knob
+// normally sits: big enough to grab, small enough that the ring's directions are
+// what you see first.
+const STICK_KR = 49;      // knob radius — [150826l] a further x1.2
 let _tdKnob = { x: 0, y: 0, t: 0 };                       // smoothed knob offset + frame time
+// (_stickPP retired at 090826i with the lamp it positioned.)
 let _stickUI = { tgt: 0, dodge: 0, fade: 1, lastAct: 0 }; // corner dodge + idle fade state
-let _stickTouch = { active: false, ox: 0, oy: 0, dir: null, pendDir: null, pendT: 0 };
+let _stickTouch = { active: false, ox: 0, oy: 0, dir: null, pendDir: null, pendT: 0,
+                   lockDir: null };   // [090826h] the direction held for this push
 let _stickDeny = { dir: null, t: 0 };
 function stickDeny(dir) { if (dir) { _stickDeny.dir = dir; _stickDeny.t = performance.now(); } }
 
+// ── [140826h] A FLOATING ORIGIN ─────────────────────────────────────────────
+// The stick demanded precision in three separate ways, and this was the worst:
+// the centre was FIXED, so a thumb that landed off-centre had to be dragged back
+// before anything worked. On a tablet held two-handed you cannot see where your
+// thumb is landing, which is precisely why a swipe felt easier — a swipe does not
+// care where it starts.
+// The origin is now wherever the thumb touches down. The whole pad becomes the
+// control, the first contact becomes the centre, and every direction is an equal
+// short push from there. This is what modern mobile games do, and it is the
+// single change that removes the aiming problem rather than easing it.
+// The knob is DRAWN at the resting centre so the pad still reads as a joystick;
+// it is only the input origin that floats.
+let _stickOrigin = null;
 function stickCentre() {
     // [070826e] On its own canvas it is simply centred — no corner-dodging,
     // because there is nothing behind it to dodge away from. That also removes
     // a whole behaviour the player had to learn: the stick used to slide across
     // the board when their shape came near it.
-    if (STICK_TOUCH) return { x: STICK_PAD_W / 2, y: STICK_PAD_H / 2 };
+    return { x: STICK_PAD_W / 2, y: STICK_PAD_H / 2 };   // [070826q] always its own pad
     const leftX = STICK_R + 14;
     if (game.testDrive) return { x: stickSide === 'right' ? LOGICAL_W - STICK_R - 14 : leftX,
                                  y: STICK_R + 14 };   // garage: top corner, same side as gameplay
     const rightX = LOGICAL_W - STICK_R - 14;
     return { x: leftX + (rightX - leftX) * _stickUI.dodge, y: LOGICAL_H - STICK_R - 14 };
 }
-const STICK_PAD_W = 260, STICK_PAD_H = 210;
+// [090826l] The pad grows to hold the bigger arrows. At 5x they reach radius 108
+// and the old 210-tall canvas gave only 105 from centre — the top and bottom
+// arrows would have been clipped in half. 300x300 leaves a clear margin, and a
+// SQUARE pad suits a control whose reach is equal in every direction: the old
+// 260x210 quietly gave the diagonals less room than the cardinals.
+const STICK_PAD_W = 300, STICK_PAD_H = 300;
 function stickClientToLogical(clientX, clientY) {
     // [070826e] Maps against whichever surface the stick is actually on.
-    const el = STICK_TOUCH ? document.getElementById('stickPad') : canvas;
+    const el = document.getElementById('stickPad');   // [070826q]
     if (!el) return { x: -999, y: -999 };
     const rect = el.getBoundingClientRect();
-    const W = STICK_TOUCH ? STICK_PAD_W : LOGICAL_W;
-    const H = STICK_TOUCH ? STICK_PAD_H : LOGICAL_H;
+    const W = STICK_PAD_W, H = STICK_PAD_H;
     return { x: (clientX - rect.left) * (W / rect.width),
              y: (clientY - rect.top) * (H / rect.height) };
 }
 // 8-way direction from a knob offset (screen coords, y-down); null = deadzone.
+// [090826h] ONE DIRECTION PER PUSH. This used to be evaluated fresh on every
+// frame, so sliding a thumb around the rim changed direction continuously — a
+// player aiming for NE could pass through N and E on the way and fire both. The
+// direction is now LOCKED the moment it engages and held until the thumb comes
+// back inside the dead zone, so choosing a new one means returning to centre
+// first. Deliberate rather than fluid: this is a puzzle where each move is a
+// decision, not a stick steering a vehicle, and an accidental move costs time.
+// The lock lives on _stickTouch so it clears with the grab.
 function stickDirFromOffset(ox, oy) {
     const maxThrow = STICK_R - STICK_KR - 3;
-    if (Math.hypot(ox, oy) < maxThrow * 0.45) return null;
+    // [140826h] TWO radii instead of one, and both smaller. The single 45%%
+    // threshold meant a 24-unit drag before anything happened AND a 24-unit trip
+    // back to choose again — the same distance twice, on every single move.
+    // ENGAGE at 22%% (12 units): a short, definite push, well clear of a resting
+    // thumb's wobble but nothing like a stroke.
+    // RELEASE at 38%% (20 units): you must come back some way, so a direction
+    // cannot flicker, but not all the way home. Asymmetric on purpose — easy to
+    // commit, harder to lose by accident, which is the right way round when a
+    // wrong move costs seconds.
+    // [150826j] 22%% was too light. It works out at EIGHT PHYSICAL PIXELS of thumb
+    // travel on a 205px pad — and a thumb resting on glass wanders 3-5px without
+    // being asked to, so the control was firing on noise. I loosened this at
+    // 140826h to stop the stick demanding precision, and overshot: the fix for
+    // "too hard to aim" is a floating origin, not a hair trigger.
+    // 40%% is 14.5 physical px — clear of any wobble, still a short push.
+    const engage = maxThrow * 0.40;
+    const release = maxThrow * 0.30;
+    const dist = Math.hypot(ox, oy);
+    if (_stickTouch.lockDir) {
+        if (dist < release) { _stickTouch.lockDir = null; return null; }   // re-arm
+        return _stickTouch.lockDir;                                        // held
+    }
+    if (dist < engage) return null;
+    const chosen = stickRawDir(ox, oy);
+    _stickTouch.lockDir = chosen;
+    return chosen;
+}
+// The raw eight-way test, with no memory — used to pick a direction at the
+// moment of engaging and nowhere else.
+function stickRawDir(ox, oy) {
+    const maxThrow = STICK_R - STICK_KR - 3;
+    if (Math.hypot(ox, oy) < maxThrow * 0.40) return null;   // [150826j] matches engage
+    // [150826j] CARDINALS GET WIDER SECTORS. Eight even 45-degree wedges mean a
+    // push 23 degrees off north is a DIAGONAL — and a thumb pushing "up" on glass
+    // is routinely 20 degrees out, so the wrong move fired constantly and read as
+    // twitchiness rather than as a mis-aim.
+    // Up, down, left and right take 56 degrees each and the diagonals 34, so the
+    // four directions people actually aim for have room to be imprecise. The
+    // diagonals are still reachable — they just have to be MEANT, which is right
+    // when each move costs seconds.
     const angle = Math.atan2(-oy, ox) * 180 / Math.PI;
-    if (angle >= -22.5 && angle < 22.5) return 'E';
-    if (angle >= 22.5 && angle < 67.5) return 'NE';
-    if (angle >= 67.5 && angle < 112.5) return 'N';
-    if (angle >= 112.5 && angle < 157.5) return 'NW';
-    if (angle >= 157.5 || angle < -157.5) return 'W';
-    if (angle >= -157.5 && angle < -112.5) return 'SW';
-    if (angle >= -112.5 && angle < -67.5) return 'S';
+    const C = 28;          // half-width of a cardinal sector
+    if (angle >= -C && angle < C) return 'E';
+    if (angle >= C && angle < 90 - C) return 'NE';
+    if (angle >= 90 - C && angle < 90 + C) return 'N';
+    if (angle >= 90 + C && angle < 180 - C) return 'NW';
+    if (angle >= 180 - C || angle < -(180 - C)) return 'W';
+    if (angle >= -(180 - C) && angle < -(90 + C)) return 'SW';
+    if (angle >= -(90 + C) && angle < -(90 - C)) return 'S';
     return 'SE';
 }
 
 function drawJoystickGuide() {
     if (!game.running) return;
     const R = STICK_R, KR = STICK_KR;
+    // [090826l] RD is the DRAWN ring; R stays the input radius. Everything the
+    // eye sees uses RD, everything the finger drives uses R.
+    const RD = STICK_RING;
     const topRow = Math.floor(game.cameraY);
     const bottomRow = topRow + VIEW_H - 1;
     const now = performance.now();
@@ -14247,17 +15516,26 @@ function drawJoystickGuide() {
     // [070826e] On touch the whole stick renders into its OWN context. Swapping
     // `ctx` for the duration means the entire renderer below — every ring, arrow,
     // heat glow and knob — works unchanged; it never needs to know where it is.
-    const _mainCtx = ctx;
-    let _padCtx = null;
-    if (STICK_TOUCH) {
-        const pad = document.getElementById('stickPad');
-        if (!pad) return;
-        _padCtx = pad.getContext('2d');
-        _padCtx.clearRect(0, 0, STICK_PAD_W, STICK_PAD_H);
-        ctx = _padCtx;
-    }
+    // [090826c] `ctx` is a CONST. Reassigning it threw "Assignment to constant
+    // variable" on EVERY FRAME — those are the repeated "Uncaught Error: Script
+    // error" lines in the console, and the throw happened before a single ring
+    // was drawn, which is why the pad rendered blank while occupying its space
+    // perfectly.
+    // The renderer now takes the target as a PARAMETER instead of swapping a
+    // global. Better anyway: no global to leak, no restore to forget, and the
+    // early-return path cannot strand the game drawing into the wrong surface.
+    const pad = document.getElementById('stickPad');
+    if (!pad) return;
+    const pctx = pad.getContext('2d');
+    pctx.clearRect(0, 0, STICK_PAD_W, STICK_PAD_H);
     const sc = stickCentre();
     const cx = sc.x, cy = sc.y;
+
+    // [090826h] The lamp moved ON TO THE KNOB — see the knob draw below. It is
+    // no longer a separate disc above the ring; it rides the stick itself, which
+    // is what "on top of the joystick" asks for and also puts the state where
+    // the eye already is.
+
 
     // ── logic pass: legality + heat per direction ──
     const info = {};
@@ -14284,18 +15562,18 @@ function drawJoystickGuide() {
     const FAc = (0.75 + 0.25 * _stickUI.fade) * stickOpacity;   // chevrons resist
                                     // the idle fade but honour the master opacity
 
-    ctx.save();
+    pctx.save();
 
     // ── base pad ──
-    ctx.globalAlpha = (day ? 0.85 : 0.72) * FA;
-    ctx.fillStyle = day ? '#ffffff' : '#0b1220';   // [040826l] white board in day
-    ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = FA;
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = day ? 'rgba(71,85,105,0.3)' : 'rgba(148,163,184,0.22)';
-    ctx.beginPath(); ctx.arc(cx, cy, R + 8, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = day ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.07)';
-    ctx.beginPath(); ctx.arc(cx, cy, R - 10, 0, Math.PI * 2); ctx.fill();
+    pctx.globalAlpha = (day ? 0.85 : 0.72) * FA;
+    pctx.fillStyle = day ? '#ffffff' : '#0b1220';   // [040826l] white board in day
+    pctx.beginPath(); pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.fill();
+    pctx.globalAlpha = FA;
+    pctx.lineWidth = 1.5;
+    pctx.strokeStyle = day ? 'rgba(71,85,105,0.3)' : 'rgba(148,163,184,0.22)';
+    pctx.beginPath(); pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.stroke();
+    pctx.fillStyle = day ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.07)';
+    pctx.beginPath(); pctx.arc(cx, cy, RD - 10, 0, Math.PI * 2); pctx.fill();
 
     // ── rim chevrons ──
     for (const dir of DIRS_ORDER) {
@@ -14305,51 +15583,103 @@ function drawJoystickGuide() {
         const { legal, h } = info[dir];
         const deny = denyLive && _stickDeny.dir === dir;
         const active = (legal && h > 0) || deny;
-        const tipR = active ? R + 5 : R + 1;
-        const baseR = R - 6;
-        const spread = active ? 7 : 5;
+        // [090826l] FIVE TIMES BIGGER, and sitting OUTSIDE the smaller ring where
+        // there is now room for them. They were 11 units long against a 90-unit
+        // radius — a detail on the rim rather than a signal. At 55 long and 30
+        // across they are the most prominent thing on the pad, which is right:
+        // the directions are the information, the ring is only the frame.
+        // [140826c] THE WIDTH WAS THE PROBLEM, NOT THE LENGTH. Measured: at half
+        // width 19 each arrow is 38 units across, and the arc between adjacent
+        // directions at this radius is only 42 — FOUR units of clearance, which
+        // is why they read as touching. Scaling both dimensions together (as the
+        // last two builds did) barely moved that, because the length was never
+        // what made them crowd.
+        // Half-width 11 leaves 20 units between neighbours, about half the arc
+        // free, so each arrow is plainly its own mark. The length is trimmed less,
+        // since a long thin arrow points better than a short fat one — and
+        // pointing is the whole job.
+        // [140826d] LESS POINTY. The apex was 40 degrees — a dart. Shortening while
+        // widening slightly takes it to about 65, which reads as a chevron
+        // marking a direction rather than a spike threatening one.
+        // The width still has to clear its neighbours: at 13 each arrow spans 26
+        // units against 42 of arc, leaving 16 between them. Blunter, and still
+        // plainly separate.
+        // [150826i] CRUISING SHOWS ON THE ARROW. While single-stepping the active
+        // arrow is its normal size; once the hold passes into repeat it EXTENDS
+        // and brightens — so the pad itself says which mode you are in, rather
+        // than the player inferring it from the board moving.
+        const cruise = game._cruising && dir === game.dragDir;
+        const ARROW_LEN = cruise ? 46 : 30, ARROW_HALF = 19;   // [150826l] x1.2
+        const tipR = (active ? RD + 17 : RD + 12) + ARROW_LEN;   // [150826l] x1.2
+        const baseR = active ? RD + 17 : RD + 12;
+        // The active arrow no longer widens — at this spacing that was enough to
+        // close the gap to its neighbours the moment a direction lit up. It grows
+        // by reaching FURTHER instead, via tipR above, which reads as pointing
+        // harder rather than swelling.
+        const spread = ARROW_HALF;
         const tx = cx + Math.cos(ang) * tipR,  ty = cy + Math.sin(ang) * tipR;
         const b1x = cx + Math.cos(ang) * baseR - Math.sin(ang) * spread;
         const b1y = cy + Math.sin(ang) * baseR + Math.cos(ang) * spread;
         const b2x = cx + Math.cos(ang) * baseR + Math.sin(ang) * spread;
         const b2y = cy + Math.sin(ang) * baseR - Math.cos(ang) * spread;
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(tx, ty); ctx.lineTo(b1x, b1y); ctx.lineTo(b2x, b2y);
-        ctx.closePath();
+        pctx.save();
+        // [140826d] A ROUNDED tip rather than a mathematical point. Three straight
+        // lines meet in a sharp vertex however wide the triangle is, so the
+        // sharpness is partly the corner itself, not just the angle. A round join
+        // and cap softens all three corners at once and costs nothing.
+        pctx.lineJoin = 'round';
+        pctx.lineCap = 'round';
+        pctx.beginPath();
+        pctx.moveTo(tx, ty); pctx.lineTo(b1x, b1y); pctx.lineTo(b2x, b2y);
+        pctx.closePath();
         if (deny) {
             // REFUSAL FLASH — bright red, decaying with the bonk
-            ctx.globalAlpha = 0.95 * (1 - denyAge / 320);   // full strength: a refusal must be seen
-            ctx.fillStyle = '#ef4444';
-            ctx.shadowColor = '#ef4444';
-            ctx.shadowBlur = 12 * (1 - denyAge / 320);
-            ctx.fill();
+            pctx.globalAlpha = 0.95 * (1 - denyAge / 320);   // full strength: a refusal must be seen
+            pctx.fillStyle = '#ef4444';
+            pctx.shadowColor = '#ef4444';
+            pctx.shadowBlur = 12 * (1 - denyAge / 320);
+            pctx.fill();
         } else if (!legal) {
             // unavailable — HOLLOW: an empty outline reads as "nothing there"
             // even at a glance, at any fade level
-            ctx.globalAlpha = 0.28 * FAc;
-            ctx.strokeStyle = day ? '#64748b' : '#94a3b8';
-            ctx.lineWidth = 1.4;
-            ctx.stroke();
+            pctx.globalAlpha = 0.28 * FAc;
+            pctx.strokeStyle = day ? '#64748b' : '#94a3b8';
+            pctx.lineWidth = 1.4;
+            pctx.stroke();
         } else if (h > 0) {
-            ctx.globalAlpha = 0.95 * FA;
-            ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = mono;
-            ctx.shadowBlur = 10 * h;
-            ctx.fill();
+            pctx.globalAlpha = 0.95 * FA;
+            pctx.fillStyle = '#ffffff';
+            pctx.shadowColor = mono;
+            pctx.shadowBlur = 10 * h;
+            pctx.fill();
         } else {
             // available — soft FILLED tick, always present
-            ctx.globalAlpha = (day ? 0.48 : 0.42) * FAc;
-            ctx.fillStyle = day ? '#64748b' : '#94a3b8';
-            ctx.fill();
+            pctx.globalAlpha = (day ? 0.48 : 0.42) * FAc;
+            pctx.fillStyle = day ? '#64748b' : '#94a3b8';
+            pctx.fill();
         }
-        ctx.restore();
+        pctx.restore();
     }
 
     // ── knob target: finger when grabbed, echo/held otherwise ──
     let txo = 0, tyo = 0;
     if (_stickTouch.active) {
-        txo = _stickTouch.ox; tyo = _stickTouch.oy;
+        // [090826g] RIGID EIGHT. The input was already snapped to eight
+        // directions, but the KNOB followed the finger freely — so the picture
+        // implied a continuous stick while the game only ever read one of eight
+        // values. The player was being shown a lie about their own input, which
+        // is why it felt like there was something "in between".
+        // The knob now sits at exactly one of eight positions, at full throw,
+        // and rests in the centre when no direction is engaged. What you see is
+        // precisely what the game has: no interpolation, no near-misses.
+        const snapped = stickDirFromOffset(_stickTouch.ox, _stickTouch.oy);
+        if (snapped && TD_ROSE_VEC[snapped]) {
+            const v = TD_ROSE_VEC[snapped];
+            const vlen = Math.hypot(v[0], v[1]);
+            const throwDist = R - KR - 3;
+            txo = (v[0] / vlen) * throwDist;
+            tyo = (v[1] / vlen) * throwDist;
+        }
     } else if (hotDir) {
         const v = TD_ROSE_VEC[hotDir];
         const vlen = Math.hypot(v[0], v[1]);
@@ -14376,24 +15706,27 @@ function drawJoystickGuide() {
         const age = now - hpt.t;
         const a = Math.min(0.28, hpt.sp * 0.4) * (1 - age / 200) * FA;
         if (a <= 0.01) continue;
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = mono;
-        ctx.beginPath(); ctx.arc(hpt.x, hpt.y, KR * 0.85, 0, Math.PI * 2); ctx.fill();
-        ctx.restore();
+        pctx.save();
+        pctx.globalAlpha = a;
+        pctx.fillStyle = mono;
+        pctx.beginPath(); pctx.arc(hpt.x, hpt.y, KR * 0.85, 0, Math.PI * 2); pctx.fill();
+        pctx.restore();
     }
 
     // ── the knob, tilting like a real stick ──
     const throwFrac = Math.min(1, Math.hypot(_tdKnob.x, _tdKnob.y) / (R - KR - 3));
     const leanAng = Math.atan2(_tdKnob.y, _tdKnob.x);
-    ctx.save();
-    ctx.globalAlpha = FA;
-    ctx.translate(kx, ky);
-    if (throwFrac > 0.02) { ctx.rotate(leanAng); ctx.scale(1 - 0.16 * throwFrac, 1); }
-    ctx.shadowColor = 'rgba(0,0,0,0.45)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 2;
-    const g = ctx.createRadialGradient(-KR * 0.35, -KR * 0.4, KR * 0.15, 0, 0, KR);
+    pctx.save();
+    pctx.globalAlpha = FA;
+    pctx.translate(kx, ky);
+    if (throwFrac > 0.02) { pctx.rotate(leanAng); pctx.scale(1 - 0.16 * throwFrac, 1); }
+    pctx.shadowColor = 'rgba(0,0,0,0.45)';
+    pctx.shadowBlur = 6;
+    pctx.shadowOffsetY = 2;   // [090826c] was `g.` — set on the gradient, and on a
+                              // `const g` that is not even declared until the NEXT
+                              // line. A temporal-dead-zone throw, every frame the
+                              // knob drew. Caught by the rename; it predates it.
+    const g = pctx.createRadialGradient(-KR * 0.35, -KR * 0.4, KR * 0.15, 0, 0, KR);
     if (day) {
         g.addColorStop(0, '#ffffff');
         g.addColorStop(0.55, glow > 0 ? '#cbd5e1' : '#b6bec9');
@@ -14403,35 +15736,40 @@ function drawJoystickGuide() {
         g.addColorStop(0.55, glow > 0 ? '#e2e8f0' : '#94a3b8');
         g.addColorStop(1, glow > 0 ? '#64748b' : '#334155');
     }
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowColor = 'transparent';
+    pctx.fillStyle = g;
+    pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.fill();
+    pctx.shadowColor = 'transparent';
+    // [090826i] The play/pause lamp is removed. It made the knob mean two things
+    // on one gesture and forced a tap-versus-drag rule onto the control the
+    // player uses most — too much load on the one thing that has to be
+    // unambiguous. Pause lives on the keyboard and in Settings, where a
+    // deliberate action belongs.
+
     if (glow > 0) {
-        ctx.save();
-        ctx.shadowColor = mono;
-        ctx.shadowBlur = 20 * glow;
-        ctx.strokeStyle = mono;
-        ctx.globalAlpha = 0.9 * FA;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.stroke();
-        ctx.restore();
+        pctx.save();
+        pctx.shadowColor = mono;
+        pctx.shadowBlur = 20 * glow;
+        pctx.strokeStyle = mono;
+        pctx.globalAlpha = 0.9 * FA;
+        pctx.lineWidth = 2.5;
+        pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
+        pctx.restore();
     } else {
-        ctx.lineWidth = 1.5;
-        ctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
-        ctx.beginPath(); ctx.arc(0, 0, KR, 0, Math.PI * 2); ctx.stroke();
+        pctx.lineWidth = 1.5;
+        pctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
+        pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
     }
-    ctx.globalAlpha = 0.3 * FA;
-    ctx.fillStyle = day ? '#1e293b' : '#0f172a';
+    pctx.globalAlpha = 0.3 * FA;
+    pctx.fillStyle = day ? '#1e293b' : '#0f172a';
     for (const [gx, gy] of [[0,0],[-7,0],[7,0],[0,-7],[0,7]]) {
-        ctx.beginPath(); ctx.arc(gx, gy, 1.9, 0, Math.PI * 2); ctx.fill();
+        pctx.beginPath(); pctx.arc(gx, gy, 1.9, 0, Math.PI * 2); pctx.fill();
     }
-    ctx.restore();
-    ctx.restore();
+    pctx.restore();
+    pctx.restore();
     // [070826e] ALWAYS restore. Without this the swap leaks: every draw after
     // the stick — the whole HUD, every later frame — would go to the pad canvas
     // and the board would simply stop updating. The one early return above sits
     // BEFORE the swap, so this is the only exit that needs it.
-    if (_padCtx) ctx = _mainCtx;
 }
 
 // Shape selector — swap the machine on the test stand. Repositions to the
@@ -14534,11 +15872,32 @@ function toggleHints() { applyHints(!game.hintsOn); }
 
 // ── JOYSTICK toggle ── module-level (survives the per-run game resets) and
 // persisted per device. The garage always shows the stick regardless.
-let stickOn = true;
+let stickOn = true;    // [150826d] ON by default — see the note at the loader
+// [150826d] ON BY DEFAULT. Reversing 090826j on the evidence: a control the
+// player never sees is one they never learn exists, and a bigger board is a poor
+// trade for a first-time player who cannot work out how to move. Swipes still
+// work, but they have to be discovered; the stick is visible from the first
+// frame and explains itself.
+// Turning it OFF is the informed choice — made by someone who already knows the
+// swipe — so that is the one that belongs in Settings rather than in the default.
+stickOn = true;
 try { const _sv = localStorage.getItem('rotor_stick'); if (_sv !== null) stickOn = _sv === '1'; } catch (e) {}
+// [090826d] Reflect the saved choice immediately — otherwise a player who turned
+// the stick off last session sees the zone appear and then vanish on first draw.
+try { document.body.classList.toggle('stick-off', !stickOn); } catch (e) {}
 function applyStick(on) {
     stickOn = !!on;
     try { localStorage.setItem('rotor_stick', stickOn ? '1' : '0'); } catch (e) {}
+    // [090826d] The existing Joystick setting now hides the ZONE, not just the
+    // drawing. With the pad reserving space in the flex column, leaving an empty
+    // 200px band when the stick is off would be worse than useless — the board
+    // reclaims that height instead, which is the whole point of a toggle.
+    document.body.classList.toggle('stick-off', !stickOn);
+    // [090826i] Nudge the layout so the board takes up (or gives back) the stick
+    // zone's height immediately, rather than at the next resize. A flex reflow is
+    // synchronous, but the CANVAS's own backing store and any cached rect are
+    // not — dispatching resize is the one call every listener already honours.
+    try { window.dispatchEvent(new Event('resize')); } catch (e) {}
     const p = document.getElementById('stickPill');
     if (p) {
         p.classList.toggle('off', !stickOn);
@@ -16377,12 +17736,27 @@ function loop(time, gen) {
           if (sfx.line) sfx.line(4);
           if (sfx.bassImpact) sfx.bassImpact(0.8);
       }
-      // GUARD-MAZE MAINTENANCE (V9): re-assert L1's authored pockets so
-      // procedural generation never corrupts route or guards.
+      // [150826a] THE WALLS THAT MOVED ON THEIR OWN. This re-stamped every
+      // guarded maze every 600ms — and stampGuardMaze SKIPS any cell the player
+      // occupies, then CLEARS its path cells. So a wall the player was standing
+      // on was never written; step away and 600ms later it appeared. Walk back
+      // over another and it vanished on the next tick. Terrain the generator had
+      // legitimately placed inside a path was deleted the same way.
+      // From the player's side: walls flickering in and out with no cause, which
+      // is exactly what the replay sequence showed.
+      // It is now stamped ONCE per slot. The only thing that needs re-asserting
+      // is a cell the player was standing on at stamp time, so those are
+      // remembered and retried until they land — targeted, finite, and silent
+      // once complete. The original worry (procedural generation corrupting the
+      // route) cannot happen anyway: worldGenY is a watermark, so a row is never
+      // generated twice.
       if (advancedRound === 1 && (!game._guardT || nowT - game._guardT > 600)) {
           game._guardT = nowT;
-          for (const sl of slots)
-              if (sl.guard && !sl.claimed && !sl.retiring) stampGuardMaze(sl);
+          for (const sl of slots) {
+              if (!sl.guard || sl.claimed || sl.retiring) continue;
+              if (!sl.guardStamped) { stampGuardMaze(sl); sl.guardStamped = true; continue; }
+              retryGuardCells(sl);
+          }
       }
       // ADJACENT RED GUARANTEE (V9): a J or 2x2 always has at least one
       // red within arm's reach — the way DOWN the chain is never more than
@@ -16892,7 +18266,13 @@ function startGame(testDrive = false) {
         trail: [],
         dragDir: null,
         dragTimer: 0,
-        dragInterval: 250,
+        // [150826i] TWO intervals, not one. Both the first repeat and every one
+    // after it waited 250ms, so a single push and the start of a cruise were
+    // indistinguishable for a quarter-second — nothing to feel for. This is
+    // keyboard key-repeat's problem and takes its solution: a LONG deliberate
+    // pause before the second move, then a FAST rate once cruising.
+    dragFirstMs: 480,     // hold this long before a SECOND move happens
+    dragInterval: 160,    // every move after that comes this fast
         isTouching: false,
         // Replay change-tracking
         _prevX: Math.floor(VIEW_W / 2),
@@ -17051,24 +18431,43 @@ function endGame(reason = 'death') {
             ? 'So close to legend.'
             : CONSOLATIONS[(Math.random() * CONSOLATIONS.length) | 0];
         const isNewBest = game.score > (game._startBest || 0) && (game._startBest || 0) > 0;
-        const bestLine = isNewBest
-            ? `<span class="go-best new-best">NEW BEST!</span>`
-            : (bests.score ? `<span class="go-best">Best: ${Math.max(bests.score, game.score)}</span>` : '');
+        // [160826c] bestLine retired — a NEW BEST pill now sits under the score
+        //  itself, where the number it refers to actually is.
         // [030826v] The rank line had gone missing from the game-over screen —
         // the CSS for it survived but nothing built it, so the ladder was
         // invisible at the one moment a run is being judged. Restored, with the
         // position that substantiates the name.
         const rk = rankForScore(game.score);
-        const rankLine =
-            `<span class="go-rank">RANK ${rk.position}/${rk.total} \u00b7 ${rk.name}</span>` +
-            (rk.next ? `<span class="go-rank-next">${(rk.next[0] - game.score).toLocaleString()} to ${rk.next[1]}</span>` : '');
+        // [160826c] THREE TIERS, not six sizes. The box had six lines at six
+        // different weights and scales, so nothing led and everything competed.
+        // It now borrows the level card's grammar — quiet label, loud value — and
+        // groups by KIND:
+        //   the SCORE, alone and largest: the one number of the run
+        //   RANK and LEVEL side by side, matched, because they are the same kind
+        //     of fact and were being read as a list of unrelated ones
+        //   then the two lines of prose, at one size
+        // The "9,545 to SOLENOID" line is gone: a target is an invitation to keep
+        // going, and this screen is where a run has just ended.
+        const lvlTxt = advancedRound > 10
+            ? 'ENDLESS ' + (advancedRound - 10)
+            : advancedRound + ' of 10';
+        const isBest = game.score > (game._startBest || 0) && (game._startBest || 0) > 0;
         tauntEl.innerHTML =
-            `<span class="go-score">Score: ${game.score}</span>` +
-            rankLine +
-            bestLine +
-            `<span class="go-level">You reached ${advancedRound > 10 ? "Endless " + (advancedRound - 10) : "Level " + advancedRound + " of 10"}</span>` +
-            `<span class="go-cause">${causeLine}</span>` +
-            `<span class="go-consolation">${consolation}</span>`;
+            `<div class="go-scorewrap">` +
+                `<span class="go-lbl">SCORE</span>` +
+                `<span class="go-score">${game.score.toLocaleString()}</span>` +
+                (isBest ? `<span class="go-newbest">NEW BEST</span>` : '') +
+            `</div>` +
+            `<div class="go-stats">` +
+                `<div class="go-stat"><span class="go-lbl">RANK</span>` +
+                    `<span class="go-val">${rk.name}</span></div>` +
+                `<div class="go-stat"><span class="go-lbl">LEVEL</span>` +
+                    `<span class="go-val">${lvlTxt}</span></div>` +
+            `</div>` +
+            `<div class="go-prose">` +
+                `<span class="go-cause">${causeLine}</span>` +
+                `<span class="go-consolation">${consolation}</span>` +
+            `</div>`;
     }
     // Typography lives in the .go-* span classes now (achievement · cause ·
     // consolation hierarchy); clear any legacy inline sizing either way.
@@ -17306,6 +18705,59 @@ function addStickAware(type, fn, opts) {
 // [070826f] Bound to the STICK PAD as well as the board. The pad is a
 // separate element, so handlers on the canvas alone never saw it — the
 // enlarged stick would have been drawn perfectly and done nothing.
+// ── [070826q] MOUSE ON THE PAD ──────────────────────────────────────────────
+// The pad lives on desktop now, and every stick handler was touch-only — so on
+// a laptop it would have rendered perfectly and done nothing, the same fault
+// that caught the touch bindings at 070826f. Same lesson twice, so this time it
+// goes in alongside the move rather than after someone reports it.
+// The mouse drives exactly the same state the finger does: grab, drag, release.
+(function () {
+    const pad = document.getElementById('stickPad');
+    if (!pad) return;
+    // [090826g] The lamp is checked BEFORE the stick, since it sits inside the
+    // pad and would otherwise be swallowed by the grab radius.
+    // (the tap-versus-drag rule went with the lamp at 090826i — the knob is a
+    //  steering control again and nothing else)
+    const grab = (cx, cy) => {
+        if (!game.running || !(game.testDrive || stickOn)) return false;
+        const pt = stickClientToLogical(cx, cy);
+        // [140826h] ANYWHERE on the pad grabs, and where you land becomes the
+        // origin. The old test rejected touches beyond STICK_R + 12 of a fixed
+        // centre — on a pad this size that is a third of it dead to the thumb.
+        if (pt.x < 0 || pt.y < 0 || pt.x > STICK_PAD_W || pt.y > STICK_PAD_H) return false;
+        _stickOrigin = { x: pt.x, y: pt.y };
+        _stickTouch.active = true;
+        _stickTouch.dir = null; _stickTouch.pendDir = null;
+        _stickTouch.lockDir = null; _stickOrigin = null;   // [140826h] fresh origin next time   // [090826h] a fresh grab may choose again
+        _stickTouch.ox = 0; _stickTouch.oy = 0;
+        game.isTouching = true;
+        return true;
+    };
+    pad.addEventListener('mousedown', e => {
+        if (grab(e.clientX, e.clientY)) e.preventDefault();
+    });
+    // Touch too — the pad's touchstart routes through addStickAware to the stick
+    // grab, so the lamp needs its own listener ahead of it.
+    // Move and release listen on the WINDOW, not the pad: a drag that leaves the
+    // pad must keep steering, and a mouse released anywhere must let go. Bound
+    // to the pad alone, the knob would stick on whenever the cursor slipped off.
+    window.addEventListener('mousemove', e => {
+        if (!_stickTouch.active) return;
+        const pt = stickClientToLogical(e.clientX, e.clientY);
+        // [140826h] Offset from where the thumb LANDED, not from the pad's middle.
+        const sc = _stickOrigin || stickCentre();
+        _stickTouch.ox = pt.x - sc.x;
+        _stickTouch.oy = pt.y - sc.y;
+    });
+    window.addEventListener('mouseup', () => {
+        if (!_stickTouch.active) return;
+        _stickTouch.active = false;
+        _stickTouch.ox = 0; _stickTouch.oy = 0;
+        _stickTouch.dir = null; _stickTouch.pendDir = null;
+        _stickTouch.lockDir = null; _stickOrigin = null;   // [140826h] fresh origin next time   // [090826h]
+        game.isTouching = false;
+    });
+})();
 addStickAware('touchstart', e => {
     // iOS Safari requires the audio context to be created/resumed from a
     // user gesture. Touchstart is the earliest reliable hook.
@@ -17322,8 +18774,10 @@ addStickAware('touchstart', e => {
     // it is never a board swipe and never a ghost-tap.
     if (game.running && (game.testDrive || stickOn)) {
         const pt = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
-        const sc = stickCentre();
-        if (Math.hypot(pt.x - sc.x, pt.y - sc.y) <= STICK_R + 12) {
+        // [140826h] The whole pad grabs, and the touch point becomes the origin.
+        const onPad = pt.x >= 0 && pt.y >= 0 && pt.x <= STICK_PAD_W && pt.y <= STICK_PAD_H;
+        if (onPad) {
+            _stickOrigin = { x: pt.x, y: pt.y };
             _stickTouch.active = true;
             _stickTouch.dir = null; _stickTouch.pendDir = null;
             _stickTouch.ox = 0; _stickTouch.oy = 0;
@@ -17353,7 +18807,7 @@ addStickAware('touchmove', e => {
     // to the deadzone stops the auto-repeat).
     if (_stickTouch.active) {
         const pt = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
-        const sc = stickCentre();
+        const sc = _stickOrigin || stickCentre();   // [140826h] floating origin
         const maxThrow = STICK_R - STICK_KR - 3;
         let ox = pt.x - sc.x, oy = pt.y - sc.y;
         const m = Math.hypot(ox, oy);
@@ -17455,6 +18909,8 @@ addStickAware('touchend', e => {
     if (_stickTouch.active) {
         _stickTouch.active = false;
         _stickTouch.dir = null; _stickTouch.pendDir = null;
+        _stickTouch.lockDir = null;
+        _stickOrigin = null;   // [140826h] the next touch picks its own centre
         _stickTouch.ox = 0; _stickTouch.oy = 0;
         game.isTouching = false;
         stopDrag();
@@ -17987,10 +19443,21 @@ function renderDemo(prev, cur, frac, now) {
 // hundreds of MB); frames ahead of the playhead are prefetched.
 const FB_FPS = 20;
 </script>
-<script src="frames.js"></script>
+<!-- [090826f] frames.js holds the welcome flipbook and is a SEPARATE file. It
+     is legitimately absent whenever only index.html is published, so nothing
+     downstream may assume it exists — the guard in fbTick handles that, and
+     onerror here keeps a missing file from even reaching the console. -->
+<script src="frames.js" onerror="window.FB_FRAMES = window.FB_FRAMES || [];"></script>
 <script>
 const fbCache = new Map();
 function fbFrame(i) {
+    // [090826f] Guarded here too. fbTick stops the loop when frames.js is
+    // absent, but this is called from elsewhere as well, and one unguarded
+    // array access inside requestAnimationFrame is all it takes to produce
+    // sixty undescribable errors a second.
+    if (typeof FB_FRAMES === 'undefined' || !FB_FRAMES || !FB_FRAMES[i]) {
+        return { complete: false, naturalWidth: 0 };
+    }
     let img = fbCache.get(i);
     if (!img) {
         img = new Image();
@@ -18049,6 +19516,19 @@ function fbTick(now) {
     // Idle (cheaply) while the welcome screen is hidden during play
     const ss = document.getElementById('startScreen');
     if (ss && ss.classList.contains('hidden')) { fbStart = now - (fbStart ? (now - fbStart) : 0); return; }
+    // [090826f] THE SOURCE OF EVERY "Script error." FB_FRAMES lives in
+    // frames.js, a SEPARATE file — and this line reads .length on it with no
+    // guard, from inside requestAnimationFrame. When frames.js is missing or
+    // stale (and only index.html gets published on most of these builds), this
+    // throws SIXTY TIMES A SECOND, from an external script the browser will not
+    // describe: hence "Script error." with no file and no line, on the welcome
+    // screen where there is no joystick at all.
+    // Three builds were spent chasing that error around the joystick because
+    // the two appeared together. They were never related.
+    if (typeof FB_FRAMES === 'undefined' || !FB_FRAMES || !FB_FRAMES.length) {
+        fbRunning = false;   // stop the loop rather than throw on every frame
+        return;
+    }
     const idx = Math.floor((now - fbStart) / (1000 / FB_FPS)) % FB_FRAMES.length;
     for (let a = 1; a <= 12; a++) fbFrame((idx + a) % FB_FRAMES.length);   // prefetch ahead
     const img = fbFrame(idx);

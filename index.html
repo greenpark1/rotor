@@ -175,10 +175,35 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
     box-shadow: 0 0 40px 8px var(--edge-glow, rgba(163, 230, 53, 0.6)), 0 4px 30px rgba(0,0,0,0.3);
 }
 
-.game-canvas { 
-    display: block; 
-    background: #0f172a; 
+/* [160826g] A .board-zone WRAPPER WAS TRIED HERE AND REVERTED — recorded so it
+   is not tried again. The idea was to let a growing wrapper absorb the slack
+   that flex-grow:0 stops the canvas from taking. It overflowed the frame badly:
+   board over the HUD, board over the stick.
+   WHY. .game-container has `height: auto` with only a max-height ([150826b]).
+   An auto-height column has NO free space to distribute — it is exactly as tall
+   as its contents until it meets the cap. So the wrapper's flex-grow had
+   nothing to grow into, and worse, it broke the mechanism that was actually
+   keeping the board in bounds: the canvas was a DIRECT flex item, and when the
+   container met its max-height the flex algorithm SHRANK it (flex: 0 1 auto —
+   grow 0, but shrink 1). Wrapped, the canvas is no longer a flex item of the
+   container, so nothing shrank it and it drew at full bitmap size.
+   The slack is real and the board should have it, but the fix has to start at
+   the container's height, not at the canvas. */
+.game-canvas {
+    display: block;
+    background: #0f172a;
     border-radius: 8px;
+    /* [160826m] A HAIRLINE AROUND THE WHOLE GRID. box-shadow, not border: the
+       global `* { box-sizing: border-box }` at the top of this file means a real
+       border would be drawn INSIDE the canvas box, shrinking the content area
+       the bitmap scales into — a 3px squeeze on a square board, and the cells
+       would no longer be quite square. A shadow ring costs nothing in layout,
+       follows border-radius exactly, and stays correct in the beside
+       arrangement where layoutPlay() writes the size in explicit pixels.
+       Day gets a darker grey than night: the same light grey that reads clearly
+       against #0f172a disappears against #ffffff. Both still read as a light
+       hairline in their own theme, which is the point. */
+    box-shadow: 0 0 0 1.5px rgba(148, 163, 184, 0.55);
     /* [090826b] WIDTH-DRIVEN, HEIGHT-CAPPED. The previous attempt set
        `width: auto; height: 100%` — but this canvas carries NO width/height
        attributes (the bitmap is sized in JS), so `width: auto` fell back to the
@@ -227,6 +252,64 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
     user-select: none;
 }
 
+/* ── [160826j] THREE ZONES: HUD, BOARD, STICK ───────────────────────────────
+   Arrived at in a standalone harness (layout-harness.html) that printed its own
+   measurements, after two blind attempts here failed — see [160826g] and
+   [160826i]. Everything below is transcribed from numbers that were actually
+   observed in a browser rather than reasoned about in CSS.
+
+   THE PRINCIPLE: put the stick where the surplus is. The board is square, so it
+   is bound by whichever axis is tighter. Stacked, it is bound by HEIGHT and the
+   frame's spare WIDTH goes to waste as margin either side of the grid. Beside,
+   the stick spends that spare width instead of the board's height. Measured on
+   the laptop: 193 stacked -> 380 beside, a 97% bigger board on each edge.
+
+   WHY THIS IS SAFE. The stacked path is untouched. When the model chooses
+   BELOW, layoutPlay() removes this class and clears every inline style it set,
+   so the original flex rules govern exactly as before — including the
+   flex-shrink on .game-canvas that [160826g] accidentally removed. Only the
+   beside arrangement is new, and it only engages when it wins by 15%. */
+body.layout-beside .game-container { display: block; }
+body.layout-beside .game-canvas,
+body.layout-beside #stickPad { position: absolute; margin: 0; }
+/* The maxima would fight the explicit pixel sizes layoutPlay() writes. In this
+   mode the size IS the computed size — nothing else may have an opinion. */
+body.layout-beside .game-canvas { max-width: none; max-height: none; }
+body.layout-beside.in-play #stickPad { width: auto; }
+
+/* [160826i] A SIDE-BY-SIDE GRID WAS TRIED HERE AND REVERTED — the second
+   failure in this area, recorded so the next attempt starts from evidence
+   rather than from the same reasoning twice.
+   It placed the stick beside the board correctly, but the board came out about
+   420px in a column that should have offered ~690, sat hard left instead of
+   centred, and was clipped along its bottom edge.
+   BOTH failures ([160826g] and this one) were reasoned from the CSS rather than
+   observed in a browser, and both were wrong in ways the reasoning did not
+   predict. The three-zone layout gets built in a standalone harness that
+   reports its own measurements, and only comes back here once the numbers are
+   right. */
+
+
+/* ── [160826y] DEV NOTE BAR ── */
+.note-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 130;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(2, 6, 23, 0.96);
+    border-top: 1px solid rgba(251, 191, 36, 0.5);
+}
+.note-bar.hidden { display: none; }
+.note-hint { font-size: 10px; letter-spacing: .08em; color: #fbbf24; white-space: nowrap; }
+.note-bar input {
+    flex: 1 1 auto; min-width: 0;
+    font: 13px/1.3 ui-monospace, Menlo, monospace;
+    color: #e2e8f0; background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.4); border-radius: 8px;
+    padding: 8px 10px; outline: none;
+}
+.note-bar input:focus { border-color: #fbbf24; }
+body.theme-day .note-bar { background: rgba(255, 255, 255, 0.97); }
+body.theme-day .note-bar input { color: #1e293b; background: #f1f5f9; }
 
 /* Round-transition overlay. Covers the canvas during round changes:
    fades to ~92% black, scales a huge "ROUND N" in, holds, then fades
@@ -1156,10 +1239,17 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
    guessed at from the outside. Two systems were budgeting the same space and the
    one with !important won.
    (The "JS scaler" the comment refers to is long gone too.) */
-/* V9: the END screen is translucent — the final board stays visible behind
-   it as the reference for WHY you lost. (Welcome stays fully opaque.) */
-#gameOverScreen { background: rgba(15, 23, 42, 0.78); }
-body.theme-day #gameOverScreen { background: rgba(255, 255, 255, 0.82); }
+/* [160826l] THE END SCREEN IS OPAQUE NOW. It was rgba(...,0.78), on the V9
+   reasoning that the final board should stay visible behind it "as the
+   reference for WHY you lost". In practice the board is not a reference at the
+   moment of death — it is noise. The dead HUD reads straight through the
+   wordmark (LEVEL 6, a red 0:00, five empty hearts and the old score all
+   competing with GAME OVER and the score card that is restating them), and the
+   board's grid runs through the letterforms. The card is the reference; the
+   corpse behind it is a second copy of the same facts, worse rendered.
+   .screen-overlay already carries the opaque background, so these rules simply
+   go — which also puts the end screen on the same footing as the welcome one
+   rather than making it a special case. */
 
 /* ============ 9:16 WELCOME BOX ============
    Portrait frame for the welcome screen. Inside the box, content stacks
@@ -1448,6 +1538,11 @@ body.theme-day .objective-text {
    Rather than trusting a unit that is lying, the bottom simply gets the 8px back.
    The frame's max-height subtracts both, so the box still fits. */
 :root { --frame-gap: 60px; --frame-gap-bottom: 68px; }
+/* [160826c] The ink for an unearned rung on the scores ladder. Day needs it
+   DARKER, not lighter: the locked cog is drawn in outline on a white ground, so
+   the night value would have vanished into the page. */
+:root { --rank-locked: #475569; }
+body.theme-day { --rank-locked: #94a3b8; }
 :root { --wm-steel: #b8c9d9; --wm-c0: #22d3ee; --wm-c1: #a3e635; --wm-c3: #e8b96a; --wm-c4: #ef4444;
         /* [300726d] Steel is the voice of the interface: main text on the
            welcome and game screens speaks in the shifter metal. Day uses a
@@ -1672,6 +1767,14 @@ body.theme-day .game-container {
 }
 body.theme-day .game-canvas {
     background: #ffffff;
+    /* [160826m] Darker AND heavier than the night ring — see the note on
+       .game-canvas. At 0.42 it measured 1.75 contrast against white where night
+       ran 2.98, so day was less than half as visible for the same nominal grey.
+       0.65 brings it to ~2.5, which is the same relationship [070826p] already
+       established for text: day needs a step MORE weight than night, not less,
+       because dark-on-light strokes read thinner than light-on-dark. The blend
+       still lands on rgb(154,164,180) — a light grey, as asked. */
+    box-shadow: 0 0 0 1.5px rgba(100, 116, 139, 0.65);
 }
 body.theme-day .hud, body.theme-day .pause-panel,
 body.theme-day .scrub-counter, body.theme-day .hud-value {
@@ -1777,6 +1880,196 @@ body.theme-day .toggle-box {
     margin: 10px;
 }
 .start-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5); }
+
+/* ── [160826c] TOP SCORES ──────────────────────────────────────────────────
+   The link under PLAY is deliberately NOT a second start-btn. One filled blue
+   slab is the primary action; a second one beside it would make the player
+   choose between two equals when only one of them starts the game. Outlined,
+   ROTOЯ blue, quieter — the same "blue at rest, filled on hover" grammar the
+   corner controls already use, so it is recognisably the same family. */
+.scores-link {
+    /* [160826f] justify-content CENTRE, and it is not optional. The parent rule
+       `.welcome-row.full > *` stretches every direct child to width:100%, so
+       this button is full-width like PLAY above it — but PLAY is a plain button
+       whose text centres by default, while this one is a FLEX box, and a flex
+       box defaults to flex-start. So the icon and label sat hard against the
+       left edge of a full-width control. Centring the flex line is the fix;
+       text-align cannot reach flex items. */
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    padding: 9px 22px;
+    font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.10em;
+    color: #38bdf8;
+    background: transparent;
+    border: 2px solid rgba(56, 189, 248, 0.55);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+}
+.scores-link svg { width: 15px; height: 15px; }
+.scores-link:hover {
+    background: #38bdf8; color: #0f172a; border-color: #38bdf8;
+    transform: scale(1.04);
+}
+body.theme-day .scores-link { color: #0284c7; border-color: rgba(2, 132, 199, 0.5); }
+body.theme-day .scores-link:hover { background: #0284c7; color: #ffffff; border-color: #0284c7; }
+
+/* The screen itself scrolls: three stacked blocks will exceed a phone viewport
+   and this is a page you read, not a board you play, so scrolling is correct
+   here where it would be a bug in the game container. */
+#scoresScreen { justify-content: flex-start; padding: 0; }
+.scores-box {
+    width: 100%; max-width: 520px;
+    margin: 0 auto;
+    padding: 62px 18px 40px;
+    display: flex; flex-direction: column; align-items: stretch;
+    text-align: center;
+}
+.scores-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 30px; font-weight: 800; letter-spacing: 0.03em;
+    color: #e2e8f0;
+    margin-bottom: 6px;
+}
+body.theme-day .scores-title { color: #1e293b; }
+.scores-section-head {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    color: var(--text-steel, #8fa3b8);
+    text-align: left;
+    margin: 26px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(143, 163, 184, 0.22);
+}
+
+/* ── RUN TABLE ── */
+.scores-run {
+    display: grid;
+    grid-template-columns: 26px 44px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(143, 163, 184, 0.10);
+    text-align: left;
+}
+.scores-run-pos {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-steel, #8fa3b8);
+    font-variant-numeric: tabular-nums;
+}
+.scores-run .rank-badge-sm { width: 40px; height: 40px; }
+.rank-badge-sm svg { width: 100%; height: 100%; display: block; }
+.scores-run-name {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.09em;
+    color: #cbd5e1;
+}
+body.theme-day .scores-run-name { color: #334155; }
+.scores-run-sub {
+    display: block;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.05em;
+    color: var(--text-steel, #8fa3b8);
+    margin-top: 2px;
+}
+.scores-run-score {
+    font-size: 17px; font-weight: 800;
+    color: #38bdf8;
+    font-variant-numeric: tabular-nums;
+}
+body.theme-day .scores-run-score { color: #0284c7; }
+/* An empty slot is a dashed outline where the badge goes — the shape of the
+   thing you have not done yet. */
+.scores-run.empty { opacity: 0.42; }
+.scores-run.empty .rank-badge-sm {
+    border: 1.5px dashed rgba(143, 163, 184, 0.42);
+    border-radius: 50%;
+}
+.scores-run.empty .scores-run-score { color: var(--text-steel, #8fa3b8); font-weight: 600; }
+
+/* ── LADDER ── */
+.scores-rung {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(143, 163, 184, 0.10);
+    text-align: left;
+}
+.scores-rung .rank-badge-sm { width: 48px; height: 48px; }
+.scores-rung-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.06em;
+    color: #cbd5e1;
+}
+body.theme-day .scores-rung-name { color: #334155; }
+.scores-rung-req {
+    display: block;
+    font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+    color: var(--text-steel, #8fa3b8);
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+}
+/* Locked rungs dim the TEXT but keep the badge outline at full strength — the
+   cog ahead of you is the thing worth looking at. */
+.scores-rung.locked .scores-rung-name { color: var(--text-steel, #8fa3b8); font-weight: 600; }
+.scores-rung.you {
+    background: rgba(56, 189, 248, 0.10);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1.5px rgba(56, 189, 248, 0.42);
+}
+body.theme-day .scores-rung.you { background: rgba(2, 132, 199, 0.10); box-shadow: inset 0 0 0 1.5px rgba(2, 132, 199, 0.38); }
+.scores-rung-you-tag {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+    color: #0f172a; background: #38bdf8;
+    padding: 3px 8px; border-radius: 5px;
+}
+body.theme-day .scores-rung-you-tag { color: #ffffff; background: #0284c7; }
+
+/* ── BESTS ── */
+.scores-bests {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.scores-best {
+    background: rgba(30, 41, 59, 0.55);
+    border-radius: 9px;
+    padding: 10px 6px;
+}
+body.theme-day .scores-best { background: rgba(148, 163, 184, 0.16); }
+.scores-best-label {
+    display: block;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--text-steel, #8fa3b8);
+}
+.scores-best-value {
+    display: block;
+    font-size: 16px; font-weight: 800;
+    color: #e2e8f0;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+}
+body.theme-day .scores-best-value { color: #1e293b; }
+
+/* Back arrow — top-left, matching the corner-control placement habit. */
+.scores-back {
+    position: fixed; top: 14px; left: 14px;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: #38bdf8;
+    background: transparent;
+    border: 2px solid rgba(56, 189, 248, 0.5);
+    border-radius: 10px;
+    cursor: pointer; z-index: 110;
+    transition: background 0.18s, color 0.18s;
+}
+.scores-back svg { width: 20px; height: 20px; }
+.scores-back:hover { background: #38bdf8; color: #0f172a; }
+body.theme-day .scores-back { color: #0284c7; border-color: rgba(2, 132, 199, 0.45); }
+body.theme-day .scores-back:hover { background: #0284c7; color: #ffffff; }
+body.theme-day #scoresScreen { background: #ffffff; }
+@media (max-width: 400px) {
+    .scores-bests { grid-template-columns: repeat(2, 1fr); }
+    .scores-title { font-size: 24px; }
+}
 
 .instructions {
     background: rgba(30, 41, 59, 0.8);
@@ -2479,7 +2772,8 @@ body.theme-day .tally-pts { color: #e8a800; }   /* [050826a] night gold, not bur
 .tally-total.in { opacity: 1; transform: scale(1); }
 .tally-total-label { font-size: clamp(13px, 3.8cqw, 18px); letter-spacing: 3px; color: #94a3b8; text-transform: uppercase; }
 .tally-total-value {
-    font-size: clamp(34px, 11cqw, 56px); font-weight: 800; letter-spacing: 1px;
+    /* [170826b] 5% smaller — field note. */
+    font-size: clamp(32px, 10.5cqw, 53px); font-weight: 800; letter-spacing: 1px;
     font-variant-numeric: tabular-nums; color: #ffd60a;
     text-shadow: 0 0 22px rgba(255, 214, 10, 0.5);
 }
@@ -2529,7 +2823,9 @@ body.theme-day .tally-start { color: #15803d; }
 .tally-rank { flex-direction: row !important; justify-content: center; gap: 12px; margin: 0 0 4px !important; }
 .rank-badge {
     position: relative; flex: 0 0 auto;
-    width: clamp(76px, 22cqw, 116px); height: clamp(76px, 22cqw, 116px);
+    /* [170826b] 5% smaller and pushed off the edge it was butting against. */
+    margin-left: 8px;
+    width: clamp(72px, 21cqw, 110px); height: clamp(72px, 21cqw, 110px);
     display: flex; align-items: center; justify-content: center;
     filter: drop-shadow(0 0 12px rgba(184,201,217,0.30));
 }
@@ -2592,8 +2888,9 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shad
        it to the floor of the panel, so without this it reads as attached to the
        line above it rather than as its own thing. */
     margin-top: clamp(14px, 4cqw, 26px);
-    padding: clamp(9px, 2.6cqw, 18px) 24px;
-    font-size: clamp(16px, 4.6cqw, 28px); font-weight: 700; letter-spacing: 3px;
+    padding: clamp(9px, 2.5cqw, 17px) 23px;
+    /* [170826b] 5% smaller — field note. */
+    font-size: clamp(15px, 4.4cqw, 27px); font-weight: 700; letter-spacing: 3px;
     border: none; border-radius: 12px; cursor: pointer;
     background: #22d3ee; color: #06222b;
     opacity: 0; pointer-events: none; transform: translateY(6px);
@@ -2601,6 +2898,19 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shad
 }
 .tally-continue.in { opacity: 1; pointer-events: auto; transform: translateY(0); }
 body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
+/* [170826b] The rank-countdown line ("495 to SPROCKET") is retired — field
+   note. The ladder screen now exists for exactly this; the tally keeps only
+   the rank you hold. Hidden rather than unwired so the data keeps flowing. */
+.tally-rank-next { display: none; }
+/* [170826b] The tally must never need scrolling — field note (laptop had to
+   scroll to reach the card's top and bottom). The card scrolls internally as a
+   last resort, and short viewports compress its air first. */
+.level-tally { overflow-y: auto; }
+@media (max-height: 760px) {
+    .tally-continue { margin-top: clamp(8px, 2cqw, 14px); }
+    .rank-badge { width: clamp(60px, 17cqw, 90px); height: clamp(60px, 17cqw, 90px); }
+    .tally-total-value { font-size: clamp(26px, 8.5cqw, 42px); }
+}
 </style>
 </head>
 <body>
@@ -2665,6 +2975,18 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         <div class="welcome-row full">
             <button class="start-btn" onclick="startGame()">▶ PLAY</button>
         </div>
+        <!-- [160826c] TOP SCORES — a DESTINATION, not a toggle. The two corner
+             controls on this screen (Move Guide, Tips) are both switches you
+             flip and stay put; this takes you somewhere and needs a way back, so
+             putting it up there would have taught the corner two grammars. It
+             sits under PLAY because it is the second thing you might want, and
+             above the build stamp because the stamp is the floor of the page. -->
+        <div class="welcome-row full">
+            <button class="scores-link" onclick="showScores()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4v-7H4zM10 20h4V4h-4zM16 20h4v-11h-4z"/></svg>
+                <span>TOP SCORES</span>
+            </button>
+        </div>
         <!-- [300726e] Stamp on its own row: the flex row seated it BESIDE
              the button (visible in the 0626 screenshot). -->
         <div class="welcome-row full">
@@ -2680,6 +3002,40 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     </div>
 </div>
 
+<!-- [160826c] TOP SCORES SCREEN. Two blocks, in this order for a reason:
+     YOUR RUNS first — ten slots, because ten is also the number of rungs, so a
+     player's own history is what puts a spread of badges on screen rather than
+     the one badge they happen to be wearing. Empty slots are drawn, not hidden:
+     a table with three entries and seven gaps says "there is room to climb"
+     where a three-row list just says "three".
+     THE LADDER second — all ten rungs at once. This is the point of the page.
+     rankTeeth runs 6 to 24 and rankMetal steps steel/bronze/silver/gold, but
+     until now a player only ever saw their OWN badge, so the progression the
+     generator goes to such trouble over was invisible by construction.
+     BESTS last, small — six independent maxima, genuinely a footnote next to a
+     table of whole runs. -->
+<div class="screen-overlay hidden" id="scoresScreen">
+    <button class="scores-back" onclick="hideScores()" aria-label="Back to welcome">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="scores-box">
+        <div class="scores-title"><span class="fitline">TOP SCORES</span></div>
+
+        <div class="scores-section-head">YOUR RUNS</div>
+        <div class="scores-runs" id="scoresRuns"></div>
+
+        <div class="scores-section-head">THE LADDER</div>
+        <div class="scores-ladder" id="scoresLadder"></div>
+
+        <div class="scores-section-head">PERSONAL BESTS</div>
+        <div class="scores-bests" id="scoresBests"></div>
+
+        <div class="welcome-row full">
+            <button class="start-btn" onclick="hideScores(); startGame();">▶ PLAY</button>
+        </div>
+    </div>
+</div>
+
 <!-- Game Over Screen -->
 <div class="screen-overlay hidden" id="gameOverScreen">
     <div class="screen-title" id="gameOverTitle">Game Over</div>
@@ -2688,6 +3044,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 
     <button class="start-btn" onclick="startGame()">▶ PLAY AGAIN</button>
     <button class="details-toggle debug-only" onclick="startReview()">⏮ Review last moves</button>
+    <!-- [160826p] Downloads the run's event log as JSON for balance analysis.
+         Visible (not debug-only): the data is collected on the phone and the
+         laptop alike, and this is the only way it leaves the device. -->
+    <button class="details-toggle" onclick="recExport()">⇓ Export play data</button>
 </div>
 
 <!-- [300726ai] PLAY-SCREEN CORNER CONTROLS. Same placement and styling as the
@@ -2901,7 +3261,20 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     <div class="pause-panel hidden" id="pausePanel">
         <span class="scrub-counter" id="reviewCounter">Move 0 / 0</span>
         <button class="scrub-btn" onclick="openSettings()">⚙ Settings</button>
+        <!-- [160826y] Dev note: pause, mark cells, write. Rides the recorder. -->
+        <button class="scrub-btn" onclick="enterNoteMode()">✎ Note</button>
         <button class="scrub-btn resume" onclick="resumeFromPause()">▶ Resume</button>
+    </div>
+
+    <!-- [160826y] DEV NOTE BAR. Appears in note mode: tap cells on the board to
+         mark them (amber rings), type the observation, save. The note lands in
+         the recorder's event stream with a full scene snapshot, so the export
+         carries the words, the marked cells AND the board they refer to. -->
+    <div class="note-bar hidden" id="noteBar">
+        <span class="note-hint" id="noteHint">Tap cells to mark · then write</span>
+        <input type="text" id="noteText" maxlength="240" placeholder="What did you see?" autocomplete="off">
+        <button class="scrub-btn" onclick="saveDevNote()">✓ Save</button>
+        <button class="scrub-btn" onclick="exitNoteMode()">✕</button>
     </div>
 
     <!-- Settings modal (⚙) — reachable from the welcome screen and the pause panel -->
@@ -6060,7 +6433,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
 // an invitation to keep going, and this is the screen where a run has just
 // ended. The card still shows it, which is where it belongs.
-const BUILD_VERSION = '160826-0714 ROTOЯ';
+const BUILD_VERSION = '170826-2252 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
@@ -6855,6 +7228,44 @@ function chooseShifterKind() {
         // change the board colour it is stuck on.
         if (game.shapeType === 'diagonal' || game.shapeType === 'jshape' ||
             game.shapeType === 'square') w.slip *= 1.35;
+        // ── [160826n] THE LEAN WAS BLIND TO ORIENTATION ─────────────────────
+        // Everything above compares SIZE — SHAPES[req.type].mult — so the
+        // stream asked "does the set want something bigger or smaller than me?"
+        // and answered with greens and steps. Nothing ever raised PIVOT: turns
+        // sat at a flat 28 whatever the set contained. And the parity clause
+        // immediately above actively pushed the other way, lifting steps 35%
+        // for exactly the families that have orientations to reach — so a set
+        // full of J-shapes biased supply AWAY from the tool it needs.
+        // Turn demand is not a property of a shape, it is a property of its
+        // FAMILY'S CONFIG COUNT: how many orientations a family has is how much
+        // turning it can require. A square has one config and a single is its
+        // own trigger cube, so both are worth nothing here; a J has four.
+        //   single 0 · pair 1 · diagonal 1 · jshape 3 · square 0
+        // Still a LEAN and not a guarantee, per [040826b]: at full pressure
+        // turns roughly double their odds, they never become the only answer.
+        const TURN_VALUE = { single: 0, pair: 1, diagonal: 1, jshape: 3, square: 0 };
+        let turnNeed = 0;
+        for (const id of setNeeded) {
+            const t = parseRequirement(id).type;
+            turnNeed += (TURN_VALUE[t] !== undefined) ? TURN_VALUE[t] : 0;
+        }
+        const turnPressure = Math.min(1, turnNeed / Math.max(1, setNeeded.length * 2));
+        w.pivot *= 1 + 1.3 * turnPressure;
+        // ── [160826w] DROUGHT-BREAKER ───────────────────────────────────────
+        // Measured: droughts of 169-230 seconds with nothing banked, and every
+        // run so far has died mid-drought. The ordinary lean is proportional;
+        // after 90 seconds without a bank it stops being polite. The tilt is
+        // keyed to the FIRST outstanding requirement: greens if it is bigger
+        // than the player, steps if smaller, turns if it is a same-size
+        // different-orientation problem. A thumb on the scale, not a gift —
+        // the tool still has to be reached, routed and used correctly.
+        if (shifterDrought()) {
+            const req = parseRequirement(setNeeded[0]);
+            const reqMult = SHAPES[req.type] ? SHAPES[req.type].mult : myMult;
+            if (reqMult > myMult) w.green *= 3;
+            else if (reqMult < myMult) w.slip *= 2.5;
+            else w.pivot *= 3;
+        }
     }
     const r = Math.random() * (w.green + w.pivot + w.slip + w.warp);
     if (r < w.green) return 'green';
@@ -8691,65 +9102,167 @@ function shuffleInPlace(arr) {
 // one-of-each, so the J-shape never repeats and there are no same-family
 // look-alikes at all. Shape count ramps 3,3,3,4,5,5,5,5,5,5; difficulty past
 // round 5 comes from the per-level SPEED ramp, not from more shapes.
-function roundBudget(round) {
-    const TABLE = { 1: 5, 2: 5, 3: 5, 4: 8, 5: 12, 6: 12, 7: 12, 8: 12, 9: 12, 10: 12 };
-    return TABLE[round] || 12;
+// [160826k] SET SIZE +20%. Old counts ran 3/3/3/4/5 and the budget 5/5/5/8/12.
+// Both lifted a fifth and rounded up, so there is more to collect per level
+// without the levels getting longer in any other dimension.
+function setTargetCount(round) {
+    // [160826s] L1 is 3 by authorship (two singles + one pair — see the
+    // composer), not by draw.
+    const TABLE = { 1: 3, 2: 4, 3: 4, 4: 5, 5: 6, 6: 6, 7: 6, 8: 6, 9: 6, 10: 6 };
+    return TABLE[round] || 6;
 }
+// ── [160826r] THE BUDGET IS TIME NOW, NOT CUBES ─────────────────────────────
+// Measured (rotor-playdata, run of 160826-1448): median seconds-to-bank was
+//   single 40 · pair 49 · square 73 · diagonal 115 · jshape 335
+// and the jshape stalled the run — five and a half minutes chasing one exact
+// orientation at 95% coverage. The cube budget priced that J at 3; its real
+// cost was EIGHT singles. Size was never the difficulty axis — ORIENTATION is:
+// a requirement must be banked in one exact config, so a family with four
+// configs is fundamentally harder than its cube count says.
+//   cost = size + 1.5 × (configs − 1)
+//   single 1 · pair 2.5 · diagonal 3.5 · square 4 · jshape 7.5
+// This reproduces the measured ordering (square/diagonal within noise of each
+// other at n=1 each). The per-round budgets below are in these units, sized so
+// setTargetCount stays reachable: count-1 non-singles at the CHEAPEST mix needs
+// ~2.5 units each, and the ceiling stops more than one expensive family
+// (jshape 7.5) landing in the same early set — which is exactly the failure
+// the data caught.
+// [160826w] SECOND CALIBRATION, from runs two and three. The first formula
+// priced difficulty as ORIENTATION (configs − 1) — which caught the J but let
+// the square through at 4, and the square promptly became the new stall:
+// banked at 73 / 198 / 213 / 238 seconds across runs, median over three
+// minutes, versus singles at ~35s. The square's cost is not orientation (one
+// config); it is GROWTH — you must BE four cubes, and occupancy data says the
+// player is that big under 4% of the time. So the price gains a growth term:
+// climbing to size 3 is uncommon, size 4 is rare.
+//   cost = size + 1.5 × (configs − 1) + growth   (growth: 0/0/1/2.5 by size)
+//   single 1 · pair 2.5 · diagonal 3.5 · jshape 8.5 · square 6.5
+function shapeTimeCost(type) {
+    const f = { single: 1, pair: 2.5, diagonal: 3.5, square: 6.5, jshape: 8.5 };
+    return f[type] !== undefined ? f[type] : 2.5;
+}
+// [160826w] LATE BUDGETS CUT so the draw must CHOOSE. At 17-19 the budget
+// afforded the entire menu, and every late set converged on the same "one of
+// everything" — L5 and L6 of the measured run were literally the same set
+// reshuffled. At 14-15 a set can hold a square OR a double-diagonal spread OR
+// a J, not all of it: sets get identities again ("the square level"), which is
+// variety the player can feel rather than read.
+function roundBudget(round) {
+    const TABLE = { 1: 9, 2: 9, 3: 9, 4: 12, 5: 14, 6: 14, 7: 14, 8: 15, 9: 15, 10: 15 };
+    return TABLE[round] || 15;
+}
+// [160826k] EVERY FAMILY FROM LEVEL 1. J-shapes used to be gated to round 4 and
+// squares to round 5, which is what made the sets feel ordered — the set could
+// only widen as the levels went up, so the first four levels had a shape you
+// could predict before you saw it. All five families are now in the draw from
+// the start, so a 1, a 2, a 3 and a 4-cube config can share a level.
+// The `round` argument is kept: nothing depends on it now, but the signature is
+// the seam where a future difficulty curve would go back in.
 function availableFamiliesForRound(round) {
-    const fams = [
+    return [
         { type: 'single',   size: 1, configs: ['A'] },
         { type: 'pair',     size: 2, configs: ['H', 'V'] },
-        { type: 'diagonal', size: 2, configs: ['A', 'B'] }
+        { type: 'diagonal', size: 2, configs: ['A', 'B'] },
+        { type: 'jshape',   size: 3, configs: ['A', 'B', 'C', 'D'] },
+        { type: 'square',   size: 4, configs: ['A'] }
     ];
-    if (round >= 4) fams.push({ type: 'jshape', size: 3, configs: ['A', 'B', 'C', 'D'] });
-    if (round >= 5) fams.push({ type: 'square', size: 4, configs: ['A'] });
-    return fams;
 }
 // 180°-opposite J rotations — used to keep reused J-shapes as visually distinct
 // as possible. Harmless for other families (their configs aren't keys here).
 const JSHAPE_OPPOSITE = { A: 'C', B: 'D', C: 'A', D: 'B' };
+// [160826k] A FREE DRAW, NOT A STAIRCASE.
+// The old composer was a per-round script: L1 three singles, L2 singles + one
+// orthogonal pair, L3 singles + a pair-family, and so on. Two rules inside it
+// were doing most of the work of making sets feel ordered:
+//   · EXACTLY TWO SINGLES, every level without exception.
+//   · DISTINCT FAMILIES ONLY among the bigger shapes — so two different 2-cube
+//     configs could never appear together, and the mix was always narrower than
+//     the piece list implies.
+// Both are gone. The set is now drawn: a variable number of singles, then any
+// mix of families until the count or the cube budget runs out, with repeats
+// allowed as long as the CONFIG differs. That last clause is what puts a
+// horizontal pair and a vertical pair — or two J rotations — on screen at once.
+//
+// What survives, deliberately: the ROSE TRICKY SINGLE. It is a difficulty
+// flavour rather than a size (a single ringed by walls and hazards — see
+// scatterTrickyObstacles), so the size-randomising has no bearing on it. It
+// still debuts at L2 and still doubles at L9-10.
 function composeSetByBudget(budget, round) {
-    // Every level anchors on TWO singles — one easy, one HARD (rose-coloured,
-    // spawned ringed by walls/hazards; see scatterTrickyObstacles). L9–10 twist:
-    // BOTH singles are hard. The remainder of the set follows the slow curve:
-    //   L1  singles only            L4    + J-shape + pair-family
-    //   L2  + one pair-family       L5–8  + 3 bigger (distinct families)
-    //   L3  + one pair-family       L9–10 two HARD singles + 3 bigger
+    const count = setTargetCount(round);
+    const fams  = availableFamiliesForRound(round);
     const S = d => ({ type: 'single', config: 'A', size: 1, difficulty: d });
-    const pairFam = () => (Math.random() < 0.5)
-        ? { type: 'diagonal', config: Math.random() < 0.5 ? 'A' : 'B', size: 2, difficulty: 'easy' }
-        : { type: 'pair',     config: Math.random() < 0.5 ? 'H' : 'V', size: 2, difficulty: 'easy' };
-    const singles = (round >= 9) ? [S('tricky'), S('tricky')] : [S('easy'), S('tricky')];
-    let picks;
+
+    // [160826s] LEVEL 1 IS AUTHORED, NOT DRAWN: two plain singles and one
+    // orthogonal pair (H or V, the coin-flip is the only randomness). The
+    // opening level is the classroom — the goal should read as simply as it
+    // plays — and the one requirement family with a flip to learn (H vs V) is
+    // the whole lesson. The draw takes over from L2.
     if (round === 1) {
-        // Level 1 (V9): THREE PLAIN singles — one clean x3 goal, no tricky
-        // ringed single (that mechanic debuts at Level 2). L1 is the cold-
-        // wheel classroom; the goal should read as simply as it plays.
-        picks = [S('easy'), S('easy'), S('easy')];
-    } else if (round === 2) {
-        // L2: orthogonal pair only — diagonal SHAPES join at L3, once the basic
-        // flip is fluent (playtest: no diagonals in the first two levels).
-        picks = [...singles, { type: 'pair', config: Math.random() < 0.5 ? 'H' : 'V', size: 2, difficulty: 'easy' }];
-    } else if (round === 3) {
-        picks = [...singles, pairFam()];
-    } else if (round === 4) {
-        picks = [...singles,
-            { type: 'jshape', config: ['A','B','C','D'][(Math.random() * 4) | 0], size: 3, difficulty: 'easy' },
-            pairFam()];
-    } else {
-        // L5+: singles + up to 3 bigger shapes, one config per family, distinct
-        // families only (no look-alike mirrors), within the cube budget.
-        picks = [...singles];
-        const fams = availableFamiliesForRound(round).filter(f => f.type !== 'single');
-        shuffleInPlace(fams);
-        let remaining = budget - 2, taken = 0;
-        for (const f of fams) {
-            if (taken >= 3 || f.size > remaining) continue;
-            const cfg = f.configs[(Math.random() * f.configs.length) | 0];
-            picks.push({ type: f.type, config: cfg, size: f.size, difficulty: 'easy' });
-            remaining -= f.size; taken++;
-        }
+        const picks = [S('easy'), S('easy'),
+            { type: 'pair', config: Math.random() < 0.5 ? 'H' : 'V', size: 2, difficulty: 'easy' }];
+        shuffleInPlace(picks);
+        return picks;
     }
+
+    // SINGLES: 1 to 3, never enough to fill the set on their own.
+    const maxS = Math.max(1, Math.min(3, count - 1));
+    const nS   = 1 + ((Math.random() * maxS) | 0);
+    const picks = [];
+    for (let i = 0; i < nS; i++) picks.push(S('easy'));
+    if (round >= 2) picks[0] = S('tricky');
+    if (round >= 9 && picks.length > 1) picks[1] = S('tricky');
+
+    // [160826r] Budget and reservations are in TIME UNITS (shapeTimeCost), not
+    // cubes. The cheapest non-single costs 2.5, so that is the per-slot reserve.
+    let remaining = budget - picks.reduce((a, p) => a + shapeTimeCost(p.type), 0);
+    const used = new Set(picks.map(p => p.type + ':' + p.config));
+
+    // THE REST. Each pick reserves the cheapest non-single's cost for every slot
+    // still to fill, so an expensive family early in the draw cannot starve the
+    // set — the count lands where setTargetCount says it should. If nothing fits
+    // under that reservation, take the CHEAPEST thing that fits at all.
+    // [160826x] A HEAVY PIECE OCCUPIES TWO SLOTS OF THE SET. First pass of the
+    // repriced budgets exiled the square from L5 outright (0% of 4,000 draws):
+    // a 6.5-cost piece can never fit a 6-item set at budget 14 once every
+    // remaining slot reserves 2.5. But the time model itself says why — a
+    // square takes as long as two pairs, so it should COUNT as two items. A
+    // square level has five visible requirements instead of six; same total
+    // time, and the expensive piece is affordable again. This is also what
+    // gives late sets identities: "the square level" is structurally a
+    // different shape of set, not the same list reshuffled.
+    let slotsUsed = picks.length;
+    let guard = 0;
+    while (slotsUsed < count && remaining > 0 && guard++ < 200) {
+        const slotsLeft = count - slotsUsed;
+        const reserve   = (slotsLeft - 1) * 2.5;
+        // [160826x] Config availability is checked IN THE POOL, not after the
+        // fallback. It used to run last — so once both pair configs were used,
+        // the cheapest-fallback would pick "pair", find no free config, and
+        // BREAK with diagonals and squares still affordable. That is where the
+        // one-third of L5 draws stopping at three items came from.
+        const pool = fams.filter(f => f.type !== 'single'
+                                   && shapeTimeCost(f.type) <= remaining
+                                   && (shapeTimeCost(f.type) >= 6 ? slotsLeft >= 2 : true)
+                                   && f.configs.some(c => !used.has(f.type + ':' + c)));
+        if (!pool.length) break;
+        let choices = pool.filter(f => {
+            const cost = shapeTimeCost(f.type);
+            const occupies = cost >= 6 ? 2 : 1;
+            return cost <= remaining - Math.max(0, (slotsLeft - occupies)) * 2.5;
+        });
+        if (!choices.length) {
+            const min = Math.min(...pool.map(f => shapeTimeCost(f.type)));
+            choices = pool.filter(f => shapeTimeCost(f.type) === min);
+        }
+        const f = choices[(Math.random() * choices.length) | 0];
+        const free = f.configs.filter(c => !used.has(f.type + ':' + c));
+        const cfg = free[(Math.random() * free.length) | 0];
+        picks.push({ type: f.type, config: cfg, size: f.size, difficulty: 'easy' });
+        used.add(f.type + ':' + cfg);
+        remaining -= shapeTimeCost(f.type);   // [160826r] spend time units, not cubes
+        slotsUsed += shapeTimeCost(f.type) >= 6 ? 2 : 1;   // [160826x] heavy pieces fill two slots
+    }
+
     shuffleInPlace(picks);   // randomise display order
     return picks;
 }
@@ -8765,6 +9278,10 @@ function resetSetTracker() {
     if (!targets.length) targets = [{ type: 'single', config: 'A' }];   // safety
     setNeeded = targets.map(t => requirementId(t.type, t.config, t.difficulty));
     setDisplayOrder = targets.slice();
+    rec('level', { r: round, set: targets.map(t => t.type + ':' + t.config + (t.difficulty === 'tricky' ? '!' : '')) });   // [160826p]
+    game._recLevelStart = nowPlay();   // [160826p][170826b] per-level, play time
+    game._lastBankAt = nowPlay();      // [160826w][170826b] level-relative, play time
+    game._comboSeeded = false;                 // [160826w] one seeded delivery per level
     // Keep the level-overlay's mission row in sync (covers game start, where the
     // overlay shows a beat before this compose runs).
     if (typeof updateOverlayMission === 'function') updateOverlayMission();
@@ -9223,10 +9740,54 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // deliver. (A flood fill from the player is no use here: slots are
             // placed above the view, before the player is anywhere near them.)
             if (!slotIsApproachable(cells)) continue;
+            // [170826b] NO CORRIDOR SLOTS ON LEVEL 1. Field note: a vertical
+            // pair inside a one-wide tunnel at L1 demands precise threading
+            // before the basic flip is fluent. A slot cell walled on BOTH
+            // sides is the corridor signature; L1 refuses the placement and
+            // tries elsewhere. Later levels keep tunnel slots — by then the
+            // squeeze is the point.
+            if (advancedRound === 1 && cells.some(c =>
+                world[`${c.x - 1},${c.y}`] === 'wall' && world[`${c.x + 1},${c.y}`] === 'wall')) continue;
             slots.push({ golden: (Math.random() < GOLD_SLOT_CHANCE), type, config, id: target.id,
                          color: slotColorFor(type, config, target.difficulty), cells,
                          keys: new Set(cells.map(c => `${c.x},${c.y}`)),
                          claimed: false, traced: new Set() });
+            // ── [160826w] COMBO SEEDING ─────────────────────────────────────
+            // The gold ghost (a shifter resolution that exactly claims a slot)
+            // fired ONCE in three measured runs — pure luck, because nothing
+            // ever arranges it. This manufactures the arrangement: when a
+            // multi-cube slot lands, sometimes plant a slip one step off its
+            // footprint, pointing INTO it. A player who arrives as the right
+            // shape beside the slot gets pushed home — the preview shows it
+            // gold, the claim pays the x1.5 combo. Once per level, ~40% of
+            // eligible placements, so it stays an event rather than a routine.
+            if (!game._comboSeeded && type !== 'single' &&
+                target.difficulty !== 'tricky' && Math.random() < 0.4) {
+                const vs = [...SLIP_VECTORS.keys()];
+                shuffleInPlace(vs);
+                for (const vi of vs) {
+                    const v = SLIP_VECTORS[vi];
+                    // Pre-push footprint: the slot shifted one step AGAINST the
+                    // slip's vector. Arriving there and stepping on the slip
+                    // pushes the whole body exactly onto the slot.
+                    const pre = cells.map(c => ({ x: c.x - v.dx, y: c.y - v.dy }));
+                    const preKeys = pre.map(c => `${c.x},${c.y}`);
+                    const legal = pre.every((c, i) =>
+                        c.x >= 0 && c.x < VIEW_W &&
+                        !world[preKeys[i]] &&
+                        !slots.some(s => s.keys.has(preKeys[i])));
+                    if (!legal) continue;
+                    const k = preKeys[0];
+                    world[k] = 'slip';
+                    shifterMeta[k] = { spawnTime: performance.now(), dir: vi, seeded: true };
+                    game._comboSeeded = true;
+                    // [170826d] Seeds get their own event — spawnShifter never
+                    // sees them, so without this the export cannot say whether
+                    // seeded deliveries are found, ignored, or fumbled.
+                    rec('seed', { slot: type, dir: SLIP_VECTORS[vi].name });
+                    break;
+                }
+            }
             if (target.difficulty === 'tricky') scatterTrickyObstacles(cells);
             showTip(type === 'single' && target.difficulty === 'tricky' ? 'rose' : 'slot');
             return true;
@@ -9344,9 +9905,27 @@ function syncPauseButtons() {
     if (hp) { hp.innerHTML = game.paused ? PLAY_ICON_SVG : PAUSE_ICON_SVG; hp.title = game.paused ? 'Resume' : 'Pause'; }
 }
 
+// [170826b] THE PLAY CLOCK. performance.now() minus every paused moment. The
+// drought-breaker and the recorder's bank timings used wall time, so a long
+// pause (note-writing especially) fired the drought tilt spuriously — 51% of
+// spawns in the note-heavy run were drought-tagged — and inflated every bank
+// figure. Balance clocks now read THIS; the recorder's 'at' stays wall time on
+// purpose (notes should say when they were really written).
+function nowPlay() {
+    let t = performance.now() - (game._pausedTotal || 0);
+    if (game.paused && game._pauseStart) t -= (performance.now() - game._pauseStart);
+    return t;
+}
+
 function togglePause() {
     if (!game.running) return;
     game.paused = !game.paused;
+    // [170826b] Account the pause into the play clock.
+    if (game.paused) game._pauseStart = performance.now();
+    else if (game._pauseStart) {
+        game._pausedTotal = (game._pausedTotal || 0) + (performance.now() - game._pauseStart);
+        game._pauseStart = null;
+    }
     syncPauseButtons();
     // Show or hide the floating pause panel
     const panel = document.getElementById('pausePanel');
@@ -9942,7 +10521,17 @@ function markCovered(key, addGenerated = false) {
     if (visited.has(key)) return;
     visited.add(key);
     coverHeat.set(key, performance.now());
-    if (addGenerated && game) game.cellsGenerated++;
+    // [160826t] OLD-ROUND GROUND JOINS BOTH SIDES OF THE RATIO. The counters
+    // reset at each round, but the board still holds rows generated LAST round
+    // — visiting those bumped the numerator while only new rows fed the
+    // denominator, and early in a level the ratio exploded (measured: 5,800%
+    // in L2, 8,700% in L3, sane again by round end as new ground diluted it).
+    // Same law [030826y]-adjacent code already applies to hazard-born cells:
+    // ground outside this round's count joins both sides at once, so it can
+    // never push the percentage past what the player can actually cover.
+    const ry = parseInt(key.split(',')[1], 10);
+    const oldGround = game && game._rowsThisRound && !game._rowsThisRound.has(ry);
+    if ((addGenerated || oldGround) && game) game.cellsGenerated++;
     if (game) game.cellsVisited++;
 }
 
@@ -10187,11 +10776,19 @@ function countBlockedCols(y) {
 // Caverns: open + optional hazards. Tunnels: 6-wide corridor. Funnel:
 // transition between. The generation state persists between calls.
 function generateChunk(fromY, toY) {
-    const safeZoneEnd = game.speedTimer < FIRST_SPEED_DELAY ? 0 : -8;
+    // [170826b] LEAD-IN HALVED: -8 kept the first EIGHT rows above the start
+    // line permanently bare — field note counted them waiting for anything to
+    // interact with. -4 starts the world four rows sooner; the opening breath
+    // (rows at/below the start line while the wheel spins up) is unchanged.
+    const safeZoneEnd = game.speedTimer < FIRST_SPEED_DELAY ? 0 : -4;
     const hazardChance = getHazardChance();
 
     for (let y = fromY; y > toY; y--) {
         if (y > safeZoneEnd) continue;
+
+        // [160826t] Tag the row as generated THIS round — the coverage fix
+        // below needs to tell this round's ground from the last one's.
+        if (game && game._rowsThisRound) game._rowsThisRound.add(y);
 
         if (genRowsRemaining <= 0) advanceGenSection();
 
@@ -10712,7 +11309,66 @@ function reachableSpawnSet(yTop, yBot) {
     return seen;
 }
 
+// ── [160826n] A FLOOR ON WHAT IS ON SCREEN ──────────────────────────────────
+// The cadence counts LANDINGS, not what the board actually holds — so it says
+// nothing about whether any tool is visible. Level 1 runs shifterEveryLandings:
+// 3, [290726q] doubled every threshold and set an anti-flood floor of 4, and
+// the machines already collected are not replaced by anything: the board can
+// legitimately sit bare for a long stretch while the set is still unmet.
+// This is a FLOOR, not extra supply. It does not raise the rate; it only
+// refuses to let the visible count fall below two while there is still
+// something to collect — so scarcity still does its work everywhere above the
+// floor, and the "route around the missing tool" puzzle is untouched. Greens
+// count: they are the tool for growing into a bigger requirement.
+const SHIFTERS_IN_VIEW_FLOOR = 2;
+// [160826r] Ceiling companion to the floor: supply lives between 2 and 6.
+// Median in-view was 4-5 in the measured run, so 6 trims the wasteful tail
+// (the 17-machine peaks) without touching the typical board.
+const SHIFTERS_IN_VIEW_CEILING = 6;
+// [160826w] 90 seconds without banking a requirement = a drought. Set-relative:
+// the clock restarts on every bank and every level start.
+const BANK_DROUGHT_MS = 90000;
+function shifterDrought() {
+    if (typeof setNeeded === 'undefined' || !setNeeded.length) return false;
+    return nowPlay() - (game._lastBankAt || 0) > BANK_DROUGHT_MS;   // [170826b] play clock
+}
+function countShiftersInView() {
+    const camI = Math.floor(game.cameraY);
+    let n = 0;
+    for (let y = camI; y < camI + VIEW_H; y++)
+        for (let x = 0; x < VIEW_W; x++) {
+            const v = world[`${x},${y}`];
+            // [160826q] GREENS LIVE IN THE WORLD AS 'pickup', NOT 'green' — see
+            // the spawn branch (world[k] = 'pickup') and countVisibleGreens,
+            // which has always tested 'pickup'. The original 'green' here
+            // matched nothing, so the floor undercounted the board by every
+            // visible green and over-spawned to fill a gap that wasn't there.
+            if (v === 'pivot' || v === 'slip' || v === 'pickup') n++;
+        }
+    return n;
+}
+// True when the board is bare enough to bypass the landings cadence. Gated on
+// the set still being unmet, so a finished level does not keep stocking itself.
+function shifterFloorBreached() {
+    if (game.testDrive || !game.running || game.paused || game.spinUp) return false;
+    if (typeof setNeeded === 'undefined' || !setNeeded.length) return false;
+    if (typeof setsCompleted !== 'undefined' && setsCompleted >= setNeeded.length) return false;
+    return countShiftersInView() < SHIFTERS_IN_VIEW_FLOOR;
+}
+
 function spawnShifter() {
+    // ── [160826r] THE CEILING ───────────────────────────────────────────────
+    // Measured (rotor-playdata): 299 spawns in an 832s run — one every 2.8
+    // seconds — with only 43% ever used and up to SEVENTEEN in view at once.
+    // The board was bare 1% of the time: the problem was never supply, it was
+    // that nothing bounded it. The score factory is the driver (a machine
+    // every 400 points), which couples supply to SUCCESS — the better the run,
+    // the harder it rains, which is backwards for a scarcity design.
+    // Greens have had exactly this bound for ages (MAX_VISIBLE_GREENS); this
+    // extends the same pattern to the whole family. The factory's
+    // `if (spawnShifter()) factoryQueue--` keeps its credit when refused, so
+    // earned machines are deferred, not destroyed.
+    if (countShiftersInView() >= SHIFTERS_IN_VIEW_CEILING) return null;
     let kind = chooseShifterKind();
     const playerKeys = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
     const slotKeys = new Set();
@@ -10746,7 +11402,77 @@ function spawnShifter() {
     const anyEmptyR = anyEmpty.filter(k => reach.has(k));
     const pool = preferredR.length ? preferredR : anyEmptyR;
     if (!pool.length) return null;
-    const k = pool[(Math.random() * pool.length) | 0];
+    // ── [170826c] PLACEMENT IS INTENTIONAL NOW ──────────────────────────────
+    // Random placement produced the field notes' "pointless shifter" gallery:
+    // slips pointing off the board, pivots parked among singles, tools that
+    // occupied space without offering anything. Candidates are now SCORED by
+    // what their resolution would accomplish and the best plan wins — cell AND
+    // direction together, so a slip is placed already pointing somewhere worth
+    // going. Scoring, not scripting: a jitter term keeps placements varied, and
+    // a tool the player must route around can still occur — it just stops
+    // being the norm. What the scores encode:
+    //   slip   toward a live slot +40 · chains into another machine +18 ·
+    //          cardinal while the player is parity-locked +25 (the one thing
+    //          that changes board colour) · off-board push −70 · into
+    //          wall/red −45
+    //   pivot  near a destination +30 · orientation demand in the set (+10 per
+    //          turn-value point) · +15 while the player is a square (rotation
+    //          about the trigger cube IS the square's one-cell step) · −25
+    //          when nothing outstanding needs turning
+    //   green  near the player's lane +10 (growth is wanted everywhere)
+    let plannedDir = null;
+    let k = pool[(Math.random() * pool.length) | 0];   // fallback: old behaviour
+    {
+        const liveSlots = slots.filter(s => !s.claimed && !s.retiring);
+        const targets = liveSlots.map(s => routeCentroid(s.cells));
+        const distTo = (x, y) => targets.length
+            ? Math.min.apply(null, targets.map(t => Math.max(Math.abs(t.x - x), Math.abs(t.y - y))))
+            : 99;
+        const parityLocked = game.shapeType === 'diagonal' || game.shapeType === 'jshape' ||
+                             game.shapeType === 'square';
+        const TURN_VALUE = { single: 0, pair: 1, diagonal: 1, jshape: 3, square: 0 };
+        let turnNeed = 0;
+        if (typeof setNeeded !== 'undefined')
+            for (const id of setNeeded) turnNeed += TURN_VALUE[parseRequirement(id).type] || 0;
+        let sample = pool;
+        if (pool.length > 36) {   // shuffleInPlace mutates and returns nothing
+            sample = pool.slice();
+            shuffleInPlace(sample);
+            sample = sample.slice(0, 36);
+        }
+        let best = null;
+        for (const key of sample) {
+            const parts = key.split(','), cx = +parts[0], cy = +parts[1];
+            if (kind === 'slip') {
+                for (let vi = 0; vi < 8; vi++) {
+                    const v = SLIP_VECTORS[vi];
+                    let s = Math.random() * 12;
+                    const tx = cx + v.dx, ty = cy + v.dy;
+                    if (tx < 0 || tx >= VIEW_W) s -= 70;
+                    else {
+                        const w2 = world[`${tx},${ty}`];
+                        if (w2 === 'wall' || w2 === 'hazard') s -= 45;
+                        if (distTo(tx, ty) < distTo(cx, cy)) s += 40;
+                        if (w2 === 'slip' || w2 === 'pivot') s += 18;
+                    }
+                    if (vi % 2 === 0 && parityLocked) s += 25;
+                    if (!best || s > best.s) best = { s, key, dir: vi };
+                }
+            } else if (kind === 'pivot') {
+                let s = Math.random() * 12;
+                if (distTo(cx, cy) <= 3) s += 30;
+                s += Math.min(30, turnNeed * 10);
+                if (game.shapeType === 'square') s += 15;
+                if (turnNeed === 0 && game.shapeType !== 'square') s -= 25;
+                if (!best || s > best.s) best = { s, key, dir: Math.random() < 0.5 ? 'cw' : 'ccw' };
+            } else {
+                let s = Math.random() * 12;
+                if (Math.abs(cx - px) <= 3) s += 10;
+                if (!best || s > best.s) best = { s, key };
+            }
+        }
+        if (best) { k = best.key; plannedDir = (best.dir !== undefined) ? best.dir : null; }
+    }
     const [gx, gy] = k.split(',').map(Number);
 
     // TRIM SUPPLY (V9, generalises the old square rescue): reds are the only
@@ -10815,21 +11541,22 @@ function spawnShifter() {
         showTip('hourglass');
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#fcd34d');   // sand — time's own colour
     } else if (kind === 'pivot') {
-        // Pivot direction is decided at spawn: 50/50 CW vs CCW. Stored on
-        // the shifter meta so the trigger handler and renderer can both
-        // read it.
-        const dir = Math.random() < 0.5 ? 'cw' : 'ccw';
+        // Pivot direction is decided at spawn: 50/50 CW vs CCW (or the scored
+        // plan's choice — [170826c]). Stored on the shifter meta so the trigger
+        // handler and renderer can both read it.
+        const dir = plannedDir !== null ? plannedDir : (Math.random() < 0.5 ? 'cw' : 'ccw');
         world[k] = 'pivot';
         showTip('shifter');
         shifterMeta[k] = { spawnTime: performance.now(), dir };
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
     } else {
-        const dir = (Math.random() * 8) | 0;
+        const dir = plannedDir !== null ? plannedDir : ((Math.random() * 8) | 0);   // [170826c]
         world[k] = 'slip';
         showTip('shifter');
         shifterMeta[k] = { spawnTime: performance.now(), dir };
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
     }
+    rec('spawn', { k: kind, v: countShiftersInView(), d: shifterDrought() ? 1 : 0 });   // [160826p][160826w]
     return { kind, key: k };
 }
 
@@ -10938,9 +11665,13 @@ function checkSlotClaims() {
             ? 25 : 10 * SHAPE_SIZE[slot.type];
         claimPts = Math.round(claimPts * (CLEAR_WEIGHT[slot.type] || 1));
         // COMBO CLAIM: landing on the slot via a shifter (pivot/slip) is
-        // planned, not lucky — pay a 50% bonus and throw a "NICE COMBO!" banner.
-        const viaShifter = !!game._arrivedViaShifter;
-        if (viaShifter) claimPts = Math.round(claimPts * 1.5);
+        // planned, not lucky. [170826e] The bonus now ESCALATES with the gear
+        // train that delivered it: one link x1.5, two x2, three-plus x3 — a
+        // long train into a slot is the best single payday in the game.
+        const chainLinks = game._chainLinks || (game._arrivedViaShifter ? 1 : 0);
+        const viaShifter = chainLinks > 0;
+        if (viaShifter) claimPts = Math.round(claimPts *
+            (chainLinks >= 3 ? 3 : chainLinks === 2 ? 2 : 1.5));
         // GOLDEN SLOT (D4) — the rare 1-in-8 gamble slot pays DOUBLE.
         const golden = !!slot.golden;
         if (golden) claimPts *= 2;
@@ -10949,6 +11680,11 @@ function checkSlotClaims() {
 
         const ni = setNeeded.indexOf(slot.id);
         if (ni >= 0) setNeeded.splice(ni, 1);
+        // [160826p] Time-to-bank is THE set-balance number: if J-shapes take
+        // 3x as long as pairs, a J-heavy set is far harder than its count says.
+        rec('bank', { id: slot.id, ms: Math.round(nowPlay() - (game._recLevelStart || 0)),
+                      via: chainLinks, left: setNeeded.length });   // [170826e] via = train length now
+        game._lastBankAt = nowPlay();   // [160826w][170826b] drought clock restarts, play time
 
         // FAMILY BOW-OUT: if this claim fully banks the requirement, any
         // sibling slots of the same item (same requirement id) are now
@@ -11000,11 +11736,19 @@ function checkSlotClaims() {
             scoreGain(claimPts, true);
             if (viaShifter) {
                 game._lastComboT = performance.now();   // this IS the combo — suppress a duplicate line-combo this beat
+                // [170826e] THE LADDER HAS NAMES. One link is a nice combo; two
+                // machines meshing is a GEAR TRAIN; three or more is the FULL
+                // TRANSMISSION — the game's machine fiction, earned in play.
+                const chainName = chainLinks >= 3 ? 'FULL TRANSMISSION!'
+                                : chainLinks === 2 ? 'GEAR TRAIN!' : 'NICE COMBO!';
+                const chainCol  = chainLinks >= 2 ? '#ffd60a' : '#f8fafc';
                 addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
-                    `NICE COMBO!\n+${claimPts}`, '#f8fafc', true);
-                triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 900);
-                if (typeof triggerShake === 'function') triggerShake(5, 220);
-                if (sfx.firstEvolve) sfx.firstEvolve();
+                    `${chainName}\n+${claimPts}`, chainCol, true);
+                triggerEdgeGlow(chainLinks >= 2 ? '#ffd60a' : SHIFTER_FAMILY_COLOR,
+                                chainLinks >= 2 ? 1400 : 900);
+                if (typeof triggerShake === 'function') triggerShake(5 + chainLinks, 220 + chainLinks * 60);
+                if (chainLinks >= 2 && sfx.gold) sfx.gold();
+                else if (sfx.firstEvolve) sfx.firstEvolve();
             } else if (golden) {
                 addFloat(payCells[0].x * CELL + CELL/2, (payCells[0].y - game.cameraY) * CELL - 8,
                     `GOLDEN!\n+${claimPts}`, GOLD_SLOT_COLOR);
@@ -11977,6 +12721,9 @@ function completeSet() {
     // paused/celebrating flags set below, which the setTimeout chain relies on).
     game.inputLocked = true;
     setsCompleted++;
+    rec('set', { r: advancedRound, ms: Math.round(nowPlay() - (game._recLevelStart || 0)),
+                 score: game.score });   // [160826p] per-level economy + duration
+    recPersist();
     // [290726f] Points earned DURING play this level, banked before any
     // end-of-level bonus lands, so the tally can show play and bonuses as
     // separate lines that add up to the level total.
@@ -12144,6 +12891,7 @@ function completeSet() {
             game.cellsGenerated = 0;
             game.cellsVisited = 0;
             game.coverage = 0;
+            game._rowsThisRound = new Set();   // [160826t] fresh ledger of this round's ground
             resetSetTracker();
             seedSlotsAtTop();
             // Slots are seeded after the player is placed — make sure none landed
@@ -12344,6 +13092,7 @@ function magneticFuseCheck() {
 
 function applyFusionMove(cells, fuse) {
     scoreGain(5, false);   // green fusion — the biggest single-landing event
+    rec('use', { k: 'green', s: game.shapeType });   // [160826p] shape BEFORE the grow
     flip.active = false;   // grow renders in place; not a move-flip (v1 scope)
     const { adjX, adjY, evo, contactCell } = fuse;
     if (DEBUG_MODE) greenLog(`ADD-fusion ate green (${adjX},${adjY}) → ${evo.shapeType}-${evo.config}`);
@@ -12712,15 +13461,19 @@ function respawnPlayer() {
     // still needs (die needing a pair, come back a single, wait for a green).
     // One step down is proportionate: the bigger you were, the more you lose,
     // and a modest shape is never dumped all the way to the bottom.
-    const DEMOTE = { square: 'jshape', jshape: 'pair', pair: 'single', diagonal: 'single' };
-    const demoted = DEMOTE[game.shapeType];
-    if (demoted) {
+    // [170826b] RESPAWN AS A SINGLE, always — designer's field call, replacing
+    // the [300726be] one-step-down ladder that used to live here. That rule
+    // was reasoned (single-step demotion as proportionate loss), but in play a
+    // respawned J or pair immediately re-entered danger carrying bulk it had no
+    // momentum to protect. The single is the shape every level starts on and
+    // the one the spawn area is guaranteed safe for.
+    if (game.shapeType !== 'single') {
         const prevType = game.shapeType;
-        game.shapeType = demoted;
-        game.shapeConfig = Object.keys(SHAPES[demoted].cells)[0];
+        game.shapeType = 'single';
+        game.shapeConfig = 'A';
         // Announce it the same way any other shrink is announced, so the loss
         // is legible rather than a shape quietly changing behind the respawn.
-        signalSizeChange(prevType, demoted, true);
+        signalSizeChange(prevType, 'single', true);
     }
     // Return to the SAME spawn position used at level start: centre column, two
     // rows below the top of the view — maximum runway to recover. Keeping these
@@ -12896,6 +13649,23 @@ function buildCogTeeth(count) {
     // Now r36 to r47 — a quarter as deep relative to the rim — so the circle is
     // the shape and the teeth are detail ON it. The angular width still eases
     // with the count, so few teeth stay chunky and many stay fine.
+    // [160826c] The maths moved to cogTeethPath below so the scores page can
+    // draw the same cog without an element to write into. This stays the
+    // single-slot painter it always was; it just no longer owns the shape.
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', cogTeethPath(N));
+    g.appendChild(path);
+}
+
+// [160826c] THE GEOMETRY ABOVE ONLY EVER EXISTED INSIDE A PAINTER. buildCogTeeth
+// writes into #cogTeeth and paintRankBadge into #rankBadge, both by fixed id and
+// both bailing if the element is absent — so exactly one badge could exist on the
+// page, which is why the ladder has never been shown as a ladder. The tooth maths
+// is now split out into a pure function that returns path data, and cogTeethPath
+// is what BOTH the old single-slot painter and the new many-badge page call. One
+// source of truth for the shape; two ways of putting it on screen.
+function cogTeethPath(count) {
+    const N = count || 12;
     const cx = 50, cy = 50;
     const rIn = 36;
     const rOut = 47;
@@ -12906,9 +13676,24 @@ function buildCogTeeth(count) {
         const pt = (r, off) => `${(cx + r * Math.cos(a + off)).toFixed(2)},${(cy + r * Math.sin(a + off)).toFixed(2)}`;
         d += `M${pt(rIn, -half * 1.5)} L${pt(rOut, -half)} L${pt(rOut, half)} L${pt(rIn, half * 1.5)} Z `;
     }
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d.trim());
-    g.appendChild(path);
+    return d.trim();
+}
+
+// Standalone badge markup for any rung. `locked` renders the same cog in outline
+// only — the SHAPE of a rank you have not reached is still information (you can
+// see the teeth multiply ahead of you), but the metal is the reward, so unearned
+// rungs do not get it.
+function rankBadgeSVG(index, locked) {
+    const m = rankMetal(index);
+    const teeth = cogTeethPath(rankTeeth(index));
+    const body = locked ? 'var(--rank-locked, #475569)' : m.body;
+    const edge = locked ? 'var(--rank-locked, #475569)' : m.edge;
+    const glow = locked ? '' : ` style="filter:drop-shadow(0 0 8px rgba(${m.glow},0.42))"`;
+    return `<svg viewBox="0 0 100 100" aria-hidden="true"${glow}>
+        <g class="cog-teeth"><path d="${teeth}" style="fill:${body};stroke:${edge}"/></g>
+        <circle cx="50" cy="50" r="28" class="cog-body" style="fill:none;stroke:${body}"/>
+        <circle cx="50" cy="50" r="18" class="cog-hub" style="fill:none;stroke:${edge}"/>
+    </svg>`;
 }
 
 function rankForScore(score) {
@@ -13150,6 +13935,8 @@ function move(dir) {
     // The animation is brief (~200ms) so this rarely interrupts intent.
     if (isTransformAnimActive()) return;
 
+    game._lastAim = dir;   // [160826u] the preview ghost reads the current aim
+
     // FUSE-FIRST: stop and fuse at the first fusable green in the path
     if (tryFuseAlongPath(dir)) return;
 
@@ -13182,8 +13969,15 @@ function move(dir) {
         //     hazard that punishes you for approaching them.
         if (!refuse) {
             const keys = probeCells.map(c => `${c.x},${c.y}`);
+            const _topLawful = topLawfulRow();
             for (const sl of slots) {
                 if (sl.claimed || sl.retiring) continue;
+                // [170826b] A SLOT NOT FULLY IN PLAY CANNOT SHED. Field note:
+                // a 2x2 slot half above the lawful band charged two cubes for
+                // an approach that could never have fitted it — the missing
+                // half didn't exist yet. Until the scroll delivers the whole
+                // footprint, the slot is inert scenery: no shed, no repel.
+                if (sl.cells.some(c => c.y < _topLawful)) continue;
                 const touch = [];
                 keys.forEach((k, i) => { if (sl.keys.has(k)) touch.push(i); });
                 if (!touch.length) continue;
@@ -13531,6 +14325,15 @@ function checkCollisions() {
     // re-set it if a shifter fires, so the post-collision claim check can tell a
     // planned (shifter) landing from an ordinary one.
     game._arrivedViaShifter = false;
+    // [170826e] THE TRAIN CARRIES ACROSS FRAMES. checkCollisions runs per
+    // frame, and in live flow the engine can resolve one link per beat (the
+    // animation states spread them out — which is free pacing). A per-frame
+    // reset was cutting every train to length one; the carry flag, set by each
+    // clean resolution, lets the count survive to the next beat. A beat that
+    // fires nothing doesn't set carry, so the train ends itself naturally.
+    if (game._chainCarry) game._chainCarry = false;
+    else { game._chainLinks = 0; game._chainStops = []; game._chainCelebrated = false; }
+    game._landingBeat = (game._landingBeat || 0) + 1;   // [170826e] diagnostic: which invocation
     // Invulnerability window after a respawn: burn through any obstacles the
     // player is currently on, but never die. Walls/hazards/greens/shifters
     // under the shape are consumed silently so when invuln ends the player
@@ -13602,6 +14405,7 @@ function checkCollisions() {
         // clearing it keeps that status rather than punching an un-fillable hole
         // in a row the player was completing.
         game._lastTrimT = performance.now();   // trim->claim in one landing = THE SHAVE
+        rec('trim', { n: hazardHits.filter(h => !h.wall).length, s: game.shapeType, c: Math.round(game.coverage || 0) });   // [160826p]
         for (const hit of hazardHits) {
             if (hit.wall) {
                 // [270726o] Wall stands — it takes the cube, not the reverse.
@@ -13630,6 +14434,7 @@ function checkCollisions() {
         
         sfx.devolve();
         scoreGain(3, false);   // tool use — the trim transaction pays 3
+        rec('hurt', { from: prevType, to: result.shapeType });   // [160826q] mid-run damage, not just deaths
         signalSizeChange(prevType, result.shapeType, true); // pip only; devolve() is the audio
         const hitCell = hazardHits[0];
         const screenX = hitCell.x * CELL + CELL/2;
@@ -13669,10 +14474,34 @@ function checkCollisions() {
     // Slip is still anchor-centric (pure translation — centre is irrelevant).
     // Consume the cell where the SHIFTER actually was, not the anchor.
     if (cells.length > 0) {
+        // ── [170826e] GEAR TRAINS — machines chain ──────────────────────────
+        // One landing used to fire ONE machine. Now a resolution that ends on
+        // another machine fires that too, up to five links — a slip into a
+        // pivot into a slip is a gear train, and a train that ends in a claim
+        // is the game's biggest payday (x1.5 / x2 / x3 at the claim site).
+        // Each link is a full resolution with all its gates: a denial or a
+        // trim anywhere stops the train. The loop re-scans the RESOLVED cells,
+        // so the same code that fired link one fires link four.
+        let chainLinks = game._chainLinks || 0;   // [170826e] carried from last beat
+        if (!Array.isArray(game._chainStops)) game._chainStops = [];
+        const chainStops = game._chainStops;
+        let chainContinue = true;
+        while (chainContinue && chainLinks < 5) {
+        chainContinue = false;
         let triggerCell = null, triggerKey = null, triggerItem = null;
         for (const c of cells) {
             const k = `${c.x},${c.y}`;
             const item = world[k];
+            // [160826r] A PIVOT SURVIVES A SINGLE. Rotation happens around the
+            // trigger cube and a single IS its own trigger cube — the turn maps
+            // A→A and does literally nothing ([010826b] stopped these SPAWNING
+            // for singles, but one already on the board still got eaten by a
+            // single walking over it). Measured: 10 of the run's 18 pivot
+            // consumptions were exactly this — more than half of the rarest
+            // tool's uses were no-ops. Same law as greens under the socket
+            // gate: if the tool cannot act, it is not consumed. The pivot
+            // stands, waiting for a shape that can turn.
+            if (item === 'pivot' && game.shapeType === 'single') continue;
             if (item === 'pivot' || item === 'slip') {
                 triggerCell = c; triggerKey = k; triggerItem = item;
                 break;
@@ -13716,7 +14545,12 @@ function checkCollisions() {
                 markCovered(triggerKey);
                 delete shifterMeta[triggerKey];
                 scoreGain(2, false);   // engaged a mechanism
+                rec('use', { k: 'pivot', s: game.shapeType,
+                    p: (typeof shiftPreviews !== 'undefined' && shiftPreviews.some(sp => sp.shifterKey === triggerKey)) ? 1 : 0,
+                    sd: (pmeta && pmeta.seeded) ? 1 : 0, bt: game._landingBeat });   // [160826v][170826d] ghost? seeded? beat?
                 game._arrivedViaShifter = true;   // tag: shifter-driven landing (strategic-claim bonus)
+                chainLinks++; chainStops.push({ x: triggerCell.x, y: triggerCell.y });
+                chainContinue = true; game._chainCarry = true;   // [170826e] link fired — train survives the frame
                 cells = getPlayerCells();
                 const pcx = triggerCell.x * CELL + CELL/2;
                 const pcy = (triggerCell.y - game.cameraY) * CELL + CELL/2;
@@ -13850,7 +14684,12 @@ function checkCollisions() {
                 markCovered(triggerKey);
                 delete shifterMeta[triggerKey];
                 scoreGain(2, false);   // engaged a mechanism
+                rec('use', { k: 'slip', s: game.shapeType,
+                    p: (typeof shiftPreviews !== 'undefined' && shiftPreviews.some(sp => sp.shifterKey === triggerKey)) ? 1 : 0,
+                    sd: (meta && meta.seeded) ? 1 : 0, bt: game._landingBeat });   // [160826v][170826d] ghost? seeded? beat?
                 game._arrivedViaShifter = true;   // tag: shifter-driven landing (strategic-claim bonus)
+                chainLinks++; chainStops.push({ x: triggerCell.x, y: triggerCell.y });
+                chainContinue = true; game._chainCarry = true;   // [170826e] link fired — train survives the frame
                 cells = getPlayerCells();
                 const scx = triggerCell.x * CELL + CELL/2;
                 const scy = (triggerCell.y - game.cameraY) * CELL + CELL/2;
@@ -13892,6 +14731,58 @@ function checkCollisions() {
             }
             }
         }
+        }   // [170826e] end of gear-train loop
+        game._chainLinks = chainLinks;
+        // Is the train OVER? (No machine under the final cells.) Celebration
+        // and near-miss wait for the quiet beat, so a cross-frame train
+        // celebrates once, at its true length, not once per link.
+        let trainLive = false;
+        for (const c of cells) {
+            const w2 = world[`${c.x},${c.y}`];
+            if (w2 === 'pivot' && game.shapeType === 'single') continue;
+            if (w2 === 'pivot' || w2 === 'slip') { trainLive = true; break; }
+        }
+        if (!trainLive && chainLinks >= 2 && !game._chainCelebrated) {
+            game._chainCelebrated = true;   // once per train — the carry can outlive the beat
+            // The train played out in one frame logically; the CELEBRATION
+            // replays it at a readable pace — a gold burst and a rising note
+            // at each machine, 140ms apart, the arpeggio climbing with the
+            // links. The claim site (if this train ends in one) adds the
+            // banner and the multiplier.
+            rec('chain', { links: chainLinks });
+            chainStops.forEach((s, i) => setTimeout(() => {
+                if (!game.running) return;
+                addBurst(s.x * CELL + CELL / 2, (s.y - game.cameraY) * CELL + CELL / 2, '#ffd60a');
+                if (typeof playTone === 'function')
+                    playTone(520 * Math.pow(1.26, i), 0.09, 'triangle', 0.16);
+            }, i * 140));
+        }
+        // [170826e] NEAR-MISS: the train (or single link) ended ONE CARDINAL
+        // STEP short of an exact claim. A brief shimmer on the slot converts
+        // the fumble into a lesson — this is how deliveries get learned. Only
+        // fires when the resolution did NOT claim (an exact fit skips this by
+        // construction), and never for a plain flip (chainLinks >= 1).
+        if (!trainLive && chainLinks >= 1) {
+            const keys = cells.map(c => `${c.x},${c.y}`);
+            const exact = slots.some(sl => !sl.claimed && !sl.retiring &&
+                sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
+            if (!exact) {
+                outer:
+                for (const sl of slots) {
+                    if (sl.claimed || sl.retiring || sl.keys.size !== cells.length) continue;
+                    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                        if (cells.every(c => sl.keys.has(`${c.x + dx},${c.y + dy}`))) {
+                            for (const c of sl.cells)
+                                addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#f8fafc');
+                            addFloat(sl.cells[0].x * CELL + CELL / 2,
+                                     (sl.cells[0].y - game.cameraY) * CELL - 6,
+                                     'SO CLOSE', '#e2e8f0', false, { life: 900, hold: 350 });
+                            break outer;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // ── HOURGLASS PICKUP — extends the countdown ──────────────────────────
@@ -13912,6 +14803,7 @@ function checkCollisions() {
             markCovered(key);
             scoreGain(3, false);   // hourglass garnish (pays time + 3)
             momentumAddSeconds(sec);
+            rec('time', { sec, m: Math.round(momentumRemaining()) });   // [160826q] time income by size, and how empty the tank was
             // [030826af] The BIG one gets the big sound. Threshold at 20 so the
             // legacy t30/t45 cells still trigger it too.
             if (sec >= 20) { if (sfx.time30) sfx.time30(); }
@@ -13979,6 +14871,10 @@ function checkCollisions() {
             }
             anyNewPeach = true;
             game.cellsVisited++;
+            // [160826t] Same both-sides rule as markCovered — this is the main
+            // traversal path, so old-round ground walked here polluted the
+            // numerator most of all.
+            if (game._rowsThisRound && !game._rowsThisRound.has(cell.y)) game.cellsGenerated++;
             // Traversal-driven green spawn: each new cell ticks a counter; when
             // it reaches the current shape's threshold, a green appears nearby.
             // Harder-to-handle shapes earn fuel faster (Single 8, Pair/Diag 4,
@@ -14000,7 +14896,11 @@ function checkCollisions() {
             // (a wall-on-consume rule that turned out never to have been
             // wired up), which was crowding late boards.
             const effectiveThreshold = Math.max(4, Math.round(getShifterEveryLandings() * 2 * roundEase / chargeBoost));
-            if (!game.testDrive && shifterProgress >= effectiveThreshold) {
+            // [160826n] The floor bypasses the cadence when the board is bare —
+            // see shifterFloorBreached. The cadence is otherwise untouched, so
+            // this cannot make shifters more frequent in general, only stop the
+            // screen being empty of them while the set is still outstanding.
+            if (!game.testDrive && (shifterProgress >= effectiveThreshold || shifterFloorBreached())) {
                 shifterProgress = 0;
                 spawnShifter();
             }
@@ -14008,7 +14908,14 @@ function checkCollisions() {
             // quickly (player doesn't wait around) and late rounds slow
             // the pace so each slot earned feels harder-won.
             slotProgress++;
-            if (!game.testDrive && slotProgress >= getSlotEveryLandings()) {
+            // [170826b] MAX-GAP GUARANTEE. Field notes measured 11 and 14 empty
+            // rows between slots on late levels — cadence thresholds reach 20
+            // landings by L10, and a board with zero live slots is a board with
+            // nothing to want. If nothing unclaimed is on the board and the set
+            // still needs shapes, the next landing forces the credit through.
+            const _noLiveSlot = !slots.some(s => !s.claimed && !s.retiring) &&
+                                typeof setNeeded !== 'undefined' && setNeeded.length > 0;
+            if (!game.testDrive && (slotProgress >= getSlotEveryLandings() || _noLiveSlot)) {
                 // [290726a] SLOT DROUGHT FIX — only reset the cadence counter
                 // when a slot ACTUALLY lands. Previously the counter reset on
                 // every attempt, so a blocked placement (heavy wall cover,
@@ -14965,7 +15872,10 @@ function routeStep(type, config, x, y, dir) {
             const pv = pivotAroundTrigger(cells, cells[i].x, cells[i].y, ccwRot, type, rConfig);
             if (slotMisfitAt(pv.newCells)) break;                     // fizzle → keep post-flip node
             if (detectCasualties(pv.newCells).length) break;          // [270726c] wall refusal OR trim (shape change) → stop at post-flip node
-            nConfig = rConfig; nx = pv.anchorX; ny = pv.anchorY; cells = pv.newCells; break;
+            // [170826c] Remember the machine that did the work, so the drawn
+            // route can SHOW the hop instead of silently teleporting the ghost.
+            return { config: rConfig, x: pv.anchorX, y: pv.anchorY, cells: pv.newCells,
+                     via: { x: cells[i].x, y: cells[i].y } };
         }
         if (item === 'slip') {
             const meta = shifterMeta[k];
@@ -14974,7 +15884,8 @@ function routeStep(type, config, x, y, dir) {
             const sCells = SHAPES[type].cells[nConfig].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; });
             if (slotMisfitAt(sCells)) break;
             if (detectCasualties(sCells).length) break;               // [270726c] wall refusal OR trim (shape change) → stop at post-flip node
-            nx = sx; ny = sy; cells = sCells; break;
+            return { config: nConfig, x: sx, y: sy, cells: sCells,
+                     via: { x: cells[i].x, y: cells[i].y } };   // [170826c]
         }
     }
     return { config: nConfig, x: nx, y: ny, cells: cells };
@@ -15133,6 +16044,185 @@ function drawRouteGhost(cells, color, alpha, solid) {
     ctx.restore();
 }
 
+// ── [160826u] SHIFTER PREVIEW GHOST ─────────────────────────────────────────
+// WHY: the ×1.5 shifter-combo bonus fired ZERO times in 16 banks across a
+// full, well-played run (rotor-playdata). Not because shifter-to-slot landings
+// are rare — because predicting one is brutal: a pivot rotates the whole body
+// around whichever cube lands on it, and computing that for a J mid-flow is
+// mental gymnastics the game outsourced to the player. This does the
+// computation and shows the answer.
+// WHAT: when the player's CURRENT AIM would land them on a shifter, draw a
+// filled ghost of where that shifter leaves them — position AND orientation.
+// Gold when the resolution is an exact slot fit (the combo, made visible).
+// Losses, refusals and off-board pushes are shown honestly — a preview that
+// hid the costs would be an advert, not an instrument.
+// HOW: by calling THE SAME functions the real resolution uses —
+// pivotAroundTrigger, SLIP_VECTORS, classifyShiftPush, slotMisfitAt — so the
+// preview cannot drift from the rules. It and the outcome are one computation.
+// The poses field is a LIST: when shifter chains land (gear trains), the
+// preview walks the cascade and this renderer needs no change.
+// [160826v] TWO REVISIONS FROM THE FIRST PLAYTEST, both structural:
+// (1) DECOUPLED FROM THE MOVE GUIDE. The first build gated this on hintsOn —
+//     bundling a MASTERY tool with a BEGINNER aid. The measured run had the
+//     guide off (as skilled players do) so the preview never existed: 0 of 52
+//     uses previewed. The players good enough to chase combos are exactly the
+//     ones who ride without training wheels; this must not share their toggle.
+// (2) ALL EIGHT MOVES, NOT THE CURRENT AIM. Aim-keying had a hole: a first
+//     press in a NEW direction consumes the shifter instantly — no moment
+//     where the preview existed before commitment. Tap-style play would score
+//     zero forever. Scanning every move that lands on a shifter is play-style
+//     independent. Capped at two ghosts, gold first, to keep the board calm.
+let shiftPreviews = [];
+let _spvLastCompute = 0;
+
+function computeShifterPreviews() {
+    if (!game.running || game.paused || game.testDrive ||
+        game.inputLocked || isTransformAnimActive()) return [];
+    const found = [], seen = new Set();
+    for (const aim of DIRS_ORDER) {
+        const p = computeShifterPreviewFor(aim);
+        if (p && !seen.has(p.shifterKey)) { seen.add(p.shifterKey); found.push(p); }
+    }
+    // Gold outranks steel — the combo is the point. Then cap.
+    found.sort((a, b) => (b.gold ? 1 : 0) - (a.gold ? 1 : 0));
+    return found.slice(0, 2);
+}
+
+function computeShifterPreviewFor(aim) {
+    const shape = SHAPES[game.shapeType];
+    if (!shape || !shape.trans[game.shapeConfig]) return null;
+    const landedConfig = shape.trans[game.shapeConfig][aim];
+    if (landedConfig === undefined) return null;
+    const off = getOffset(game.shapeType, game.shapeConfig, aim);
+    if (!off) return null;
+    const nx = game.playerX + off[0], ny = game.playerY - off[1];
+    const landed = shape.cells[landedConfig].map(([ddx, ddy]) => ({ x: nx + ddx, y: ny - ddy }));
+    // The move itself must be plausible — a landing the flip rules would refuse
+    // (off-grid, wall) or complicate (red trim mid-flight) previews nothing:
+    // this instrument reads SHIFTERS, and the refused-move ghost already covers
+    // bad flips.
+    for (const c of landed) {
+        if (c.x < 0 || c.x >= VIEW_W) return null;
+        const w = world[`${c.x},${c.y}`];
+        if (w === 'wall' || w === 'hazard') return null;
+    }
+    // Trigger scan in THE SAME ORDER as the landing handler, including the
+    // [160826r] rule that a pivot ignores a single.
+    let trigger = null, item = null;
+    for (const c of landed) {
+        const w = world[`${c.x},${c.y}`];
+        if (w === 'pivot' && game.shapeType === 'single') continue;
+        if (w === 'pivot' || w === 'slip') { trigger = c; item = w; break; }
+    }
+    if (!trigger) return null;
+    const tKey = `${trigger.x},${trigger.y}`;
+
+    // [170826e] THE PREVIEW WALKS THE WHOLE TRAIN. One link used to be the
+    // horizon; with machines chaining, the ghost must show where the train
+    // actually leaves you — intermediate poses render faint, the final pose
+    // full, so a three-link ride reads as a path and not a teleport. The walk
+    // stops exactly where the real resolution would: denial, trim, or five.
+    const poses = [];
+    let lost = [], denial = false, oob = false;
+    let bodyCells = landed, cfg = landedConfig, trg = trigger;
+    for (let link = 0; link < 5 && trg; link++) {
+        const mKey = `${trg.x},${trg.y}`;
+        const meta = shifterMeta[mKey];
+        const it = world[mKey];
+        let next = null;
+        if (it === 'pivot') {
+            const ccw = meta && meta.dir === 'ccw';
+            const rotTable = ccw ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
+            const rotConfig = rotTable[game.shapeType] && rotTable[game.shapeType][cfg];
+            if (rotConfig === undefined) break;
+            const pv = pivotAroundTrigger(bodyCells, trg.x, trg.y, ccw, game.shapeType, rotConfig);
+            if (slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }
+            const push = classifyShiftPush(pv.newCells);
+            if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
+            if (push.trim) {
+                const redSet = new Set(push.trim.redIndices);
+                next = pv.newCells.filter((c, i) => !redSet.has(i));
+                lost = pv.newCells.filter((c, i) => redSet.has(i));
+                poses.push(next);
+                break;   // a trim ends the train, as in the real handler
+            }
+            next = pv.newCells; cfg = rotConfig;
+        } else if (it === 'slip') {
+            const v = SLIP_VECTORS[meta ? meta.dir : 0];
+            const pushed = bodyCells.map(c => ({ x: c.x + v.dx, y: c.y + v.dy }));
+            if (slotMisfitAt(pushed)) { if (!poses.length) denial = true; break; }
+            const push = classifyShiftPush(pushed);
+            if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
+            if (push.trim) {
+                const redSet = new Set(push.trim.redIndices);
+                next = pushed.filter((c, i) => !redSet.has(i));
+                lost = pushed.filter((c, i) => redSet.has(i));
+                oob = lost.some(c => c.x < 0 || c.x >= VIEW_W);
+                poses.push(next);
+                break;
+            }
+            next = pushed;
+        } else break;
+        poses.push(next);
+        bodyCells = next;
+        // Does the resolved body rest on ANOTHER machine? (Same skip rules.)
+        trg = null;
+        for (const c of next) {
+            const w2 = world[`${c.x},${c.y}`];
+            if (w2 === 'pivot' && game.shapeType === 'single') continue;
+            if (w2 === 'pivot' || w2 === 'slip') { trg = c; break; }
+        }
+    }
+    if (!poses.length && !denial) return null;
+    // GOLD: the FINAL pose sits exactly on an unclaimed slot.
+    let gold = false;
+    if (poses.length) {
+        const fin = poses[poses.length - 1];
+        const keys = fin.map(c => `${c.x},${c.y}`);
+        gold = slots.some(sl => !sl.claimed && !sl.retiring &&
+            sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
+    }
+    return { poses, lost, denial, oob, shifterKey: tKey, shifterCell: trigger, gold };
+}
+
+function drawShifterPreview() {
+    const now = performance.now();
+    if (now - _spvLastCompute > 90) {   // ~11Hz recompute; drawing stays per-frame
+        _spvLastCompute = now;
+        shiftPreviews = computeShifterPreviews();
+    }
+    if (!shiftPreviews.length) return;
+    const pulse = 0.62 + 0.18 * Math.sin(now / 260);
+    for (const p of shiftPreviews) {
+        if (p.denial) {
+            // The socket gate would refuse: the tool is spent, nothing moves. A
+            // red ring on the shifter itself — same refusal language as bad flips.
+            drawRouteGhost([p.shifterCell], '#ef4444', 0.55 * pulse, false);
+            continue;
+        }
+        // [170826e] Intermediate poses faint, the final pose full — a train
+        // reads as a path, not a teleport.
+        for (let pi = 0; pi < p.poses.length; pi++) {
+            const isFinal = pi === p.poses.length - 1;
+            drawRouteGhost(p.poses[pi], p.gold ? '#ffd60a' : SHIFTER_FAMILY_COLOR,
+                           (isFinal ? (p.gold ? pulse : pulse * 0.8) : pulse * 0.35),
+                           isFinal && p.gold);
+        }
+        if (p.lost.length)
+            drawRouteGhost(p.lost, '#ef4444', 0.5 * pulse, false);
+        if (p.oob) {
+            ctx.save();
+            ctx.globalAlpha = pulse;
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('−10s', p.shifterCell.x * CELL + CELL / 2,
+                         (p.shifterCell.y - game.cameraY) * CELL - 6);
+            ctx.restore();
+        }
+    }
+}
+
 // The Move Guide route, drawn as a trail of player-shape outlines (ghost bodies)
 // stepping toward the claim — one outline per flip, the body itself showing the
 // way rather than an abstract line. Persists through pause (own guards, no
@@ -15178,9 +16268,11 @@ function drawMoveGuideRoute() {
     // something that sits under a live board.
     // [070826o] Another 20%% slower, all three together so the shape of the
     // sequence is unchanged — only its pace.
-    const STAGGER_MS = 552;    // gap between one ghost arriving and the next
-    const FADE_MS    = 408;    // how long each takes to arrive
-    const HOLD_MS    = 2640;   // complete route held before it replays
+    // [170826c] SLOWER AGAIN — field note: the reveal still built faster than
+    // it could be read. ~27% more time per step, longer hold.
+    const STAGGER_MS = 700;    // gap between one ghost arriving and the next
+    const FADE_MS    = 500;    // how long each takes to arrive
+    const HOLD_MS    = 3300;   // complete route held before it replays
     const cycle = steps * STAGGER_MS + HOLD_MS;
     const t = performance.now() % cycle;
 
@@ -15190,9 +16282,19 @@ function drawMoveGuideRoute() {
         // navy, nearly invisible on white. Day gets a saturated grape that holds
         // against paper, and the alphas below are lifted for it.
         const day = currentTheme === 'day';
-        const routeCol = day ? '#7c3aed' : '#a3e635';
         const lift = day ? 1.55 : 1;
-        const goalCol = (r.slot && r.slot.color) ? r.slot.color : '#22d3ee';
+        // [170826c] RAINBOW ROUTE, ENDING WHITE — field note: one colour was
+        // hard to track along a long path. Each step now wears its own hue,
+        // red at the first move walking the spectrum to violet, and the GOAL
+        // is white — the sequence is readable as a sequence, and the endpoint
+        // is unmistakable. Day takes the same hues darker (L38%) so they hold
+        // on the white floor; night runs them bright (L62%).
+        const hueFor = i => {
+            const span = Math.max(1, steps - 1);
+            const h = 0 + 275 * ((i - 1) / span);        // red -> violet
+            return day ? `hsl(${h}, 85%, 38%)` : `hsl(${h}, 90%, 62%)`;
+        };
+        const goalCol = '#ffffff';
         for (let i = 1; i < path.length; i++) {
             const age = t - (i - 1) * STAGGER_MS;
             if (age < 0) continue;                       // this move has not arrived yet
@@ -15211,8 +16313,31 @@ function drawMoveGuideRoute() {
                 Math.max(0, (age - FADE_MS - 420) / 340));
             const isGoal = (i === path.length - 1);
             const base = isGoal ? 0.95 : (0.30 + 0.34 * (i / steps));
-            drawRouteGhost(path[i].cells, isGoal ? goalCol : routeCol,
-                           Math.min(1, base * lift) * arrive * (isGoal ? 1 : settle), isGoal);
+            const col = isGoal ? goalCol : hueFor(i);
+            const alpha = Math.min(1, base * lift) * arrive * (isGoal ? 1 : settle);
+            // [170826c] THE HOP IS SHOWN. When this step resolved through a
+            // machine, ring the machine in the step's own colour and tie it to
+            // the landing — the ghost stops teleporting inexplicably (field
+            // note: "not clear that this is what the guide is doing").
+            if (path[i].via) {
+                const vx = path[i].via.x * CELL + CELL / 2;
+                const vy = (path[i].via.y - game.cameraY) * CELL + CELL / 2;
+                const cc = routeCentroid(path[i].cells);
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.strokeStyle = col;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.arc(vx, vy, CELL * 0.42, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(vx, vy);
+                ctx.lineTo(cc.x * CELL + CELL / 2, (cc.y - game.cameraY) * CELL + CELL / 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            drawRouteGhost(path[i].cells, col, alpha, isGoal);
         }
     } else {
         // FRAYED: the trail builds the same way but thins toward the frontier
@@ -16367,7 +17492,12 @@ function draw() {
     // day tinting carried by the pastel tile fill (dayTileFill). Drawn before
     // everything so all components keep their colours.
     {
-        const wash = LEVEL_WASH[advancedRound];
+        // [170826b] ENDLESS KEEPS THE SUMMIT'S WASH. Past L10 the lookup went
+        // undefined and the tint vanished off a cliff. (The L10 wash itself is
+        // #db2777 at 0.25 — the deep pink of the ramp's summit — which is what
+        // read as "unoccupied squares turning red" in the field notes. Kept as
+        // designed; flagged in case the hue wants softening.)
+        const wash = LEVEL_WASH[Math.min(advancedRound, 10)];
         if (wash) {
             ctx.save();
             ctx.globalAlpha = currentTheme === 'day' ? wash[1] * 0.5 : wash[1];
@@ -16575,10 +17705,22 @@ function draw() {
                 ctx.globalAlpha = t45 ? 0.88 : 0.82;
                 ctx.shadowColor = fillN;
                 ctx.shadowBlur  = t45 ? 10 + 8 * tp : 8;
-                roundedSq(sx, sy, CELL_SIZE, fillN, null);
+                // [170826b] The big hourglass BREATHES — field note asked for a
+                // subtle pulse to draw the eye when time is scarce. The glow
+                // already pulsed but read as static at a glance; a 3px size
+                // breath is what peripheral vision actually catches.
+                if (big) roundedSq(sx - 1.5 * tp, sy - 1.5 * tp, CELL_SIZE + 3 * tp, fillN, null);
+                else roundedSq(sx, sy, CELL_SIZE, fillN, null);
                 ctx.restore();
                 drawHourglassIcon(sx, sy);
             } else if (item === 'pivot' || item === 'slip') {
+                // [170826b] A PIVOT STANDS DOWN VISIBLY FOR A SINGLE. The
+                // survives-single rule ([160826r]) refuses silently, and a
+                // silent refusal is indistinguishable from a bug — the field
+                // notes read one as "not engaging, please investigate". Dimmed
+                // to 40%, no glow: clearly present, clearly not for you yet.
+                const pvInert = item === 'pivot' && game.shapeType === 'single';
+                if (pvInert) { ctx.save(); ctx.globalAlpha *= 0.4; }
                 if (currentTheme === 'day') {
                     // [290726j] Day pivot/slip — PEWTER. The same metal, taken
                     // darker so it holds against the white floor; the glyph
@@ -16593,6 +17735,7 @@ function draw() {
                     roundedSq(sx, sy, CELL_SIZE, DAY_SHIFTER_FILL, '#8fa3b8', 1);
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
                     drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
+                    if (pvInert) ctx.restore();   // [170826b] matched exit
                     continue;
                 }
                 // Night pivot/slip — filled electric-cyan rounded square; the
@@ -16610,6 +17753,7 @@ function draw() {
                 // Glyph — stroked vector, uniform 2.4px ([270726l]): matches
                 // the white "+" on greens, "−" on reds, and the hourglass.
                 drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
+                if (pvInert) ctx.restore();   // [170826b] matched exit
             } else if (visited.has(key)) {
                 // TEST DRIVE: keep the parity tone faintly readable under the
                 // translucent night trail (day trail is opaque — skip).
@@ -17083,6 +18227,8 @@ function draw() {
     // the boundary isn't hidden behind the live shape; the ghost is always at
     // the destination cells, never on the player's own, so nothing is occluded.
     drawMoveGhost();
+    drawShifterPreview();   // [160826u] shifter outcome ghost, above the route
+    drawNoteMarks();        // [160826y] dev-note cell rings, topmost
     if (game.testDrive || stickOn) drawJoystickGuide();
 
     // Burst rings
@@ -17702,8 +18848,12 @@ function loop(time, gen) {
     if (invulnTimer > 0) invulnTimer = Math.max(0, invulnTimer - dt);
     
     // Update coverage percentage
+    // [160826t] Clamped as belt-and-braces: the both-sides rule in markCovered
+    // fixes the cause of the >100% readings, the clamp guarantees no future
+    // counter drift can ever show an impossible number to the player or the
+    // grade logic again.
     if (game.cellsGenerated > 0) {
-        game.coverage = Math.round((game.cellsVisited / game.cellsGenerated) * 100);
+        game.coverage = Math.min(100, Math.round((game.cellsVisited / game.cellsGenerated) * 100));
     }
     // [270726w] Coverage %% removed from the HUD — the level card still
     // reports coverage and CLEAN SLATE at the end of each level.
@@ -18135,6 +19285,338 @@ function saveBests() {
     try { localStorage.setItem('rotor_bests', JSON.stringify(bests)); } catch(e) {}
 }
 
+// ============ RUN HISTORY ============
+// [160826c] `bests` above stores six INDEPENDENT maxima — score, time,
+// transforms, streaks, coverage, combo — each Math.max'd on its own. They can
+// therefore come from six different runs, which makes them a stats readout and
+// not a scoreboard: there was no record anywhere of a single run as a whole.
+// This is that record. Ten runs, which is deliberately the same number as the
+// rungs on RANK_LADDER — the top scores page shows one badge per row, so a
+// single player's own history is what puts a spread of badges on screen.
+// Deliberately small fields: this is written on every death and read on every
+// visit to the page, and a fat schema would be a fat parse for no gain.
+//   s = score · l = level reached · t = epoch ms
+const RUNS_KEEP = 10;
+let runs = [];
+try {
+    const savedRuns = JSON.parse(localStorage.getItem('rotor_runs') || '[]');
+    if (Array.isArray(savedRuns)) {
+        runs = savedRuns
+            .filter(r => r && typeof r.s === 'number' && isFinite(r.s))
+            .map(r => ({ s: r.s, l: r.l || 1, t: r.t || 0 }));
+    }
+} catch(e) {}
+
+function saveRuns() {
+    try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch(e) {}
+}
+
+// Returns the 1-based position this run took on the table, or 0 if it missed.
+// The caller wants that: "you placed 3rd" is a different message from "you beat
+// your best", and the game already has its own NEW HIGH SCORE moment for the
+// latter.
+function recordRun(score, level) {
+    if (!isFinite(score) || score <= 0) return 0;   // a no-score run is not a run
+    const entry = { s: Math.round(score), l: level || 1, t: Date.now() };
+    runs.push(entry);
+    // Score descending; on a tie the EARLIER run keeps the higher slot, so a
+    // repeat of your own number never demotes the one you got there with first.
+    runs.sort((a, b) => (b.s - a.s) || (a.t - b.t));
+    runs = runs.slice(0, RUNS_KEEP);
+    saveRuns();
+    const pos = runs.indexOf(entry);
+    return pos === -1 ? 0 : pos + 1;
+}
+
+// ============ [160826p] PLAY RECORDER ============
+// Instruments the game so balance formulas can be derived from RUNS THAT
+// ACTUALLY HAPPENED rather than from a simulation. (The chess-derivative
+// work already showed why: a simulator's rules drifted from the real ones —
+// Singles capped at 3 flips vs unlimited — and its findings were invalid.)
+// Design constraints, in order:
+//   · NOTHING in the render loop. Events only, plus one 2-second sampler that
+//     early-outs when the game is not running.
+//   · Tiny events. {t, at, ...fields} with one-letter keys; a full run is a
+//     few hundred entries, far below anything that could matter.
+//   · Fails silent. A recorder that can crash the game is worse than no data.
+// What it captures maps to the open balance questions:
+//   level  set composition per level     spawn  every shifter, kind + count
+//   use    every shifter consumed        bank   every requirement, time-to-bank
+//   trim   every red hit                 tick   shifters-in-view every 2s
+//   end    score, level, cause           set    level completion time
+const REC_CAP = 8000;
+let recEvents = [];
+let recRunStart = 0;
+function rec(t, d) {
+    try {
+        if (recEvents.length >= REC_CAP) return;
+        const e = d || {};
+        e.t = t;
+        e.at = recRunStart ? Math.round(performance.now() - recRunStart) : 0;
+        recEvents.push(e);
+    } catch (err) {}
+}
+function recPersist() {
+    try { localStorage.setItem('rotor_rec', JSON.stringify(recEvents.slice(-REC_CAP))); } catch (e) {}
+}
+function recStartRun() {
+    recRunStart = performance.now();
+    recEvents = [];
+    rec('run', { when: Date.now(), build: BUILD_VERSION });
+}
+function recExport() {
+    try {
+        const payload = {
+            build: BUILD_VERSION,
+            exported: new Date().toISOString(),
+            lastRun: recEvents,
+            savedRun: JSON.parse(localStorage.getItem('rotor_rec') || '[]')
+        };
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'rotor-playdata.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    } catch (e) {}
+}
+// The one repeating probe: shifters in view + momentum + coverage, every 2s,
+// nothing when the wheel is stopped. This is what answers "how long does the
+// board sit bare?" — an event-only recorder cannot see absence.
+setInterval(function () {
+    try {
+        if (typeof game === 'undefined' || !game || !game.running || game.paused || game.testDrive) return;
+        rec('tick', {
+            v: (typeof countShiftersInView === 'function') ? countShiftersInView() : -1,
+            m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
+            c: Math.round(game.coverage || 0),
+            s: game.shapeType
+        });
+    } catch (e) {}
+}, 2000);
+
+// ============ [160826y] DEV NOTES ============
+// Field annotation: pause, press ✎ Note (or N), tap cells to mark them, write,
+// save. The note goes into the SAME event stream as the play data — so an
+// export carries the observation, the marked cells, and a full snapshot of the
+// scene being commented on: every object in view, the live slots, the player's
+// shape, position, clock, score and level. The words point; the data testifies.
+// Notes survive like everything else in the recorder: persisted immediately,
+// shipped by the same Export button.
+let noteMode = false;
+let noteCells = new Set();
+
+function noteSceneSnapshot() {
+    const camI = Math.floor(game.cameraY);
+    const cells = [];
+    for (let y = camI; y < camI + VIEW_H; y++)
+        for (let x = 0; x < VIEW_W; x++) {
+            const v = world[`${x},${y}`];
+            if (v) cells.push([x, y, v]);
+        }
+    return {
+        cam: camI,
+        world: cells,
+        slots: slots.filter(s => !s.claimed).map(s =>
+            ({ t: s.type, c: s.config, at: s.cells.map(c => [c.x, c.y]) })),
+        player: { x: game.playerX, y: game.playerY, s: game.shapeType, c: game.shapeConfig },
+        m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
+        score: game.score, r: advancedRound, cov: Math.round(game.coverage || 0)
+    };
+}
+
+function enterNoteMode() {
+    if (noteMode) return;
+    if (game.running && !game.paused && typeof togglePause === 'function') togglePause();
+    noteMode = true;
+    noteCells = new Set();
+    const bar = document.getElementById('noteBar');
+    const panel = document.getElementById('pausePanel');
+    if (bar) bar.classList.remove('hidden');
+    if (panel) panel.classList.add('hidden');   // the bar replaces it while writing
+    const input = document.getElementById('noteText');
+    if (input) { input.value = ''; input.focus(); }
+}
+
+function exitNoteMode() {
+    noteMode = false;
+    noteCells = new Set();
+    const bar = document.getElementById('noteBar');
+    const panel = document.getElementById('pausePanel');
+    // [170826a] Blur EXPLICITLY. A hidden input can keep focus (browsers vary),
+    // and the typing-wins guard on the keymap keys off the focused element —
+    // so without this the game's hotkeys stayed dead after the bar closed.
+    const input = document.getElementById('noteText');
+    if (input) input.blur();
+    if (bar) bar.classList.add('hidden');
+    if (panel && game.paused) panel.classList.remove('hidden');
+}
+
+function saveDevNote() {
+    const input = document.getElementById('noteText');
+    const text = input ? input.value.trim() : '';
+    if (!text && !noteCells.size) { exitNoteMode(); return; }
+    rec('note', {
+        text,
+        cells: [...noteCells].map(k => k.split(',').map(Number)),
+        scene: noteSceneSnapshot(),
+        clock: new Date().toISOString()
+    });
+    recPersist();
+    // Confirmation where the player is looking, in the note's own amber.
+    if (typeof addFloat === 'function')
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30, 'NOTED', '#fbbf24', true, { life: 1200, hold: 500 });
+    exitNoteMode();
+}
+
+// Cell marking: taps on the canvas while the note bar is open toggle amber
+// rings. Registered on the canvas directly; inactive outside note mode.
+(function wireNoteTaps() {
+    const cv = document.getElementById('canvas');
+    if (!cv) return;
+    cv.addEventListener('pointerdown', e => {
+        if (!noteMode) return;
+        e.preventDefault(); e.stopPropagation();
+        const rect = cv.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const x = Math.floor((e.clientX - rect.left) / rect.width * VIEW_W);
+        const y = Math.floor((e.clientY - rect.top) / rect.height * VIEW_H + game.cameraY);
+        if (x < 0 || x >= VIEW_W) return;
+        const k = `${x},${y}`;
+        if (noteCells.has(k)) noteCells.delete(k); else noteCells.add(k);
+    }, true);
+})();
+
+// N opens note mode while paused; Escape cancels; Enter saves from the input.
+document.addEventListener('keydown', e => {
+    if (noteMode) {
+        if (e.key === 'Escape') { e.preventDefault(); exitNoteMode(); }
+        else if (e.key === 'Enter') { e.preventDefault(); saveDevNote(); }
+        return;
+    }
+    if ((e.key === 'n' || e.key === 'N') && game.running && game.paused &&
+        document.activeElement && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault(); enterNoteMode();
+    }
+});
+
+// Amber rings on the marked cells, drawn while the bar is open.
+function drawNoteMarks() {
+    if (!noteMode || !noteCells.size) return;
+    ctx.save();
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([7, 5]);
+    ctx.lineDashOffset = -(performance.now() / 60) % 12;   // slow crawl — alive, not static
+    for (const k of noteCells) {
+        const [x, y] = k.split(',').map(Number);
+        ctx.strokeRect(x * CELL + 4, (y - game.cameraY) * CELL + 4, CELL - 8, CELL - 8);
+    }
+    ctx.restore();
+}
+
+// ============ TOP SCORES SCREEN ============
+// [160826c] Rendered on OPEN, not on load and not kept in sync. The data changes
+// in exactly one place (recordRun, on death) and this screen cannot be visible
+// when that happens, so anything cleverer would be machinery guarding an event
+// that cannot occur.
+function scoresRunDate(t) {
+    if (!t) return '';
+    const d = new Date(t);
+    if (isNaN(d)) return '';
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+}
+
+function renderScores() {
+    const best = bests.score || 0;
+    const bestRank = rankForScore(best);
+
+    // ── YOUR RUNS ──
+    const runsEl = document.getElementById('scoresRuns');
+    if (runsEl) {
+        let html = '';
+        for (let i = 0; i < RUNS_KEEP; i++) {
+            const r = runs[i];
+            if (r) {
+                const rk = rankForScore(r.s);
+                html += `<div class="scores-run">
+                    <span class="scores-run-pos">${i + 1}</span>
+                    <span class="rank-badge-sm">${rankBadgeSVG(rk.index, false)}</span>
+                    <span><span class="scores-run-name">${rk.name}</span>
+                        <span class="scores-run-sub">LEVEL ${r.l}${r.t ? ' · ' + scoresRunDate(r.t) : ''}</span></span>
+                    <span class="scores-run-score">${r.s.toLocaleString()}</span>
+                </div>`;
+            } else {
+                html += `<div class="scores-run empty">
+                    <span class="scores-run-pos">${i + 1}</span>
+                    <span class="rank-badge-sm"></span>
+                    <span><span class="scores-run-name">—</span>
+                        <span class="scores-run-sub">EMPTY SLOT</span></span>
+                    <span class="scores-run-score">—</span>
+                </div>`;
+            }
+        }
+        runsEl.innerHTML = html;
+    }
+
+    // ── THE LADDER ──
+    // Reached = your BEST EVER run cleared the threshold. Deliberately measured
+    // against the best rather than the most recent: a rank you have earned is
+    // not something a bad run should take away from you.
+    const ladderEl = document.getElementById('scoresLadder');
+    if (ladderEl) {
+        let html = '';
+        for (let i = 0; i < RANK_LADDER.length; i++) {
+            const [need, name] = RANK_LADDER[i];
+            const reached = best >= need;
+            const isYou = (i === bestRank.index) && best > 0;
+            html += `<div class="scores-rung${reached ? '' : ' locked'}${isYou ? ' you' : ''}">
+                <span class="rank-badge-sm">${rankBadgeSVG(i, !reached)}</span>
+                <span><span class="scores-rung-name">${name}</span>
+                    <span class="scores-rung-req">${need === 0 ? 'START HERE' : need.toLocaleString() + ' POINTS'}</span></span>
+                <span>${isYou ? '<span class="scores-rung-you-tag">YOU</span>' : ''}</span>
+            </div>`;
+        }
+        ladderEl.innerHTML = html;
+    }
+
+    // ── PERSONAL BESTS ──
+    const bestsEl = document.getElementById('scoresBests');
+    if (bestsEl) {
+        const t = Math.max(0, Math.floor(bests.time || 0));
+        const mmss = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+        const cells = [
+            ['SCORE',    (bests.score || 0).toLocaleString()],
+            ['TIME',     mmss],
+            ['EVOLVES',  (bests.transforms || 0).toLocaleString()],
+            ['STREAK',   (bests.streaks || 0).toLocaleString()],
+            ['COVERAGE', Math.round(bests.coverage || 0) + '%'],
+            ['COMBO',    (bests.combo || 1).toFixed(1) + '×']
+        ];
+        bestsEl.innerHTML = cells.map(([l, v]) =>
+            `<div class="scores-best"><span class="scores-best-label">${l}</span><span class="scores-best-value">${v}</span></div>`
+        ).join('');
+    }
+}
+
+function showScores() {
+    renderScores();
+    const s = document.getElementById('scoresScreen');
+    const w = document.getElementById('startScreen');
+    if (s) s.classList.remove('hidden');
+    if (w) w.classList.add('hidden');   // hidden, not layered: the welcome corner
+                                        // controls are fixed-position and would
+                                        // otherwise sit on top of this screen
+}
+
+function hideScores() {
+    const s = document.getElementById('scoresScreen');
+    const w = document.getElementById('startScreen');
+    if (s) s.classList.add('hidden');
+    if (w) w.classList.remove('hidden');
+}
+
 // ============ START / END ============
 function toggleDetails() {
     const panel = document.getElementById('detailsPanel');
@@ -18193,6 +19675,11 @@ function startGame(testDrive = false) {
     if (!testDrive) showRoundOverlay(1, true);
     
     document.getElementById('startScreen').classList.add('hidden');
+    // [160826c] The scores screen has its own PLAY button, so startGame can be
+    // entered from there as well as from the welcome page — it has to clear
+    // itself down or it stays over the board.
+    { const ss = document.getElementById('scoresScreen'); if (ss) ss.classList.add('hidden'); }
+    recStartRun();   // [160826p] fresh event log per run
     { const dv = document.getElementById('demoVideo'); if (dv) dv.pause(); }   // rest the clip during play
     document.getElementById('gameOverScreen').classList.add('hidden');
     const dp = document.getElementById('detailsPanel');
@@ -18257,6 +19744,7 @@ function startGame(testDrive = false) {
         // Coverage tracking
         cellsGenerated: 0,  // total non-wall, non-pickup cells generated
         cellsVisited: 0,    // total visited (from above set)
+        _rowsThisRound: new Set(),   // [160826t] rows generated this round (coverage ledger)
         coverage: 0,        // percentage 0-100
         speedTimer: LEVEL_TIME_LIMIT - SPINUP_START_SEC,   // SPIN-UP: Level 1 starts cold — build the wheel to full
         spinUp: true,       // suppresses panic signals until the ring first fills
@@ -18324,6 +19812,9 @@ function startGame(testDrive = false) {
 }
 
 function endGame(reason = 'death') {
+    rec('end', { why: reason, score: game.score, r: advancedRound,
+                 cov: Math.round(game.coverage || 0), tr: game.transforms });   // [160826p]
+    recPersist();
     // [060826e] Release the duck and kill the drone — otherwise the game-over
     // screen inherits a muffled mix and a hum from the run that just ended.
     if (typeof updateDangerAudio === 'function') updateDangerAudio(0);
@@ -18378,6 +19869,12 @@ function endGame(reason = 'death') {
     const coverage = game.coverage;
     const coverageGrade = coverage >= 70 ? 'S' : coverage >= 50 ? 'A' : coverage >= 30 ? 'B' : 'C';
     
+    // [160826c] The run goes on the table BEFORE the bests are folded in, so
+    // the two records stay independent: the table is a list of whole runs, the
+    // bests are per-stat maxima. Recorded here rather than in startGame's teardown
+    // because this is the one place that has both the final score and the level.
+    recordRun(game.score, advancedRound);
+
     // Update personal bests
     const newBests = {
         score:      Math.max(bests.score, game.score),
@@ -18507,8 +20004,92 @@ function fitHudToBoard() {
     if (Math.abs(k - cur) < 0.01) return;
     hud.style.zoom = k >= 0.995 ? '' : String(k);
 }
+// ── [160826j] THE THREE-ZONE LAYOUT ─────────────────────────────────────────
+// Constants transcribed from the harness, where they were tuned against real
+// measurements on the laptop:
+//   stick  0.22 of the frame's LONG edge, clamped 150-280. Long edge, not short:
+//          the short edge collapses to the board's own height once the board is
+//          height-bound, and a fraction of that shrinks the control to nothing
+//          (it came out 112px against a real stick of ~250 before this fix).
+//   gap    0.05 of the axis the stick sits along, clamped 24-72. In the beside
+//          arrangement this is very nearly free — the board is height-bound, so
+//          a horizontal gap spends spare width rather than board.
+//   1.15   beside must beat stacked by 15% to be worth having. Bigger-wins-
+//          outright sent iPad PORTRAIT sideways for 8%, and a tablet held in
+//          portrait is gripped at the sides, so a stick pinned to one edge is
+//          worse to use even with a nominally larger board.
+const LZ = { hudGap: 12, stickFrac: 0.22, stickMin: 150, stickMax: 280,
+             gapFrac: 0.05, gapMin: 24, gapMax: 72, threshold: 1.15 };
+
+function clearBesideLayout(wrap, cv, sp) {
+    document.body.classList.remove('layout-beside');
+    if (wrap) wrap.style.height = '';
+    for (const el of [cv, sp]) {
+        if (!el) continue;
+        el.style.left = el.style.top = el.style.width = el.style.height = '';
+    }
+}
+
+function layoutPlay() {
+    const wrap = document.querySelector('.game-container');
+    const cv   = document.getElementById('canvas');
+    const sp   = document.getElementById('stickPad');
+    if (!wrap || !cv) return;
+    const hud  = wrap.querySelector('.hud');
+    // Welcome screen, test drive, or stick switched off: the stacked flex layout
+    // is correct and this must not interfere with it.
+    if (!document.body.classList.contains('in-play') ||
+        document.body.classList.contains('test-drive') ||
+        document.body.classList.contains('stick-off') ||
+        !hud || !sp) { clearBesideLayout(wrap, cv, sp); return; }
+
+    const pad = 10;
+    const W = wrap.clientWidth - pad * 2;
+    // The frame's own margins, same formula as .game-container's max-height.
+    const vh = window.innerHeight;
+    const gapTop = parseFloat(getComputedStyle(document.documentElement)
+                     .getPropertyValue('--frame-gap')) || 60;
+    const gapBot = parseFloat(getComputedStyle(document.documentElement)
+                     .getPropertyValue('--frame-gap-bottom')) || 68;
+    const H = vh - gapTop - gapBot - pad * 2;
+    if (W < 80 || H < 80) { clearBesideLayout(wrap, cv, sp); return; }
+
+    // The HUD is full width in BOTH arrangements, so its height does not depend
+    // on which one we pick — it can be measured once, up front.
+    const hudH = hud.offsetHeight;
+    const restH = H - hudH - LZ.hudGap;
+    const restTop = pad + hudH + LZ.hudGap;
+    if (restH < 80) { clearBesideLayout(wrap, cv, sp); return; }
+
+    const cl = (v, lo, hi) => Math.round(Math.max(lo, Math.min(hi, v)));
+    const stick = cl(LZ.stickFrac * Math.max(W, H), LZ.stickMin, LZ.stickMax);
+    const gapB  = cl(LZ.gapFrac * W, LZ.gapMin, LZ.gapMax);   // beside: horizontal
+    const gapL  = cl(LZ.gapFrac * H, LZ.gapMin, LZ.gapMax);   // below: vertical
+
+    const ifBelow  = Math.min(W, restH - stick - gapL);
+    const ifBeside = Math.min(W - stick - gapB, restH);
+
+    if (!(ifBeside > ifBelow * LZ.threshold)) { clearBesideLayout(wrap, cv, sp); return; }
+
+    // ── BESIDE ──
+    document.body.classList.add('layout-beside');
+    const side = Math.max(80, ifBeside);
+    const pairW = side + gapB + stick;
+    const originX = pad + Math.max(0, (W - pairW) / 2);
+    wrap.style.height = (H + pad * 2) + 'px';
+    cv.style.left   = Math.round(originX) + 'px';
+    cv.style.top    = Math.round(restTop + (restH - side) / 2) + 'px';
+    cv.style.width  = Math.round(side) + 'px';
+    cv.style.height = Math.round(side) + 'px';
+    sp.style.left   = Math.round(originX + side + gapB) + 'px';
+    sp.style.top    = Math.round(restTop + (restH - stick) / 2) + 'px';
+    sp.style.width  = stick + 'px';
+    sp.style.height = stick + 'px';
+}
+
 function fitGameToViewport() {
     fitHudToBoard();
+    layoutPlay();
     const wrap = document.querySelector('.game-container');
     if (!wrap) return;
     const rect = wrap.getBoundingClientRect();
@@ -18538,6 +20119,15 @@ setTimeout(fitGameToViewport, 50);
 
 // ============ INPUT ============
 document.addEventListener('keydown', e => {
+    // [170826a] TYPING WINS. This handler binds bare letters — H, T, J, K, L,
+    // B, digits — and none of it may fire while the player is WRITING. Without
+    // this guard, typing "the slot is blocked" into the dev-note bar toggled
+    // tips, toggled hints and UNPAUSED the game mid-sentence, with each letter
+    // preventDefault-ed away from the input. Any focused text field, and note
+    // mode in particular, silences the whole keymap.
+    if ((typeof noteMode !== 'undefined' && noteMode) ||
+        (document.activeElement && (document.activeElement.tagName === 'INPUT' ||
+                                    document.activeElement.tagName === 'TEXTAREA'))) return;
     // Move hints — H toggles the landing-preview overlay
     if (e.key === 'h' || e.key === 'H') {
         toggleHints();
@@ -19432,15 +21022,17 @@ function renderDemo(prev, cur, frac, now) {
     }
 }
 
-// ── DEMO VIDEO (real gameplay capture) ──────────────────────────────────────
-// Replaces the scripted canvas demo. iOS Safari refuses data:-URI video, so
-// the clip ships as base64 and becomes a Blob URL at runtime; a first-touch
-// play() retry covers any autoplay block (e.g. Low Power Mode).
-// ── FLIPBOOK DEMO ───────────────────────────────────────────────────────────
-// The gameplay clip copied frame by frame: 549 JPEG stills at 20fps, painted
-// to the demo canvas. Plays anywhere canvas does (iPhone included). A rolling
-// decode cache keeps ~40 frames in memory (full decode of all frames would be
-// hundreds of MB); frames ahead of the playhead are prefetched.
+// ── FLIPBOOK DEMO (fallback) ────────────────────────────────────────────────
+// [160826d] The stale "DEMO VIDEO ... ships as base64 and becomes a Blob URL"
+// header that sat here described a mechanism that is not in this file. The
+// video path is initDemoVideo, below, and it loads a plain mp4 by name.
+// This is the SECOND rung: the gameplay clip copied frame by frame — WebP
+// stills at 20fps (see fbFrame's data: prefix; the old comment said JPEG),
+// painted to the demo canvas. Plays anywhere canvas does, iPhone included.
+// A rolling decode cache keeps ~40 frames in memory — decoding all of them
+// would run to hundreds of MB — and frames ahead of the playhead are
+// prefetched. Once rotor-demo.mp4 ships this never runs, and frames.js and
+// everything in this block can be deleted outright.
 const FB_FPS = 20;
 </script>
 <!-- [090826f] frames.js holds the welcome flipbook and is a SEPARATE file. It
@@ -19560,11 +21152,29 @@ let DEMO_VIDEO = true;
     // iOS quirk: the muted ATTRIBUTE alone doesn't satisfy autoplay policy on
     // some versions — the JS properties must be set too, before src.
     dv.muted = true; dv.defaultMuted = true; dv.playsInline = true;
-    // SOURCE CASCADE: (1) a real mp4 file beside the html — plays everywhere
-    // including iPhone Safari (ship the itch build as a zip: index.html +
-    // rotor-demo.mp4); (2) the embedded base64 via Blob URL — every desktop
-    // browser; (3) the scripted canvas demo — always works.
+    // [160826d] SOURCE CASCADE — TWO STEPS, not three. This comment used to
+    // describe a middle rung, "the embedded base64 via Blob URL", that no
+    // longer exists in the code: `error` goes straight to fallbackToCanvas.
+    // A comment promising a fallback that was deleted is worse than no comment,
+    // because the next person debugging a black rectangle goes looking for it.
+    //   (1) rotor-demo.mp4 beside the html — plays everywhere, iPhone included.
+    //       Ship it WITH index.html (the itch build is a zip of the two).
+    //   (2) the flipbook, then the scripted canvas demo — see fallbackToCanvas.
+    // While (1) is absent every load fails, waits out the watchdog and lands on
+    // the flipbook — which is why frames.js still looks like it carries the
+    // welcome screen. It carries it as a fallback that always fires. Ship the
+    // mp4 and frames.js can go.
     dv.addEventListener('error', fallbackToCanvas);
+    // [160826d] The box is 4:3 because that is what the FALLBACK canvas is
+    // (320x240). A capture at any other ratio would letterbox inside it, so the
+    // real clip states its own shape once the metadata lands, and the welcome
+    // screen is re-fitted around it.
+    dv.addEventListener('loadedmetadata', () => {
+        if (dv.videoWidth && dv.videoHeight) {
+            dv.style.aspectRatio = dv.videoWidth + ' / ' + dv.videoHeight;
+            if (typeof fitWelcome === 'function') fitWelcome();
+        }
+    });
     dv.src = 'rotor-demo.mp4';
     const tryPlay = () => { dv.play().catch(() => {}); };
     dv.addEventListener('playing', () => { everPlayed = true; });

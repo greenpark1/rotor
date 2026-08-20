@@ -2747,7 +2747,10 @@ body.theme-day .tally-label { color: #475569; }
 .tally-count { font-variant-numeric: tabular-nums; color: #e2e8f0; font-weight: 600; }
 /* [030826r] Spent hearts on the card: the HUD's neon pink, sized to the row. */
 .tally-hearts { display: inline-flex; gap: 3px; align-items: center; }
-.tally-hearts svg { width: 13px; height: 13px; color: #ff2d95; display: block; }
+/* [200826c] 13px hearts were the smallest thing on the card by half — a heart
+   spent should not whisper. 20px puts them on the same visual weight as the
+   x-values in the same column. */
+.tally-hearts svg { width: 20px; height: 20px; color: #ff2d95; display: block; }
 body.theme-day .tally-hearts svg { color: #db2777; }
 body.theme-day .tally-count { color: #1e293b; }
 .tally-pts {
@@ -2762,6 +2765,10 @@ body.theme-day .tally-count { color: #1e293b; }
 .tally-row.nopay .tally-icon { opacity: 0.72; }
 body.theme-day .tally-pts { color: #e8a800; }   /* [050826a] night gold, not burnt orange */
 .tally-row.gold .tally-label, .tally-row.gold .tally-count { color: #ffd60a; }
+/* [200826f] Night's pale gold washes out on the white day card — deepen to the
+   day gold family (same as .tally-pts). */
+body.theme-day .tally-row.gold .tally-label,
+body.theme-day .tally-row.gold .tally-count { color: #e8a800; }
 .tally-total {
     margin-top: clamp(6px, 2cqw, 14px); width: min(420px, 92%);
     display: flex; align-items: baseline; justify-content: space-between;
@@ -2875,7 +2882,9 @@ body.theme-day .tally-rank-label { color: #64748b; }
     100% { transform: scale(1); opacity: 1; }
 }
 body.theme-day .tally-rank-name { color: #5c7086; }
-body.theme-day .tally-rank.promoted .tally-rank-name { color: #b45309; text-shadow: none; }
+/* [200826f] #b45309 read as brown on the white card — same gold as the points
+   column instead, one gold family across the tally. */
+body.theme-day .tally-rank.promoted .tally-rank-name { color: #e8a800; text-shadow: none; }
 /* [060826n] Sized on the PLAY button. CONTINUE was a 14px label in a pill that
    hugged its own text — the smallest thing on a card whose whole purpose is to
    be dismissed, and the one control the player is looking for. It now takes the
@@ -6433,10 +6442,27 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
 // an invitation to keep going, and this is the screen where a run has just
 // ended. The card still shows it, which is where it belongs.
-const BUILD_VERSION = '170826-2252 ROTOЯ';
+const BUILD_VERSION = '200826-2015 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
-    if (bs) bs.textContent = 'BUILD ' + BUILD_VERSION.replace(' ROTOЯ', '');
+    // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
+    // hand-written constant, set by a build environment whose clock drifts
+    // hours from the designer's — the welcome page was showing invented times.
+    // document.lastModified is the file's OWN modification time in local time:
+    // accurate on file:// (disk mtime) and on Pages (Last-Modified header),
+    // and it updates the moment the file actually changes. BUILD_VERSION
+    // remains the code identity the recorder tags exports with.
+    if (bs) {
+        let stamp = BUILD_VERSION.replace(' ROTOЯ', '');
+        try {
+            const m = new Date(document.lastModified);
+            if (!isNaN(m)) {
+                const p = n => String(n).padStart(2, '0');
+                stamp = `${p(m.getDate())}${p(m.getMonth() + 1)}${String(m.getFullYear()).slice(-2)}-${p(m.getHours())}${p(m.getMinutes())}`;
+            }
+        } catch (e) {}
+        bs.textContent = 'BUILD ' + stamp;
+    }
 }
 
 // ── HOURGLASS ICON ──────────────────────────────────────────────────────
@@ -7545,11 +7571,29 @@ function mKick(time, peak) {
     o.connect(g); g.connect(musicGain);
     o.start(time); o.stop(time + 0.16);
 }
-// Three clashing squares stand in for noise well enough at this length.
+// [180826ac] REAL NOISE AT LAST. The old stand-in was three clashing HIGH
+// SQUARES (1670/2080/2730Hz) — which is why "fixing" the Tarantella's 5.2kHz
+// squeal by routing it through mSnare just produced three politer squeals,
+// and why the Xylophone squeaked too: every track's snare was squares wearing
+// a hat. A short white-noise burst through a bandpass is what a brush/shaker
+// actually is; the x2.2 on peak compensates noise reading quieter than tones.
+let _noiseBuf = null;
 function mSnare(time, peak) {
-    musicNote(1670, time, 0.035, 'square', peak);
-    musicNote(2080, time, 0.030, 'square', peak * 0.8);
-    musicNote(2730, time, 0.022, 'square', peak * 0.6);
+    if (!audioCtx || !musicGain) return;
+    if (!_noiseBuf) {
+        const len = Math.floor(audioCtx.sampleRate * 0.06);
+        _noiseBuf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const d = _noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const src = audioCtx.createBufferSource(); src.buffer = _noiseBuf;
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 3400; bp.Q.value = 0.9;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(peak * 2.2, time);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.05);
+    src.connect(bp); bp.connect(g); g.connect(musicGain);
+    src.start(time); src.stop(time + 0.06);
 }
 const mHt = (s) => 261.63 * Math.pow(2, s / 12);
 
@@ -7675,7 +7719,13 @@ const MUSIC_SUITE = [
         mPluck(mHt(12 + r + fig[k % 6]), t, S * 0.6, 0.068);
         if (k % 3 === 0) mPluck(mHt(r - 12), t, S * 0.9, 0.090, 'sine');
         if (k % 6 === 3) mPluck(mHt(r - 5), t, S * 0.7, 0.055, 'sine');
-        if (k % 6 === 4) musicNote(5200, t, 0.02, 'square', 0.018 + 0.01 * I);
+        // [180826n] THE SQUEAKY WHEEL, found and oiled. This was a 5,200Hz
+        // SQUARE wave, 20ms, every sixth step at 168bpm — three squeals a
+        // second for the whole track, and a high square IS a squeak by
+        // construction. (Field note said "L3", but tracks deal from a shuffled
+        // bag — the offender was the Tarantella wherever it landed.) The beat
+        // keeps its shaker role as a soft noise tick instead.
+        if (k % 6 === 4) mSnare(t, 0.014 + 0.006 * I);
     }},
     // 7 \u2014 AMBIENT. B is a real harmonic move rather than a new tune: the pad
     // shifts down a fourth and a slow high line appears over it.
@@ -9148,24 +9198,30 @@ function shapeTimeCost(type) {
 // a J, not all of it: sets get identities again ("the square level"), which is
 // variety the player can feel rather than read.
 function roundBudget(round) {
-    const TABLE = { 1: 9, 2: 9, 3: 9, 4: 12, 5: 14, 6: 14, 7: 14, 8: 15, 9: 15, 10: 15 };
-    return TABLE[round] || 15;
+    // [180826x] THE RAMP RUNS THE WHOLE CAMPAIGN. Measured: 14/14/14/15/15/15
+    // made L5-L7 statistically the SAME level three times (13.2 cost, identical
+    // mix) and L8-10 a sideways shuffle — half the campaign had no climb. One
+    // budget step per level from L5 lets the composer upgrade the mix itself:
+    // surplus budget becomes diagonals, then squares, so each level carries
+    // measurably more of the hard shapes than the last.
+    const TABLE = { 1: 9, 2: 9, 3: 9, 4: 12, 5: 14, 6: 15, 7: 16, 8: 17, 9: 18, 10: 19 };
+    return TABLE[round] || 19;
 }
-// [160826k] EVERY FAMILY FROM LEVEL 1. J-shapes used to be gated to round 4 and
-// squares to round 5, which is what made the sets feel ordered — the set could
-// only widen as the levels went up, so the first four levels had a shape you
-// could predict before you saw it. All five families are now in the draw from
-// the start, so a 1, a 2, a 3 and a 4-cube config can share a level.
-// The `round` argument is kept: nothing depends on it now, but the signature is
-// the seam where a future difficulty curve would go back in.
+// [160826k] opened every family from level 1; [180826i] PUTS THE RAMP BACK,
+// this time from evidence rather than decree: a square drawn at L2 banked in
+// 325 seconds — a five-minute second level — and the designer called it.
+// Diagonals join at L3 (parity is a lesson, not an opener), squares at L4.
+// J-shapes carry no explicit gate: their 8.5 time-price cannot fit a budget
+// below L4's anyway, so the ramp emerges from the pricing as designed.
 function availableFamiliesForRound(round) {
-    return [
+    const fams = [
         { type: 'single',   size: 1, configs: ['A'] },
-        { type: 'pair',     size: 2, configs: ['H', 'V'] },
-        { type: 'diagonal', size: 2, configs: ['A', 'B'] },
-        { type: 'jshape',   size: 3, configs: ['A', 'B', 'C', 'D'] },
-        { type: 'square',   size: 4, configs: ['A'] }
+        { type: 'pair',     size: 2, configs: ['H', 'V'] }
     ];
+    if (round >= 3) fams.push({ type: 'diagonal', size: 2, configs: ['A', 'B'] });
+    fams.push({ type: 'jshape', size: 3, configs: ['A', 'B', 'C', 'D'] });
+    if (round >= 4) fams.push({ type: 'square', size: 4, configs: ['A'] });
+    return fams;
 }
 // 180°-opposite J rotations — used to keep reused J-shapes as visually distinct
 // as possible. Harmless for other families (their configs aren't keys here).
@@ -9188,6 +9244,49 @@ const JSHAPE_OPPOSITE = { A: 'C', B: 'D', C: 'A', D: 'B' };
 // scatterTrickyObstacles), so the size-randomising has no bearing on it. It
 // still debuts at L2 and still doubles at L9-10.
 function composeSetByBudget(budget, round) {
+    // ── [180826y] THE SET TABLE IS AUTHORED — designer-locked ───────────────
+    // The random composer is retired (kept below, renamed, for the archaeology).
+    // Five constraints, argued and settled:
+    //   counts 3,3,4,4,5,5 then 6 from L7 · J debuts before the square · all
+    //   shapes in play by L7 · wherever two singles appear the SECOND is the
+    //   tricky one (from L1 — the signature hardship taught at the gentlest
+    //   moment) · one EVENT per level, debuts carrying the big steps.
+    //   L1 opener            L6 J DEBUTS (sharpest step — the orientation gate)
+    //   L2 second pair       L7 SQUARE DEBUTS + count peaks (the hinge)
+    //   L3 count rises       L8 pair traded for second diagonal
+    //   L4 DIAGONAL debuts   L9 both singles tricky
+    //   L5 count rises       L10 finale: two squares
+    // Only CONFIGS are random (H/V, A/B, the J's four), so runs differ
+    // cell-by-cell while every level's demands are exact. `budget` is kept for
+    // signature compatibility; it no longer drives composition.
+    const S  = () => ({ type: 'single', config: 'A', size: 1, difficulty: 'easy' });
+    const St = () => ({ type: 'single', config: 'A', size: 1, difficulty: 'tricky' });
+    const P  = c => ({ type: 'pair', config: c || (Math.random() < 0.5 ? 'H' : 'V'), size: 2, difficulty: 'easy' });
+    const D  = c => ({ type: 'diagonal', config: c || (Math.random() < 0.5 ? 'A' : 'B'), size: 2, difficulty: 'easy' });
+    const J  = () => ({ type: 'jshape', config: ['A','B','C','D'][(Math.random() * 4) | 0], size: 3, difficulty: 'easy' });
+    const Q  = () => ({ type: 'square', config: 'A', size: 4, difficulty: 'easy' });
+    const r = Math.max(1, Math.min(10, round || 1));   // endless keeps the finale mix
+    let picks;
+    switch (r) {
+        case 1:  picks = [S(), St(), P()]; break;
+        case 2:  picks = [St(), P('H'), P('V')]; break;
+        case 3:  picks = [S(), St(), P('H'), P('V')]; break;
+        case 4:  picks = [S(), St(), P(), D()]; break;
+        case 5:  picks = [S(), St(), P('H'), P('V'), D()]; break;
+        case 6:  picks = [S(), St(), P(), D(), J()]; break;
+        case 7:  picks = [S(), St(), P(), D(), J(), Q()]; break;
+        case 8:  picks = [S(), St(), D('A'), D('B'), J(), Q()]; break;
+        case 9:  picks = [St(), St(), D('A'), D('B'), J(), Q()]; break;
+        default: picks = [St(), St(), D(), J(), Q(), Q()]; break;
+    }
+    shuffleInPlace(picks);   // display order stays varied
+    return picks;
+}
+
+// [180826y] The retired draw, unreferenced — kept because this file keeps its
+// history readable, and because the drought-reserve/budget machinery it used
+// may inform a future endless-mode variety pass.
+function composeSetByBudget_retired(budget, round) {
     const count = setTargetCount(round);
     const fams  = availableFamiliesForRound(round);
     const S = d => ({ type: 'single', config: 'A', size: 1, difficulty: d });
@@ -9740,6 +9839,7 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // deliver. (A flood fill from the player is no use here: slots are
             // placed above the view, before the player is anywhere near them.)
             if (!slotIsApproachable(cells)) continue;
+            if (!slotLeavesPassage(cells)) continue;   // [180826r] never cork the board
             // [170826b] NO CORRIDOR SLOTS ON LEVEL 1. Field note: a vertical
             // pair inside a one-wide tunnel at L1 demands precise threading
             // before the basic flip is fluent. A slot cell walled on BOTH
@@ -9785,6 +9885,31 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
                     // sees them, so without this the export cannot say whether
                     // seeded deliveries are found, ignored, or fumbled.
                     rec('seed', { slot: type, dir: SLIP_VECTORS[vi].name });
+                    // ── [180826a] SEEDED GEAR TRAINS ────────────────────────
+                    // iPad data: five 2-link trains rode, ZERO ended in a
+                    // claim — trains happen, deliveries happen, but never
+                    // together, so the GEAR TRAIN payout stayed theoretical.
+                    // This makes them meet: half the time, a SECOND slip is
+                    // planted one step behind the delivery slip, pointing at
+                    // it — the same pre-push maths shifted one link back.
+                    // Arrive at the outer slip as the right shape and the
+                    // train carries you: push, push, claim — x2, GEAR TRAIN!
+                    // The ghost previews the whole ride in gold before you
+                    // commit, so it is an invitation, not an accident.
+                    if (Math.random() < 0.5) {
+                        const pre2 = pre.map(c => ({ x: c.x - v.dx, y: c.y - v.dy }));
+                        const pre2Keys = pre2.map(c => `${c.x},${c.y}`);
+                        const legal2 = pre2.every((c, i) =>
+                            c.x >= 0 && c.x < VIEW_W &&
+                            !world[pre2Keys[i]] &&
+                            !slots.some(s => s.keys.has(pre2Keys[i])));
+                        if (legal2) {
+                            const k2 = pre2Keys[0];
+                            world[k2] = 'slip';
+                            shifterMeta[k2] = { spawnTime: performance.now(), dir: vi, seeded: true };
+                            rec('seed', { slot: type, dir: SLIP_VECTORS[vi].name, train: 2 });
+                        }
+                    }
                     break;
                 }
             }
@@ -9963,6 +10088,28 @@ function togglePause() {
 // the next PLAY starts fresh via startGame(). Stops the music and the game
 // loop, and re-arms the welcome demo (which stops itself whenever a run is up).
 function exitToWelcome() {
+    // [180826l] AN ABANDONED RUN IS STILL A RUN. Home used to discard the score
+    // outright — a 15,000-point run vanished if you quit instead of dying,
+    // which read as "scores not registering". Recorded and persisted exactly
+    // as a death would, minus the death.
+    if (game.running && game.score > 0) {
+        recordRun(game.score, advancedRound);
+        // [180826n] Quits update the PERSONAL BESTS too — the run table taking
+        // a 30k quit while "Best score" read lower was the two records
+        // disagreeing about the same run.
+        bests = {
+            score:      Math.max(bests.score || 0, game.score),
+            time:       Math.max(bests.time || 0, Math.floor(game.speedTimer || 0)),
+            transforms: Math.max(bests.transforms || 0, game.transforms || 0),
+            streaks:    Math.max(bests.streaks || 0, game.streaks || 0),
+            coverage:   Math.max(bests.coverage || 0, Math.round(game.coverage || 0)),
+            combo:      Math.max(bests.combo || 1.0, game.bestCombo || 1.0)
+        };
+        saveBests();
+        rec('end', { why: 'home', score: game.score, r: advancedRound,
+                     cov: Math.round(game.coverage || 0), tr: game.transforms });
+        recPersist();
+    }
     hideLevelCard();
     if (scrubbing) exitScrub();
     game.running = false;
@@ -10481,6 +10628,43 @@ const TIME_TIERS = { t10: { sec: 10 }, t30: { sec: 30 } };
 // them and you sink. That is a fight you can win, not a countdown.
 const TIME_T10_CELL_CHANCE = 0.022;   // the trickle — one every ~4 rows
 const TIME_T30_CELL_CHANCE = 0.0012;  // the treat — one every ~80 rows
+// ── [180826p] THE TIME RESERVOIR, both halves ───────────────────────────────
+// Field notes (L6, momentum at 1s): "I did a lot of landing on all the squares
+// but didn't get rewarded for my effort." True — and [300726aq]'s law ("never
+// pay the player in the currency you are threatening them with") is why. These
+// two mechanisms reward the effort WITHOUT paying seconds for play:
+//   (1) OPPORTUNITY TILT — recent coverage rate scales the time-terrain spawn
+//       chance up to 2.5x. Cover ground fast and more hourglasses grow in the
+//       rows ahead; they still have to be routed to and collected. Payment in
+//       chances, not clock.
+//   (2) RESERVE TANK — each FRESH cell drips 0.15s into a 12s tank. It does
+//       nothing while the wheel turns. At the timeout moment it dumps into the
+//       wheel INSTEAD of the heart being taken: one earned second wind,
+//       refilled only by ~80 more fresh cells. It fires at empty, so it can
+//       never flood the clock, and the heart it saves was bought with the
+//       game's most honest currency.
+const RESERVE_PER_CELL = 0.15;
+const RESERVE_CAP = 12;
+function timeSpawnTilt() {
+    // Fresh-cell stamps within the last 8 seconds -> 1.0 (idle) to 2.5 (grinding).
+    if (!game._covStamps) return 1;
+    const cut = performance.now() - 8000;
+    while (game._covStamps.length && game._covStamps[0] < cut) game._covStamps.shift();
+    return Math.min(2.5, 1 + game._covStamps.length / 16);
+}
+function reserveDrip() {
+    if (game.testDrive) return;
+    if (!game._covStamps) game._covStamps = [];
+    game._covStamps.push(performance.now());
+    if (game._covStamps.length > 120) game._covStamps.shift();
+    const before = game.timeReserve || 0;
+    game.timeReserve = Math.min(RESERVE_CAP, before + RESERVE_PER_CELL);
+    // The tank announces FULL once per fill — the motivation has to be visible.
+    if (before < RESERVE_CAP && game.timeReserve >= RESERVE_CAP && !game._reserveFullShown) {
+        game._reserveFullShown = true;
+        addFloat(LOGICAL_W / 2, 76, 'RESERVE FULL', '#fb8b1e', false, { life: 1100, hold: 450 });
+    }
+}
 const MAX_VISIBLE_TIME = 6;
 const MERCY_THRESHOLD_SEC = 30;
 let mercyGivenThisLevel = false;
@@ -10725,6 +10909,32 @@ function maybePlaceIsland(y, safeZoneEnd) {
                 if (world[n] === 'wall') return;         // too close to standing wall
             }
     }
+    // ── [180826r] THE MIRROR GUARD: walls must not cork a slot either. The
+    // trap snapshot showed the squeeze forming from BOTH sides — a slot in the
+    // corridor, then wall stamps closing the flanks after it. Before writing,
+    // check every live slot still has one fully open column through its row
+    // band with this island's cells treated as wall. If any slot would be
+    // corked, the island simply doesn't happen here.
+    {
+        const islandSet = new Set(keys);
+        for (const sl of slots) {
+            if (sl.claimed || sl.retiring) continue;
+            const minY = Math.min(...sl.cells.map(c => c.y)) - 1;
+            const maxY = Math.max(...sl.cells.map(c => c.y)) + 1;
+            let anyOpen = false;
+            for (let cx = 0; cx < VIEW_W && !anyOpen; cx++) {
+                let open = true;
+                for (let cy = minY; cy <= maxY; cy++) {
+                    const ck = `${cx},${cy}`;
+                    const w = world[ck];
+                    if (w === 'wall' || w === 'hazard' || islandSet.has(ck) ||
+                        slots.some(s => !s.claimed && s.keys.has(ck))) { open = false; break; }
+                }
+                if (open) anyOpen = true;
+            }
+            if (!anyOpen) return;   // this island would seal the board — skip it
+        }
+    }
     for (const key of keys) world[key] = 'wall';
     // [150826m] An island is the commonest way a pocket forms — it lands beside
     // an existing wall and closes the gap between them. Breach the band it was
@@ -10815,8 +11025,11 @@ function generateChunk(fromY, toY) {
                 if (!world[key] && countTimeWindow(y) < MAX_VISIBLE_TIME &&
                     timeCellClearOf(x, y)) {
                     const r = Math.random();
-                    if (r < TIME_T30_CELL_CHANCE) world[key] = 't30';
-                    else if (r < TIME_T30_CELL_CHANCE + TIME_T10_CELL_CHANCE) world[key] = 't10';
+                    // [180826p] Chances scale with recent coverage — see
+                    // timeSpawnTilt. The board notices effort.
+                    const _tt = timeSpawnTilt();
+                    if (r < TIME_T30_CELL_CHANCE * _tt) world[key] = 't30';
+                    else if (r < (TIME_T30_CELL_CHANCE + TIME_T10_CELL_CHANCE) * _tt) world[key] = 't10';
                 }
                 if (!world[key]) game.cellsGenerated++;
             }
@@ -11017,6 +11230,12 @@ const PALETTES = {
     night: {
         emptyOutline: 'rgba(148, 163, 184, 0.24)',
         visitedFill:  'rgba(129, 90, 175, 0.32)',   // [270726n] muted plum trail, presence raised again per feel — still below the item colours
+        // [200826d] Fine cell outline on the trail, ported from day mode — but
+        // inverted for neon: day is a DARKER edge on a lighter fill; neon
+        // signage is a BRIGHTER edge over a darker fill. Each covered cell
+        // reads as a small glowing tube outline, same language as the empty
+        // grid but in the trail's plum.
+        visitedStroke: 'rgba(196, 152, 245, 0.45)',
         // [010826a] Was pure black, which read as a hole in the board rather
         // than a solid. Now a darker cut of the occupied-cell navy — the wall
         // belongs to the grid it sits in, and the offset brick bond does the
@@ -11048,7 +11267,13 @@ const PALETTES = {
         // enough to feel gentle on white is also low enough to disappear; the
         // answer is a light colour at full strength, not a strong one at low
         // strength.
-        visitedFill:  '#ffc3e0',                     // bubblegum pink where you have been
+        // [200826d] STALE ENTRY, kept only for reference: the day board draws
+        // its visited cells with hardcoded colours in the render path
+        // (#ffe4ea fill + #ff8fa6 fine edge — the look approved on 200826),
+        // not from this palette. Value aligned to match so nobody retunes the
+        // wrong knob again (the [200826b] pale-pink edit landed here and did
+        // nothing on the board for exactly that reason).
+        visitedFill:  '#ffeef3',                     // pale pink where you have been (see render path)
         // [040826p] MINT, not magenta. Candy magenta sat in the same hue family
         // as the PAIR slot (#e935ac) — the single most confusable pairing on the
         // board, since one is a target and the other is an obstacle. Mint is
@@ -11070,6 +11295,8 @@ function setTheme(t) {
     const db = document.getElementById('themeBtnDay');
     if (nb) nb.classList.toggle('active', t === 'night');
     if (db) db.classList.toggle('active', t === 'day');
+    // [200826h] The welcome demo clip follows the theme (night/day captures).
+    if (typeof window.updateDemoTheme === 'function') window.updateDemoTheme();
 }
 
 // ============ GAME STATE ============
@@ -11255,6 +11482,34 @@ function anyVisibleHazard() {
 // open, 8-connected path exists from the slot's own cells down to the bottom of
 // a band beneath it. Walls and hazards block; everything else is passable.
 // A slot sealed in a pocket fails and the placement is rejected.
+// ── [180826r] A SLOT MUST NEVER BE A CORK ───────────────────────────────────
+// Field notes (twice, "recurring issue"): a single trapped with no way out.
+// The snapshot showed exactly how: a 2x2 slot sat in the board's ONLY
+// northward corridor, walls both sides — and under solid-slot rules a needed
+// slot is a wall to every shape but its exact match, so it sealed the passage
+// for a single with no green in reach. Approachability was checked; PASSABILITY
+// AROUND was not. This requires that, with the slot in place, at least one
+// column through the slot's row band (plus a one-row margin either side)
+// remains fully open — not wall, not red, not any slot. Conservative on
+// purpose: it only ever rejects placements in tight spots, and the spawner
+// simply tries elsewhere.
+function slotLeavesPassage(cells) {
+    const minY = Math.min(...cells.map(c => c.y)) - 1;
+    const maxY = Math.max(...cells.map(c => c.y)) + 1;
+    const newKeys = new Set(cells.map(c => `${c.x},${c.y}`));
+    for (let x = 0; x < VIEW_W; x++) {
+        let open = true;
+        for (let y = minY; y <= maxY; y++) {
+            const k = `${x},${y}`;
+            const w = world[k];
+            if (w === 'wall' || w === 'hazard' || newKeys.has(k) ||
+                slots.some(s => !s.claimed && s.keys.has(k))) { open = false; break; }
+        }
+        if (open) return true;
+    }
+    return false;
+}
+
 function slotIsApproachable(cells) {
     const top = Math.min(...cells.map(c => c.y)) - 2;
     const bot = Math.max(...cells.map(c => c.y)) + VIEW_H;   // a screen's worth of room below
@@ -11731,6 +11986,8 @@ function checkSlotClaims() {
         const doneReq = totalReq - setNeeded.length;
         const payColor = golden ? GOLD_SLOT_COLOR : slot.color;
         const payCells = slot.cells.slice();
+        seatFX = { cells: payCells, color: payColor,
+                   t0: performance.now() + animQueueDelay() };   // [180826t][190826a] the fit shows at touch-down
         setTimeout(() => {
             if (!game.running) return;
             scoreGain(claimPts, true);
@@ -11739,8 +11996,18 @@ function checkSlotClaims() {
                 // [170826e] THE LADDER HAS NAMES. One link is a nice combo; two
                 // machines meshing is a GEAR TRAIN; three or more is the FULL
                 // TRANSMISSION — the game's machine fiction, earned in play.
-                const chainName = chainLinks >= 3 ? 'FULL TRANSMISSION!'
-                                : chainLinks === 2 ? 'GEAR TRAIN!' : 'NICE COMBO!';
+                // [180826h] THE BANNER NAMES THE GEAR. The tools are SHIFTERS —
+                // riding a chain of them IS shifting up through gears, and a
+                // numeric ladder explains its own escalation: everyone knows a
+                // higher gear is faster. TOP GEAR crowns the five-link cap.
+                // Size changes keep Evolve/Devolve — the gearbox is how you
+                // TRAVEL, not how big you are; one metaphor per system.
+                // (MESHED! and FULL TRANSMISSION! retired same-day, designer's
+                // call.)
+                const chainName = chainLinks >= 5 ? 'TOP GEAR!'
+                                : chainLinks === 4 ? 'FOURTH GEAR!'
+                                : chainLinks === 3 ? 'THIRD GEAR!'
+                                : chainLinks === 2 ? 'SECOND GEAR!' : 'NICE COMBO!';
                 const chainCol  = chainLinks >= 2 ? '#ffd60a' : '#f8fafc';
                 addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
                     `${chainName}\n+${claimPts}`, chainCol, true);
@@ -11797,6 +12064,34 @@ function checkSlotClaims() {
 // lives in the SHAPE of what you're piloting, not in artificially limiting
 // who can trace. Floor coverage is universal.
 function checkWrongShapeOnSlot() {
+    // [180826e] Under permeability, standing on a slot wrong-shaped is normal
+    // traversal — a denial sound on every crossing would punish the freedom
+    // the experiment grants. The preview ghost and slot colouring carry the
+    // "not yours yet" signal.
+    // [180826g] But an EMPTY SOCKET SOUNDS HOLLOW — field note asked for a
+    // sound when crossing a set without filling it. A soft two-tap knock, low
+    // and woody, fires once on ENTERING slot territory (not every landing while
+    // standing on it): unmistakably not a reward, unmistakably not floor.
+    if (SLOT_PERMEABLE) {
+        const cells = getPlayerCells();
+        const ck = new Set(cells.map(c => `${c.x},${c.y}`));
+        let over = false;
+        outer:
+        for (const slot of slots) {
+            if (slot.claimed || slot.retiring) continue;
+            for (const k of slot.keys) if (ck.has(k)) { over = true; break outer; }
+        }
+        if (over && !game._overSlotPrev && typeof playTone === 'function') {
+            // [180826j] AUDIBLE now. The first draft was 185/140Hz at 45ms and
+            // a tenth volume — six waveform cycles buried under the landing
+            // tink, inaudible by arithmetic. Higher, longer, louder, and
+            // DELAYED past the landing sound so the knock owns its own moment.
+            setTimeout(() => playTone(340, 0.07, 'sine', 0.5), 70);
+            setTimeout(() => playTone(250, 0.06, 'sine', 0.38), 160);
+        }
+        game._overSlotPrev = over;
+        return;
+    }
     // After checkSlotClaims has run for this landing, see if any of the
     // player's cubes ended up on a STILL-NEEDED slot's cells. If yes, the
     // player touched a slot they couldn't exact-claim — wrong shape for
@@ -12123,7 +12418,7 @@ const EDGE_PRAISES = [
 ];
 // Gears meshing, teeth engaging — a clean, exact result.
 const GEAR_PRAISES = [
-    'TOOTH PERFECT!', 'MESHED!', 'COGS ALIGNED!', 'GEARED UP!',
+    'TOOTH PERFECT!', 'COGS ALIGNED!', 'GEARED UP!',
     'RUNNING TRUE!', 'TOLERANCE ZERO!', 'MACHINED!', 'SNUG FIT!'
 ];
 // The machine running sweetly — a chain, a flowing sequence.
@@ -12134,7 +12429,7 @@ const MACHINE_PRAISES = [
 // The game's own verb — flipping, turning, reorienting.
 const FLIP_PRAISES = [
     'NEATLY TURNED!', 'FLIP FLOP!', 'END OVER END!', 'OVER SHE GOES!',
-    'TURNED ON A SIXPENCE!', 'HANDSOMELY FLIPPED!', 'THAT IS THE TURN!',
+    'TURNED ON A SIXPENCE!', 'THAT IS THE TURN!',
     'ROTATED CLEAN!'
 ];
 // One pool for the general case, so a single call gets the whole vocabulary.
@@ -12404,7 +12699,10 @@ function tallyIcon(kind) {
     // [290726t] Day swaps the weak-on-white inks for deeper ones; identity
     // hues stay recognisable in both themes.
     const day = currentTheme === 'day';
-    const GOLD = day ? '#b45309' : '#ffd60a';
+    // [200826f] Day gold is #e8a800, NOT #b45309 — the burnt orange read as
+    // brown next to the amber points column (same call as [050826a]). One
+    // gold family across the whole tally card.
+    const GOLD = day ? '#e8a800' : '#ffd60a';
     const BLUE = day ? '#0369a1' : '#7dd3fc';
     const VIOLET = day ? '#8b5cf6' : '#c9a0f5';
     const GREEN = day ? '#65a30d' : '#a3e635';
@@ -12474,16 +12772,17 @@ function buildTallyRows() {
     const grade = game._lastCovGrade || 'C';
 
     rows.push({ icon: 'play', label: 'Points in play', count: '',
-                pts: game._levelPlayPoints || 0 });
+                pts: (game._levelPlayPoints || 0) + (game._lastCovBonus || 0) });   // [180826ab] cov bonus folded in
     // [050826a] The GOLD class made this row's label and count yellow — all but
     // unreadable on the white day card, and it was singling out an S grade with
     // the one colour that fails hardest on white. The grade now reads in the
     // row's normal ink; the S is still marked, by the bonus it pays.
-    rows.push({ icon: 'covered', label: 'Ground covered', count: cov + '%  ' + grade,
-                pts: game._lastCovBonus || 0 });
-    if (game.roundGreens > 0)
-        rows.push({ icon: 'green', label: 'Greens banked', count: '\u00d7' + game.roundGreens,
-                    pts: 5 * lvl * game.roundGreens, pay: true });
+    // [180826ab] "Ground covered" row removed — designer's call. Its GRADE
+    // bonus still pays (scoreGain at level end); the points fold into the
+    // play row below so the card's column still sums to the level total.
+    // [180826ab] "Greens banked" row removed \u2014 designer's call. Its tally-time
+    // bonus (5 x level x count) retires with it; fusions keep their +5 at
+    // pickup, so greens still pay where they are felt.
     // [030826r] "Swift clear" renamed to "Speed bonus". If the player has to ask
     // what a line on their own scorecard means — twice — the name is the thing at
     // fault, not the reader.
@@ -12502,6 +12801,23 @@ function buildTallyRows() {
     // [030826r] Lives lost shown as HEARTS, not a x2. The HUD counts them in
     // hearts, so the card should too — and a row of spent hearts reads as a loss
     // at a glance where a multiplication sign reads as a quantity.
+    // [180826g] Chains ridden this level — field note asked for the count.
+    // Shows only when earned, like greens; pays 0 here because the premium
+    // already landed inside the claim points (no double-counting, per the
+    // card's own [300726ba] rule).
+    // [180826aa] Rows completed and best combo return to the card — designer's
+    // call (they were demoted to the footnote in [300726ba]). Display-only,
+    // pts 0: their points already landed inside "Points in play".
+    if ((game.roundBestCombo || 0) >= 1.5)
+        rows.push({ icon: 'play', label: 'Best combo', count: '×' + game.roundBestCombo.toFixed(1), pts: 0 });
+    if ((game.roundChains || 0) > 0)
+        rows.push({ icon: 'play', label: 'Gear shifts', count: '×' + game.roundChains,
+                    pts: 0, gold: true });   // [180826h] gearbox vocabulary
+    // [200826g] Rows completed moved to the BOTTOM of the list (designer's
+    // call): the gold diamonds now sit together above it, so the card reads
+    // as one gold column of earnings, then the odd-one-out counts below.
+    if ((game.roundRows || 0) > 0)
+        rows.push({ icon: 'covered', label: 'Rows completed', count: '×' + game.roundRows, pts: 0 });
     if (game.roundLivesLost > 0)
         rows.push({ icon: 'lives', label: 'Lives lost',
                     hearts: game.roundLivesLost, count: '', pts: 0 });
@@ -12833,7 +13149,7 @@ function completeSet() {
             // at the ceiling.
             momentumAddSeconds(levelTimeGrant());
             overflowPts = 0;
-            game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false;
+            game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
             // [290726d] tally counters reset with the rest of the round trackers
             game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
@@ -13270,7 +13586,14 @@ function tryFuseAlongPath(dir) {
 // to edge-on (where config + face swap), then the new pose expands on the far
 // side. No translation of the body. Snap-on-retrigger: a new move just restarts
 // this from the true previous pose, so fast play compresses naturally.
-const FLIP_DUR = 90; // ms
+// [180826ad] 90 -> 180, designer's call after a close look: half speed, so the
+// hinge-flip is WATCHABLE like the machine animations became. Safe because the
+// flip is render-only (logic commits instantly; snap-on-retrigger restarts from
+// the true pose, so fast play compresses rather than lags). Completes the
+// motion hierarchy: flip 180 < slip 320 < pivot 460 — the more a move does to
+// you, the longer it takes. Watch sustained cruising: if held-direction runs
+// read as mush rather than continuous tumbling, this is the one number.
+const FLIP_DUR = 180; // ms
 let FLIP_3D = true;  // pseudo-3D lift+shear vs flat 2D fold — toggle live with F (debug)
 const LIFT3D = 0.75; // tumble lift strength (shear coeff / cell fraction); tune to taste
 const REDUCED_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -13288,7 +13611,11 @@ let flip = { active: false };
 // [300726at] 3 -> 5. Timing out now spends a heart too, so hearts are eaten by
 // three things (the void, a red taking your last cube, and the clock) rather
 // than two — three was too few once the clock became a consumer.
-const MAX_LIVES = 5;
+// [180826i] 5 -> 3, designer's call. The 5 dated from when the clock was a
+// third consumer of hearts ([300726]-era); with momentum as the one threat and
+// respawns always landing as a single, five respawns made deep runs closer to
+// inevitable than earned. Three restores weight to each heart.
+const MAX_LIVES = 3;
 const INVULN_DURATION = 1500;       // ms of invulnerability after respawn
 const RESPAWN_TIME_PENALTY = 10;    // seconds added to speedTimer on death
 let lives = MAX_LIVES;
@@ -13316,15 +13643,60 @@ function isTransformAnimActive() {
 function getTransformProgress() {
     if (!transformAnim) return 1;
     const elapsed = performance.now() - transformAnim.startTime;
-    const t = Math.min(1, elapsed / transformAnim.duration);
+    // [180826ae] Clamp at BOTH ends: startTime can now sit in the future
+    // (waiting for touch-down), and a negative t fed to the ease would
+    // overshoot behind the old pose.
+    const t = Math.max(0, Math.min(1, elapsed / transformAnim.duration));
     return 1 - Math.pow(1 - t, 3);
 }
 
+// [180826o] THE SWING IS THE STORY. Five field notes said the same thing:
+// machines resolve and the player cannot tell what just happened. The arc
+// maths was always right — 220ms is simply below the legibility threshold for
+// a compound motion. Doubled durations make the swing/slide WATCHABLE (a
+// machine resolution is a designed beat, not an interruption), and the trail
+// ghosts below leave the path on screen for a moment after the body has
+// passed through it.
+// ── [180826ae] PRESENTATION SEQUENCING — the eye gets the true order ────────
+// The engine is logic-first: a move commits instantly and checkCollisions
+// resolves machines ~one frame later, while the 180ms flip is still airborne.
+// Field sequence (frames 2-6): the shifter vanished before the piece landed,
+// and the rotation smeared into the flip. Logic stays instant — input keeps
+// its crispness — but the PRESENTATION now follows the flight:
+//   · a consumed tool LINGERS on screen until touch-down (lingerFX below)
+//   · the transform swing/slide STARTS at touch-down, never mid-flight
+//   · so the beat is: flip (180) → tool spends → swing (460) → settle.
+let lingerFX = [];
+function consumeTool(triggerCell, triggerKey) {
+    const kind = world[triggerKey];
+    const meta = shifterMeta[triggerKey];
+    // [190826a] Linger until this tool's OWN moment — after the flight and any
+    // earlier link's swing (called before this link's anim is queued, so the
+    // queue delay is exactly when its resolution becomes visible).
+    const until = performance.now() + animQueueDelay() + 40;
+    if (kind === 'pivot' || kind === 'slip')
+        lingerFX.push({ x: triggerCell.x, y: triggerCell.y, kind,
+                        meta: meta ? { dir: meta.dir } : null, until });
+    delete world[triggerKey];
+    markCovered(triggerKey);
+    delete shifterMeta[triggerKey];
+}
+// Remaining flight time — transform anims and their sounds wait this long.
+function flightRemaining() {
+    if (!flip.active) return 0;
+    return Math.max(0, flip.t0 + flip.dur - performance.now());
+}
+
 function startPivotAnim(oldCells, newCells, anchorX, anchorY) {
+    // [180826q] A single consuming a pivot rotates in place — every cell maps
+    // to itself. Animating that would lock input for 460ms of visible
+    // stillness; the burst and sound carry the moment instead.
+    if (oldCells.length === newCells.length &&
+        oldCells.every((c, i) => c.x === newCells[i].x && c.y === newCells[i].y)) return;
     transformAnim = {
         type: 'pivot',
-        startTime: performance.now(),
-        duration: 220,
+        startTime: performance.now() + animQueueDelay(),   // [180826ae][190826a] waits for flight AND any prior swing
+        duration: 460,
         oldCells: oldCells.map(c => ({ x: c.x, y: c.y })),
         newCells: newCells.map(c => ({ x: c.x, y: c.y })),
         anchorX, anchorY
@@ -13334,8 +13706,8 @@ function startPivotAnim(oldCells, newCells, anchorX, anchorY) {
 function startSlipAnim(oldCells, newCells) {
     transformAnim = {
         type: 'slip',
-        startTime: performance.now(),
-        duration: 180,
+        startTime: performance.now() + animQueueDelay(),   // [180826ae][190826a] waits for flight AND any prior swing
+        duration: 320,
         oldCells: oldCells.map(c => ({ x: c.x, y: c.y })),
         newCells: newCells.map(c => ({ x: c.x, y: c.y }))
     };
@@ -13346,7 +13718,27 @@ function startSlipAnim(oldCells, newCells) {
 // x/y in world-cell units; the renderer multiplies by CELL like normal.
 function getAnimatedRenderCells() {
     if (!isTransformAnimActive()) return null;
-    const k = getTransformProgress();
+    // [190826a] While the transform WAITS for touch-down, it must not render —
+    // the flip owns the piece until landing. Without this, the pending
+    // transform (progress 0 = landed pose) hijacked renderCells mid-air and
+    // the piece snapped to the ground while visibly still flying.
+    if (performance.now() < transformAnim.startTime) return null;
+    return animatedCellsAt(getTransformProgress());
+}
+// [190826a] How long until the animation lane is clear — the later of the
+// remaining flight and any transform still waiting or playing. New transforms
+// and touch-down FX queue behind this, so gear-train links play strictly in
+// sequence instead of overwriting each other's swings.
+function animQueueDelay() {
+    let d = flightRemaining();
+    if (transformAnim)
+        d = Math.max(d, transformAnim.startTime + transformAnim.duration - performance.now());
+    return Math.max(0, d);
+}
+// [180826o] The interpolation, parameterised by progress k — so the trail can
+// sample where the body WAS a moment ago, not just where it is.
+function animatedCellsAt(k) {
+    if (!transformAnim) return null;
 
     if (transformAnim.type === 'pivot') {
         // Each cube travels along an arc around the anchor. The angular
@@ -13396,16 +13788,36 @@ function startFlip(dir, fromCells, fromParity, repel = false) {
     }
     const hasE = dir.includes('E'), hasW = dir.includes('W');
     const hasN = dir.includes('N'), hasS = dir.includes('S');
+    const toCells = repel ? fromCells : getPlayerCells();
+    // Hinge: leading bbox edge — exact for cardinals (it IS the reflection
+    // plane) and for repel bounces (to == from, so the boundary edge is the
+    // only sensible fold line).
+    let hx = hasE ? (maxX + 1) : minX;
+    let hy = hasS ? (maxY + 1) : minY;
+    // [200826a] Diagonal moves: hinge on the TRUE reflection plane, per the
+    // reference doc — the plane runs through the leading CUBE corner(s), not
+    // the bbox corner (they differ for L and diagonal pieces, e.g. an L moving
+    // SE folds one cell early, not at the bbox tip). The midpoint of the
+    // from/to centroids always lies exactly on that plane, so use it as the
+    // fold anchor. Landing cells were already correct; this only fixes where
+    // the visual fold line sits.
+    if (!repel && (hasE || hasW) && (hasN || hasS)) {
+        let fx = 0, fy = 0, tx = 0, ty = 0;
+        for (const c of fromCells) { fx += c.x + 0.5; fy += c.y + 0.5; }
+        for (const c of toCells)   { tx += c.x + 0.5; ty += c.y + 0.5; }
+        hx = (fx / fromCells.length + tx / toCells.length) / 2;
+        hy = (fy / fromCells.length + ty / toCells.length) / 2;
+    }
     flip = {
         active: true,
         repel,    // true → animation plays 0→apex→0 (cube bounces back, no commit)
         t0: performance.now(),
         dur: FLIP_DUR,
         fromCells, fromParity,
-        toCells: repel ? fromCells : getPlayerCells(),
+        toCells,
         toParity: repel ? fromParity : game.faceParity,
-        hx: hasE ? (maxX + 1) : minX,
-        hy: hasS ? (maxY + 1) : minY,
+        hx,
+        hy,
         axisX: hasE || hasW,
         axisY: hasN || hasS,
         dirX: hasE ? 1 : (hasW ? -1 : 0),
@@ -13541,17 +13953,24 @@ function respawnPlayer() {
 // [300726b] THE RANK LADDER — ten machines, small to sovereign, blending
 // gears, motoring, magnetism and the game's own name at the summit. Shown on
 // the game-over screen now; the persistent league table (todo) reuses it.
+// [180826m] RETUNED FROM MEASURED RUNS (22-31k by L5-7 on the current economy;
+// the old thresholds handed out rank 6 at mid-campaign and hid the top two in
+// deep endless). Now the climb tracks the campaign: TURBINE at the midpoint,
+// DYNAMO for finishing, ROTOЯ within reach of one exceptional run. GOVERNOR
+// retired for GYROSCOPE (designer: "something more mechanical") — which also
+// restores a name from this ladder's own earlier drafts, and ends the climb
+// GYROSCOPE → ROTOЯ: two forms of pure rotation.
 const RANK_LADDER = [
     [0,      'COG'],
-    [1500,   'SPROCKET'],
-    [4000,   'FLYWHEEL'],
-    [8000,   'CAMSHAFT'],
-    [15000,  'TURBINE'],
-    [26000,  'SOLENOID'],
-    [42000,  'DYNAMO'],
-    [65000,  'MAGNETO'],
-    [95000,  'GOVERNOR'],
-    [140000, 'ROTOЯ']
+    [2000,   'SPROCKET'],
+    [6000,   'FLYWHEEL'],
+    [12000,  'CAMSHAFT'],
+    [20000,  'TURBINE'],
+    [32000,  'SOLENOID'],
+    [48000,  'DYNAMO'],
+    [68000,  'MAGNETO'],
+    [92000,  'GYROSCOPE'],
+    [125000, 'ROTOЯ']
 ];
 // [030826v] Returns the POSITION as well as the name. "SPROCKET" on its own
 // means nothing to a new player; "RANK 2 OF 10" tells them there is a ladder,
@@ -13967,7 +14386,7 @@ function move(dir) {
         //     cube you need and leave the slot permanently unclaimable until a
         //     green appeared. Slots are the objective; they must not become a
         //     hazard that punishes you for approaching them.
-        if (!refuse) {
+        if (!refuse && !SLOT_PERMEABLE) {   // [180826e] permeable slots neither shed nor refuse
             const keys = probeCells.map(c => `${c.x},${c.y}`);
             const _topLawful = topLawfulRow();
             for (const sl of slots) {
@@ -14143,7 +14562,7 @@ function move(dir) {
         // doesn't change. Same denial sound as wrong-shape-on-slot.
         const proposedKeys = proposedCells.map(c => `${c.x},${c.y}`);
         const proposedKeySet = new Set(proposedKeys);
-        for (const slot of slots) {
+        for (const slot of (SLOT_PERMEABLE ? [] : slots)) {   // [180826e] no repel — slots are terrain
             if (slot.claimed) continue;
             if (!setNeeded.includes(slot.id)) continue;
             // Any overlap between proposed cells and the slot's cells?
@@ -14434,7 +14853,11 @@ function checkCollisions() {
         
         sfx.devolve();
         scoreGain(3, false);   // tool use — the trim transaction pays 3
-        rec('hurt', { from: prevType, to: result.shapeType });   // [160826q] mid-run damage, not just deaths
+        // [180826t] The casualty beat: flash the cubes the reds took, hold.
+        devolveStage = { cas: hazardHits.filter(h => !h.wall).map(h => ({ x: h.x, y: h.y })),
+                         t0: performance.now(), dur: 340 };
+        game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
+        rec('hurt', { from: prevType, to: result.shapeType, ch: 'red' });   // [160826q][180826d] channel-tagged
         signalSizeChange(prevType, result.shapeType, true); // pip only; devolve() is the audio
         const hitCell = hazardHits[0];
         const screenX = hitCell.x * CELL + CELL/2;
@@ -14492,16 +14915,14 @@ function checkCollisions() {
         for (const c of cells) {
             const k = `${c.x},${c.y}`;
             const item = world[k];
-            // [160826r] A PIVOT SURVIVES A SINGLE. Rotation happens around the
-            // trigger cube and a single IS its own trigger cube — the turn maps
-            // A→A and does literally nothing ([010826b] stopped these SPAWNING
-            // for singles, but one already on the board still got eaten by a
-            // single walking over it). Measured: 10 of the run's 18 pivot
-            // consumptions were exactly this — more than half of the rarest
-            // tool's uses were no-ops. Same law as greens under the socket
-            // gate: if the tool cannot act, it is not consumed. The pivot
-            // stands, waiting for a shape that can turn.
-            if (item === 'pivot' && game.shapeType === 'single') continue;
+            // [160826r] made pivots SURVIVE a single (a turn maps A→A, so the
+            // consumption was a measured no-op — 10 of 18 uses wasted).
+            // [180826q] REVERSED, designer's call: the silent survival read as
+            // a broken tool ("not engaging, please investigate") and lingering
+            // pivots clogged the board ("in the way, using up valuable playing
+            // space"). A single now CONSUMES a pivot as a cleanup verb — spin
+            // flourish, the +2 mechanism fee, cell becomes floor — the body
+            // simply doesn't transform, because a single has nothing to turn.
             if (item === 'pivot' || item === 'slip') {
                 triggerCell = c; triggerKey = k; triggerItem = item;
                 break;
@@ -14521,9 +14942,7 @@ function checkCollisions() {
             // Socket gate: an imprecise rotation into slot territory is refused —
             // the pivot fires and is spent, but the world resists; no movement.
             if (slotMisfitAt(newCells)) {
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil(null);                   // [270726x] recoil + wall at impact
                 triggerShake(3, 90);
                 HAPTICS.fire(HAPTIC.bump);   // [060826m]
@@ -14541,15 +14960,19 @@ function checkCollisions() {
                 game.playerX = pv.anchorX;   // [270726] anchor moves with the rotation
                 game.playerY = pv.anchorY;
                 // Shifter cell becomes a visited-floor trace (no walls).
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 scoreGain(2, false);   // engaged a mechanism
                 rec('use', { k: 'pivot', s: game.shapeType,
                     p: (typeof shiftPreviews !== 'undefined' && shiftPreviews.some(sp => sp.shifterKey === triggerKey)) ? 1 : 0,
                     sd: (pmeta && pmeta.seeded) ? 1 : 0, bt: game._landingBeat });   // [160826v][170826d] ghost? seeded? beat?
+                // [180826t] A single consuming a pivot gets the spin flourish —
+                // the arrow turns once and fades: used, not vanished.
+                if (game.shapeType === 'single')
+                    spinFX = { x: triggerCell.x, y: triggerCell.y,
+                               t0: performance.now() + animQueueDelay() };   // [190826a] spins at touch-down
                 game._arrivedViaShifter = true;   // tag: shifter-driven landing (strategic-claim bonus)
                 chainLinks++; chainStops.push({ x: triggerCell.x, y: triggerCell.y });
+                chainThread.push({ x: triggerCell.x, y: triggerCell.y, t: performance.now() });   // [180826t] live thread
                 chainContinue = true; game._chainCarry = true;   // [170826e] link fired — train survives the frame
                 cells = getPlayerCells();
                 const pcx = triggerCell.x * CELL + CELL/2;
@@ -14588,9 +15011,7 @@ function checkCollisions() {
                 // unreachable for turns: the trigger cube never moves). The
                 // shape is shoved aside instead ([270726x] recoil), the
                 // shifter is spent, dull thud.
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 // [300726bc] If the block was a RED, burn it and charge — the
                 // same one-red-rule as a flip. Previously this path absorbed the
                 // push silently: no cube lost, no time lost, red still standing.
@@ -14640,9 +15061,7 @@ function checkCollisions() {
             // Socket gate (see slotMisfitAt): an imprecise push into slot
             // territory is refused — slip spent, no movement.
             if (slotMisfitAt(newCells)) {
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil({ dx: v.dx, dy: v.dy });   // [270726x] v = this slip's vector
                 triggerShake(3, 90);
                 HAPTICS.fire(HAPTIC.bump);   // [060826m]
@@ -14680,15 +15099,14 @@ function checkCollisions() {
                 game.playerX = newX;
                 game.playerY = newY;
                 // Shifter cell becomes a visited-floor trace (no walls).
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 scoreGain(2, false);   // engaged a mechanism
                 rec('use', { k: 'slip', s: game.shapeType,
                     p: (typeof shiftPreviews !== 'undefined' && shiftPreviews.some(sp => sp.shifterKey === triggerKey)) ? 1 : 0,
                     sd: (meta && meta.seeded) ? 1 : 0, bt: game._landingBeat });   // [160826v][170826d] ghost? seeded? beat?
                 game._arrivedViaShifter = true;   // tag: shifter-driven landing (strategic-claim bonus)
                 chainLinks++; chainStops.push({ x: triggerCell.x, y: triggerCell.y });
+                chainThread.push({ x: triggerCell.x, y: triggerCell.y, t: performance.now() });   // [180826t] live thread
                 chainContinue = true; game._chainCarry = true;   // [170826e] link fired — train survives the frame
                 cells = getPlayerCells();
                 const scx = triggerCell.x * CELL + CELL/2;
@@ -14719,9 +15137,7 @@ function checkCollisions() {
                 // single stepped into a wall or off the edge). [270726x]:
                 // the shape is shoved aside (recoil + wall at impact), the
                 // shifter is spent, a dull thud plays.
-                delete world[triggerKey];
-                markCovered(triggerKey);
-                delete shifterMeta[triggerKey];
+                consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil({ dx: v.dx, dy: v.dy });
                 scoreGain(2, false);   // engaged a mechanism
                 triggerShake(3, 110);
@@ -14739,8 +15155,7 @@ function checkCollisions() {
         let trainLive = false;
         for (const c of cells) {
             const w2 = world[`${c.x},${c.y}`];
-            if (w2 === 'pivot' && game.shapeType === 'single') continue;
-            if (w2 === 'pivot' || w2 === 'slip') { trainLive = true; break; }
+            if (w2 === 'pivot' || w2 === 'slip') { trainLive = true; break; }   // [180826q] singles consume pivots
         }
         if (!trainLive && chainLinks >= 2 && !game._chainCelebrated) {
             game._chainCelebrated = true;   // once per train — the carry can outlive the beat
@@ -14750,12 +15165,16 @@ function checkCollisions() {
             // links. The claim site (if this train ends in one) adds the
             // banner and the multiplier.
             rec('chain', { links: chainLinks });
+            game.roundChains = (game.roundChains || 0) + 1;   // [180826g] tally line
+            // [190826a] The replay starts after the whole ride has visually
+            // finished — flight plus every queued swing — not at logic time.
+            const _celeBase = animQueueDelay();
             chainStops.forEach((s, i) => setTimeout(() => {
                 if (!game.running) return;
                 addBurst(s.x * CELL + CELL / 2, (s.y - game.cameraY) * CELL + CELL / 2, '#ffd60a');
                 if (typeof playTone === 'function')
                     playTone(520 * Math.pow(1.26, i), 0.09, 'triangle', 0.16);
-            }, i * 140));
+            }, _celeBase + i * 140));
         }
         // [170826e] NEAR-MISS: the train (or single link) ended ONE CARDINAL
         // STEP short of an exact claim. A brief shimmer on the slot converts
@@ -14871,6 +15290,7 @@ function checkCollisions() {
             }
             anyNewPeach = true;
             game.cellsVisited++;
+            reserveDrip();   // [180826p] fresh ground feeds the reserve tank
             // [160826t] Same both-sides rule as markCovered — this is the main
             // traversal path, so old-round ground walked here polluted the
             // numerator most of all.
@@ -15372,6 +15792,25 @@ function applyImpactDevolve(hitIndices, label) {
         addBurst(cubeX, cubeY, '#94a3b8');
     }
     if (sfx.devolve) sfx.devolve();
+    // [180826t] Casualty beat here too — same staging as the red channel.
+    devolveStage = { cas: idx.map(i => ({ x: cells[i].x, y: cells[i].y })),
+                     t0: performance.now(), dur: 340 };
+    game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
+    // [180826d] ONE VERB, EVERY CHANNEL. This path — wall bumps, misfit slots,
+    // ceiling, edge — shed cubes with bursts and a sound but NO WORDS, while
+    // the red and shifter channels both announced "DEVOLVE!". Field note: "I am
+    // going to bump into something to devolve my shape... this concept needs
+    // explaining more to players." The designer was using an unnamed verb. Now
+    // every shrink says the same word the welcome key already teaches, and the
+    // recorder tags WHICH channel (ch) so the pricing across channels can be
+    // checked from data rather than assumed.
+    {
+        const first = cells[idx[0]];
+        addFloat(first.x * CELL + CELL / 2, (first.y - game.cameraY) * CELL,
+            idx.length > 1 ? `DEVOLVE x${idx.length}!` : 'DEVOLVE!', '#ef4444');
+        showTip('devolve');
+        rec('hurt', { from: prevType, to: result.shapeType, ch: label });
+    }
     signalSizeChange(prevType, result.shapeType, true);
     triggerShake(5, 220);
     flashPlayerDenied();
@@ -15437,7 +15876,29 @@ function tryMultiDevolve(playerCells, hitIndices) {
 // which the post-move claim check then banks). Any partial or wrong-shape
 // overlap = the socket refuses the machine: the shifter fizzles, you stay put.
 // Player-chosen flips are unaffected (walking over slots stays free).
+// ── [180826e] THE PERMEABILITY EXPERIMENT ───────────────────────────────────
+// Slots become TERRAIN: any shape may cross, stand on, or pass through an
+// unclaimed slot freely — it claims on exact fit and only then. This is round
+// three of a real design argument the file has already had twice: [300726bf]
+// ruled slots "must not become a hazard that punishes approach"; [300726bg]
+// reversed to shed-on-contact ("orienting correctly IS the skill"). Field
+// experience sided with bf — the 2x2-half-out-of-bounds cube loss, the L13
+// trap pocket — so the shed rule is OFF and the board opens up.
+// What this flag silences: the shed/refuse on slot contact in move(), the
+// socket gate on pivot/slip/green resolutions (slotMisfitAt), the solver's
+// repel, and the wrong-shape denial sound (standing on a slot is now normal
+// traversal, not an offence).
+// VERDICT [180826k]: REVERTED after two full trial runs, designer's call, "no
+// exceptions". The measurements sided with permeability (deepest run, highest
+// score, no bank-time collapse) but the FEEL did not: a wrong piece resting in
+// a socket contradicts a game about fitting, the claim's arrival lost its
+// snap, and the shed-tax's teaching pressure was missed. Feel outranks
+// telemetry on a one-designer game — recorded here so the third round of this
+// argument (bf → bg → permeable → back) starts from both ledgers.
+const SLOT_PERMEABLE = false;
+
 function slotMisfitAt(newCells) {
+    if (SLOT_PERMEABLE) return false;   // [180826e] slots are terrain
     const keys = newCells.map(c => `${c.x},${c.y}`);
     for (const sl of slots) {
         if (sl.claimed || sl.retiring) continue;
@@ -15557,9 +16018,7 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
     game.shapeConfig = result.config;
     game.playerX = result.anchorX;
     game.playerY = result.anchorY;
-    delete world[triggerKey];
-    markCovered(triggerKey);
-    delete shifterMeta[triggerKey];
+    consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
     scoreGain(2, false);   // engaged a mechanism
     scoreGain(3, false);   // the trim transaction (same price as a flip trim)
     game._arrivedViaShifter = true;   // shifter-driven landing (strategic-claim bonus)
@@ -15580,6 +16039,11 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
         addFusion(seamX, seamY, cubeX, cubeY, 'uncouple');
     }
     sfx.devolve();
+    // [180826t] Casualty beat on machine-push trims as well.
+    devolveStage = { cas: redIndices.map(i => ({ x: newCells[i].x, y: newCells[i].y })),
+                     t0: performance.now(), dur: 340 };
+    game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
+    rec('hurt', { from: prevType, to: result.shapeType, ch: 'push' });   // [180826d] machine-push trims were unrecorded
     signalSizeChange(prevType, result.shapeType, true);
     triggerShake(4, 200);
     addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
@@ -15631,7 +16095,7 @@ function classifyFlip(dir) {
     // → move bounces back. Also a non-event.
     const keys = footprint.map(c => `${c.x},${c.y}`);
     const keySet = new Set(keys);
-    for (const slot of slots) {
+    for (const slot of (SLOT_PERMEABLE ? [] : slots)) {   // [180826e] classifier agrees: no block
         if (slot.claimed || !setNeeded.includes(slot.id)) continue;
         let overlaps = false;
         for (const k of slot.keys) { if (keySet.has(k)) { overlaps = true; break; } }
@@ -15805,6 +16269,7 @@ function routeExactClaim(cells) {
 // Wrong-shape repel: a landing that overlaps ANY still-needed slot non-exactly
 // bounces the flip back in the real game (no move), so it is not a real edge.
 function routeRepelsNonExact(cells) {
+    if (SLOT_PERMEABLE) return false;   // [180826e] routes go through slots now
     const keys = cells.map(c => c.x + ',' + c.y);
     const keySet = new Set(keys);
     for (const sl of slots) {
@@ -15821,7 +16286,7 @@ function routeRepelsNonExact(cells) {
 // One flip from (config,x,y), with any covered stance-shifter auto-fired. Returns
 // the true successor { config, x, y, cells } for a traversable same-body step,
 // or null if the flip is not a real same-body transition.
-function routeStep(type, config, x, y, dir) {
+function routeStep(type, config, x, y, dir, fuseIsGoal) {
     const transRow = SHAPES[type].trans[config];
     if (!transRow || !transRow[dir]) return null;
     let nConfig = transRow[dir];
@@ -15847,7 +16312,13 @@ function routeStep(type, config, x, y, dir) {
 
     // Body-changers are out of scope → not edges.
     if (landsOnHazard(nx, ny, type, nConfig)) return null;           // devolve / death
-    if (findFusionAt(cells)) return null;                            // green fusion → evolve
+    // [180826v] ...unless the body-change IS the objective. When the solver is
+    // running its green stage, a landing that would fuse is the GOAL, not a
+    // non-edge — the route may END at growth, never pass through it.
+    if (findFusionAt(cells)) {
+        if (fuseIsGoal) return { config: nConfig, x: nx, y: ny, cells: cells, fuseGoal: true };
+        return null;                                                 // green fusion → evolve
+    }
 
     // Non-exact overlap of a needed slot bounces back; exact overlap is a claim
     // (kept — the goal test below catches it).
@@ -15942,26 +16413,66 @@ function solveRoute() {
         return { reachable: true, path: path, slot: goalNode.claim };
     }
 
-    if (!needed.length) return { reachable: false, path: [start], slot: null, noBody: true };
-
-    // Frayed: extend to the reachable node nearest the closest needed same-body slot.
-    const startC = routeCentroid(start.cells);
-    let target = null, tbest = Infinity;
-    for (let i = 0; i < needed.length; i++) {
-        const sc = routeCentroid(needed[i].cells);
-        const dd = Math.hypot(sc.x - startC.x, sc.y - startC.y);
-        if (dd < tbest) { tbest = dd; target = needed[i]; }
+    if (!needed.length) {
+        // ── [180826v] ROUTE TO THE ENABLER ──────────────────────────────────
+        // Field call: a single was shown a trail toward a pair slot it cannot
+        // claim, with the required green nowhere in the picture — the guide
+        // pointed at the destination and omitted the step that makes it
+        // possible. When no same-body slot exists and the set wants a BIGGER
+        // shape, the guide now plots a full, confident route to the nearest
+        // reachable green: the green IS the current objective. The fray only
+        // remains for the genuinely stuck case (growth needed, no green).
+        // [180826z] Green-stage routing DISABLED — same law as the fray: the
+        // guide draws complete claim routes or nothing. A route to a green is
+        // complete-to-an-objective but not to a CLAIM, and the designer drew
+        // the line at claims. The machinery stays for one build in case the
+        // line moves back.
+        const GREEN_STAGE = false;
+        const myMult = SHAPES[type] ? SHAPES[type].mult : 1;
+        let wantsBigger = false;
+        for (const id of setNeeded) {
+            const req = parseRequirement(id);
+            if (SHAPES[req.type] && SHAPES[req.type].mult > myMult) { wantsBigger = true; break; }
+        }
+        if (GREEN_STAGE && wantsBigger) {
+            const seen2 = new Map();
+            seen2.set(start.config + '|' + start.x + '|' + start.y, start);
+            const q2 = [start];
+            let h2 = 0, exp2 = 0, greenGoal = null;
+            while (h2 < q2.length && exp2 < ROUTE_CFG.MAX_NODES) {
+                const node = q2[h2++];
+                exp2++;
+                if (node.depth >= ROUTE_CFG.MAX_DEPTH) continue;
+                for (let d = 0; d < DIRS_ORDER.length; d++) {
+                    const step = routeStep(type, node.config, node.x, node.y, DIRS_ORDER[d], true);
+                    if (!step) continue;
+                    if (step.y > maxRow || step.y < topLawfulRow()) continue;
+                    if (step.cells.some(function (c) { return c.x < 0 || c.x >= VIEW_W; })) continue;
+                    const key = step.config + '|' + step.x + '|' + step.y;
+                    if (seen2.has(key)) continue;
+                    const child = { config: step.config, x: step.x, y: step.y,
+                                    cells: step.cells, parent: node, depth: node.depth + 1 };
+                    seen2.set(key, child);
+                    if (step.fuseGoal) { greenGoal = child; break; }
+                    q2.push(child);
+                }
+                if (greenGoal) break;
+            }
+            if (greenGoal) {
+                const path = [];
+                for (let n = greenGoal; n; n = n.parent) path.unshift(n);
+                return { reachable: true, path: path, slot: null, greenGoal: true };
+            }
+        }
+        return { reachable: false, path: [start], slot: null, noBody: true };
     }
-    const targetC = routeCentroid(target.cells);
-    let tip = start, best = Infinity;
-    seen.forEach(function (node) {
-        const c = routeCentroid(node.cells);
-        const dd = Math.hypot(c.x - targetC.x, c.y - targetC.y);
-        if (dd < best) { best = dd; tip = node; }
-    });
-    const path = [];
-    for (let n = tip; n; n = n.parent) path.unshift(n);
-    return { reachable: false, path: path, slot: target, noBody: false };
+
+    // [180826z] THE FRAY IS RETIRED — designer's law for the whole guide
+    // layer: COMPLETE ROUTES TO A CLAIM, OR NOTHING. The half-trail toward an
+    // unreachable slot was read, twice, as an instruction to do the impossible;
+    // an incomplete drawing is worse than silence. Text tips still diagnose;
+    // the board draws only what can actually be done.
+    return { reachable: false, path: [start], slot: null, noBody: true };
 }
 
 // Signature cache — recompute on any state change (position, config, set, camera,
@@ -16076,12 +16587,29 @@ let shiftPreviews = [];
 let _spvLastCompute = 0;
 
 function computeShifterPreviews() {
+    // ── [180826z] STANDALONE SHIFTER GHOSTS RETIRED — designer's law: a
+    // shifter outcome may only be shown as part of a longer sequence of steps
+    // for the current shape, i.e. inside a complete Move Guide route (where
+    // hops are already ringed and threaded, [170826c]). A free-floating
+    // outcome ghost — even a tricky or gold one — was clutter the player
+    // could not connect to a plan: "the grey outline means nothing to me."
+    // The whole preview machinery below is kept intact behind this gate; the
+    // recorder's p-flag will simply read 0, which is itself the measurement
+    // that the layer is off.
+    return [];
     if (!game.running || game.paused || game.testDrive ||
         game.inputLocked || isTransformAnimActive()) return [];
     const found = [], seen = new Set();
     for (const aim of DIRS_ORDER) {
         const p = computeShifterPreviewFor(aim);
-        if (p && !seen.has(p.shifterKey)) { seen.add(p.shifterKey); found.push(p); }
+        // [180826u] ONLY TRICKY MOVES GHOST — field call: a clean one-link slip
+        // ghost repeats what the arrow already says, in more pixels. The ghost
+        // earns its place only when the outcome DIVERGES from "one cell that
+        // way": a rotation (hard to compute), a loss, a refusal, an off-board
+        // push, a chain, or a claim. Everything else stays quiet.
+        const tricky = p && (p.denial || p.oob || (p.lost && p.lost.length) ||
+                             p.gold || p.poses.length >= 2 || p.firstKind === 'pivot');
+        if (tricky && !seen.has(p.shifterKey)) { seen.add(p.shifterKey); found.push(p); }
     }
     // Gold outranks steel — the combo is the point. Then cap.
     found.sort((a, b) => (b.gold ? 1 : 0) - (a.gold ? 1 : 0));
@@ -16182,7 +16710,8 @@ function computeShifterPreviewFor(aim) {
         gold = slots.some(sl => !sl.claimed && !sl.retiring &&
             sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
     }
-    return { poses, lost, denial, oob, shifterKey: tKey, shifterCell: trigger, gold };
+    return { poses, lost, denial, oob, shifterKey: tKey, shifterCell: trigger, gold,
+             firstKind: item };   // [180826u] what the first machine was — the tricky-move filter needs it
 }
 
 function drawShifterPreview() {
@@ -16294,7 +16823,9 @@ function drawMoveGuideRoute() {
             const h = 0 + 275 * ((i - 1) / span);        // red -> violet
             return day ? `hsl(${h}, 85%, 38%)` : `hsl(${h}, 90%, 62%)`;
         };
-        const goalCol = '#ffffff';
+        // [180826v] A green-stage route ends LIME — the goal ghost wears the
+        // green's own colour, so "go here first and grow" needs no words.
+        const goalCol = r.greenGoal ? '#a3e635' : '#ffffff';
         for (let i = 1; i < path.length; i++) {
             const age = t - (i - 1) * STAGGER_MS;
             if (age < 0) continue;                       // this move has not arrived yet
@@ -16884,11 +17415,9 @@ function drawJoystickGuide() {
         pctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
         pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
     }
-    pctx.globalAlpha = 0.3 * FA;
-    pctx.fillStyle = day ? '#1e293b' : '#0f172a';
-    for (const [gx, gy] of [[0,0],[-7,0],[7,0],[0,-7],[0,7]]) {
-        pctx.beginPath(); pctx.arc(gx, gy, 1.9, 0, Math.PI * 2); pctx.fill();
-    }
+    // [180826w] The five grip dimples are gone — designer's call. They read as
+    // clutter at rest rather than texture; the knob's gradient carries its
+    // shape on its own.
     pctx.restore();
     pctx.restore();
     // [070826e] ALWAYS restore. Without this the swap leaks: every draw after
@@ -17719,7 +18248,8 @@ function draw() {
                 // silent refusal is indistinguishable from a bug — the field
                 // notes read one as "not engaging, please investigate". Dimmed
                 // to 40%, no glow: clearly present, clearly not for you yet.
-                const pvInert = item === 'pivot' && game.shapeType === 'single';
+                // [180826q] Stand-down dim retired — singles consume pivots now.
+                const pvInert = false;
                 if (pvInert) { ctx.save(); ctx.globalAlpha *= 0.4; }
                 if (currentTheme === 'day') {
                     // [290726j] Day pivot/slip — PEWTER. The same metal, taken
@@ -17732,7 +18262,10 @@ function draw() {
                     // but it could not follow --wm-steel if that ever moved.
                     // Now reads the variable, so the ONE day metal is defined in
                     // one place and the two surfaces cannot drift apart.
-                    roundedSq(sx, sy, CELL_SIZE, DAY_SHIFTER_FILL, '#8fa3b8', 1);
+                    // [180826c] Day gets the same breath as night — it had no
+                    // pulse at all, so shifters sat flat on the white floor.
+                    const dayPulse = 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);
+                    roundedSq(sx - 1.5 * dayPulse, sy - 1.5 * dayPulse, CELL_SIZE + 3 * dayPulse, DAY_SHIFTER_FILL, '#8fa3b8', 1);
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
                     drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
                     if (pvInert) ctx.restore();   // [170826b] matched exit
@@ -17748,7 +18281,11 @@ function draw() {
                 ctx.globalAlpha = 0.74;            // metal should read bright, not dim
                 ctx.shadowColor = `rgb(${r},${g},${b})`;
                 ctx.shadowBlur  = 6 + 6 * pulse;
-                roundedSq(sx, sy, CELL_SIZE, `rgb(${r},${g},${b})`, null);
+                // [180826c] SIZE BREATH, the hourglass lesson [170826b]: a glow
+                // pulse reads as static at a glance; a ±1.5px breath is what
+                // peripheral vision catches. All shifters breathe now — the
+                // "powered mechanism" signature made visible.
+                roundedSq(sx - 1.5 * pulse, sy - 1.5 * pulse, CELL_SIZE + 3 * pulse, `rgb(${r},${g},${b})`, null);
                 ctx.restore();
                 // Glyph — stroked vector, uniform 2.4px ([270726l]): matches
                 // the white "+" on greens, "−" on reds, and the hourglass.
@@ -17761,11 +18298,17 @@ function draw() {
                     roundedSq(sx, sy, CELL_SIZE, 'rgba(148, 163, 184, 0.10)', null);
                 }
                 if (currentTheme === 'day') {
-                    // Day visited — peach floor with a darker-peach edge so
+                    // Day visited — pale pink floor with a darker-pink edge so
                     // the trail reads clearly against the white floor tiles.
-                    roundedSq(sx, sy, CELL_SIZE, '#ffe4ea', '#ff8fa6', 1);
+                    // [200826e] Fill one notch paler (#ffe4ea → #ffeef3) per
+                    // request: the fine edge does the marking work, so the fill
+                    // can recede and let the player/items pop. Edge unchanged —
+                    // it's what keeps this above the vanishing point [070826m].
+                    roundedSq(sx, sy, CELL_SIZE, '#ffeef3', '#ff8fa6', 1);
                 } else {
-                    roundedSq(sx, sy, CELL_SIZE, palette().visitedFill, null);
+                    // [200826d] Fine bright edge on the night trail (see
+                    // palette note) — neon tube outline per covered cell.
+                    roundedSq(sx, sy, CELL_SIZE, palette().visitedFill, palette().visitedStroke, 1);
                 }
                 // FRESH PAINT COOLS (V9): just-covered cells bloom brighter
                 // in the trail hue and settle over ~1.2s — you watch yourself
@@ -17843,10 +18386,14 @@ function draw() {
                 ctx.restore();
             }
 
+            // [180826c] Greens breathe too — same ±1.5px as pivots, slips and
+            // the big hourglass, on the slow phase so the board reads as one
+            // family of powered machines rather than three idioms.
+            const breathe = 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);
             if (currentTheme === 'day') {
                 // Day green pickup — flat lime with a darker lime edge for
                 // definition against the white canvas. "+" glyph below.
-                roundedSq(sx, sy, SIZE, '#a3e635', '#7eb821', 1);
+                roundedSq(sx - 1.5 * breathe, sy - 1.5 * breathe, SIZE + 3 * breathe, '#a3e635', '#7eb821', 1);
             } else {
                 // Night green pickup — GLOWING MATTER: a loose cube of the same
                 // stuff the player is made of. Near-solid body, glow just under
@@ -17855,7 +18402,7 @@ function draw() {
                 ctx.globalAlpha = 0.92;
                 ctx.shadowColor = '#a3e635';
                 ctx.shadowBlur = 10;
-                roundedSq(sx, sy, SIZE, '#a3e635', null);
+                roundedSq(sx - 1.5 * breathe, sy - 1.5 * breathe, SIZE + 3 * breathe, '#a3e635', null);
                 ctx.restore();
                 // Inner highlight rim — the flesh cue the player wears
                 roundedSq(sx + 2, sy + 2, SIZE - 4, null, 'rgba(255,255,255,0.28)', 1.5);
@@ -18010,6 +18557,24 @@ function draw() {
     // transformAnim never overlap (flip finishes before processNewLanding).
     const animCells = getAnimatedRenderCells();
     if (animCells) renderCells = animCells;
+    // [180826o] MOTION TRAIL: two fading afterimages behind the swinging body,
+    // sampled from the same interpolation a beat back — the arc/slide leaves
+    // its path on screen. Steel, because a machine is doing the moving.
+    if (animCells && transformAnim) {
+        const kNow = getTransformProgress();
+        ctx.save();
+        for (const dk of [0.18, 0.36]) {
+            const kk = kNow - dk;
+            if (kk <= 0) continue;
+            const ghost = animatedCellsAt(kk);
+            if (!ghost) continue;
+            ctx.globalAlpha = dk === 0.18 ? 0.22 : 0.10;
+            for (const c of ghost)
+                roundedSq(c.x * CELL + 3, (c.y - game.cameraY) * CELL + 3, CELL - 6,
+                          SHIFTER_FAMILY_COLOR, null);
+        }
+        ctx.restore();
+    }
     if (flip.active) {
         const ft = (performance.now() - flip.t0) / flip.dur;
         if (ft >= 1) {
@@ -18064,10 +18629,16 @@ function draw() {
     // you can claim. Parity keeps its two-brightness alternation, derived
     // from the family base per theme.
     const famBase = (SLOT_DEFS[game.shapeType] && SLOT_DEFS[game.shapeType].color) || '#22d3ee';
+    // [200826b] Day player was lightened 38–50% toward white, which left the
+    // single's cyan reading as the same pastel weight as mint walls and the
+    // (already pale) pink trail — three light sweets, no hero. The day board
+    // is pastel; the PLAYER shouldn't be. Lighten cut to 16/30% (parity step
+    // preserved) and the defining edge now goes DARKER than the family colour
+    // instead of lighter, so the cube keeps a crisp rim on every ground tint.
     const FACE_DARK = currentTheme === 'day'
         ? (renderParity
-            ? [lightenHex(famBase, 0.55), lightenHex(famBase, 0.38), lightenHex(famBase, 0.05)]
-            : [lightenHex(famBase, 0.68), lightenHex(famBase, 0.5), lightenHex(famBase, 0.18)])
+            ? [lightenHex(famBase, 0.55), lightenHex(famBase, 0.16), shadeHex(famBase, 0.55)]
+            : [lightenHex(famBase, 0.68), lightenHex(famBase, 0.30), shadeHex(famBase, 0.55)])
         : (renderParity
             ? [shadeHex(famBase, 0.82), shadeHex(famBase, 0.82), shadeHex(famBase, 0.82)]
             : [lightenHex(famBase, 0.16), lightenHex(famBase, 0.16), lightenHex(famBase, 0.16)]);
@@ -18228,6 +18799,7 @@ function draw() {
     // the destination cells, never on the player's own, so nothing is occluded.
     drawMoveGhost();
     drawShifterPreview();   // [160826u] shifter outcome ghost, above the route
+    drawAnimFX();           // [180826t] devolve flash, seat, spin, chain thread
     drawNoteMarks();        // [160826y] dev-note cell rings, topmost
     if (game.testDrive || stickOn) drawJoystickGuide();
 
@@ -18809,9 +19381,18 @@ function scheduleLoop() { const g = ++_loopGen; requestAnimationFrame(t => loop(
 function loop(time, gen) {
     if (gen !== undefined && gen !== _loopGen) return;   // stale chain — let it die
     if (!game.running) return;
-    
+
     const dt = time - lastTime;
     lastTime = time;
+
+    // [180826s] FRAME TIMING into the recorder — "can it do 60fps" answered
+    // per-device from exports rather than assumed. Rolling sum/count/worst,
+    // read and reset by the 2s tick sampler. Cost: three additions per frame.
+    if (dt > 0 && dt < 500) {
+        game._ftSum = (game._ftSum || 0) + dt;
+        game._ftN = (game._ftN || 0) + 1;
+        if (dt > (game._ftMax || 0)) game._ftMax = dt;
+    }
     
     // Guard the whole frame: an unexpected error must never break the rAF chain
     // and freeze the game. On error, log and reschedule so the next frame
@@ -19090,6 +19671,34 @@ function loop(time, gen) {
         }
     }
     if (game.speedTimer >= LEVEL_TIME_LIMIT) {
+        // ── [180826p] THE RESERVE TANK FIRES ────────────────────────────────
+        // At the exact moment the wheel would take a heart, ground already
+        // covered pays out instead: the tank dumps into the wheel, the heart
+        // stays, and the run breathes. Only at empty, only what was earned.
+        if ((game.timeReserve || 0) >= 1) {
+            const give = Math.round(game.timeReserve);
+            game.timeReserve = 0;
+            game._reserveFullShown = false;
+            momentumAddSeconds(give);
+            rec('reserve', { sec: give, r: advancedRound, cov: Math.round(game.coverage || 0) });
+            // [180826t] THE POUR: sparks stream from the player into the wheel
+            // — covered ground visibly becoming time.
+            if (game._rotorTgt) {
+                const px = game.playerX * CELL + CELL / 2, py = (game.playerY - game.cameraY) * CELL + CELL / 2;
+                for (let i = 0; i < 14; i++) {
+                    setTimeout(() => {
+                        if (!game.running) return;
+                        rotorSparks.push({ x: px + (Math.random() * 26 - 13), y: py + (Math.random() * 26 - 13),
+                                           tx: game._rotorTgt.x, ty: game._rotorTgt.y, t: performance.now() });
+                    }, i * 45);
+                }
+            }
+            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.32, `RESERVE TANK!\n+${give}s`, '#fb8b1e', true,
+                     { life: 1900, hold: 900 });
+            triggerEdgeGlow('#fb8b1e', 1200);
+            if (sfx.time30) sfx.time30();
+            return;   // no heart lost this beat — the tank took the hit
+        }
         lives = Math.max(0, lives - 1);
         updateLivesHUD();
         if (lives <= 0) { endGame('stall'); return; }
@@ -19303,9 +19912,25 @@ try {
     if (Array.isArray(savedRuns)) {
         runs = savedRuns
             .filter(r => r && typeof r.s === 'number' && isFinite(r.s))
-            .map(r => ({ s: r.s, l: r.l || 1, t: r.t || 0 }));
+            .map(r => ({ s: r.s, l: r.l || 1, t: r.t || 0, d: r.d || 0 }));
     }
 } catch(e) {}
+// [180826b] DUMMY SCORES while the table is empty — six plausible runs spread
+// across the ladder so the page shows its badge progression (steel through
+// bronze) rather than ten dashes. Marked d:1 and SELF-CLEANING: the first real
+// run recorded sweeps every dummy out (see recordRun), so they exist only
+// until the game has something true to say.
+if (!runs.length) {
+    const day = 86400000, now = Date.now();
+    runs = [
+        { s: 18450, l: 6, t: now - 1 * day, d: 1 },
+        { s: 12980, l: 5, t: now - 2 * day, d: 1 },
+        { s: 8640,  l: 4, t: now - 2 * day, d: 1 },
+        { s: 5210,  l: 3, t: now - 4 * day, d: 1 },
+        { s: 2470,  l: 2, t: now - 5 * day, d: 1 },
+        { s: 960,   l: 1, t: now - 6 * day, d: 1 }
+    ];
+}
 
 function saveRuns() {
     try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch(e) {}
@@ -19317,6 +19942,7 @@ function saveRuns() {
 // latter.
 function recordRun(score, level) {
     if (!isFinite(score) || score <= 0) return 0;   // a no-score run is not a run
+    runs = runs.filter(r => !r.d);   // [180826b] first real run sweeps the dummies out
     const entry = { s: Math.round(score), l: level || 1, t: Date.now() };
     runs.push(entry);
     // Score descending; on a tie the EARLIER run keeps the higher slot, so a
@@ -19391,8 +20017,13 @@ setInterval(function () {
             v: (typeof countShiftersInView === 'function') ? countShiftersInView() : -1,
             m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
             c: Math.round(game.coverage || 0),
-            s: game.shapeType
+            s: game.shapeType,
+            rv: Math.round(game.timeReserve || 0),   // [180826p] reserve level
+            // [180826s] fps = frames actually delivered; fw = worst frame ms.
+            fps: game._ftN ? Math.round(1000 / (game._ftSum / game._ftN)) : 0,
+            fw: Math.round(game._ftMax || 0)
         });
+        game._ftSum = 0; game._ftN = 0; game._ftMax = 0;
     } catch (e) {}
 }, 2000);
 
@@ -19500,6 +20131,132 @@ document.addEventListener('keydown', e => {
         e.preventDefault(); enterNoteMode();
     }
 });
+
+// ── [180826t] THE ANIMATION FX LAYER — four storytellers in one pass ────────
+// Transient, data-driven effects the render loop draws after the board:
+//   devolveStage  the casualty beat: cubes that are about to be lost FLASH red
+//                 and hold (~340ms freeze) before the fling — "these died,
+//                 those survived" told in the moment, not the aftermath
+//   seatFX        the claim seat: the socket's cells contract onto the piece,
+//                 the fit shown rather than implied
+//   spinFX        the cleanup spin: a single consuming a pivot spins the
+//                 glyph's arrow once — "used", not "vanished"
+//   chainThread   the live ride: steel segments connect each machine of a
+//                 train while it plays, so TOP GEAR reads as one mechanism
+let devolveStage = null;   // { cas:[{x,y}], t0, dur }
+let seatFX = null;         // { cells:[{x,y}], color, t0 }
+let spinFX = null;         // { x, y, t0 }
+let chainThread = [];      // [{x, y, t}]
+
+function drawAnimFX() {
+    const now = performance.now();
+    // [180826ae] Consumed tools linger until the piece visually lands — the
+    // shifter must not vanish under a cube still in the air. Drawn in each
+    // theme's own idiom, then released the frame after touch-down.
+    if (lingerFX.length) {
+        lingerFX = lingerFX.filter(f => now < f.until);
+        const day = currentTheme === 'day';
+        for (const f of lingerFX) {
+            const sx = f.x * CELL + 2, sy = (f.y - game.cameraY) * CELL + 2;
+            ctx.save();
+            if (day) {
+                roundedSq(sx, sy, CELL - 4, DAY_SHIFTER_FILL, '#8fa3b8', 1);
+            } else {
+                ctx.globalAlpha = 0.74;
+                roundedSq(sx, sy, CELL - 4, SHIFTER_FAMILY_COLOR, null);
+                ctx.globalAlpha = 1;
+            }
+            if (typeof drawShifterGlyph === 'function')
+                drawShifterGlyph(sx + (CELL - 4) / 2, sy + (CELL - 4) / 2, f.kind, f.meta);
+            ctx.restore();
+        }
+    }
+    if (devolveStage) {
+        const k = (now - devolveStage.t0) / devolveStage.dur;
+        if (k >= 1) devolveStage = null;
+        else {
+            ctx.save();
+            const pulse = 0.5 + 0.5 * Math.sin(now / 42);
+            for (const c of devolveStage.cas) {
+                const sx = c.x * CELL + 3, sy = (c.y - game.cameraY) * CELL + 3;
+                ctx.globalAlpha = (0.5 + 0.35 * pulse) * (1 - k * 0.4);
+                roundedSq(sx, sy, CELL - 6, '#ef4444', null);
+                ctx.globalAlpha = 0.9 * (1 - k * 0.4);
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+                const m = CELL * 0.26;
+                ctx.beginPath();
+                ctx.moveTo(sx + m, sy + m); ctx.lineTo(sx + CELL - 6 - m, sy + CELL - 6 - m);
+                ctx.moveTo(sx + CELL - 6 - m, sy + m); ctx.lineTo(sx + m, sy + CELL - 6 - m);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+    if (seatFX) {
+        const k = (now - seatFX.t0) / 320;
+        if (k >= 1) seatFX = null;
+        else if (k < 0) { /* [190826a] queued behind the flight — not yet */ }
+        else {
+            ctx.save();
+            const inset = 7 * (1 - k);          // contracts onto the piece
+            ctx.globalAlpha = 0.85 * (1 - k * 0.5);
+            ctx.strokeStyle = seatFX.color || '#7dd3fc';
+            ctx.lineWidth = 3.5 - 1.5 * k;
+            ctx.shadowColor = seatFX.color || '#7dd3fc';
+            ctx.shadowBlur = 10 * (1 - k);
+            for (const c of seatFX.cells) {
+                const sx = c.x * CELL - inset, sy = (c.y - game.cameraY) * CELL - inset;
+                roundedSq(sx, sy, CELL + inset * 2, null, ctx.strokeStyle, ctx.lineWidth);
+            }
+            ctx.restore();
+        }
+    }
+    if (spinFX) {
+        const k = (now - spinFX.t0) / 420;
+        if (k >= 1) spinFX = null;
+        else if (k < 0) { /* [190826a] queued behind the flight — not yet */ }
+        else {
+            ctx.save();
+            const cx = spinFX.x * CELL + CELL / 2, cy = (spinFX.y - game.cameraY) * CELL + CELL / 2;
+            ctx.globalAlpha = 0.85 * (1 - k);
+            ctx.strokeStyle = SHIFTER_FAMILY_COLOR;
+            ctx.lineWidth = 3; ctx.lineCap = 'round';
+            const R = CELL * (0.26 + 0.14 * k);
+            const a0 = -Math.PI / 2 + k * Math.PI * 2;   // one full turn over the life
+            ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + Math.PI * 1.4); ctx.stroke();
+            const ea = a0 + Math.PI * 1.4;
+            const ex = cx + R * Math.cos(ea), ey = cy + R * Math.sin(ea);
+            const t = ea + Math.PI / 2, H = CELL * 0.13;
+            ctx.beginPath();
+            ctx.moveTo(ex + Math.cos(t) * H, ey + Math.sin(t) * H);
+            ctx.lineTo(ex + Math.cos(t + 2.5) * H, ey + Math.sin(t + 2.5) * H);
+            ctx.lineTo(ex + Math.cos(t - 2.5) * H, ey + Math.sin(t - 2.5) * H);
+            ctx.closePath(); ctx.fillStyle = SHIFTER_FAMILY_COLOR; ctx.fill();
+            ctx.restore();
+        }
+    }
+    if (chainThread.length) {
+        chainThread = chainThread.filter(p => now - p.t < 1400);
+        if (chainThread.length >= 2) {
+            ctx.save();
+            ctx.lineCap = 'round';
+            for (let i = 1; i < chainThread.length; i++) {
+                const a = chainThread[i - 1], b = chainThread[i];
+                if (b.t - a.t > 1200) continue;   // different trains — no thread across
+                const age = now - b.t;
+                ctx.globalAlpha = 0.55 * (1 - age / 1400);
+                ctx.strokeStyle = SHIFTER_FAMILY_COLOR;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 5]);
+                ctx.beginPath();
+                ctx.moveTo(a.x * CELL + CELL / 2, (a.y - game.cameraY) * CELL + CELL / 2);
+                ctx.lineTo(b.x * CELL + CELL / 2, (b.y - game.cameraY) * CELL + CELL / 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+}
 
 // Amber rings on the marked cells, drawn while the bar is open.
 function drawNoteMarks() {
@@ -19634,7 +20391,7 @@ function startGame(testDrive = false) {
     // Kick off the early-run coach tips (auto-retires after a couple of runs).
     if (!testDrive) startCoachTips();
     game.flipCount = 0; game.diagCount = 0;
-    game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false;
+    game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
     // [290726d] tally counters reset with the rest of the round trackers
     game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
     game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
@@ -19745,6 +20502,7 @@ function startGame(testDrive = false) {
         cellsGenerated: 0,  // total non-wall, non-pickup cells generated
         cellsVisited: 0,    // total visited (from above set)
         _rowsThisRound: new Set(),   // [160826t] rows generated this round (coverage ledger)
+        timeReserve: 0, _covStamps: [], _reserveFullShown: false,   // [180826p] reservoir
         coverage: 0,        // percentage 0-100
         speedTimer: LEVEL_TIME_LIMIT - SPINUP_START_SEC,   // SPIN-UP: Level 1 starts cold — build the wheel to full
         spinUp: true,       // suppresses panic signals until the ring first fills
@@ -21164,7 +21922,13 @@ let DEMO_VIDEO = true;
     // the flipbook — which is why frames.js still looks like it carries the
     // welcome screen. It carries it as a fallback that always fires. Ship the
     // mp4 and frames.js can go.
-    dv.addEventListener('error', fallbackToCanvas);
+    // [200826h] An error now steps through the themed source cascade (set up
+    // below) before surrendering to the canvas demo — a missing day clip must
+    // fall through to the night clip, not to the flipbook.
+    dv.addEventListener('error', () => {
+        if (srcQueue.length) { dv.src = srcQueue.shift(); dv.play().catch(() => {}); }
+        else fallbackToCanvas();
+    });
     // [160826d] The box is 4:3 because that is what the FALLBACK canvas is
     // (320x240). A capture at any other ratio would letterbox inside it, so the
     // real clip states its own shape once the metadata lands, and the welcome
@@ -21175,7 +21939,29 @@ let DEMO_VIDEO = true;
             if (typeof fitWelcome === 'function') fitWelcome();
         }
     });
-    dv.src = 'rotor-demo.mp4';
+    // [200826h] THEMED DEMO CLIPS. Night and day each get their own capture
+    // (rotor-demo-night.mp4 / rotor-demo-day.mp4), chosen by the saved theme.
+    // Source cascade per theme — first name that loads wins:
+    //   night: night clip → generic rotor-demo.mp4 → canvas demo
+    //   day:   day clip → generic rotor-demo.mp4 → night clip → canvas demo
+    // The day clip may legitimately not exist yet; it just falls through.
+    let srcQueue = [];
+    function demoQueueForTheme() {
+        return (currentTheme === 'day')
+            ? ['rotor-demo-day.mp4', 'rotor-demo.mp4', 'rotor-demo-night.mp4']
+            : ['rotor-demo-night.mp4', 'rotor-demo.mp4'];
+    }
+    // Called from setTheme so the welcome clip follows the theme toggle.
+    window.updateDemoTheme = function () {
+        if (fellBack) return;                                  // canvas took over
+        const q = demoQueueForTheme();
+        if (dv.src && dv.src.indexOf(q[0]) !== -1) return;     // already on it
+        srcQueue = q;
+        dv.src = srcQueue.shift();
+        dv.play().catch(() => {});
+    };
+    srcQueue = demoQueueForTheme();
+    dv.src = srcQueue.shift();
     const tryPlay = () => { dv.play().catch(() => {}); };
     dv.addEventListener('playing', () => { everPlayed = true; });
     dv.addEventListener('loadedmetadata', tryPlay);

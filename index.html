@@ -1327,11 +1327,15 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     filter: brightness(1.4) saturate(1.22) contrast(1.04);
 }
 .welcome-box #demoCanvas { display: none; }
-/* DAY THEME demo: the light rendition is DERIVED from the dark footage at
-   display time — invert flips the luminance (navy board -> pale cream) and the
-   180-degree hue rotation restores each object's approximate colour (greens stay
-   green, corals warm, teals teal). Applies to film and flipbook alike. */
+/* [200826i] DAY THEME demo: a REAL day capture now exists (rotor-demo-day.mp4)
+   and plays untouched — the invert+hue-rotate derivation below turned genuine
+   white-board footage nearly black. The derivation survives ONLY on the
+   .derived-day class, which the source cascade applies when day mode has had
+   to fall back to dark footage (night clip / generic clip / flipbook era). */
 body.theme-day .welcome-box #demoVideo {
+    filter: saturate(1.05);
+}
+body.theme-day .welcome-box #demoVideo.derived-day {
     filter: invert(1) hue-rotate(180deg) saturate(1.4) brightness(1.04) contrast(1.05);
 }
 .fitline { display: inline-block; white-space: nowrap; }
@@ -6442,7 +6446,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
 // an invitation to keep going, and this is the screen where a run has just
 // ended. The card still shows it, which is where it belongs.
-const BUILD_VERSION = '200826-2015 ROTOЯ';
+const BUILD_VERSION = '210826-0001 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -19697,6 +19701,13 @@ function loop(time, gen) {
                      { life: 1900, hold: 900 });
             triggerEdgeGlow('#fb8b1e', 1200);
             if (sfx.time30) sfx.time30();
+            // [200826j] THE [300726aw] RULE, RELEARNED: every early return in
+            // loop() must schedule its own next frame. This branch didn't, so
+            // the tank firing at 0:00 froze the game solid until pause (whose
+            // toggle schedules a fresh frame) revived it — the same corpse,
+            // one grave over. Draw too, so the RESERVE TANK float paints now.
+            draw();
+            scheduleLoop();
             return;   // no heart lost this beat — the tank took the hit
         }
         lives = Math.max(0, lives - 1);
@@ -21926,7 +21937,7 @@ let DEMO_VIDEO = true;
     // below) before surrendering to the canvas demo — a missing day clip must
     // fall through to the night clip, not to the flipbook.
     dv.addEventListener('error', () => {
-        if (srcQueue.length) { dv.src = srcQueue.shift(); dv.play().catch(() => {}); }
+        if (srcQueue.length) { dv.src = srcQueue.shift(); syncDemoFilter(); dv.play().catch(() => {}); }
         else fallbackToCanvas();
     });
     // [160826d] The box is 4:3 because that is what the FALLBACK canvas is
@@ -21951,17 +21962,26 @@ let DEMO_VIDEO = true;
             ? ['rotor-demo-day.mp4', 'rotor-demo.mp4', 'rotor-demo-night.mp4']
             : ['rotor-demo-night.mp4', 'rotor-demo.mp4'];
     }
+    // [200826i] Day mode showing anything OTHER than the real day capture
+    // needs the old invert-derivation filter (see CSS .derived-day) — dark
+    // fallback footage on the white welcome card would otherwise play dark.
+    function syncDemoFilter() {
+        dv.classList.toggle('derived-day',
+            currentTheme === 'day' && (dv.src || '').indexOf('rotor-demo-day') === -1);
+    }
     // Called from setTheme so the welcome clip follows the theme toggle.
     window.updateDemoTheme = function () {
         if (fellBack) return;                                  // canvas took over
         const q = demoQueueForTheme();
-        if (dv.src && dv.src.indexOf(q[0]) !== -1) return;     // already on it
+        if (dv.src && dv.src.indexOf(q[0]) !== -1) { syncDemoFilter(); return; }   // already on it
         srcQueue = q;
         dv.src = srcQueue.shift();
+        syncDemoFilter();
         dv.play().catch(() => {});
     };
     srcQueue = demoQueueForTheme();
     dv.src = srcQueue.shift();
+    syncDemoFilter();
     const tryPlay = () => { dv.play().catch(() => {}); };
     dv.addEventListener('playing', () => { everPlayed = true; });
     dv.addEventListener('loadedmetadata', tryPlay);

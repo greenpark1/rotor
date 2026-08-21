@@ -313,7 +313,7 @@ body.theme-day .note-bar input { color: #1e293b; background: #f1f5f9; }
 
 /* Round-transition overlay. Covers the canvas during round changes:
    fades to ~92% black, scales a huge "ROUND N" in, holds, then fades
-   out. Whole animation runs 1800ms. Sits inside .game-container which
+   out. Whole animation runs 4800ms ([210826e]). Sits inside .game-container which
    is position:relative so the overlay covers just the canvas area. */
 /* [270726r] Level-complete card — structured and animated, translucent so
    the final board stays visible behind it. Replaces the scattered floats. */
@@ -360,32 +360,109 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
     z-index: 20;
     border-radius: 8px;
 }
+/* ── [210826e] +3s ON THE DOOR, ADDED TO THE HOLD ONLY ──────────────────────
+   1800ms -> 4800ms and 1400ms -> 4400ms across every round-overlay animation.
+   This screen carries the level number, what the level introduces, and COLLECT
+   THE SET with the round's actual requirement glyphs — the whole brief, and it
+   was on screen for about a second of hold. Long enough to see, not long
+   enough to READ, which is the difference between decoration and instruction.
+   The keyframes are PERCENTAGES, so simply stretching the duration would have
+   stretched the fades too — a 960ms fade-to-black at the door of every level,
+   which would feel sluggish rather than generous. Every keyframe below is
+   re-cut so the fade in and fade out keep their original real durations to the
+   millisecond, and the extra 3000ms goes entirely into the hold:
+     roundOverlayBg      360ms in / 1080 -> 4080ms hold / 360ms out
+     roundOverlayContent 792ms in / 504 -> 3504ms hold / 504ms out
+     the -Instant pair   no fade-in / 980 -> 3980ms hold / 420ms out
+   Two JS timers are tied to these durations and move with them — the unpause
+   after a level transition, and the CLAIM EVERY SLOT hint at game start. Both
+   are tagged [210826e] at their call sites; changing a duration here without
+   changing them there resumes play under a still-opaque overlay. */
+/* ── [210826g] THE GRID BEHIND THE DOOR ─────────────────────────────────────
+   The transition was a flat black curtain, so the one screen that names the
+   level and its requirements looked like it belonged to a different app than
+   the board it introduces. A faint grid ties it back to the world.
+   IT HAS TO BE ITS OWN LAYER. The obvious move — add a background-image to
+   .round-overlay — cannot work, because the keyframes below animate the
+   `background` SHORTHAND, and every shorthand keyframe resets background-image
+   to none. Putting the grid on ::before instead gives it a surface the wash
+   animation never touches.
+   It then needs its own opacity animation rather than just sitting there: at
+   rest the overlay is fully transparent and the board is live underneath, so a
+   permanently-painted grid would hang over actual play. The two keyframe sets
+   mirror the wash's stops exactly (7.5/92.5 and 90.5), so the grid arrives and
+   leaves with the black rather than trailing it.
+   Alignment with the board's real 48px cells is not attempted and does not
+   matter — the wash is fully opaque while the grid is visible, so there is
+   nothing behind it to line up with. This is texture, not a readout. */
+/* [210826i] THE FULL-SCREEN BACKDROP GRID IS GONE. It was built at 210826g on
+   my reading of "the subtle grid design in the background" as a grid behind the
+   whole overlay. The screen grabs settled it: the grid meant was the 2x2 SOCKET
+   drawn behind each requirement in the in-play band, which miniShapeGlyph()
+   has always produced. With the sockets now doing that job, a second grid
+   tiling the whole wash would be a competing pattern at a different pitch —
+   and it was the attempt to reconcile those two pitches that made 210826h as
+   involved as it was. One grid, and it belongs to the shapes. */
 .round-overlay.active {
-    animation: roundOverlayBg 1800ms ease-in-out forwards;
+    animation: roundOverlayBg 4800ms ease-in-out forwards;
 }
 /* "Instant" variant — used when the overlay needs to cover the canvas
    from the very first frame (e.g. game start from the welcome screen).
    Starts at full black with text visible, holds, then fades out. No
    fade-in phase, so the player never sees the game canvas before the
-   ROUND text. Total duration 1400ms. */
+   ROUND text. Total duration 4400ms. [210826e] */
 .round-overlay.active-instant {
-    animation: roundOverlayBgInstant 1400ms ease-out forwards;
+    animation: roundOverlayBgInstant 4400ms ease-out forwards;
 }
 @keyframes roundOverlayBg {
     /* [290726b] Hold at FULL opacity. At 0.94 the glowing gold COLLECT THE
        SET label and the HUD behind it read straight through the level
        transition — that 6% was the "text coming through at the side". */
-    0%   { background: rgba(0,0,0,0); }
-    20%  { background: rgba(0,0,0,1); }
-    80%  { background: rgba(0,0,0,1); }
-    100% { background: rgba(0,0,0,0); }
+    /* [210826e] 20/80 -> 7.5/92.5. At 4800ms those are the same 360ms fades
+       the 1800ms version had at 20/80; the hold absorbs the whole increase. */
+    0%    { background: rgba(0,0,0,0); }
+    7.5%  { background: rgba(0,0,0,1); }
+    92.5% { background: rgba(0,0,0,1); }
+    100%  { background: rgba(0,0,0,0); }
 }
 @keyframes roundOverlayBgInstant {
     /* [290726b] Same full-opacity hold as roundOverlayBg. */
-    0%   { background: rgba(0,0,0,1); }
-    70%  { background: rgba(0,0,0,1); }
-    100% { background: rgba(0,0,0,0); }
+    /* [210826e] 70% -> 90.5%, holding the 420ms fade-out of the 1400ms version. */
+    0%    { background: rgba(0,0,0,1); }
+    90.5% { background: rgba(0,0,0,1); }
+    100%  { background: rgba(0,0,0,0); }
 }
+/* ── [210826c] THIS SECTION WAS CORRUPTED BY A BAD REPLACE ──────────────────
+   Found while auditing the day brown sweep, not while looking for it.
+   Four rules here were meant to target `.round-overlay-inner` at four scopes:
+   the base (colour, opacity 0), `.active` (entry animation), `.active-instant`
+   (the no-fade-in variant), and `.day` (day ink). At some point a replace
+   matched the token `.round-overlay-inner` and pasted the whole
+   `.round-overlay-bonus` → `.round-overlay-inner` run over the last three,
+   about 28 lines apiece. The four identical `body.theme-day
+   .round-overlay-bonus` rules were never a deliberate repeat — they are one
+   line copied three extra times, which is what made this visible at all.
+   The damage was not cosmetic. The scoped selectors were destroyed, leaving
+   three UNSCOPED `.round-overlay-inner` rules, and the cascade resolved them:
+     · `active-instant` came last, so EVERY inner got roundOverlayContentInstant
+       from page load — including on a normal transition, which wanted the other
+       keyframe entirely.
+     · being unconditional, adding `.active` never changed the animation
+       property, so it never re-triggered. showRoundOverlay does the correct
+       remove → reflow → add, but a reflow only restarts an animation whose
+       declaration actually changed, and this one never did.
+     · that keyframe ENDS at opacity 0, held by `forwards`. So about 1.4s after
+       load the inner went to opacity 0 and stayed there for the session.
+     · the day rule also landed unscoped and after the base, so the inner text
+       carried day blue at night too.
+   Net: every level transition after the first showed the wash and NO TEXT.
+   LEVEL, the number, the bonus and the mission glyphs sat inside a parent
+   pinned at opacity 0 — the label and number even have correct `.active`-scoped
+   animations of their own, which fired faithfully inside an invisible box.
+   That is why the level-bonus colour could never be confirmed on screen: it
+   was being painted the whole time, just never visibly.
+   Restored to the four intended selectors; the duplicated property blocks are
+   gone. Nothing else in this section changed. */
 .round-overlay-bonus {
     margin-top: 8px;
     font-size: 16px;
@@ -404,16 +481,65 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
     color: #ffd60a;
     min-height: 16px;
 }
-.round-overlay-mission { margin-top: 14px; }
+/* [210826c] Day was missing here, and the omission only mattered once the text
+   was visible again. The wash behind this line goes to 94% WHITE, and #ffd60a
+   on near-white is barely a colour — the line announcing what the level
+   introduces would have been the least readable thing on the screen that
+   introduces it. Same burnt orange as the bonus above: same kind of
+   announcement, same ink. */
+body.theme-day .round-overlay-new { color: #b45309; }
+/* ── [210826f] THE MISSION BLOCK WAS THE SMALLEST THING ON THE DOOR ─────────
+   CLAIM THE SET sat at 11px beneath a level number that clamps up to 160px —
+   a fifteen-to-one ratio between the decoration and the INSTRUCTION. The level
+   number is the least actionable thing on this screen (you know which level
+   you are on; you just finished the last one), and it was shouting over the
+   one element that tells you what the next two minutes require.
+   The label goes to roughly two-thirds of the LEVEL word rather than matching
+   it: this is a heading for the glyphs below, not a second title, and the
+   glyphs are the actual content. Tracking eases from 3px to 2px because
+   letter-spacing that reads as deliberate at 11px reads as strained at 30.
+   All three values are vw-clamped so they shrink with a narrow viewport
+   instead of wrapping, and the short-viewport tier below trims them again. */
+/* [210826i] THE LABEL NOW WEARS THE HUD BAND'S LIVERY. It was grey, which made
+   the objective look like a caption; the in-play band has always carried it in
+   light gold with a soft halo. Same words, same colour, same weight — the two
+   screens are stating one objective, so they should look like it.
+   Kept at 24px from [210826g] rather than adopting the band's own responsive
+   size: the HUD's clamp is tuned against a socket row inside a narrow panel,
+   and this sits under a 130px numeral with the whole canvas to work in. */
+.round-overlay-mission { margin-top: clamp(14px, 3vw, 22px); }
 .round-overlay-mission-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #94a3b8;
-    margin-bottom: 8px;
+    font-size: clamp(15px, 4.2vw, 24px);
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #ffe97a;
+    text-shadow: 0 0 12px rgba(255, 233, 122, 0.35);
+    margin-bottom: clamp(8px, 2vw, 13px);
 }
-.round-overlay-set { display: flex; justify-content: center; gap: 18px; align-items: flex-end; }
-.round-overlay-set svg { display: block; }
+/* [210826c] Same white-wash problem one tier quieter. This is a LABEL, not an
+   announcement, so it takes slate rather than the orange — enough to read,
+   not enough to compete with the two lines above it. */
+/* [210826i] Day takes the band's burnt orange — the same #b45309 the in-play
+   set label uses on the white board, which is also the day-sweep brown. */
+body.theme-day .round-overlay-mission-label { color: #b45309; text-shadow: none; }
+/* [210826i] Spacing is simple again now that every requirement occupies a full
+   2x2 socket: the sockets themselves do the separating, so the gap only has to
+   keep neighbouring sockets from touching. align-items:center rather than
+   flex-end, because all sockets are the same square — there are no longer
+   glyphs of differing height to stand on a common line. */
+.round-overlay-set { display: flex; justify-content: center; gap: clamp(8px, 2.4vw, 16px); align-items: center; }
+/* Sockets scale as a group. miniShapeGlyph() emits a fixed 64-unit viewBox with
+   width/height attributes to match, so one width here sizes every one of them
+   and the artwork inside scales with it. */
+.round-overlay-set .set-slot svg { display: block; width: clamp(46px, 13vw, 74px); height: auto; }
 .round-overlay-inner {
+    /* [210826g] Positioned, so it paints ABOVE the ::before grid. A positioned
+       pseudo-element outranks static sibling content in paint order, so without
+       this the grid would be laid over LEVEL, the number and the mission rather
+       than behind them. */
+    position: relative;
+    z-index: 1;
     text-align: center;
     color: #7dd3fc;
     text-shadow: 0 0 30px rgba(125, 211, 252, 0.6),
@@ -421,78 +547,31 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
     opacity: 0;
     transform: scale(0.6);
 }
-.round-overlay.active .round-overlay-bonus {
-    margin-top: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    font-variant-numeric: tabular-nums;
-    color: #ffd60a;
-    min-height: 18px;
+.round-overlay.active .round-overlay-inner {
+    animation: roundOverlayContent 4800ms ease-out forwards;
 }
-body.theme-day .round-overlay-bonus { color: #b45309; }
-.round-overlay-new {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: #ffd60a;
-    min-height: 16px;
-}
-.round-overlay-mission { margin-top: 14px; }
-.round-overlay-mission-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #94a3b8;
-    margin-bottom: 8px;
-}
-.round-overlay-set { display: flex; justify-content: center; gap: 18px; align-items: flex-end; }
-.round-overlay-set svg { display: block; }
-.round-overlay-inner {
-    animation: roundOverlayContent 1800ms ease-out forwards;
-}
-.round-overlay.active-instant .round-overlay-bonus {
-    margin-top: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    font-variant-numeric: tabular-nums;
-    color: #ffd60a;
-    min-height: 18px;
-}
-body.theme-day .round-overlay-bonus { color: #b45309; }
-.round-overlay-new {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: #ffd60a;
-    min-height: 16px;
-}
-.round-overlay-mission { margin-top: 14px; }
-.round-overlay-mission-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #94a3b8;
-    margin-bottom: 8px;
-}
-.round-overlay-set { display: flex; justify-content: center; gap: 18px; align-items: flex-end; }
-.round-overlay-set svg { display: block; }
-.round-overlay-inner {
-    animation: roundOverlayContentInstant 1400ms ease-out forwards;
+.round-overlay.active-instant .round-overlay-inner {
+    animation: roundOverlayContentInstant 4400ms ease-out forwards;
 }
 @keyframes roundOverlayContent {
-    0%   { opacity: 0; transform: scale(0.5); }
-    18%  { opacity: 0; transform: scale(0.7); }
-    32%  { opacity: 1; transform: scale(1.18); }
-    44%  { opacity: 1; transform: scale(1.0); }
-    72%  { opacity: 1; transform: scale(1.0); }
-    100% { opacity: 0; transform: scale(1.2); }
+    /* [210826e] Re-cut for 4800ms. The old 18/32/44 landed at 324/576/792ms —
+       the delay, the overshoot and the settle. Those are the character of the
+       entrance, so they keep their exact millisecond timings (6.75/12/16.5%)
+       and the 792ms entrance is untouched. The 504ms exit is likewise
+       preserved by starting it at 89.5%. Everything gained lands in the hold
+       between the settle and the exit: 504ms of readable time becomes 3504ms. */
+    0%     { opacity: 0; transform: scale(0.5); }
+    6.75%  { opacity: 0; transform: scale(0.7); }
+    12%    { opacity: 1; transform: scale(1.18); }
+    16.5%  { opacity: 1; transform: scale(1.0); }
+    89.5%  { opacity: 1; transform: scale(1.0); }
+    100%   { opacity: 0; transform: scale(1.2); }
 }
 @keyframes roundOverlayContentInstant {
-    0%   { opacity: 1; transform: scale(1.0); }
-    70%  { opacity: 1; transform: scale(1.0); }
-    100% { opacity: 0; transform: scale(1.2); }
+    /* [210826e] 70% -> 90.5%, keeping the 420ms exit of the 1400ms version. */
+    0%     { opacity: 1; transform: scale(1.0); }
+    90.5%  { opacity: 1; transform: scale(1.0); }
+    100%   { opacity: 0; transform: scale(1.2); }
 }
 .round-overlay-label {
     font-size: 46px;
@@ -531,47 +610,31 @@ body.theme-day .round-overlay-bonus { color: #b45309; }
 /* Day-theme transition — white wash instead of black, with a deep-blue
    number that reads on the light ground. Toggled by the 'day' class added
    in showRoundOverlay() when currentTheme === 'day'. */
-.round-overlay.day.active { animation: roundOverlayBgDay 1800ms ease-in-out forwards; }
-.round-overlay.day.active-instant { animation: roundOverlayBgDayInstant 1400ms ease-out forwards; }
+/* [210826e] Day matches night exactly — same durations, same re-cut stops. If
+   these two drifted apart, the JS timers (which know nothing about theme)
+   would resume play under an overlay in one theme and not the other. */
+.round-overlay.day.active { animation: roundOverlayBgDay 4800ms ease-in-out forwards; }
+.round-overlay.day.active-instant { animation: roundOverlayBgDayInstant 4400ms ease-out forwards; }
+/* [210826j] DAY HOLDS AT FULL OPACITY NOW, 0.94 -> 1. Night was taken to full
+   at [290726b] for exactly this reason — "at 0.94 the glowing gold COLLECT THE
+   SET label and the HUD behind it read straight through the level transition;
+   that 6%% was the text coming through at the side" — but the day keyframes
+   were never given the same treatment, so day has been showing a ghost of the
+   board and HUD through the wash for the whole hold. Not the flash that
+   prompted this change (that was the fade-in overlap), but the same complaint
+   in a slower form, and it would have been the next thing noticed. */
 @keyframes roundOverlayBgDay {
-    0%   { background: rgba(255,255,255,0); }
-    20%  { background: rgba(255,255,255,0.94); }
-    80%  { background: rgba(255,255,255,0.94); }
-    100% { background: rgba(255,255,255,0); }
+    0%    { background: rgba(255,255,255,0); }
+    7.5%  { background: rgba(255,255,255,1); }
+    92.5% { background: rgba(255,255,255,1); }
+    100%  { background: rgba(255,255,255,0); }
 }
 @keyframes roundOverlayBgDayInstant {
-    0%   { background: rgba(255,255,255,0.94); }
-    70%  { background: rgba(255,255,255,0.94); }
-    100% { background: rgba(255,255,255,0); }
+    0%    { background: rgba(255,255,255,1); }
+    90.5% { background: rgba(255,255,255,1); }
+    100%  { background: rgba(255,255,255,0); }
 }
-.round-overlay.day .round-overlay-bonus {
-    margin-top: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    font-variant-numeric: tabular-nums;
-    color: #ffd60a;
-    min-height: 18px;
-}
-body.theme-day .round-overlay-bonus { color: #b45309; }
-.round-overlay-new {
-    margin-top: 10px;
-    font-size: 13px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    color: #ffd60a;
-    min-height: 16px;
-}
-.round-overlay-mission { margin-top: 14px; }
-.round-overlay-mission-label {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #94a3b8;
-    margin-bottom: 8px;
-}
-.round-overlay-set { display: flex; justify-content: center; gap: 18px; align-items: flex-end; }
-.round-overlay-set svg { display: block; }
-.round-overlay-inner {
+.round-overlay.day .round-overlay-inner {
     color: #0284c7;
     text-shadow: 0 0 24px rgba(2, 132, 199, 0.25);
 }
@@ -1070,7 +1133,20 @@ body.theme-day .score-display { color: #e8a800; text-shadow: none; }
 .score-display.gain     { animation: scoreGainP 0.28s ease-out 1; }
 .score-display.gain-big { animation: scoreGainB 0.5s cubic-bezier(0.34,1.56,0.64,1) 1; }
 .score-display.record   { color: #ffd60a; text-shadow: 0 0 12px rgba(255,214,10,0.55); }
-body.theme-day .score-display { color: #1e293b; }
+/* [210826c] `body.theme-day .score-display { color: #1e293b; }` LIVED HERE and
+   was silently undoing [040826p] four lines above. Identical specificity
+   (0-2-1), later in the sheet, so it won — the day score has been near-black
+   slate ever since, and 040826p's stated change never once took effect. Both
+   the comment above and the note at [050826a] describe a gold score that the
+   sheet was not producing.
+   This is the third time this exact shape has bitten: a generic day rule
+   out-ranking the specific one it was meant to refine (see [300726m] on
+   .objective-text, [050826a] on the tally). The pattern is always a later
+   untagged rule sitting a few lines below a tagged one. Deleted rather than
+   reordered — reordering would leave two rules claiming the same property and
+   the next person would have to work out which is live all over again.
+   The record rule below stays: base score gold, record score burnt orange, so
+   the record still reads as a state CHANGE rather than as the norm. */
 body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 @keyframes scoreGainP { 40% { transform: scale(1.10); } 100% { transform: scale(1); } }
 @keyframes scoreGainB { 35% { transform: scale(1.32); } 100% { transform: scale(1); } }
@@ -1367,6 +1443,11 @@ body.theme-day .welcome-box #demoVideo.derived-day {
    night showed steel. This heavier selector keeps the welcome line on the
    TILE metal in both themes: steel at night, pewter by day. */
 body.theme-day .welcome-box .objective-text { color: var(--wm-steel); }
+/* [210826i] The descriptor line added at 210826a is removed — designer's call.
+   GROUNDED and FIELD FAILING carry the magnetism register on their own and do
+   not need the welcome screen to set them up first. (The block comment above
+   still promises "a one-line descriptor"; that promise predates this session
+   and is now unfulfilled again, deliberately.) */
 /* [300726l] (day verbs override removed: verbs ride --wm-c0 in both themes,
    matching the wordmark's blue exactly) */
 
@@ -2923,6 +3004,27 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     .tally-continue { margin-top: clamp(8px, 2cqw, 14px); }
     .rank-badge { width: clamp(60px, 17cqw, 90px); height: clamp(60px, 17cqw, 90px); }
     .tally-total-value { font-size: clamp(26px, 8.5cqw, 42px); }
+    /* [210826f] The round overlay gains height from the enlarged mission block,
+       and unlike the tally card it does NOT scroll — it is centred flex inside
+       the canvas, so anything that does not fit is simply clipped, and the
+       thing at the bottom is the mission. Rather than shrink the mission back
+       (which would undo the point), the LEVEL NUMBER gives up the room. It can
+       afford to: it is the least actionable element on the screen, and even
+       trimmed it is still by far the largest. The mission takes a lighter cut
+       so the ordering holds on a laptop as well as a desktop. */
+    /* [210826g] Retuned with the block back down to its split-the-difference
+       size. The mission now costs much less height than 210826f's version, so
+       the number gives up correspondingly less — 130px rather than 104px. */
+    .round-overlay-number { font-size: clamp(70px, 18vw, 130px); }
+    .round-overlay-label { font-size: 38px; letter-spacing: 11px; padding-left: 11px; margin-bottom: 14px; }
+    .round-overlay-mission { margin-top: clamp(10px, 2.4vw, 17px); }
+    .round-overlay-mission-label { font-size: clamp(14px, 3.6vw, 20px); margin-bottom: clamp(6px, 1.6vw, 10px); }
+    /* [210826i] Sockets shrink with the rest of the block. Back to a plain CSS
+       rule now the JS-written custom property is gone — nothing outranks this
+       any more, so the short-viewport case lives with the other short-viewport
+       cases instead of being buried in updateOverlayMission(). */
+    .round-overlay-set .set-slot svg { width: clamp(38px, 11vw, 58px); }
+    .round-overlay-set { gap: clamp(6px, 2vw, 12px); }
 }
 </style>
 </head>
@@ -3051,7 +3153,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 
 <!-- Game Over Screen -->
 <div class="screen-overlay hidden" id="gameOverScreen">
-    <div class="screen-title" id="gameOverTitle">Game Over</div>
+    <!-- [210826a] Placeholder matches what endGame() writes on a loss. Never
+         seen (the overlay is hidden until endGame sets the real word), but a
+         stale "Game Over" sitting in the markup is a trap for the next reader. -->
+    <div class="screen-title" id="gameOverTitle">GROUNDED</div>
 
     <div class="taunt-box" id="tauntBox"></div>
 
@@ -3202,7 +3307,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
             <div class="round-overlay-bonus" id="roundOverlayBonus"></div>
             <div class="round-overlay-new" id="roundOverlayNew"></div>
             <div class="round-overlay-mission">
-                <div class="round-overlay-mission-label">CLAIM THE SET</div>
+                <!-- [210826i] COLLECT THE SET, matching the HUD band word for
+                     word. Two names for one objective on two screens is the
+                     kind of thing that reads as two objectives. -->
+                <div class="round-overlay-mission-label">COLLECT THE SET</div>
                 <div class="round-overlay-set" id="roundOverlaySet"></div>
             </div>
         </div>
@@ -9689,6 +9797,31 @@ function runFitter() {
     if (game._fitterAt && now - game._fitterAt < FITTER_COOLDOWN_MS) return;
     const want = diagnoseMissingTool();
     if (!want) return;
+    // ── [210826l] THE DIAGNOSIS IS KEPT ─────────────────────────────────────
+    // diagnoseMissingTool() already works out exactly why a slot is out of
+    // reach — wrong size, wrong form, or parity-locked on the wrong board
+    // colour — and until now that answer was computed, used once to pick a
+    // rescue, and thrown away. It is the single most valuable thing the game
+    // knows about a player being stuck, and none of it survived the frame.
+    // This unblocks todo 13. Parity strandings are rare per run but decisive
+    // when they happen, so the question ("how often, on which shapes, and does
+    // the injected slip actually rescue them?") needs many runs to answer —
+    // which is why this wants to be collecting from now rather than later.
+    // RECORDED HERE, NOT INSIDE diagnoseMissingTool(). The other caller is in a
+    // draw path and runs per frame; instrumenting the function itself would
+    // have put the recorder in the render loop, which its own design rules
+    // forbid — and would have flooded the log with one event per frame while a
+    // player sat stuck. This site is landing-driven and cooldown-gated.
+    // `p` marks the parity case specifically: diagnoseMissingTool signals it
+    // with a `dir` (a cardinal step, the only move that crosses board colour).
+    rec('stuck', {
+        kind: want.kind,
+        p: want.dir !== undefined ? 1 : 0,
+        s: game.shapeType,
+        c: game.shapeConfig,
+        n: game._stuckFor,
+        r: advancedRound
+    });
     // Plant it CLOSE — 2 to 5 rows ahead, in or beside the player's column — so
     // it reads as an answer to the situation rather than a coincidence.
     const camI = Math.floor(game.cameraY);
@@ -10180,16 +10313,34 @@ function drawPauseOverlay() {
 // ============ REPLAY / SCRUB SYSTEM ============
 // Snapshot-on-move ring buffer. Captures complete state each successful move
 // so the player can scrub back/forward to capture before/after screenshots.
-const REPLAY_MAX = 80;          // keep last N moves
+// [210826d] 80 -> 140, because the buffer counts FRAMES and sub-steps are now
+// frames. A gear train can add up to five of them to a single move, so on a
+// machine-heavy board the old 80 would have held as few as ~14 moves of
+// history — the review window quietly collapsing exactly where the review is
+// most worth having. 140 keeps roughly the old reach in real play (most moves
+// still add one frame; only trains add more) and costs memory linearly, which
+// is the right trade for a pause-only feature that never runs during play.
+const REPLAY_MAX = 140;         // keep last N frames (moves + mid-move sub-steps)
 let replay = [];                // ring buffer of snapshots
 let replayMoveCount = 0;        // total moves this run
 let scrubbing = false;          // currently reviewing history
 let scrubIndex = 0;             // which snapshot is being viewed
 
-function captureSnapshot(dir) {
-    replayMoveCount++;
+// [210826d] SUB-STEPS. `sub: true` captures a frame WITHOUT advancing
+// replayMoveCount — used for the intermediate positions inside a gear train,
+// which are stages of one move rather than moves of their own.
+// The counter has to stay put for two separate reasons. The obvious one is the
+// label: a four-link train would otherwise read as five moves and every number
+// after it in the run would be wrong. The one that would have bitten later is
+// that replayMoveCount is also the PROVENANCE CLOCK — hazardBorn and hazardGone
+// stamp `terrain@N`, `burn@N+1`, `shift@N+1` against it, so inflating it here
+// would silently re-date board events that have nothing to do with the review.
+// A sub-frame therefore carries the move number it belongs TO.
+function captureSnapshot(dir, sub = false) {
+    if (!sub) replayMoveCount++;
     const snap = {
         move: replayMoveCount,
+        sub: !!sub,
         dir: dir || '—',
         playerX: game.playerX,
         playerY: game.playerY,
@@ -10313,7 +10464,9 @@ function drawScrubOverlay(snap) {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#38bdf8';
     ctx.font = 'bold 13px monospace';
-    ctx.fillText(`REPLAY  Move ${snap.move} / ${replayMoveCount}`, 10, y + 20);
+    // [210826d] A sub-frame says so. Without this the hop frames read as
+    // duplicate move numbers and the review looks broken rather than detailed.
+    ctx.fillText(`REPLAY  Move ${snap.move} / ${replayMoveCount}${snap.sub ? '  · mid-move' : ''}`, 10, y + 20);
 
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '11px monospace';
@@ -10380,7 +10533,9 @@ function renderScrub() {
     drawSnapshot(replay[scrubIndex]);
     // Update review counter button label if present
     const lbl = document.getElementById('reviewCounter');
-    if (lbl) lbl.textContent = `Move ${replay[scrubIndex].move} / ${replayMoveCount}`;
+    // [210826d] Same sub-frame marker as the on-canvas overlay, so the HUD
+    // counter never shows the same number twice with no explanation.
+    if (lbl) lbl.textContent = `Move ${replay[scrubIndex].move}${replay[scrubIndex].sub ? '·' : ''} / ${replayMoveCount}`;
     // Show floating scrub controls
     const sc = document.getElementById('scrubControls');
     if (sc) sc.classList.remove('hidden');
@@ -11021,6 +11176,17 @@ function generateChunk(fromY, toY) {
                     countRedsWindow(y) < MAX_VISIBLE_REDS) {
                     world[key] = 'hazard';
                     hazardBorn[key] = 'terrain@' + replayMoveCount;
+                    // [210826l] THE DENOMINATOR. Reds were the one board object
+                    // that spawned with no record at all — the shifter stream
+                    // records its own spawns, greens ride that stream and are
+                    // recorded with it, but every red arrived silently. So
+                    // "how often is the red square used?" had a numerator
+                    // (trim/hurt events) and no denominator, and a low ratio
+                    // could mean players ignore reds OR that reds barely
+                    // appear. Those want opposite fixes.
+                    // `src` matches the vocabulary hazardBorn already uses, so
+                    // supply-driven reds can be told from terrain luck.
+                    rec('spawn', { k: 'hazard', src: 'terrain', v: countVisibleHazards() });
                     rowRed = true;
                 }
                 // [300726n] TIME CHANNEL: hourglasses ride the terrain, not
@@ -11750,6 +11916,13 @@ function spawnShifter() {
             world[k] = 'hazard';
             hazardBorn[k] = 'supply@' + replayMoveCount;
             addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ef4444');
+            // [210826l] This branch RETURNS EARLY, before the rec('spawn') at
+            // the foot of this function — so supply-driven reds have never
+            // been recorded even though every other spawn from here is. The
+            // demand-driven ones are the most interesting reds on the board
+            // (the game decided you needed to shrink), and they were the ones
+            // going unseen.
+            rec('spawn', { k: 'hazard', src: 'supply', v: vis, s: game.shapeType });
             return { kind: 'hazard', key: k };
         }
     }
@@ -12129,7 +12302,7 @@ function checkSlotTraces() {
 // celebration + endGame win. Visual + audio intensity scales per round
 // via the mission's fireworks/fwDuration metadata.
 // Trigger the big round-transition overlay: fades to black, shows the
-// huge round number, fades back. Total duration ~1800ms (or 1400ms for
+// huge round number, fades back. Total duration ~4800ms (or 4400ms for   [210826e]
 // the instant variant). Reuses the same overlay element across rounds —
 // removing then re-adding the class restarts the animation. The void
 // offsetWidth trick forces a reflow so the browser doesn't coalesce the
@@ -12144,22 +12317,12 @@ const ROUND_NEW = {
     9: 'NEW: TWO HARD SINGLES'
 };
 
-// Tiny SVG of a target shape in its slot colour, for the overlay mission row.
-function setIconSVG(t) {
-    const color = slotColorFor(t.type, t.config, t.difficulty);
-    const cells = SHAPES[t.type].cells[t.config];
-    const maxX = Math.max(...cells.map(c => c[0]));
-    const maxY = Math.max(...cells.map(c => c[1]));
-    const u = 11, g = 2;
-    const w = (maxX + 1) * (u + g) - g, h = (maxY + 1) * (u + g) - g;
-    let rects = '';
-    for (const [dx, dy] of cells) {
-        const x = dx * (u + g);
-        const y = (maxY - dy) * (u + g);   // dy points up
-        rects += `<rect x="${x}" y="${y}" width="${u}" height="${u}" rx="2.5" fill="${color}"/>`;
-    }
-    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${rects}</svg>`;
-}
+// [210826i] setIconSVG() is RETIRED. It was a second, slightly different
+// drawing of the requirement glyphs, kept alive only for this overlay while the
+// in-play band drew the same shapes through miniShapeGlyph(). Two renderers for
+// one object is how the two screens drifted apart in the first place, and
+// 210826h spent a whole pass rebuilding a socket grid that miniShapeGlyph()
+// already had. updateOverlayMission() now calls the band's renderer directly.
 // [270726r] Structured, animated level-complete card. display:none → flex
 // restarts the row animations, so re-showing replays the stagger.
 function showLevelCard(opts) {
@@ -12179,8 +12342,30 @@ function hideLevelCard() { const el = document.getElementById('levelCard'); if (
 function updateOverlayMission() {
     const el = document.getElementById('roundOverlaySet');
     if (el && typeof setDisplayOrder !== 'undefined' && setDisplayOrder.length) {
-        // [270726q] One icon per requirement — matches the HUD's SET band.
-        el.innerHTML = setDisplayOrder.map(t => setIconSVG(t)).join('');
+        // ── [210826i] ONE RENDERER FOR BOTH SCREENS ─────────────────────────
+        // This built its own glyphs through setIconSVG() while the in-play band
+        // built the same requirements through miniShapeGlyph() — two drawings
+        // of one thing, which is why the door and the HUD never quite matched,
+        // and why 210826h ended up inventing a grid the game already had.
+        // miniShapeGlyph() draws the 2x2 SOCKET behind every shape: four faint
+        // rounded cells with the occupied ones filled in the requirement's
+        // colour. That socket IS the grid in the screen grabs, and it does both
+        // jobs at once — it shows WHICH cells of the square a shape occupies,
+        // so configuration is legible and not just size, and it spaces the
+        // requirements apart, because each one takes a full socket whether it
+        // fills one cell or four.
+        // progress 0 throughout: at the door of a level nothing is collected
+        // yet, so every requirement draws in its "to collect" state — hollow
+        // outline by day, faint fill at night — exactly as the band shows it on
+        // the first frame of play.
+        // Deliberately NOT padded out to the HUD's six fixed sockets. That
+        // padding exists to stop the band's layout shifting as slots fill; this
+        // overlay is drawn once and never updates, so empty sockets would only
+        // add width and imply requirements that are not there.
+        el.innerHTML = setDisplayOrder.map(t => {
+            const color = slotColorFor(t.type, t.config, t.difficulty);
+            return `<div class="set-slot">${miniShapeGlyph(t.type, color, 0, t.config)}</div>`;
+        }).join('');
     }
 }
 
@@ -13217,7 +13402,28 @@ function completeSet() {
             // Slots are seeded after the player is placed — make sure none landed
             // on the spawn cube (you can't legally be inside a slot).
             nudgeSpawnClearOfSlots();
-            showRoundOverlay(advancedRound);
+            // ── [210826j] THE GLIMPSE OF BOARD BETWEEN THE TALLY AND THE DOOR ──
+            // This was the non-instant variant, which fades in from fully
+            // TRANSPARENT over 360ms. finishLevelTally() removes the card's
+            // `show` class — starting its own 260ms opacity fade-out — and then
+            // calls this callback in the SAME tick. So the two fades ran
+            // concurrently from the same instant: at the midpoint the card was
+            // at half opacity while the wash had only reached about a third,
+            // and the board that _advanceNow() had just reseeded showed through
+            // the pair of them. A flash of the next level before the screen
+            // that is supposed to introduce it.
+            // A fade-in was never right here anyway. It exists for a wash that
+            // has to arrive over LIVE PLAY; at this moment the screen is
+            // already covered by an opaque card, so there is nothing to fade in
+            // from — the animation was dissolving one cover while building
+            // another, and the gap between them was the bug.
+            // The instant variant starts at full black on frame one, so the
+            // card fades out onto an already-solid wash and the handover is
+            // seamless. It is the same variant used at game start, and for the
+            // same reason: cover the canvas from the very first frame.
+            // NOTE: this changes the overlay's duration 4800 -> 4400, so the
+            // unpause timer below moves with it. See [210826e].
+            showRoundOverlay(advancedRound, true);
         };
         // [290726d] Level card holds briefly, then the tally takes over. When
         // the player dismisses it (or it auto-continues) the level advances
@@ -13233,7 +13439,20 @@ function completeSet() {
                     game.paused = false;
                     game.celebrating = false;
                     game.inputLocked = false;   // new level is live — moves allowed again
-                }, 1800);
+                    // [210826e] 1800 -> 4800: paired with the overlay's new
+                    // duration. This is the gate that keeps the player from
+                    // moving while the door is up, so it must not be shorter
+                    // than the animation — if it is, play resumes behind an
+                    // opaque overlay and the first moves of a level happen
+                    // where nobody can see them.
+                    // [210826j] 4800 -> 4400. The level advance now uses the
+                    // INSTANT variant (no fade-in, so no glimpse of the board
+                    // between the tally and the door), and that variant is
+                    // 4400ms because it skips the 360ms entrance. Leaving this
+                    // at 4800 would not have flashed anything — it would just
+                    // have held the player still for 400ms after the wash had
+                    // already cleared, which reads as the game hanging.
+                }, 4400);
             });
         }, 2200);
     } else {
@@ -13944,9 +14163,27 @@ function respawnPlayer() {
     // remaining lives clearly. The float renderer respects \n.
     const remaining = lives;   // already decremented at the top of respawnPlayer
     const remainingLabel = remaining === 1 ? '1 LIFE LEFT' : `${remaining} LIVES LEFT`;
+    // [210826a] FIELD FAILING ON THE LAST LIFE. Every loss read the same —
+    // "LIFE LOST" over a number — so the step from two lives to one, which is
+    // the only one that changes how you should play, arrived in the same voice
+    // as the others. The player was left to notice the digit.
+    // On the last life the TOP line changes instead: the banner stops
+    // reporting and starts warning, and it warns in the world's own terms —
+    // the field is what holds the rotor up, and it is going. Pays forward to
+    // GROUNDED on the game-over screen, which is that sentence finished.
+    // The bottom line still carries the count, so nothing is lost by the swap;
+    // the amber is the second signal, since the pink is what every ordinary
+    // loss already looks like.
+    // TWO AMBERS, one per theme. Big floats carry a gold shadow-glow, which
+    // does the lifting on the night board but does nothing for contrast on the
+    // white day board — a single mid amber would have been legible in one
+    // theme and washed in the other. Night takes the bright #fbbf24; day takes
+    // #b45309, which is the brown the day sweep is heading for anyway.
+    const lastLife = remaining === 1;
+    const lastLifeInk = currentTheme === 'day' ? '#b45309' : '#fbbf24';
     addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
-        `LIFE LOST\n${remainingLabel}`,
-        '#ff6b9d', true);
+        `${lastLife ? 'FIELD FAILING' : 'LIFE LOST'}\n${remainingLabel}`,
+        lastLife ? lastLifeInk : '#ff6b9d', true);
 
     updateLivesHUD();
 }
@@ -14146,6 +14383,26 @@ function handleDeath(reason = 'death') {
     // its protection for free from the clamp; with the clamp gone the grace has
     // to say so itself. During grace a crash still stumbles, shakes and
     // respawns — it just does not take a heart.
+    // ── [210826l] DEATHS ARE RECORDED NOW ───────────────────────────────────
+    // This function had no rec() of any kind, so a run that lost two lives and
+    // then ended recorded exactly ONE event — the `end` at the very end. The
+    // most basic balance question a game can ask, "what kills players and on
+    // which level", was unanswerable from the data.
+    // Recorded BEFORE the branches below, because the grace path returns early
+    // and a crash forgiven by spin-up grace is worth knowing about too: if a
+    // level opens with players crashing into grace repeatedly, that is a level
+    // design problem the `end` event will never show. `g` distinguishes the
+    // forgiven ones from the ones that cost a heart.
+    // `lv` is lives BEFORE the decrement below, so lv:1 is the run-ending one.
+    rec('death', {
+        why: reason,
+        s: game.shapeType,
+        lv: lives,
+        g: game.spinUp ? 1 : 0,
+        r: advancedRound,
+        cov: Math.round(game.coverage || 0),
+        y: Math.round(game.playerY - game.cameraY)   // height on screen: top-out vs bottom-out
+    });
     if (game.spinUp) {
         game._rotorStumble = performance.now();
         captureSnapshot('✧ grace');
@@ -14346,7 +14603,29 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
     }
 }
 const DENIED_FLASH_MS = 930;   // [270726v] doubled again per feel
-function flashPlayerDenied() { deniedFlashT0 = performance.now(); }
+// ── [210826l] EVERY REFUSAL IS RECORDED ─────────────────────────────────────
+// There are a dozen call sites for this and not one of them recorded anything,
+// yet a refusal is the purest legibility signal the game produces: the player
+// formed an intention, acted on it, and the game said no. A board that is
+// being read correctly generates few; one that is not generates many.
+// Instrumented HERE rather than at the dozen call sites, so no refusal can be
+// added later and silently escape the count — the sites all funnel through
+// this one function, which makes it the only place that cannot be forgotten.
+// `why` is optional and defaults to 'move'; the call sites that know something
+// more specific pass it, and the rest can be tagged later without touching
+// this. Recording the shape and direction as well, because "singles get
+// refused constantly" and "squares get refused constantly" are different
+// findings with different fixes.
+function flashPlayerDenied(why) {
+    deniedFlashT0 = performance.now();
+    try {
+        rec('deny', {
+            why: why || 'move',
+            s: game.shapeType,
+            d: game.dragDir || game._lastMoveDir || '—'
+        });
+    } catch (e) {}
+}
 
 function move(dir) {
     if (game.inputLocked) return;   // set/advance condition met — moves are locked
@@ -14931,6 +15210,28 @@ function checkCollisions() {
                 triggerCell = c; triggerKey = k; triggerItem = item;
                 break;
             }
+        }
+
+        // ── [210826d] THE HOP IS IN THE REVIEW NOW ──────────────────────────
+        // The replay snapshotted only where a move ENDED, so a resolution
+        // through a machine was invisible to J/K/L: you saw the shape at its
+        // old position, pressed forward, and it was somewhere else entirely,
+        // with nothing on the frame to say a machine had been involved. A five
+        // link gear train — the game's biggest payday — reviewed as a single
+        // inexplicable teleport, which is the exact confusion [170826c] fixed
+        // for the move GUIDE ("not clear that this is what the guide is
+        // doing"). The review had the same fault and never got the same fix.
+        // Captured HERE, before the branch below transforms anything, because
+        // this is the moment worth seeing: the shape has arrived ON the machine
+        // and the machine has not fired yet. Capturing after each link instead
+        // would duplicate the final position, which the end-of-move snapshot in
+        // the main loop already takes.
+        // The label names the machine and the cell, so the frame explains
+        // itself without the player having to spot the tile under the shape.
+        if (triggerItem) {
+            captureSnapshot(
+                `${triggerItem === 'pivot' ? '⟳ on pivot' : '⇥ on slip'} (${triggerCell.x},${triggerCell.y})`,
+                true);
         }
 
         if (triggerItem === 'pivot') {
@@ -17235,6 +17536,54 @@ function drawJoystickGuide() {
     pctx.fillStyle = day ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.07)';
     pctx.beginPath(); pctx.arc(cx, cy, RD - 10, 0, Math.PI * 2); pctx.fill();
 
+    // ── [210826a] COMPASS TICKS: N · E · S · W ──────────────────────────────
+    // The eight flip directions have been called N/NE/E/SE/… in the code since
+    // DIRS_ORDER was written, and the move guide and J/K/L review both speak
+    // that language — but the pad the player actually looks at never said it
+    // once. So the naming existed everywhere except the one surface where it
+    // would have taught itself.
+    // Four letters on the ring band fix that for free, and they do a second
+    // job: a bare circle of chevrons is a generic d-pad, while a ringed
+    // instrument with cardinals on it is a COMPASS, which is the right object
+    // for a game about a rotor in a magnetic field. The player gets a fixed
+    // frame to describe moves by ("go north-east") instead of a screen-relative
+    // one that changes meaning as the camera scrolls.
+    // PLACEMENT: the band runs RD-10 to RD+8, so radius RD-1 centres the letter
+    // inside it with room either side, and the nearest chevron starts at RD+12
+    // — no collision at any state, active or hollow.
+    // WEIGHT: below the chevrons, but not so far below it stops being read.
+    // It rides FAc rather than FA, so the frame survives the idle fade at the
+    // same rate the chevrons do — a compass that vanished when you stopped
+    // moving would be a poor compass.
+    // [210826b] SIZE AND STRENGTH, SECOND PASS. Shipped at 11px and alpha
+    // 0.32-0.55 and it was, on screen, barely there — the letters registered as
+    // texture on the ring rather than as text, which is the one thing a label
+    // cannot afford. Both dials were set as if the risk was the ticks SHOUTING;
+    // the actual risk was nobody seeing them.
+    // 11 -> 16px, which is the largest that still clears the 18-unit band, and
+    // roughly doubled alpha. The night ink also goes #94a3b8 -> #cbd5e1: the
+    // old grey was only a few steps off the pad it sat on, so even at full
+    // opacity it had little to work with. Still quieter than the chevrons —
+    // they fill white at 0.95 — so the hierarchy holds; the frame is just
+    // legible now instead of merely present.
+    {
+        const CARDINALS = [['N', -Math.PI / 2], ['E', 0], ['S', Math.PI / 2], ['W', Math.PI]];
+        const tickR = RD - 1;
+        pctx.save();
+        pctx.font = '700 16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+        pctx.textAlign = 'center';
+        pctx.textBaseline = 'middle';
+        pctx.fillStyle = day ? '#334155' : '#cbd5e1';
+        for (const [ch, ang] of CARDINALS) {
+            // N sits stronger than the other three, the way the north mark is
+            // emphasised on any real compass rose — enough to orient by at a
+            // glance without becoming a fifth thing competing for attention.
+            pctx.globalAlpha = (ch === 'N' ? (day ? 0.95 : 0.92) : (day ? 0.78 : 0.72)) * FAc;
+            pctx.fillText(ch, cx + Math.cos(ang) * tickR, cy + Math.sin(ang) * tickR);
+        }
+        pctx.restore();
+    }
+
     // ── rim chevrons ──
     for (const dir of DIRS_ORDER) {
         const v = TD_ROSE_VEC[dir];
@@ -17669,8 +18018,25 @@ function forgiveRunTips() {
 }
 let tipQueue = [], tipCurrent = null, tipTimer = 0, tipGap = 0;
 
+// ── [210826l] WHAT THE GAME KEEPS WANTING TO EXPLAIN ────────────────────────
+// The interesting number here is NOT which tips were shown. tipsSeen is
+// persisted to localStorage, so every tip fires exactly once per player ever —
+// counting shown tips would just re-describe that set.
+// The signal is the SUPPRESSED calls. Each one is the game deciding a lesson
+// is relevant again and being told the player has already had it. A player
+// bumping into walls for the tenth time generates ten suppressed 'devolve'
+// tips, and that count is a direct measure of a lesson that did not land —
+// which is the whole of todos 7, 12 and 15.
+// Counted in memory and emitted ONCE at run end rather than recorded per call.
+// showTip('devolve') fires on every bump and showTip('shifter') on every
+// spawn, so per-call events would be the highest-volume thing in the log by a
+// wide margin and would push the rest of the run past REC_CAP. A rollup costs
+// one event and loses nothing except the timing, which is not what this
+// question is about.
+let tipWant = {};
 function showTip(key) {
     if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no tips
+    if (TIPS[key]) tipWant[key] = (tipWant[key] || 0) + 1;
     if (!game.tipsOn || !TIPS[key] || tipsSeen.has(key)) return;
     tipsSeen.add(key);
     try { localStorage.setItem('rotor_tips_seen', JSON.stringify([...tipsSeen])); } catch (e) {}
@@ -19527,6 +19893,11 @@ function loop(time, gen) {
               world[pick.key] = 'hazard';
               hazardBorn[pick.key] = 'guarantee@' + replayMoveCount;
               addBurst(pick.x * CELL + CELL/2, (pick.y - game.cameraY) * CELL + CELL/2, '#ef4444');
+              // [210826l] The third and last red source. Worth separating from
+              // the other two: a guarantee firing often means the ordinary
+              // supply is not keeping up, which is a different problem from
+              // players ignoring the reds they are given.
+              rec('spawn', { k: 'hazard', src: 'guarantee', s: game.shapeType });
           }
       }
       // OVERFLOW FACTORY (Momentum): surplus momentum stamps out new gears.
@@ -19977,10 +20348,28 @@ function recordRun(score, level) {
 //     few hundred entries, far below anything that could matter.
 //   · Fails silent. A recorder that can crash the game is worse than no data.
 // What it captures maps to the open balance questions:
-//   level  set composition per level     spawn  every shifter, kind + count
+//   level  set composition per level     spawn  every shifter AND red, + count
 //   use    every shifter consumed        bank   every requirement, time-to-bank
 //   trim   every red hit                 tick   shifters-in-view every 2s
 //   end    score, level, cause           set    level completion time
+//   hurt   every shrink, channel-tagged
+// [210826l] Five additions, each closing a question the old set could not
+// answer. The principle behind them: the recorder was counting EVENTS but not
+// OPPORTUNITIES — numerators with no denominators — so a low usage figure
+// could not be told apart from a low supply figure, and those want opposite
+// fixes.
+//   spawn  reds now recorded too, with `src` (terrain / supply / guarantee).
+//          This is the denominator for "is the red square actually used?".
+//   death  every life lost, with cause, shape, lives left and screen height.
+//          handleDeath() previously recorded NOTHING, so a run that lost two
+//          lives logged one event — the `end` at the finish.
+//   deny   every refusal, from inside flashPlayerDenied() so no call site can
+//          escape the count. A refusal is a player's intention meeting a rule
+//          they did not expect: the purest legibility signal here.
+//   stuck  the fitter's diagnosis — why a slot is unreachable, and whether it
+//          is the parity lock. Computed all along and discarded.
+//   tips   ONE rollup per run of how often each lesson was WANTED, including
+//          suppressed repeats. Suppressed count = the lesson that did not land.
 const REC_CAP = 8000;
 let recEvents = [];
 let recRunStart = 0;
@@ -19993,19 +20382,92 @@ function rec(t, d) {
         recEvents.push(e);
     } catch (err) {}
 }
+// ── [210826k] THE RECORDER KEEPS A HISTORY NOW ──────────────────────────────
+// Until this build every run destroyed the one before it: recStartRun() does
+// `recEvents = []`, and recPersist() overwrote a single localStorage key. So
+// the archive was always exactly one run deep, and any run not exported before
+// the next PLAY was gone. That is fine for "what happened in that run" and
+// useless for every balance question actually being asked — how often the red
+// square gets used, which devolve channel dominates, whether parity strands
+// players — all of which need runs plural to mean anything.
+// Runs are now kept in their own key as a list, capped two ways: by COUNT so
+// the list cannot grow without end, and by TOTAL EVENTS so a few very long
+// runs cannot fill the quota on their own. Oldest goes first on both.
+const REC_RUNS_KEY   = 'rotor_rec_runs';
+const REC_MAX_RUNS   = 25;
+const REC_MAX_EVENTS = 40000;
+let recRunId = 0;
+
+function recLoadArchive() {
+    try {
+        const a = JSON.parse(localStorage.getItem(REC_RUNS_KEY) || '[]');
+        return Array.isArray(a) ? a : [];
+    } catch (e) { return []; }
+}
 function recPersist() {
+    // The original single-run key is still written. Nothing else reads it, but
+    // an export taken on this build should stay readable by anything built for
+    // the old shape, and it costs one line.
     try { localStorage.setItem('rotor_rec', JSON.stringify(recEvents.slice(-REC_CAP))); } catch (e) {}
+    try {
+        if (!recRunId) return;
+        // UPSERT, NOT APPEND. recPersist() is called several times DURING a run
+        // — on set completion, on a note, on quit, on death — so appending
+        // would file the same run four or five times and every count taken
+        // from the archive would be inflated. Matching on the run id means the
+        // mid-run calls act as checkpoints that overwrite each other, which
+        // also means a browser closed mid-run still leaves its last checkpoint
+        // rather than nothing.
+        const archive = recLoadArchive();
+        const entry = { id: recRunId, build: BUILD_VERSION, events: recEvents.slice(-REC_CAP) };
+        const i = archive.findIndex(r => r && r.id === recRunId);
+        if (i >= 0) archive[i] = entry; else archive.push(entry);
+        while (archive.length > REC_MAX_RUNS) archive.shift();
+        let total = archive.reduce((a, r) => a + ((r.events && r.events.length) || 0), 0);
+        while (archive.length > 1 && total > REC_MAX_EVENTS) {
+            total -= (archive[0].events || []).length;
+            archive.shift();
+        }
+        try {
+            localStorage.setItem(REC_RUNS_KEY, JSON.stringify(archive));
+        } catch (quota) {
+            // Quota is the one failure worth handling rather than swallowing:
+            // if it throws, EVERY later persist throws too and the history
+            // silently stops growing while appearing to work. Halve and retry
+            // once — losing the oldest runs beats losing all future ones.
+            const half = archive.slice(Math.floor(archive.length / 2));
+            try { localStorage.setItem(REC_RUNS_KEY, JSON.stringify(half)); } catch (e2) {}
+        }
+    } catch (e) {}
 }
 function recStartRun() {
     recRunStart = performance.now();
+    // Identity for this run, so the mid-run checkpoints above can find their
+    // own entry. Date.now() is enough — two runs cannot start in the same
+    // millisecond, and it doubles as the run's timestamp in the export.
+    recRunId = Date.now();
     recEvents = [];
+    tipWant = {};   // [210826l] tip demand is per-run, like everything else here
     rec('run', { when: Date.now(), build: BUILD_VERSION });
 }
 function recExport() {
     try {
+        // [210826k] The archive ships too. lastRun/savedRun are kept so an
+        // export still opens in anything written against the old format, but
+        // `runs` is the one worth reading — every run held, each tagged with
+        // the build that produced it, so a balance change can be measured
+        // against the runs from before it rather than only after.
+        // recPersist() first: without it the run in progress is missing from
+        // its own export, which is the run the designer most likely cares
+        // about when they press the button.
+        recPersist();
+        const runs = recLoadArchive();
         const payload = {
             build: BUILD_VERSION,
             exported: new Date().toISOString(),
+            runs: runs,
+            runCount: runs.length,
+            eventCount: runs.reduce((a, r) => a + ((r.events && r.events.length) || 0), 0),
             lastRun: recEvents,
             savedRun: JSON.parse(localStorage.getItem('rotor_rec') || '[]')
         };
@@ -20567,13 +21029,17 @@ function startGame(testDrive = false) {
     captureSnapshot('START');
     
     // CLAIM EVERY SLOT hint surfaces after the instant overlay finishes
-    // (1400ms total) so it lands on the visible canvas, not on black.
+    // (4400ms total) so it lands on the visible canvas, not on black.
+    // [210826e] 1400 -> 4400, tracking roundOverlayBgInstant. Left as a plain
+    // number to match the two other duration constants rather than introducing
+    // a shared one for three call sites — but the comment above each now names
+    // the animation it belongs to, so the next change has a thread to follow.
     if (currentMission() && !testDrive) {
         setTimeout(() => {
             if (!game.running) return;
             addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
                 'CLAIM EVERY SLOT', '#94a3b8');
-        }, 1400);
+        }, 4400);
     }
     
     lastTime = performance.now();
@@ -20583,6 +21049,11 @@ function startGame(testDrive = false) {
 function endGame(reason = 'death') {
     rec('end', { why: reason, score: game.score, r: advancedRound,
                  cov: Math.round(game.coverage || 0), tr: game.transforms });   // [160826p]
+    // [210826l] The tip-demand rollup, emitted once per run — see showTip().
+    // Counts how many times the game WANTED to teach each lesson, including
+    // the times it was suppressed because the player had already been told.
+    // A high count against a key is a lesson that is not sticking.
+    rec('tips', Object.assign({}, tipWant));
     recPersist();
     // [060826e] Release the duck and kill the drone — otherwise the game-over
     // screen inherits a muffled mix and a hum from the run that just ended.
@@ -20613,7 +21084,16 @@ function endGame(reason = 'death') {
         triggerShake(8, 400);
         const titleEl = document.getElementById('gameOverTitle');
         if (titleEl) {
-            titleEl.textContent = 'GAME OVER';
+            // [210826a] GROUNDED, not GAME OVER. "Game over" is the machine
+            // talking about itself; GROUNDED is the world talking about YOU —
+            // the field that held the rotor up has gone and the thing has come
+            // to rest on the deck. It is also the literal electrical word, so
+            // it pays the magnetism fiction rather than decorating it, and it
+            // closes the loop with FIELD FAILING on the last life: the warning
+            // names the failure, this names the result.
+            // Eight characters against the old nine, so the 110px/8px-tracked
+            // sizing below is unchanged.
+            titleEl.textContent = 'GROUNDED';
             if (currentTheme === 'day') {
                 // Deep blue reads on the white day game-over screen (the
                 // lighter dark-mode blue would wash out on white).
@@ -21386,6 +21866,10 @@ function fitWelcome() {
     // [300726i] Cap removed: this line now tracks out to the full row width,
     // matching FLIP · NAVIGATE · EVOLVE exactly.
     fitLine(document.querySelector('.welcome-box .objective-text'), 'track');
+    // [210826i] The objective-desc fit call is removed with the line itself.
+    // fitLine() no-ops on a null element, so leaving it would have been
+    // harmless — but a fit call for an element that no longer exists is a
+    // false lead for whoever reads this next.
 }
 window.addEventListener('resize', fitWelcome);
 demoCanvas.width = D_COLS * D_CELL;

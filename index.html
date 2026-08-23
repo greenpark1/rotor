@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -149,9 +149,12 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
 
 /* Floating pause panel — appears at the bottom of the canvas when paused */
 .pause-panel {
-    display: none !important;   /* retired: the HUD's ◀ ▶ + pause button carry
-                                   move review + resume now; elements kept in the
-                                   DOM so the review JS stays valid */
+    /* [220826a] UN-RETIRED. The note said the HUD's pause button and ◀ ▶ carried
+       resume and review — but `#hudPauseBtn` and `.pause-center` are both absent
+       from the DOM, so nothing carried them. Pausing put the player behind a
+       PAUSED label with no control on screen, and openSettingsFromPlay() sent
+       them here explicitly on close. This panel is the resume affordance; it is
+       visible again. */
     position: absolute;
     left: 50%;
     bottom: 16px;
@@ -413,6 +416,18 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
    ROUND text. Total duration 4400ms. [210826e] */
 .round-overlay.active-instant {
     animation: roundOverlayBgInstant 4400ms ease-out forwards;
+}
+/* [220826b] The skipped exit. `animation: none` releases the keyframed
+   background so the transition below has something to move, and opacity carries
+   the text and mission band out with it. */
+.round-overlay.skip-out {
+    animation: none !important;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: opacity 220ms ease-out, background 220ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .round-overlay.skip-out { transition: none; }
 }
 @keyframes roundOverlayBg {
     /* [290726b] Hold at FULL opacity. At 0.94 the glowing gold COLLECT THE
@@ -1077,7 +1092,14 @@ body.theme-day .rotor-secs { color: #64748b; }
 .score-badge.tier3 { color: #ffd60a; text-shadow: 0 0 12px rgba(255,214,10,0.6); }
 .score-badge.pop { animation: badgePop 0.45s ease; }
 @keyframes badgePop { 0% { transform: scale(0.4); } 60% { transform: scale(1.5); } 100% { transform: scale(1); } }
-.chain-chip { display: none; font-size: 13px; font-weight: 800; letter-spacing: 1px; color: #5eead4; margin-left: 10px; vertical-align: middle; }
+.chain-chip { display: none; font-size: 13px; font-weight: 800; letter-spacing: 1px; color: #5eead4; margin-left: 10px; vertical-align: middle; font-variant-numeric: tabular-nums; transition: color 0.18s, text-shadow 0.18s; }
+/* [230826a] The multiplier's hot state. Gold plus a halo, matching the ring the
+   slots wear at the same tier — one threshold, one colour, said in two places so
+   the player can read their streak off the HUD or off the board. */
+/* [230826b] No font-size change at the threshold — it jumped 13->15px and shoved
+   the score row sideways. The colour and the halo carry it. */
+.chain-chip.hot { color: #ffd60a; text-shadow: 0 0 10px rgba(255,214,10,0.65); }
+body.theme-day .chain-chip.hot { color: #b8860b; text-shadow: none; }
 .chain-chip.on { display: inline-block; }
 .chain-chip.pop { animation: badgePop 0.3s ease; }
 .set-mult {
@@ -1965,6 +1987,68 @@ body.theme-day .toggle-box {
     margin: 10px;
 }
 .start-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5); }
+/* [220826a] THE SQUISH. Every live button scaled UP on hover and then did
+   nothing at all on press — and the one set of :active transforms in the file
+   targeted `.control-btn`, a class that has not been in the DOM since the
+   mobile control bar came out. A button that does not move under the finger
+   reads as a picture of a button, and on touch, where there is no hover state
+   at all, the press was the ONLY moment available to acknowledge the tap. */
+.start-btn:active { transform: scale(0.96); box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35); }
+.corner-toggle:active { transform: scale(0.92); }
+.settings-done:active { transform: scale(0.97); }
+.settings-close:active { transform: scale(0.9); }
+.scrub-btn:active { transform: scale(0.95); }
+.details-toggle:active { transform: scale(0.97); }
+.settings-testdrive:active { transform: scale(0.98); }
+@media (prefers-reduced-motion: reduce) {
+    /* [220826b] !important, and it is not decoration. Four of these rules are
+       declared LATER in the sheet at equal specificity (.class:active is 0,2,0
+       either way), so without it the cascade hands the win to the squish and the
+       reduced-motion request is silently ignored — the same ordering trap that
+       made the original .control-btn squishes invisible.
+       The cog and theme discs lose their rotation here too, matching the existing
+       reduced-motion rule on their :hover state further up. */
+    .start-btn:active, .scores-link:active, .corner-toggle:active,
+    .settings-done:active, .settings-close:active, .scrub-btn:active,
+    .details-toggle:active, .settings-testdrive:active, .ext-link:active,
+    .cog-btn:active, .theme-btn:active { transform: none !important; }
+}
+
+/* [220826a] The scores page when there is nothing on it yet. */
+.scores-empty {
+    padding: 18px 10px; text-align: center;
+    font-size: 13px; letter-spacing: 0.06em;
+    color: rgba(148, 163, 184, 0.75);
+}
+body.theme-day .scores-empty { color: rgba(71, 85, 105, 0.7); }
+
+/* [220826a] The one outbound link in the game — source, updates, issues. Built
+   as an <a>, not a button that calls window.open, so it behaves like a link:
+   middle-click, long-press and copy-link-address all work, and a popup blocker
+   has nothing to block. */
+.ext-link {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 8px 18px; margin: 6px 0 0;   /* auto margins are dead here: the welcome
+                                             row stretches the child, and .screen-overlay
+                                             centres via align-items */
+    font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.10em;
+    color: rgba(148, 163, 184, 0.9);
+    background: transparent; border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 9px; text-decoration: none; cursor: pointer;
+    transition: color 0.18s, border-color 0.18s, background 0.18s, transform 0.18s;
+}
+.ext-link svg { width: 14px; height: 14px; }
+.ext-link:hover {
+    color: #38bdf8; border-color: rgba(56, 189, 248, 0.6);
+    background: rgba(56, 189, 248, 0.08); transform: scale(1.03);
+}
+body.theme-day .ext-link { color: rgba(71, 85, 105, 0.85); border-color: rgba(29, 42, 58, 0.22); }
+body.theme-day .ext-link:hover { color: #0284c7; border-color: rgba(2, 132, 199, 0.5); }
+/* [220826a] AFTER the :hover rule, and that ordering is the whole point. A mouse
+   press is always also a hover, so at equal specificity a :active transform
+   declared above :hover never renders — which is how the original .control-btn
+   squishes came to be invisible even before the class left the DOM. */
+.ext-link:active { transform: scale(0.97); }
 
 /* ── [160826c] TOP SCORES ──────────────────────────────────────────────────
    The link under PLAY is deliberately NOT a second start-btn. One filled blue
@@ -1997,6 +2081,7 @@ body.theme-day .toggle-box {
 }
 body.theme-day .scores-link { color: #0284c7; border-color: rgba(2, 132, 199, 0.5); }
 body.theme-day .scores-link:hover { background: #0284c7; color: #ffffff; border-color: #0284c7; }
+.scores-link:active { transform: scale(0.97); }   /* [220826a] after :hover — see .ext-link:active */
 
 /* The screen itself scrolls: three stacked blocks will exceed a phone viewport
    and this is a page you read, not a board you play, so scrolling is correct
@@ -2183,6 +2268,17 @@ body.theme-day #scoresScreen { background: #ffffff; }
    Six lines at six sizes meant nothing led. Now: the score alone and largest,
    two matched facts beside each other, then prose. Labels borrow the level
    card's quiet grey; values carry the weight. */
+/* [240826a] The first line of YOU'RE GROUNDED. Small, quiet, on its own row —
+   the weight belongs to the second word. */
+.go-youre {
+    display: block;
+    font-size: 0.34em;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    opacity: 0.72;
+    margin-bottom: 0.06em;
+}
+
 .taunt-box .go-lbl {
     display: block;
     font-size: clamp(10px, 2.6cqw, 13px); font-weight: 700;
@@ -2541,6 +2637,12 @@ body.test-drive .play-home-btn, body.test-drive .play-cog-btn { display: none; }
     background: #f8fafc; color: #f59e0b; border-color: rgba(255,255,255,0.6);
     transform: rotate(20deg); box-shadow: 0 0 14px rgba(34,211,238,0.45);
 }
+/* [220826a] Declared here, below BOTH hover rules, because these two rotate on
+   hover rather than scale — so the press has to restate the rotation or the
+   button snaps back to square under the finger. Same reason the order matters
+   for every other :active in this file: a press is also a hover. */
+.cog-btn:active { transform: rotate(45deg) scale(0.92); }
+.theme-btn:active { transform: rotate(20deg) scale(0.92); }
 /* [040826e] Welcome bottom corners: Move Guide left, Tips right. Same disc as
    the theme and cog buttons at the top, so the four corners read as one family
    of controls framing the page. */
@@ -2677,8 +2779,27 @@ body.theme-day .cog-btn { background: rgba(255,255,255,0.75); border-color: var(
     position: fixed; inset: 0; z-index: 300;
     display: flex; align-items: center; justify-content: center;
     background: #070b16;   /* opaque — fully hides the welcome page behind it */
+    /* [220826a] Was a bare display:none toggle, so the panel appeared and
+       vanished between one frame and the next while the level card and tally
+       beside it both tween. `visibility` carries the display:none job — it
+       still takes the panel out of the hit-testing and the tab order — while
+       leaving opacity something that can be animated. */
+    opacity: 1;
+    transition: opacity 180ms ease, visibility 0s linear 0s;
 }
-.settings-overlay.hidden { display: none; }
+.settings-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 180ms ease, visibility 0s linear 180ms;
+}
+.settings-card {
+    transition: transform 200ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.settings-overlay.hidden .settings-card { transform: scale(0.96); }
+@media (prefers-reduced-motion: reduce) {
+    .settings-overlay, .settings-card { transition: none; }
+}
 body.theme-day .settings-overlay { background: #e8eef5; }
 .settings-card {
     width: min(460px, 94%); max-height: 94%; overflow-y: auto;
@@ -3069,6 +3190,11 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
                         </div>
                         <div class="howto-item">
                             <span class="howto-tile teal"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.21) translate(-12 -12)"><path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7"/><path d="M17.5 3.5v3.5h-3.5"/></g></svg></span>
+                            <!-- [240826d] Reverted to TURN. This tile is a PICKUP,
+                                 and revolve is not a thing on the board — it is a
+                                 state of the PLAYER. Putting it here made the word
+                                 name a device instead of the player's own
+                                 configuration, which is the one thing it means. -->
                             <span class="howto-label">TURN</span>
                         </div>
                         <div class="howto-item">
@@ -3102,6 +3228,19 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
                 <span>TOP SCORES</span>
             </button>
         </div>
+        <!-- [220826a] THE ONLY WAY OUT OF THE GAME. There was not a single anchor
+             element in the file — no support link, no project link, nothing a player who
+             wanted to report a bug or follow the work could reach. It sits below
+             TOP SCORES and above the stamp: the third thing you might want,
+             directly above the line that tells you which build you are on, which
+             is the other half of a bug report. -->
+        <div class="welcome-row full">
+            <a class="ext-link" href="https://github.com/greenpark1/rotor"
+               target="_blank" rel="noopener noreferrer">
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                <span>SOURCE &amp; UPDATES</span>
+            </a>
+        </div>
         <!-- [300726e] Stamp on its own row: the flex row seated it BESIDE
              the button (visible in the 0626 screenshot). -->
         <div class="welcome-row full">
@@ -3123,7 +3262,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
      the one badge they happen to be wearing. Empty slots are drawn, not hidden:
      a table with three entries and seven gaps says "there is room to climb"
      where a three-row list just says "three".
-     THE LADDER second — all ten rungs at once. This is the point of the page.
+     RANKINGS second — all ten rungs at once. This is the point of the page.
      rankTeeth runs 6 to 24 and rankMetal steps steel/bronze/silver/gold, but
      until now a player only ever saw their OWN badge, so the progression the
      generator goes to such trouble over was invisible by construction.
@@ -3139,7 +3278,8 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         <div class="scores-section-head">YOUR RUNS</div>
         <div class="scores-runs" id="scoresRuns"></div>
 
-        <div class="scores-section-head">THE LADDER</div>
+        <!-- [240826b] Was THE LADDER. -->
+        <div class="scores-section-head">RANKINGS</div>
         <div class="scores-ladder" id="scoresLadder"></div>
 
         <div class="scores-section-head">PERSONAL BESTS</div>
@@ -3166,6 +3306,13 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
          Visible (not debug-only): the data is collected on the phone and the
          laptop alike, and this is the only way it leaves the device. -->
     <button class="details-toggle" onclick="recExport()">⇓ Export play data</button>
+    <!-- [220826a] The end of a run is where a player is most likely to want the
+         project — they have just been beaten by it or just finished it. -->
+    <a class="ext-link" href="https://github.com/greenpark1/rotor"
+       target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>SOURCE &amp; UPDATES</span>
+    </a>
 </div>
 
 <!-- [300726ai] PLAY-SCREEN CORNER CONTROLS. Same placement and styling as the
@@ -3222,8 +3369,13 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
                          losing something rather than the clock crossing a
                          line someone drew on it. -->
                 </div>
+                <!-- [230826a] THREE, because MAX_LIVES is 3. There were five here, left
+                     behind when the count went 5 -> 3 — so the HUD permanently showed
+                     two hollow hearts that could never be filled, and read as "3 of 5"
+                     to anyone who had not seen the source. A slot the player can never
+                     fill is not a goal, it is a bug they think is a goal. -->
                 <div class="life-pips" id="lifePips">
-                    <span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span>
+                    <span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span>
                 </div>
             </div>
         </div>
@@ -3379,11 +3531,19 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 
         <button class="tally-continue" id="tallyContinue" onclick="event.stopPropagation(); finishLevelTally();">▶ CONTINUE</button>
     </div>
-    <div class="pause-panel hidden" id="pausePanel">
+    <!-- [230826a] DEVELOPER-ONLY NOW. This bar was the only visible way out of a
+         pause, which is why it was un-retired — but Settings on it duplicated the
+         cog already sitting in the corner, and the move counter beside it is a
+         debugging tool. Four controls to say one thing. The pause state now says
+         it on the board itself (see drawPauseOverlay), which also fixes the part
+         the bar never did: the board has ALWAYS been tappable to resume and
+         nothing ever told anyone. The bar survives for move review under
+         ?debug=1. -->
+    <div class="pause-panel hidden debug-only" id="pausePanel">
         <span class="scrub-counter" id="reviewCounter">Move 0 / 0</span>
         <button class="scrub-btn" onclick="openSettings()">⚙ Settings</button>
         <!-- [160826y] Dev note: pause, mark cells, write. Rides the recorder. -->
-        <button class="scrub-btn" onclick="enterNoteMode()">✎ Note</button>
+        <button class="scrub-btn debug-only" onclick="enterNoteMode()">✎ Note</button>
         <button class="scrub-btn resume" onclick="resumeFromPause()">▶ Resume</button>
     </div>
 
@@ -3485,6 +3645,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
             <div class="keymap">
                 <div class="keymap-row"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>X</kbd><kbd>D</kbd></span><span class="keymap-what">Flip — N, W, S, E</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>Q</kbd><kbd>E</kbd><kbd>Z</kbd><kbd>C</kbd></span><span class="keymap-what">Flip — NW, NE, SW, SE</span></div>
+                <!-- [220826a] The cluster is read by PHYSICAL key position, so it
+                     stays a ring on AZERTY and QWERTZ even though the letters
+                     printed on those keys differ from the ones shown above. -->
+                <div class="keymap-row"><span class="keys"><kbd>Numpad</kbd></span><span class="keymap-what">Flip — 7 8 9 / 4 6 / 1 2 3</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>J</kbd></span><span class="keymap-what">Review — step back</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>K</kbd><span class="keys-or">or</span><kbd>Space</kbd></span><span class="keymap-what">Play / pause</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>L</kbd></span><span class="keymap-what">Review — step forward</span></div>
@@ -5952,9 +6116,18 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // path that would have found this in one build rather than four.
 (function () {
     const seen = new Set();
+    // [220826a] THE BANNER IS A DEBUG READOUT, NOT A SHIPPING ELEMENT. It was
+    // built to catch "Uncaught Error: Script error." and its own note said to
+    // remove it once the cause was found — but a red bar of stack traces across
+    // a player's screen is worse than the bug it was hunting. The handlers stay
+    // and everything still reaches the console; the bar now only paints when the
+    // page is opened with ?debug=1, so the tool survives without shipping.
+    const _errDebug = /[?&]debug=1(?:&|$)/.test(location.search || '');
     const show = (txt) => {
         if (seen.has(txt)) return;
         seen.add(txt);
+        console.error('[ROTOR] ' + txt);
+        if (!_errDebug) return;
         const el = document.getElementById('errBanner');
         if (!el) return;
         el.style.display = 'block';
@@ -6554,7 +6727,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
 // an invitation to keep going, and this is the screen where a run has just
 // ended. The card still shows it, which is where it belongs.
-const BUILD_VERSION = '210826-0001 ROTOЯ';
+const BUILD_VERSION = '250826-0920 ROTOЯ';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -6672,9 +6845,18 @@ function drawHourglassIcon(sx, sy) {
 
 // ── DEBUG FLAG ──────────────────────────────────────────────────────────
 // Master switch for all developer tools (movement-offset panel, grid coords,
-// replay/scrub, and the on-screen debug buttons). Ship PUBLIC builds with
-// this set to false. Flip to true in your own copy when debugging movement.
-const DEBUG_MODE = false;
+// replay/scrub, and the on-screen debug buttons).
+// [220826d] NO LONGER A LINE TO EDIT AND REMEMBER TO PUT BACK. It is driven by
+// `?debug=1` on the URL, so the shipped file and the debugging file are the same
+// file — which is the only way a debug switch stays honest. A player who never
+// types the parameter gets exactly the previous `false` behaviour, and there is
+// no build step that can forget to flip it back.
+// Everything gated on this is developer-only: the movement self-test, the grid
+// overlays on 1/2/3, replay/scrub on R, the ✎ Note button, the level entry and
+// force-clear below, and the scorecard audit.
+const DEBUG_MODE = /[?&]debug=1(?:&|$)/.test(location.search || '');
+if (DEBUG_MODE) console.log('%c[ROTOR] debug mode — ?level=N to start on a level, 0 to clear the current one',
+                            'color:#38bdf8;font-weight:bold');
 // ────────────────────────────────────────────────────────────────────────
 
 // On-screen debug log for green-cube interactions (so you can read what
@@ -7581,7 +7763,15 @@ const SCALES = {
 // the sound effects, which are the layer that actually tells the player things.
 // [150826s] Music 30%% -> 45%%. With the quacks now actually audible the mix has
 // changed: effects carry more weight, so the bed can come up without competing.
-const MUSIC_VOLUME = 0.45;                  // master music level
+const MUSIC_VOLUME = 0.50;                  // master music level. [220826a] 0.45 -> 0.50,
+                                            // paired with SFX 0.60 -> 0.50 so both
+                                            // sliders open at their midpoint and the
+                                            // first adjustment a player makes can go
+                                            // either way. This narrows the deliberate
+                                            // music-under-effects gap below from 15
+                                            // points to none; if the bed starts to
+                                            // compete, drop this rather than pushing
+                                            // effects back up past the halfway mark.
 
 let musicGain = null;
 let musicPlaying = false;
@@ -8047,7 +8237,12 @@ function toggleMusic() {
 // just the absence of one — and at 1.0 the louder effects sit right at the
 // ceiling with no room above them, so anything that should feel BIG cannot.
 // 60 leaves that headroom and lets a player raise it if they want more.
-let sfxVolume = 0.60;              // SFX master multiplier (0..1), applied in playTone/playSweep
+let sfxVolume = 0.50;              // SFX master multiplier (0..1) [220826a] 0.60 -> 0.50.
+                                   // Both sliders now START at the halfway mark on a
+                                   // FRESH install, so the first thing a player does
+                                   // to the mix can go either way rather than only
+                                   // down. Saved settings still win — loadSettings()
+                                   // overwrites both, which is the point of saving.
 let musicVolume = MUSIC_VOLUME;    // live music level (0..1), seeded from the default
 
 function openSettings() {
@@ -8060,10 +8255,17 @@ function closeSettings() {
     if (o) o.classList.add('hidden');
 }
 // Settings opened from the in-play HUD cog: pause the run first (so nothing
-// happens behind the modal), then show the panel. Closing settings leaves the
-// game paused on the pause panel, where the player resumes.
+// happens behind the modal), then show the panel. [230826b] Closing settings
+// leaves the game paused, on the board's own PAUSED screen, which carries the
+// resume instruction. (It used to say "on the pause panel" — that panel is
+// developer-only now.)
 function openSettingsFromPlay() {
-    if (typeof game !== 'undefined' && game.running && !game.paused) togglePause();
+    // [220826b] The door comes down first. During the intro hold game.paused is
+    // false and togglePause() now refuses to run, so without this the cog opened
+    // Settings over a game that was about to become live behind it.
+    if (typeof game !== 'undefined' && game.running && game.introHold &&
+        typeof endIntroHold === 'function') endIntroHold();
+    if (typeof game !== 'undefined' && game.running && !game.paused && !game.celebrating) togglePause();
     openSettings();
 }
 
@@ -8074,7 +8276,7 @@ function syncSettingsUI() {
     const sc = document.getElementById('soundCheck');
     setEl('setMusic', 'checked', mc ? mc.checked : true);
     setEl('setSound', 'checked', sc ? sc.checked : true);
-    setEl('setHints', 'checked', !!(typeof game !== 'undefined' && game && game.hintsOn));
+    setEl('setHints', 'checked', hintsPref);   // [220826b] the preference, not the decaying live flag
     setEl('setTips',  'checked', !!(typeof game !== 'undefined' && game && game.tipsOn));
     setEl('setFullscreen', 'checked', !!document.fullscreenElement);
     setEl('setMusicVol', 'value', Math.round(musicVolume * 100));
@@ -8097,7 +8299,7 @@ function settingSound(on) {
     if (on) { initAudio(); playTone(880, 0.06, 'sine', 0.15); }   // brief confirm blip
     saveSettings();
 }
-function settingHints(on) { applyHints(on); saveSettings(); }
+function settingHints(on) { hintsPref = !!on; applyHints(on); saveSettings(); }
 function settingTips(on)  { applyTips(on);  saveSettings(); }
 // [060826m] Vibration preference. Persisted with the rest; a confirming buzz on
 // switch-on, which is also the only way to find out whether the device does it.
@@ -8188,7 +8390,7 @@ function saveSettings() {
             theme: currentTheme,
             music: mc ? mc.checked : true,
             sound: sc ? sc.checked : true,
-            hints: !!(typeof game !== 'undefined' && game && game.hintsOn),
+            hints: hintsPref,   // [220826a] the preference, not the live overlay state
             musicVol: musicVolume,
             sfxVol: sfxVolume
         }));
@@ -8203,7 +8405,10 @@ function loadSettings() {
     if (typeof s.sfxVol === 'number')   sfxVolume   = Math.max(0, Math.min(1, s.sfxVol));
     const mc = document.getElementById('musicCheck'); if (mc && typeof s.music === 'boolean') mc.checked = s.music;
     const sc = document.getElementById('soundCheck'); if (sc && typeof s.sound === 'boolean') sc.checked = s.sound;
-    if (typeof s.hints === 'boolean' && typeof game !== 'undefined' && game) applyHints(s.hints);
+    if (typeof s.hints === 'boolean') {
+        hintsPref = s.hints;
+        if (typeof game !== 'undefined' && game) applyHints(s.hints);
+    }
 }
 
 // Tracks when the current/last EFFECT sound finishes (audioCtx time). The
@@ -8374,6 +8579,31 @@ function dangerWarning() {
     _edgeTier = tier;
 }
 
+// ── [220826a] RANDOM PITCH, SHARED PER SOUND EVENT ──────────────────────────
+// Every cue fired at exactly its table frequency, so the sounds a player hears
+// hundreds of times a run — move, tick, collect — were bit-identical repeats,
+// which is what makes an effect start to read as a machine rather than a world.
+// ±18 cents is under a fifth of a semitone: too small to hear as out of tune,
+// large enough that no two firings are the same sample.
+// THE JITTER IS PER EVENT, NOT PER OSCILLATOR, and that distinction is the whole
+// design. Several cues are intervals built from oscillators started in the same
+// tick — sfx.hit is G3 under D3, sfx.move is four fixed partials whose RATIOS are
+// its timbre rather than its pitch — and rolling the dice separately for each
+// would detune those against each other by up to 36 cents, smearing a chord into
+// a beat and a timbre into a wobble.
+// Keying the value to audioCtx.currentTime is what prevents it: currentTime only
+// advances between render quanta, so everything started in one JS tick shares one
+// offset and every interval holds exactly, while anything scheduled later (the
+// setTimeout'd ladders in grow/shrink/claimStep, successive moves) draws fresh.
+// If the context is missing or still suspended currentTime is 0 and every sound
+// shares one offset — which costs nothing, because nothing is audible yet.
+let _pitchJitter = 0, _pitchJitterAt = -1;
+function pitchJitter() {
+    const t = audioCtx ? audioCtx.currentTime : 0;
+    if (t !== _pitchJitterAt) { _pitchJitterAt = t; _pitchJitter = (Math.random() * 2 - 1) * 18; }
+    return _pitchJitter;
+}
+
 function playTone(freq, dur, type = 'sine', vol = 0.2, pan = 0, isMove = false) {
     if (!document.getElementById('soundCheck').checked || !audioCtx) return;
     resumeAudio();
@@ -8398,6 +8628,7 @@ function playTone(freq, dur, type = 'sine', vol = 0.2, pan = 0, isMove = false) 
     panner.connect(duckBus());   // [060826e] every sound ducks together
     osc.type = type;
     osc.frequency.value = freq;
+    osc.detune.value = pitchJitter();   // [220826a] see pitchJitter()
     gain.gain.value = vol * sfxVolume;
     panner.pan.value = Math.max(-1, Math.min(1, pan));
     osc.start();
@@ -8425,6 +8656,7 @@ function playSweep(startFreq, endFreq, dur, type = 'sine', vol = 0.2, pan = 0, i
     osc.type = type;
     const t0 = audioCtx.currentTime;
     if (!isMove) audioBusyUntil = Math.max(audioBusyUntil, t0 + dur + 0.03);
+    osc.detune.value = pitchJitter();   // [220826a] see pitchJitter()
     osc.frequency.setValueAtTime(startFreq, t0);
     osc.frequency.exponentialRampToValueAtTime(Math.max(20, endFreq), t0 + dur);
     gain.gain.value = vol * sfxVolume;
@@ -8972,7 +9204,7 @@ var EVO = { single: ['pair','diagonal'], pair: ['jshape'], diagonal: ['jshape'],
 // wears the family colour; the map stays for API compatibility.
 const SLOT_DEFS = {
     // V9 palette: the single family wears SILVER, not gold — gold is now
-    // reserved exclusively for reward language (golden slots, CLEAN SLATE,
+    // reserved exclusively for reward language (hot combos, CLEAN SLATE,
     // records, top badge tier), per the Block Blast colour audit. Silver also
     // ranks the easiest family neutrally in the visual hierarchy.
     single:   { color: '#22d3ee', configs: ['A'],
@@ -9153,27 +9385,27 @@ const ADVANCED_ROUNDS = [
     // in play (FULL_POOL), so these escalate by slot count (6->10) and density
     // rather than new shapes. Slots spawn a touch more often at the high counts
     // so they stay completable within the 60s clock plus banked hourglass time.
-    { round: 6, name: 'Surge',
+    { round: 6, name: 'Friction',
       celebration: 'THAT WAS FLIPTASTIC',
       fireworks: 16, fwDuration: 2750, slotEveryLandings: 18,
       wallChance: 0.08, hazardChance: 0.10, shifterEveryLandings: 2,
       slotCount: 6, pool: FULL_POOL },
-    { round: 7, name: 'Cascade',
+    { round: 7, name: 'Slip',
       celebration: 'TOTAL CUBE CONTROL',
       fireworks: 17, fwDuration: 2850, slotEveryLandings: 18,
       wallChance: 0.09, hazardChance: 0.11, shifterEveryLandings: 2,
       slotCount: 7, pool: FULL_POOL },
-    { round: 8, name: 'Onslaught',
+    { round: 8, name: 'Strip',
       celebration: 'PIVOT PERFECT',
       fireworks: 18, fwDuration: 2950, slotEveryLandings: 17,
       wallChance: 0.10, hazardChance: 0.12, shifterEveryLandings: 2,
       slotCount: 8, pool: FULL_POOL },
-    { round: 9, name: 'Gauntlet',
+    { round: 9, name: 'Short',
       celebration: 'FULLY EVOLVED',
       fireworks: 20, fwDuration: 3050, slotEveryLandings: 16,
       wallChance: 0.11, hazardChance: 0.13, shifterEveryLandings: 2,
       slotCount: 9, pool: FULL_POOL },
-    { round: 10, name: 'Apex',
+    { round: 10, name: 'Overdrive',
       celebration: 'FLIPPING LEGEND \u2014 YOU CLEARED ROTOЯ!',
       fireworks: 26, fwDuration: 3600, slotEveryLandings: 15,
       wallChance: 0.12, hazardChance: 0.14, shifterEveryLandings: 2,
@@ -9185,10 +9417,11 @@ let advancedRound = 1;        // 1..10; resets to 1 on startGame()
 // V9 D6 — ENDLESS MODE. Completing Round 10 (Apex) no longer ends the run:
 // rounds 11+ are synthesized from the Apex tuning with escalating density.
 // The run ends only by death or timeout — no end state.
-const ENDLESS_CELEBRATIONS = [
-    'STILL FLIPPING GOING', 'BEYOND THE APEX', 'UNSTOPPABLE FORM',
-    'FLIP WITHOUT END', 'ROTO\u042f ETERNAL'
-];
+// [240826a] Four of these five were cut, and all five were already unreachable —
+// endless mode retired when the finale was wired up at [220826a]. One line is
+// kept purely so the array is never empty, in case a future build reopens the
+// path; nothing in the shipped game can reach it.
+const ENDLESS_CELEBRATIONS = ['FLIP WITHOUT END'];
 function currentMission() {
     if (advancedRound <= ADVANCED_ROUNDS.length) return ADVANCED_ROUNDS[advancedRound - 1];
     const base = ADVANCED_ROUNDS[ADVANCED_ROUNDS.length - 1];
@@ -9782,7 +10015,14 @@ function runReprieve() {
     addBurst(best.x * CELL + CELL/2, (best.y - game.cameraY) * CELL + CELL/2, '#fb8b1e');
     triggerEdgeGlow('#fb8b1e', 900);
     if (sfx.gold) sfx.gold();
-    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30, 'REPRIEVE', '#fb8b1e', true,
+    // [240826b] Was 'REPRIEVE' — prison language for what is actually the game
+    // feeding you power when you are stranded through no fault of your own: last
+    // twenty seconds, nothing left on the board to earn from, once a level. Two
+    // lines rather than one, because this is a rare moment and a fixed string
+    // makes a rare moment feel scripted.
+    const RESCUE = ['BACKUP CHARGE', 'POWER DROP'];
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30,
+             RESCUE[(Math.random() * RESCUE.length) | 0], '#fb8b1e', true,
              { life: 1800, hold: 900 });
 }
 
@@ -9985,7 +10225,8 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // squeeze is the point.
             if (advancedRound === 1 && cells.some(c =>
                 world[`${c.x - 1},${c.y}`] === 'wall' && world[`${c.x + 1},${c.y}`] === 'wall')) continue;
-            slots.push({ golden: (Math.random() < GOLD_SLOT_CHANCE), type, config, id: target.id,
+            // [230826a] `golden` is gone from the roll — see GOLD_SLOT_CHANCE.
+            slots.push({ type, config, id: target.id,
                          color: slotColorFor(type, config, target.difficulty), cells,
                          keys: new Set(cells.map(c => `${c.x},${c.y}`)),
                          claimed: false, traced: new Set() });
@@ -10181,9 +10422,15 @@ function nowPlay() {
 
 function togglePause() {
     if (!game.running) return;
+    // [220826b] Space/K used to reach this during a level transition and during
+    // the finale celebration — both of which hold game.paused true WITHOUT
+    // clearing game.running — and unpause the game underneath an opaque overlay,
+    // restarting the loop and un-hiding the pause panel (z-index 100) on top of
+    // the door (z-index 20). The same collision the visibilitychange guard avoids.
+    if (game.celebrating || game.introHold) return;
     game.paused = !game.paused;
     // [170826b] Account the pause into the play clock.
-    if (game.paused) game._pauseStart = performance.now();
+    if (game.paused) { game._pauseStart = performance.now(); breakCombo('pause'); }
     else if (game._pauseStart) {
         game._pausedTotal = (game._pausedTotal || 0) + (performance.now() - game._pauseStart);
         game._pauseStart = null;
@@ -10229,7 +10476,7 @@ function exitToWelcome() {
     // outright — a 15,000-point run vanished if you quit instead of dying,
     // which read as "scores not registering". Recorded and persisted exactly
     // as a death would, minus the death.
-    if (game.running && game.score > 0) {
+    if (game.running && game.score > 0 && !syntheticRun) {   // [220826d] see endGame
         recordRun(game.score, advancedRound);
         // [180826n] Quits update the PERSONAL BESTS too — the run table taking
         // a 30k quit while "Best score" read lower was the two records
@@ -10250,6 +10497,12 @@ function exitToWelcome() {
     hideLevelCard();
     if (scrubbing) exitScrub();
     game.running = false;
+    // [220826c] After running = false, matching endGame. hideLevelTally drops the
+    // pending callback, and on the finale that callback is endGame('win') — so
+    // ordering it before the flag would leave a window where a Home press could
+    // still be racing a win.
+    hideLevelTally();
+    if (typeof endIntroHold === 'function') endIntroHold();   // [220826b] after running=false — see endGame
     game.paused = false;
     game.celebrating = false;
     game.testDrive = false;
@@ -10292,23 +10545,52 @@ function resumeFromPause() {
     if (game.paused) togglePause();
 }
 
+// [230826a] THE PAUSE SCREEN CARRIES ITS OWN WAY OUT.
+// It used to write PAUSED in 17px at the top of the board and leave it there.
+// Tapping the board resumes — that has always worked — but nothing said so, and
+// the floating bar that did say so had been switched off in the CSS, so pausing
+// left the player looking at a word with no exit. On a phone there is not even a
+// spacebar to fall back on.
+// The fix is not another button. The affordance already exists; it was missing
+// its signifier. So the instruction goes where the action is: on the board, in
+// the middle, where a paused player is already looking.
 function drawPauseOverlay() {
     const day = currentTheme === 'day';
+    // [230826b] THE WASH LIFTS. It starts heavy, because a legible instruction
+    // needs a ground to sit on — and then fades back over 1.4s to something close
+    // to the old 10/20%, because the other reason people pause is to LOOK at the
+    // board, and the code this replaced said as much. Read first, then study.
+    const held = performance.now() - (game._pauseStart || performance.now());
+    const k = Math.max(0, 1 - Math.max(0, held - 700) / 1400);   // 1 -> 0 after ~2.1s
+    const heavy = day ? 0.62 : 0.68, light = day ? 0.10 : 0.20;
+    const wash = light + (heavy - light) * k;
     ctx.save();
-    // Barely-there wash: signals "paused" without hiding the board.
-    ctx.fillStyle = day ? 'rgba(255,255,255,0.10)' : 'rgba(8,12,22,0.20)';
+    ctx.fillStyle = day ? `rgba(255,255,255,${wash})` : `rgba(8,12,22,${wash})`;
     ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
     ctx.restore();
 
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.shadowColor = day ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 6;
+    ctx.shadowColor = day ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur = 8;
     ctx.fillStyle = day ? '#0f172a' : '#e2e8f0';
-    ctx.font = 'bold 17px sans-serif';
-    ctx.fillText('PAUSED', LOGICAL_W / 2, 28);
+    ctx.font = 'bold 34px sans-serif';
+    ctx.fillText('PAUSED', LOGICAL_W / 2, LOGICAL_H / 2 - 6);
+    // The instruction fades with the wash — it has done its job once read, and a
+    // permanent caption over the board would be the clutter the panel was.
+    ctx.font = 'bold 15px sans-serif';
+    ctx.fillStyle = day ? `rgba(15,23,42,${0.72 * Math.max(0.25, k)})`
+                        : `rgba(226,232,240,${0.75 * Math.max(0.25, k)})`;
+    ctx.fillText(PAUSE_PROMPT, LOGICAL_W / 2, LOGICAL_H / 2 + 26);
     ctx.restore();
 }
+// [230826b] ONE INSTRUCTION, TRUE ON EVERY DEVICE. The first version asked the
+// browser whether touch was possible and said "tap" if it was — which told every
+// touchscreen laptop to tap while its owner sat behind a keyboard and mouse, and
+// a mouse click did not resume at all (the canvas click handler returned early
+// unless testDrive). Rather than guess the hardware, the click resumes too, so
+// one sentence is true for a finger and a mouse alike.
+const PAUSE_PROMPT = 'CLICK OR TAP THE BOARD TO RESUME';
 
 // ============ REPLAY / SCRUB SYSTEM ============
 // Snapshot-on-move ring buffer. Captures complete state each successful move
@@ -10495,6 +10777,16 @@ function drawScrubOverlay(snap) {
 
 function enterScrub() {
     if (replay.length === 0) return;
+    breakCombo('review');   // [230826c] the last pause door that did not close the streak
+    // [220826c] NOT DURING A CELEBRATION. Between levels — and now at the finale,
+    // where the CAMPAIGN COMPLETE scorecard is the last thing standing between
+    // the player and a won run — game.running is true and game.paused is true, so
+    // an arrow key entered review and Escape then called exitScrub(), which
+    // resumed the loop UNDER the opaque card. The clock drained behind it, the
+    // world scrolled, and the run could stall out and end in GROUNDED for a
+    // player who had already beaten the campaign. togglePause() was hardened
+    // against this collision; this was the door left open beside it.
+    if (game.celebrating) return;
     scrubbing = true;
     game.paused = true;
     scrubIndex = replay.length - 1;
@@ -10509,12 +10801,23 @@ function exitScrub() {
     if (panel) panel.classList.add('hidden');
     const btn = document.querySelector('.pause-center');
     if (btn) btn.textContent = '⏸';
-    // If the game is still alive, resume play
-    if (game.running) {
+    // If the game is still alive, resume play — but never unpause a celebration
+    // or an intro door, which pause deliberately and own their own resume.
+    if (game.running && !game.celebrating && !game.introHold) {
+        // [230826c] ACCOUNT THE PAUSE. This set game.paused directly and skipped
+        // togglePause's bookkeeping, so _pauseStart was left non-null and the
+        // interval never reached _pausedTotal — and nowPlay(), which the drought
+        // detector and every rec('bank') timing read, drifted by the length of
+        // every review session. resumeFromPause routes through here, so this was
+        // the NORMAL exit from a pause, not an edge case.
+        if (game._pauseStart) {
+            game._pausedTotal = (game._pausedTotal || 0) + (performance.now() - game._pauseStart);
+            game._pauseStart = null;
+        }
         game.paused = false;
         lastTime = performance.now();
         scheduleLoop();
-    } else {
+    } else if (!game.running) {
         // Dead — re-show the game over screen
         document.getElementById('gameOverScreen').classList.remove('hidden');
     }
@@ -12104,11 +12407,18 @@ function checkSlotClaims() {
         const viaShifter = chainLinks > 0;
         if (viaShifter) claimPts = Math.round(claimPts *
             (chainLinks >= 3 ? 3 : chainLinks === 2 ? 2 : 1.5));
-        // GOLDEN SLOT (D4) — the rare 1-in-8 gamble slot pays DOUBLE.
-        const golden = !!slot.golden;
-        if (golden) claimPts *= 2;
         // PERIL PAY (Momentum): pulled off next to danger — x1.5.
         if (inPeril()) claimPts = Math.round(claimPts * 1.5);
+        // [230826a] THE COMBO MULTIPLIER, APPLIED AT LAST. It was computed on every
+        // landing, stored, compared against a per-run best, printed on the
+        // scorecard as "x3.5 best combo" — and never once multiplied into a score.
+        // A number the game shows you and does not honour is worse than no number:
+        // it teaches the player that the thing they are doing well does not matter.
+        // It lands here, on the biggest per-event payout in the game, so a claim
+        // taken while hot is worth several taken cold.
+        const _comboAtClaim = game._comboAtMove || 1;   // [230826c] frozen at move start
+        const _claimForge = claimPts;   // [230826b] the factory sees the pre-combo value
+        if (_comboAtClaim > 1) claimPts = Math.round(claimPts * _comboAtClaim);
 
         const ni = setNeeded.indexOf(slot.id);
         if (ni >= 0) setNeeded.splice(ni, 1);
@@ -12161,13 +12471,15 @@ function checkSlotClaims() {
         const typeGone = !setDone && !setNeeded.some(id => parseRequirement(id).type === slot.type);
         const totalReq = (setDisplayOrder && setDisplayOrder.length) || 3;
         const doneReq = totalReq - setNeeded.length;
-        const payColor = golden ? GOLD_SLOT_COLOR : slot.color;
+        // [230826a] Gold is earned now, not rolled: the claim burns gold when the
+        // player is hot, and in the slot's own family colour when they are not.
+        const payColor = comboTint(slot.color);
         const payCells = slot.cells.slice();
         seatFX = { cells: payCells, color: payColor,
                    t0: performance.now() + animQueueDelay() };   // [180826t][190826a] the fit shows at touch-down
         setTimeout(() => {
             if (!game.running) return;
-            scoreGain(claimPts, true);
+            scoreGain(claimPts, true, _claimForge);   // [230826b]
             if (viaShifter) {
                 game._lastComboT = performance.now();   // this IS the combo — suppress a duplicate line-combo this beat
                 // [170826e] THE LADDER HAS NAMES. One link is a nice combo; two
@@ -12184,7 +12496,7 @@ function checkSlotClaims() {
                 const chainName = chainLinks >= 5 ? 'TOP GEAR!'
                                 : chainLinks === 4 ? 'FOURTH GEAR!'
                                 : chainLinks === 3 ? 'THIRD GEAR!'
-                                : chainLinks === 2 ? 'SECOND GEAR!' : 'NICE COMBO!';
+                                : chainLinks === 2 ? 'SECOND GEAR!' : 'FIRST GEAR!';
                 const chainCol  = chainLinks >= 2 ? '#ffd60a' : '#f8fafc';
                 addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
                     `${chainName}\n+${claimPts}`, chainCol, true);
@@ -12193,12 +12505,16 @@ function checkSlotClaims() {
                 if (typeof triggerShake === 'function') triggerShake(5 + chainLinks, 220 + chainLinks * 60);
                 if (chainLinks >= 2 && sfx.gold) sfx.gold();
                 else if (sfx.firstEvolve) sfx.firstEvolve();
-            } else if (golden) {
-                addFloat(payCells[0].x * CELL + CELL/2, (payCells[0].y - game.cameraY) * CELL - 8,
-                    `GOLDEN!\n+${claimPts}`, GOLD_SLOT_COLOR);
             } else {
+                // [230826a] Was a three-way branch whose middle arm announced
+                // "GOLDEN!" for a slot that happened to have rolled a flag. The
+                // multiplier the player BUILT is the thing worth naming, so a hot
+                // claim says so and a cold one just pays.
+                const hot = _comboAtClaim >= COMBO_GOLD_AT;
                 addFloat(payCells[0].x * CELL + CELL/2, (payCells[0].y - game.cameraY) * CELL - 8,
-                    `+${claimPts}`, slot.color);
+                    hot ? `\u00d7${_comboAtClaim.toFixed(1)}\n+${claimPts}` : `+${claimPts}`,
+                    payColor);
+                if (hot && typeof triggerShake === 'function') triggerShake(3, 160);   // [230826b] the glow is disabled at source
             }
             // BURN & MERGE (V9): flare for 2s, then melt into ordinary
             // covered floor. The claim CONVERTS the footprint into real
@@ -12214,11 +12530,14 @@ function checkSlotClaims() {
             else if (sfx.gold) sfx.gold();
             triggerEdgeGlow(payColor, 400);
             bumpChain();
-            // THE SHAVE! — the signature move: trimmed through a red and
-            // arrived transformed onto the claim, all in one gesture.
+            // [240826b] MACHINED TO FIT! — was THE SHAVE!, which was grooming
+            // language for the one move in the game where damage is a tool: too
+            // big for the slot, so you go THROUGH a red on the way in, lose a cube
+            // to it, and land already the right size. A machine that cuts itself
+            // to a dimension is machining, not shaving.
             if (game._lastTrimT && performance.now() - game._lastTrimT < 600) {
                 game._lastTrimT = 0;
-                showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 44, 'THE SHAVE!');
+                showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 44, 'MACHINED TO FIT!');
             }
             if (typeGone) {
                 const fgBonus = Math.round(25 * (CLEAR_WEIGHT[slot.type] || 1));
@@ -12229,7 +12548,14 @@ function checkSlotClaims() {
             }
             maybeEdgePraise();
             // Round completes the moment the final SET slot is filled.
-            if (setDone) completeSet();
+            // [220826d] `setDone` was captured before this 200ms suspense and the
+            // callback only rechecked game.running — so anything that completed
+            // the level during the gap (the debug force-clear, and in principle
+            // any future path) got a SECOND completeSet from here: two cards, two
+            // celebrations, two tallies. completeSet sets `celebrating`
+            // synchronously, so testing it is enough, and on the normal path it is
+            // still false at this point.
+            if (setDone && !game.celebrating) completeSet();
         }, CLAIM_SUSPENSE_MS);
     }
 }
@@ -12377,11 +12703,14 @@ const CELEBRATION_POOLS = {
     2:  ['YOU\u2019RE EVOLVING FAST'],
     3:  ['FLIPPING FABULOUS', 'SMOOTH MOVES'],
     4:  ['IN GREAT SHAPE', 'SHAPING UP NICELY'],
-    5:  ['THE SHAPE OF THINGS TO COME', 'HALFWAY HERO'],
+    5:  ['THE SHAPE OF THINGS TO COME'],
     6:  ['THAT WAS FLIPTASTIC', 'FLIP-ROARING FORM'],
-    7:  ['TOTAL CUBE CONTROL', 'COOL, CALM, CUBIC'],
+    // [240826a] Both original lines cut; COOL, CALM, COLLECTED requested in
+    // their place — the pool must never be empty or pickCelebration returns
+    // undefined onto the level card.
+    7:  ['COOL, CALM, COLLECTED'],
     8:  ['PIVOT PERFECT', 'PRECISION FLIPPING'],
-    9:  ['FULLY EVOLVED', 'PEAK FORM'],
+    9:  ['FULLY EVOLVED'],
     10: ['FLIPPING LEGEND \u2014 YOU CLEARED ROTOЯ!']
 };
 function pickCelebration(mission) {
@@ -12390,6 +12719,143 @@ function pickCelebration(mission) {
     // still count in the background; useful for future stats.)
     const pool = CELEBRATION_POOLS[advancedRound] || [mission.celebration || 'WELL DONE'];
     return pool[(Math.random() * pool.length) | 0];
+}
+
+// ── [220826a] THE INTRO HOLD ────────────────────────────────────────────────
+// The LEVEL 1 door is fully opaque for 4400ms, and until now three things were
+// wrong behind it at once: the run clock drained, moves were accepted onto a
+// board nobody could see, and there was no way past it. Four and a half seconds
+// is a long time to be told to wait by a game you have just pressed PLAY on,
+// and it is charged again on every single restart.
+// The hold freezes the clock (see the `introHold` guards in loop()), locks
+// input, and — the part that matters — ANY key or tap opens the door early.
+// The level transitions between rounds already set game.paused, so their own
+// 4400ms doors were never affected by the clock bug and are not touched here.
+let _introTimer = null;
+// The gesture that opens the door must not also be read as the first input of the
+// run. A tap produces a WHOLE SEQUENCE — touchstart, touchend, mousedown, mouseup,
+// click — and the game listens on several of them, so cancelling only the first
+// leaves the rest to land on a board that is now live. Every event in the sequence
+// is captured until the sequence finishes.
+const INTRO_SKIP_DOWN = ['keydown', 'pointerdown', 'touchstart', 'mousedown'];
+const INTRO_SKIP_REST = ['pointerup', 'touchend', 'mouseup', 'click'];
+const INTRO_SKIP_ALL  = INTRO_SKIP_DOWN.concat(INTRO_SKIP_REST);
+let _introSwallow = false, _introSwallowTimer = null;
+
+function beginIntroHold(ms) {
+    game.introHold = true;
+    game.inputLocked = true;
+    if (_introTimer) clearTimeout(_introTimer);
+    _introTimer = setTimeout(() => endIntroHold(), ms);
+    _introAttach();
+}
+// { capture: true, passive: false } — the third argument being a bare `true` set
+// capture but left passive at the browser default, which for touch events on
+// window is TRUE, so preventDefault inside the handler was being ignored and
+// logged as a console violation.
+const INTRO_LISTEN_OPTS = { capture: true, passive: false };
+function _introAttach() {
+    for (const ev of INTRO_SKIP_ALL) window.addEventListener(ev, _introSkip, INTRO_LISTEN_OPTS);
+}
+function _introDetach() {
+    for (const ev of INTRO_SKIP_ALL) window.removeEventListener(ev, _introSkip, true);
+    if (_introSwallowTimer) { clearTimeout(_introSwallowTimer); _introSwallowTimer = null; }
+    _introSwallow = false;
+}
+// NOTHING IN A POINTER GESTURE IS preventDefault'ed — only keys are. Cancelling
+// `touchstart` (or a touch-derived `pointerdown`) suppresses the compatibility
+// mousedown/mouseup AND the click, and the click is the event that tells us the
+// gesture is over. Cancel it and the swallow can only end on the 900ms backstop,
+// which then eats the player's next tap — a near-second of dead input right after
+// they asked the game to hurry up, which is worse than the problem being solved.
+// stopImmediatePropagation is what actually protects the board, and it applies to
+// every event type regardless. preventDefault is kept for keydown so that Space
+// does not scroll the page on its way past.
+function _introEat(e) {
+    if (!e) return;
+    if (e.cancelable && e.type === 'keydown') e.preventDefault();
+    // stopImmediatePropagation, not stopPropagation: other capture-phase listeners
+    // on window would otherwise still see it.
+    e.stopImmediatePropagation();
+}
+function _introSkip(e) {
+    // Already skipped — we are only here to eat the tail of the same gesture.
+    if (_introSwallow) {
+        _introEat(e);
+        // `click` is the last event a tap produces, so it ends the swallow. The
+        // timer below is the backstop for taps that never produce one (a finger
+        // that moved, a cancelled touch).
+        if (e && e.type === 'click') _introDetach();
+        return;
+    }
+    if (!game || !game.introHold) { _introDetach(); return; }
+
+    if (e && e.type === 'keydown') {
+        // ALLOW-LIST, not a block-list. The first version tried to name the keys
+        // that are NOT a skip and missed CapsLock, NumLock, Insert, ContextMenu,
+        // AltGraph, the media keys and Escape — which has its own meaning here.
+        // A skip is a printable character, Enter, or an arrow: the keys a player
+        // reaches for when they want the game to get on with it.
+        const k = e.key;
+        const skippable = (k && k.length === 1) || k === 'Enter' ||
+                          k === 'ArrowUp' || k === 'ArrowDown' ||
+                          k === 'ArrowLeft' || k === 'ArrowRight';
+        if (!skippable) return;
+        if (e.metaKey || e.ctrlKey || e.altKey) return;
+        // A key has no tail worth eating — keyup is bound to nothing — so the
+        // listeners come off immediately and the very next keypress is a move.
+        _introEat(e);
+        endIntroHold();
+        return;
+    }
+    if (e && INTRO_SKIP_REST.indexOf(e.type) !== -1) return;   // stray up without a down
+
+    _introEat(e);
+    _introSwallow = true;
+    _introSwallowTimer = setTimeout(_introDetach, 900);
+    endIntroHold(true);
+}
+// [220826b] Everything that should start counting the moment the player can
+// actually SEE the board. Called from endIntroHold when the door opens (whether
+// it timed out or was skipped), and directly from startGame in Test Drive, which
+// has no door.
+function armRunGuidance() {
+    if (!game || !game.running) return;
+    if (game._guidanceArmed) return;   // the door can open twice (timeout races skip)
+    game._guidanceArmed = true;
+    applyHints(!!game._pendingHints);
+    if (!game.testDrive && game._pendingTips) startCoachTips();
+}
+
+function endIntroHold(keepSwallowing) {
+    // The teardown must NOT be conditional on game state. `game` is reassigned
+    // wholesale by startGame and the fresh literal has no introHold key, so an
+    // early return here could leave capturing window listeners attached for the
+    // life of the page, preventDefaulting every key and tap in the game.
+    if (_introTimer) { clearTimeout(_introTimer); _introTimer = null; }
+    if (!keepSwallowing) _introDetach();
+    if (!game || !game.introHold) return;
+    game.introHold = false;
+    // [220826b] Only a LIVE run gets its input unlocked. This is now called from
+    // endGame and exitToWelcome as part of teardown, both of which have just set
+    // inputLocked true on purpose — clearing it unconditionally would hand control
+    // back to a player whose run has already ended.
+    if (game.running) game.inputLocked = false;
+    // [220826b] A SKIP IS STILL A TRANSITION. Dropping the classes outright cut
+    // from full black to live board in a single frame, where the unskipped door
+    // gets a 420ms fade. `skip-out` kills the keyframes and fades what is left.
+    const ov = document.getElementById('roundOverlay');
+    if (ov) {
+        ov.classList.add('skip-out');
+        setTimeout(() => ov.classList.remove('active', 'active-instant', 'skip-out'), 240);
+    }
+    // The door is not a frame delta: without this the loop's first tick after a
+    // skip would carry however long the player looked at it — and _runStartT is
+    // the idle-coast baseline, so leaving it at the moment PLAY was pressed opened
+    // every run with the flywheel already half decayed.
+    lastTime = performance.now();
+    if (game && game.running) game._runStartT = performance.now();
+    armRunGuidance();
 }
 
 function showRoundOverlay(roundNum, instant = false) {
@@ -12409,11 +12875,13 @@ function showRoundOverlay(roundNum, instant = false) {
       } }
     const nu = document.getElementById('roundOverlayNew');
     if (nu) nu.textContent = endlessDepth > 0 ? ('ENDLESS ' + endlessDepth) : (ROUND_NEW[roundNum] || '');
+    // [220826c] THE LEVEL BONUS MOVED TO THE SCORECARD. It is now an itemised
+    // row on the tally, which is where the rest of the level's earnings are
+    // counted and which the player sees seconds before this door — announcing it
+    // in both places, back to back, reads as the game saying it twice rather than
+    // as emphasis. The element stays so the door's layout is unchanged.
     const bo = document.getElementById('roundOverlayBonus');
-    if (bo) {
-        bo.textContent = game._lastLevelBonus ? `LEVEL BONUS +${game._lastLevelBonus}` : '';
-        game._lastLevelBonus = 0;   // shown once; game start shows nothing
-    }
+    if (bo) bo.textContent = '';
     updateOverlayMission();
     // [290726o] The game-screen wordmark celebrates the new level with one
     // Я-flip, then sits still — no looping motion above live play.
@@ -12423,7 +12891,7 @@ function showRoundOverlay(roundNum, instant = false) {
     { const ya = document.querySelector('.wm-mini .c4');
       if (ya) { ya.classList.remove('lvl-spin'); void ya.offsetWidth; ya.classList.add('lvl-spin');
                 setTimeout(() => ya.classList.remove('lvl-spin'), 1000); } }
-    overlay.classList.remove('active', 'active-instant');
+    overlay.classList.remove('active', 'active-instant', 'skip-out');
     overlay.classList.toggle('day', currentTheme === 'day');
     void overlay.offsetWidth;
     overlay.classList.add(instant ? 'active-instant' : 'active');
@@ -12473,7 +12941,16 @@ function dayTileFill() { return DAY_WASH_TILE[advancedRound] || '#ffffff'; }
 // changes the world (ground converts / object consumed / cube spent).
 let displayScore = 0;         // the rolling number shown on screen
 let scoreRecordShown = false; // NEW HIGH SCORE fires once per run
-function scoreGain(pts, big) {
+// [230826b] `forgePts` — what this gain contributes to the SHIFTER FACTORY, when
+// that differs from what it contributes to the score. Defaults to the same thing,
+// so every existing call site is unchanged.
+// It exists because the combo multiplier now runs through here, and the factory
+// converts points into shifters on the board: without this, a hot streak would
+// forge tools 1.5-4x faster as a side effect: an economy change nobody designed,
+// handing back most of the deliberate halving at [290726q]. The combo is meant to
+// pay in SCORE — the thing the player is chasing — and not to quietly restock the
+// board while it does it.
+function scoreGain(pts, big, forgePts) {
     game.score += pts;
     // ── [300726aq] SCORE NO LONGER BUYS TIME ────────────────────────────────
     // NEVER PAY THE PLAYER IN THE CURRENCY YOU ARE THREATENING THEM WITH.
@@ -12487,8 +12964,9 @@ function scoreGain(pts, big) {
     // So: points now forge SHIFTERS — ROTOЯ's special candy. A tool on the
     // board, felt immediately, spendable, and it restocks the machines that
     // were halved at 290726-1840. Time comes from hourglasses ALONE.
-    if (game.running && pts > 0 && !game.testDrive) {
-        overflowPts += pts;
+    const _forge = (forgePts === undefined) ? pts : forgePts;
+    if (game.running && _forge > 0 && !game.testDrive) {
+        overflowPts += _forge;
         while (overflowPts >= FACTORY_PTS) { overflowPts -= FACTORY_PTS; factoryQueue++; }
         game._rotorKick = performance.now();   // the wheel still reacts to a gain
     }
@@ -12592,34 +13070,42 @@ function updateScoreDisplay() {
 // every single; the obstacle RING around them is the risk tell. Hardness
 // is tracked by the requirement id's '#t' tag, not by colour.
 const HARD_SINGLE_COLOR = '#ff4da6';   // legacy constant (no longer assigned)
-// V9 D4 — golden slot colour + spawn odds; D5 — claim suspense beat.
+// V9 D4 — reward gold; D5 — claim suspense beat.
+// [230826a] GOLD_SLOT_CHANCE IS GONE. A 1-in-8 roll that doubled a claim for
+// nothing: no risk to weigh, no decision to make, no skill to express — the
+// opposite of a game whose pitch is mastering it. Its colour was the only part
+// worth keeping, and gold now marks a combo the player built (see COMBO_GOLD_AT)
+// rather than a die the game rolled. GOLD_SLOT_COLOR survives as the constant the
+// FULL HOUSE jackpot paints in, which is an achievement and has earned it.
 const GOLD_SLOT_COLOR = '#ffd60a';
-const GOLD_SLOT_CHANCE = 0.125;          // ~1 in 8 slots
 const CLAIM_SUSPENSE_MS = 200;           // commit → beat → payout
 // [030826ad] MACHINE-THEMED PRAISE. The vocabulary has a natural advantage:
 // engineering words for PRECISION double as compliments, so they flatter
 // without sounding like a coach. Grouped by what they reward.
 // (Nothing here uses "slip" — that word belonged to the shifter vocabulary
 // before the turn/step naming settled, and reviving it would muddy it again.)
+// [240826a] Down to two. Both survivors are the plain ones; the three cut were
+// the machine-shop measurements, which went with the precision vocabulary.
 const EDGE_PRAISES = [
-    'LIVING ON THE EDGE!', 'CLOSE TO THE EDGE, NICE WORK!',
-    'FINE MARGINS!', 'HAIRLINE CLEARANCE!', 'ON THE LIMITER!'
+    'LIVING ON THE EDGE!', 'CLOSE TO THE EDGE, NICE WORK!'
 ];
 // Gears meshing, teeth engaging — a clean, exact result.
 const GEAR_PRAISES = [
-    'TOOTH PERFECT!', 'COGS ALIGNED!', 'GEARED UP!',
-    'RUNNING TRUE!', 'TOLERANCE ZERO!', 'MACHINED!', 'SNUG FIT!'
+    'COGS ALIGNED!', 'GEARED UP!', 'RUNNING TRUE!', 'MACHINED!'
 ];
 // The machine running sweetly — a chain, a flowing sequence.
 const MACHINE_PRAISES = [
-    'LIKE CLOCKWORK!', 'WELL OILED!', 'NO FRICTION!', 'FULL TORQUE!',
-    'ALL CYLINDERS!', 'SILK BEARINGS!', 'DRIVE ENGAGED!', 'IN PHASE!'
+    'LIKE CLOCKWORK!', 'NO FRICTION!', 'FULL TORQUE!',
+    'ALL CYLINDERS!', 'DRIVE ENGAGED!', 'IN PHASE!'
 ];
 // The game's own verb — flipping, turning, reorienting.
+// [240826d] This is the pool about the PLAYER'S OWN TURNING, so it is where
+// revolve belongs — evolve and devolve describe the player's size changing, and
+// revolve describes its orientation changing. Three words, one subject: you.
 const FLIP_PRAISES = [
     'NEATLY TURNED!', 'FLIP FLOP!', 'END OVER END!', 'OVER SHE GOES!',
     'TURNED ON A SIXPENCE!', 'THAT IS THE TURN!',
-    'ROTATED CLEAN!'
+    'ROTATED CLEAN!', 'FULLY REVOLVED!'
 ];
 // One pool for the general case, so a single call gets the whole vocabulary.
 const ALL_PRAISES = GEAR_PRAISES.concat(MACHINE_PRAISES, FLIP_PRAISES);
@@ -12637,10 +13123,33 @@ function bumpChain() {
     const now = performance.now();
     chain.n = (now - chain.lastT < CHAIN_WINDOW_MS) ? chain.n + 1 : 1;
     chain.lastT = now;
+    // [230826a] This used to write "COMBO 2", "COMBO 3" into the chip — a counter
+    // of claims made in quick succession that paid absolutely nothing. The word
+    // COMBO was attached to the one mechanic with no reward behind it, while the
+    // mechanic that DID pay wore a different name (GEAR). The chip now shows the
+    // real multiplier instead; see paintComboChip(). chain.n survives because the
+    // fever visual still reads it.
+}
+
+// [230826a] ONE NUMBER, ALWAYS TRUE, ALWAYS PAYING. The multiplier had no
+// on-screen home at all — the element the old code pumped, #hudCombo, is not in
+// the document — so the player's only sight of it was a past-tense line on the
+// scorecard after the level had ended. It lives in the HUD now, beside the
+// score, and it goes GOLD at the tier where the board does.
+function paintComboChip() {
     const chip = document.getElementById('chainChip');
-    if (chip && chain.n >= 2) {
-        chip.textContent = 'COMBO ' + chain.n;
-        chip.classList.add('on');
+    if (!chip) return;
+    const m = game.comboMult || 1;
+    if (m <= 1) { chip.classList.remove('on', 'hot', 'pop'); chip.textContent = ''; return; }
+    chip.textContent = '\u00d7' + m.toFixed(1);
+    chip.classList.add('on');
+    chip.classList.toggle('hot', m >= COMBO_GOLD_AT);
+    // [230826c] Only pop on a CHANGE. This ran on every qualifying move, and
+    // `void offsetWidth` is a forced synchronous reflow — cheap when it animated
+    // a element that did not exist, not cheap now that it animates a real one.
+    // It also read as a permanent twitch rather than as marking a tier.
+    if (m !== chip._lastMult) {
+        chip._lastMult = m;
         chip.classList.remove('pop'); void chip.offsetWidth; chip.classList.add('pop');
     }
 }
@@ -12670,8 +13179,7 @@ function nearPlayEdge() {
 // praise rather than warning.
 const DEEP_PRAISES = [
     'NERVES OF STEEL!', 'RIGHT ON THE EDGE!', 'CUTTING IT FINE!',
-    'RED LINING!', 'FLAT OUT!', 'ON THE RIVET!',
-    'FEARLESS!', 'NO FEAR!', 'CLUTCH!'
+    'FLAT OUT!', 'FEARLESS!', 'NO FEAR!'
 ];
 function deepInDanger() {
     const cs = getPlayerCells();
@@ -12960,7 +13468,12 @@ function buildTallyRows() {
     const cov = Math.min(100, Math.round(game.coverage || 0));
     const grade = game._lastCovGrade || 'C';
 
-    rows.push({ icon: 'play', label: 'Points in play', count: '',
+    // [240826b] Was 'Points in play'. This row is everything earned ON the board
+    // during the level — cells, rows, claims — as against the bonuses listed
+    // below it, which are paid for finishing. 'Score board' was the first
+    // suggestion and reads as the name of the whole card rather than this row;
+    // 'Board score' keeps the sense and loses the collision.
+    rows.push({ icon: 'play', label: 'Board score', count: '',
                 pts: (game._levelPlayPoints || 0) + (game._lastCovBonus || 0) });   // [180826ab] cov bonus folded in
     // [050826a] The GOLD class made this row's label and count yellow — all but
     // unreadable on the white day card, and it was singling out an S grade with
@@ -12978,6 +13491,12 @@ function buildTallyRows() {
     if ((game._lastSwiftBonus || 0) > 0)
         rows.push({ icon: 'play', label: 'Speed bonus', count: (game._lastSwiftSec || 0) + 's',
                     pts: game._lastSwiftBonus });
+    // [220826c] The level bonus paid but had no line, so the column never added
+    // up. Every other row here earns its place by paying; this one was paying
+    // without one.
+    if ((game._lastLevelBonus || 0) > 0)
+        rows.push({ icon: 'set', label: 'Level bonus', count: 'LEVEL ' + lvl,
+                    pts: game._lastLevelBonus });
     // [010826a] "Set complete" line removed from the card. The bonus still pays
     // — it lands inside the level total — but the line itself said only "you
     // finished the level", which is why the card is on screen at all.
@@ -12996,7 +13515,7 @@ function buildTallyRows() {
     // card's own [300726ba] rule).
     // [180826aa] Rows completed and best combo return to the card — designer's
     // call (they were demoted to the footnote in [300726ba]). Display-only,
-    // pts 0: their points already landed inside "Points in play".
+    // pts 0: their points already landed inside "Board score".
     if ((game.roundBestCombo || 0) >= 1.5)
         rows.push({ icon: 'play', label: 'Best combo', count: '×' + game.roundBestCombo.toFixed(1), pts: 0 });
     if ((game.roundChains || 0) > 0)
@@ -13028,7 +13547,12 @@ function tallyFootnote() {
 let _tallyCancels = [];
 let _tallyRunning = 0;
 
-function showLevelTally(onDone) {
+// [220826c] `opts` carries the two strings the finale needs to differ on: the
+// heading, which otherwise reads "LEVEL 10 COMPLETE" on the screen that ends the
+// game, and the button, which should not say CONTINUE when there is nothing to
+// continue to.
+function showLevelTally(onDone, opts) {
+    opts = opts || {};
     document.body.classList.add('tally-open');   // [060826q] lobby track over the card
     const el = document.getElementById('levelTally');
     if (!el) { if (onDone) onDone(); return; }
@@ -13038,17 +13562,42 @@ function showLevelTally(onDone) {
     _tallyRunning = 0;
 
     const title = document.getElementById('tallyTitle');
-    if (title) title.textContent = 'LEVEL ' + advancedRound + ' COMPLETE';
+    if (title) title.textContent = opts.title || ('LEVEL ' + advancedRound + ' COMPLETE');
     const host = document.getElementById('tallyRows');
     const totalEl = document.getElementById('tallyTotal');
     const totalVal = document.getElementById('tallyTotalValue');
     const hint = document.getElementById('tallyContinue');
-    if (hint) hint.classList.remove('in');
+    // Set both ways round, not just when an override exists — the element is
+    // reused, so a finale label left behind would greet the next run at level 1.
+    if (hint) { hint.classList.remove('in'); hint.textContent = opts.cta || '▶ CONTINUE'; }
     if (host) host.innerHTML = '';
     if (totalVal) totalVal.textContent = '0';
     if (totalEl) totalEl.classList.add('in');   // total is visible from the off, and climbs
 
     const rows = buildTallyRows();
+    // [220826d] THE SCORECARD CHECKS ITS OWN ARITHMETIC. The column of +N values
+    // must equal the score the level actually moved, and the grand total the card
+    // animates to must equal the score the results screen will show. Those two
+    // used to disagree — the speed bonus was counted twice and the level bonus not
+    // at all — and nothing on screen said so; you had to read one number, press a
+    // button, and remember it. This says so, in the console, every level.
+    if (DEBUG_MODE) {
+        const rowSum = rows.reduce((a, r) => a + (r.pts || 0), 0);
+        const start = game._levelStartScore || 0;
+        const levelDelta = game.score - start;
+        const grandShown = start + rowSum;
+        const ok = rowSum === levelDelta && grandShown === game.score;
+        console.log(`%c[ROTOR] tally audit — level ${advancedRound}: ${ok ? 'BALANCED' : 'MISMATCH'}`,
+                    `color:${ok ? '#22c55e' : '#ef4444'};font-weight:bold`);
+        console.table({
+            'column of +N':      rowSum,
+            'level actually up': levelDelta,
+            'grand total shown': grandShown,
+            'real score':        game.score,
+            'discrepancy':       rowSum - levelDelta
+        });
+        if (!ok) console.warn('[ROTOR] rows:', rows.map(r => `${r.label}: +${r.pts || 0}`));
+    }
     const nodes = [];
     for (const r of rows) {
         const d = document.createElement('div');
@@ -13135,7 +13684,12 @@ function showLevelTally(onDone) {
         _tallyTimers.push(setTimeout(() => {
             n.node.classList.add('in');
             if (sfx.seat) sfx.seat(); else if (sfx.collect) sfx.collect();
-            if (n.row.pay && n.row.pts) scoreGain(n.row.pts, false);
+            // [220826c] The `pay` branch that used to live here is gone. No row
+            // buildTallyRows produces has ever carried a `pay` property, so it was
+            // dead — but it was dead code that would DOUBLE-PAY the moment anyone
+            // added `pay: true` to make a row "work", because every bonus is
+            // already inside game.score before the card opens. The tally reports;
+            // it does not award.
             if (!n.row.pts) return;
             const ptsEl = n.node.querySelector('.tally-pts');
             const base = banked;
@@ -13174,10 +13728,7 @@ function skipLevelTally() {
             nodes.forEach((n, i) => {
                 const r = rows[i];
                 if (!r) return;
-                if (!n.classList.contains('in')) {
-                    n.classList.add('in');
-                    if (r.pay && r.pts) scoreGain(r.pts, false);
-                }
+                if (!n.classList.contains('in')) n.classList.add('in');   // [220826c] see showLevelTally
                 const ptsEl = n.querySelector('.tally-pts');
                 if (r.pts && ptsEl) ptsEl.textContent = '+' + r.pts;
                 total += r.pts || 0;
@@ -13206,6 +13757,35 @@ function skipLevelTally() {
         return;   // [290726k] wait for CONTINUE — a body tap never dismisses
     }
     // Second body tap: still no dismiss — only the button continues.
+}
+
+// [220826c] Dismiss the tally as part of tearing a run down — as distinct from
+// finishLevelTally(), which is the player COMPLETING it. The difference that
+// matters is the callback: finishing runs it, teardown drops it. The finale ends
+// the game from that callback, so a Home press with the scorecard open must not
+// be able to fire it. Before this, neither endGame nor exitToWelcome touched the
+// tally at all: it was left shown, with its timers running and its callback still
+// armed to advance a level on a run that had ended. (It was not VISIBLE — the
+// welcome screen is opaque at z-index 100 and the tally is 30 inside a container
+// that makes no stacking context — which is exactly why it went unnoticed.)
+function hideLevelTally() {
+    document.body.classList.remove('tally-open');
+    clearTallyTimers();
+    // Cancel the in-flight countUps. The first version of this left them to run
+    // out, reasoning that countUp's cancel runs onDone and onDone can fire
+    // sfx.gold() on a rank crossing — but onFRAME calls the same paintRank every
+    // frame, so leaving them running does not avoid the chime, it just defers it
+    // by up to 420ms and lands it on the welcome or game-over screen instead.
+    // Cancelling fires it once, here, while the card is still the thing on
+    // screen — and keeps _tallyRunning balanced, which orphans do not.
+    for (const c of _tallyCancels) { try { c(); } catch (e) {} }
+    _tallyCancels = [];
+    _tallyDone = null;
+    const el = document.getElementById('levelTally');
+    if (el && !el.classList.contains('hidden')) {
+        el.classList.remove('show');
+        setTimeout(() => el.classList.add('hidden'), 280);
+    }
 }
 
 function finishLevelTally() {
@@ -13244,9 +13824,17 @@ function completeSet() {
         const frac = Math.max(0, Math.min(1, (120 - t) / 75));
         game._lastSwiftSec = Math.round(t);
         game._lastSwiftBonus = Math.round(120 * advancedRound * frac);
-        if (game._lastSwiftBonus > 0) scoreGain(game._lastSwiftBonus, false);
     }
+    // [220826c] SNAPSHOT BEFORE THE BONUSES, NOT AFTER THE FIRST ONE. This line
+    // sat below the swift payout, so "points in play" already contained the speed
+    // bonus — and buildTallyRows then billed the speed bonus AGAIN as its own
+    // row. Meanwhile the level bonus below appeared in no row at all. The card's
+    // column therefore summed to p + 2·swift + coverage while the score had moved
+    // by p + swift + level + coverage, and the grand total it animated to
+    // disagreed with the score on the very next screen. It was wrong for every
+    // level; the finale is what made it the last number in the game.
     game._levelPlayPoints = game.score - (game._levelStartScore || 0);
+    if (game._lastSwiftBonus > 0) scoreGain(game._lastSwiftBonus, false);
     // Proportionate level bonus: 50 × the level just cleared — announced on
     // the level overlay so the escalation is visible, not silent.
     const bonus = 50 * advancedRound;
@@ -13286,7 +13874,19 @@ function completeSet() {
     // D6 ENDLESS: no win-exit. Round 10 completion celebrates the campaign
     // then rolls straight into Endless rounds via the normal advance path.
     const campaignDone = (advancedRound === ADVANCED_ROUNDS.length);
-    const isFinale = false;
+    // [220826a] THE GAME ENDS NOW. `isFinale` was hard-coded false, which made
+    // the entire finale branch below — MISSION COMPLETE, the closing
+    // celebration, endGame('win') — unreachable code, and rolled level 10
+    // straight into Endless instead. So the game had no ending: it had a point
+    // past which it stopped having levels. Every run finished the same way,
+    // by dying, whether you had beaten the campaign or not, and a player who
+    // cleared all ten was told they had unlocked something rather than that
+    // they had won.
+    // Clearing the last campaign round is now the ending it was always written
+    // to be. Endless mode is retired with it: the depth code in currentMission()
+    // and showRoundOverlay() is left in place and simply never reached, because
+    // deleting it would touch the round-generation path for no behavioural gain.
+    const isFinale = campaignDone;
     
     if (!isFinale) {
         // ROUNDS 1-4 — staggered round-complete text, then a cinematic
@@ -13305,13 +13905,15 @@ function completeSet() {
             showLevelCard({
                 // [270726z] % coverage dropped from the card; titles get
                 // their exclamation mark.
-                title: campaignDone ? 'MISSION COMPLETE!' : `LEVEL ${advancedRound} COMPLETE!`,
+                // (campaignDone is now the finale condition, so this branch only
+                //  ever runs for levels 1-9 — see isFinale above.)
+                title: `LEVEL ${advancedRound} COMPLETE!`,
                 // [290726k] No score figures on the card — numbers appear
                 // only in the tally, at the moment they are counted.
                 covText: gold ? 'CLEAN SLATE!' : '',
                 gold,
                 praise: celebration,
-                extra: campaignDone ? 'ENDLESS MODE UNLOCKED' : ''
+                extra: ''
             });
         }
         triggerSetCelebration(fwCount, fwDuration);
@@ -13342,6 +13944,7 @@ function completeSet() {
             // [290726d] tally counters reset with the rest of the round trackers
             game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
+            breakCombo('level');   // [230826b] a new level starts cold
             // [300726an] A level OPENS with targets. Slots were gated behind
             // slotEveryLandings landings (6 at L1, up to 20 later), so the first
             // ten-plus seconds had nothing to hunt. Two credits are granted and
@@ -13456,22 +14059,58 @@ function completeSet() {
             });
         }, 2200);
     } else {
-        // ROUND 5 — finale. Full celebration, then endGame win.
-        // Staggered finale text — "MISSION COMPLETE" first, then the
-        // closing celebration line. Same stagger pattern as rounds 1-4.
-        addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 30,
-            'MISSION COMPLETE', '#a3e635', true);
-        setTimeout(() => {
-            if (!game.running) return;
-            addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
-                celebration, '#a3e635', true, { life: 2600, hold: 1600 });
-        }, 900);
+        // [220826c] THE FINALE TAKES THE SAME ROUTE AS EVERY OTHER LEVEL — card,
+        // then tally, then the transition — and only the last step differs: where
+        // level 9 opens a door onto level 10, level 10 ends the game.
+        // It used to be two floating text lines and a five-second timer, which
+        // skipped the scorecard entirely. That meant the last level of the
+        // campaign was the ONE level whose bonuses — swift clear, level bonus,
+        // coverage, clean slate — were awarded silently. The player crossed the
+        // finish line and the game cut to the results screen without ever showing
+        // them what the final level had paid. It was also the only ending in the
+        // game on a timer: five seconds whether you were reading or not.
+        // The card and tally are the game's existing language for "here is what
+        // that level was worth". The finale had no business speaking a different
+        // one.
+        {
+            const gold = (game.roundRows || 0) >= 10;
+            showLevelCard({
+                // [230826d] Was 'MISSION COMPLETE!'. A machine does not run a
+                // mission or a campaign, and this landed on the most important
+                // screen in the game. The rank ladder already says what winning
+                // is — ten parts climbing to the one the game is named after —
+                // so the ending says the ladder's own last word.
+                title: 'FULL ROTATION',
+                covText: gold ? 'CLEAN SLATE!' : '',
+                gold,
+                praise: celebration,
+                extra: 'EVERY POLE ALIGNED'
+            });
+        }
         triggerSetCelebration(fwCount, fwDuration);
         game.paused = true;
         game.celebrating = true;
         const pp = document.getElementById('pausePanel');
         if (pp) pp.classList.add('hidden');
-        setTimeout(() => endGame('win'), Math.max(fwDuration + 600, 5000));
+        // [220826c] The finale holds its card LONGER than a normal level. Levels
+        // 1-9 cut to the tally at 2200ms and truncate their fireworks, which is
+        // fine for a 2250ms show nobody is studying. Round 10 fires 26 of them
+        // over 3600ms — the biggest moment in the game — and covering it at 2200
+        // would have hidden ten of them behind an opaque scorecard while their
+        // audio played on underneath. It is also the only card that carries a
+        // fourth line (EVERY POLE ALIGNED), which does not finish animating in
+        // until 1650ms, so at 2200 the player had half a second to read it.
+        setTimeout(() => {
+            // The home button stays live through the celebration, so a player who
+            // quits here has already been recorded by exitToWelcome — never open
+            // the scorecard for a run that has ended.
+            if (!game.running) return;
+            hideLevelCard();
+            showLevelTally(() => {
+                if (!game.running) return;   // Home during the scorecard
+                endGame('win');
+            }, { title: 'ROTOЯ COMPLETE', cta: '★ FINISH' });
+        }, Math.max(2200, fwDuration + 500));
     }
 }
 
@@ -14409,6 +15048,10 @@ function handleDeath(reason = 'death') {
         respawnPlayer();
         return;
     }
+    // [230826c] BELOW the grace return, so a forgiven crash is actually forgiven.
+    // It was at the top of this function, which meant a stumble the game had
+    // decided not to charge for still cost the whole streak.
+    breakCombo('death');
     game._rotorStumble = performance.now();   // gauge piece flashes red + stumbles
     // [300726aa] A death spends a HEART. Lives are a real, countable resource
     // now, not a reading off the clock: collecting time can never give one
@@ -14638,6 +15281,21 @@ function move(dir) {
     if (isTransformAnimActive()) return;
 
     game._lastAim = dir;   // [160826u] the preview ghost reads the current aim
+
+    // [230826c] THE MOVE IS THE UNIT, AND THIS IS WHERE IT STARTS.
+    // Two problems shared one root. checkCollisions runs PER FRAME and a gear
+    // train resolves one link per frame, so counting "frames that broke new
+    // ground" made a five-link train worth five combo steps — swapping the old
+    // dependence on shape size for a dependence on train length, which is no
+    // better. And claims taken through tryFuseAlongPath happen at input time,
+    // before that frame's coverage is registered, so an identical claim paid a
+    // tier less when there was a green beside it.
+    // A token minted here, once, per player-initiated move fixes both: the combo
+    // advances once per token, and every payout in the move reads the multiplier
+    // frozen at this instant. "The combo you arrived with" is now true of
+    // coverage, claims and rows alike, whatever route the move takes.
+    game._moveToken = (game._moveToken || 0) + 1;
+    game._comboAtMove = game.comboMult || 1;
 
     // FUSE-FIRST: stop and fuse at the first fusable green in the path
     if (tryFuseAlongPath(dir)) return;
@@ -14929,6 +15587,13 @@ function applyDrag(dt) {
 
     game.dragTimer -= dt;
     if (game.dragTimer <= 0) {
+        // [230826c] The held-swipe repeat produces real moves without going
+        // through move(), so it mints its own token — otherwise every move made
+        // by holding a direction would share the last tapped move's token and the
+        // combo would stop advancing for as long as the player kept holding.
+        game._moveToken = (game._moveToken || 0) + 1;
+        game._comboAtMove = game.comboMult || 1;
+
         // FUSE-FIRST in the drag direction too
         if (tryFuseAlongPath(game.dragDir)) return;
 
@@ -15578,6 +16243,7 @@ function checkCollisions() {
     const rowCells = {};
     let anyNewPeach = false;
     
+    let freshThisLanding = 0;   // [230826b] cells broken this landing; drives the combo
     for (const cell of cells) {
         const key = `${cell.x},${cell.y}`;
         const item = world[key];
@@ -15691,9 +16357,26 @@ function checkCollisions() {
             // path. bullet.charge is retained on the object but unused, to
             // avoid breaking the snapshot/replay capture which still includes it.
             
-            // New ground = new rewards, literally: +1 per fresh square, per cube.
-            scoreGain(1, false);
+            // New ground = new rewards, literally: +1 per fresh square, per cube —
+            // now multiplied by the live combo, read BEFORE this landing bumps it:
+            // you are paid the combo you arrived with, and this landing earns the
+            // next tier.
+            // [230826b] IT CARRIES THE FRACTION. Rounding each cell individually
+            // collapsed the ladder — a base of 1 rounds x1.5 and x2.0 to the same
+            // 2, and x2.5 and x3.0 to the same 3 — so two of the six tiers paid
+            // nothing extra while the game fired a full-screen float announcing
+            // them. That is the exact defect this change set out to fix, one level
+            // down. The remainder banks instead, so ten cells at x2.5 pay 25.
+            {
+                const owed = (game._covFrac || 0) + (game._comboAtMove || 1);
+                const pay = Math.floor(owed);
+                game._covFrac = owed - pay;
+                if (pay > 0) scoreGain(pay, false, 1);   // forge on the BASE — see scoreGain
+            }
             game.pts_base += 1;
+            // [230826c] pts_combo was declared and never written. Now that the
+            // multiplier pays, the breakdown can say how much of the score it is.
+            game.pts_combo = (game.pts_combo || 0) + ((game._comboAtMove || 1) - 1);
             game.peaches++;
             // Charge currency: 1 per new cell covered. Bigger shapes (more
             // cubes landing per move) naturally accumulate faster.
@@ -15704,32 +16387,22 @@ function checkCollisions() {
             // covered cell emits 3 sparks; total per landing scales naturally
             // with the number of cubes (1 cell → 3 sparks, 4 cells → 12).
             // Warmer colour when the combo multiplier is high.
-            const sparkColor = game.comboMult >= 2.0 ? '#fb923c' : '#fde68a';
+            const sparkColor = comboTint(game.comboMult >= 2.0 ? '#fb923c' : '#fde68a');
             addSparks(screenX, screenY, 3, sparkColor);
             
-            // Refresh combo timer
-            const _prevMult = game.comboMult;
-            game.combo++;
-            game.comboMult = getComboMult(game.combo);
-            game.comboTimer = COMBO_DURATION;
-            if (game.comboMult > game.bestCombo) game.bestCombo = game.comboMult;
-            // [290726d] per-LEVEL best, for the tally (game.bestCombo is per-run)
-            if (game.comboMult > (game.roundBestCombo || 0)) game.roundBestCombo = game.comboMult;
-            // GOOD SKILLS: a hot movement streak stepping up to a new high tier
-            // (x2.5+) — sustained precise play, distinct from the mechanic-chain
-            // "NICE COMBO!". Fires once per tier-up, dedup'd with combos.
-            // (V9: "GOOD SKILLS!" moved to ROW COMPLETION — see
-            // celebrateLineBand. The movement-streak tier-up no longer
-            // fires praise; the multiplier itself is the reward.)
-            
-            // Pump HUD combo element
-            const comboEl = document.getElementById('hudCombo');
-            if (comboEl) {
-                comboEl.classList.remove('pumped');
-                void comboEl.offsetWidth;
-                comboEl.classList.add('pumped');
-                setTimeout(() => comboEl.classList.remove('pumped'), 300);
-            }
+            // [230826b] The combo bump MOVED OUT of this per-cell loop — see below
+            // the loop. It used to run once per fresh cell, which made the tier
+            // thresholds a function of how big your shape happens to be: a Square
+            // covering four cells took a cold streak to x2.0 in a single landing
+            // and to the x4.0 ceiling in six, and fired two full-screen tier-up
+            // floats at the same coordinate in the same frame.
+            // A combo should measure how long you have kept it going, not how many
+            // squares you happen to be carrying. One landing, one step.
+            freshThisLanding++;
+            // [230826b] The #hudCombo pump that stood here is gone. That element has
+            // not been in the document for some time, so it was a forced reflow
+            // (`void offsetWidth`) and a setTimeout per cell, animating nothing.
+            // The chip is the readout now; see paintComboChip.
             
             // Check streak bonuses from this newly visited cell
             // checkStreakBonuses(cell.x, cell.y);   // silenced: legacy 75-100pt
@@ -15744,8 +16417,24 @@ function checkCollisions() {
         rowCells[cell.y].add(cell.x);
     }
     
-    // No new peach landed this frame — combo keeps ticking via timer, not reset here
-    // (timer-based decay in updateCombo handles the reset)
+    // [230826c] ONE MOVE, ONE STEP. Guarded on the move token rather than on the
+    // frame: a gear train spans several frames and each link lands on fresh
+    // ground, so this ran once per LINK. The tiers now mean the same thing to a
+    // Single as to a Square, and to a one-link move as to a five-link train.
+    if (freshThisLanding > 0 && game._comboToken !== game._moveToken) {
+        game._comboToken = game._moveToken;
+        const _prevMult = game.comboMult;
+        game.combo++;
+        game.comboMult = getComboMult(game.combo);
+        game.comboTimer = COMBO_DURATION;
+        if (game.comboMult > game.bestCombo) game.bestCombo = game.comboMult;
+        // [290726d] per-LEVEL best, for the tally (game.bestCombo is per-run)
+        if (game.comboMult > (game.roundBestCombo || 0)) game.roundBestCombo = game.comboMult;
+        if (game.comboMult > _prevMult) comboTierUp(game.comboMult, _prevMult);
+        paintComboChip();
+    }
+
+    // (The streak's decay is timer-based; see updateCombo.)
     
     // LINE completion — check every row this landing touched (plus the rows a
     // claim may have stamped are covered when the claim's own landing runs).
@@ -15817,13 +16506,16 @@ function bandLabel(n, pts, mult) {
 }
 // Positive-feedback flourish for a skillful chain — a shape-shifter that lands
 // a reward, or a grow-and-claim in one move. Timestamp-dedup'd so overlapping
-// combos in the same beat surface only one "NICE COMBO!".
+// combos in the same beat surface only one praise line.
 function showCombo(sx, sy, text, color) {
     if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no praise text
     const now = performance.now();
     if (now - (game._lastComboT || 0) < 500) return;   // one praise per beat
     game._lastComboT = now;
-    addFloat(sx, sy, text || 'NICE COMBO!', color || '#f8fafc', true, { life: 1000, hold: 500 });
+    // [230826d] Default was 'NICE COMBO!'. Every caller passes its own text, so
+    // this is the fallback nobody sees — but a fallback in the wrong voice is
+    // still a landmine for whoever adds the next caller.
+    addFloat(sx, sy, text || 'MESHED!', color || '#f8fafc', true, { life: 1000, hold: 500 });
 }
 
 function celebrateLineBand(newRows) {
@@ -15849,7 +16541,22 @@ function celebrateLineBand(newRows) {
     // hardest exactly when order is at its peak.
     const rowsUp = countVisibleCompleteRows();
     pts = Math.round(pts * (1 + 0.1 * Math.max(0, rowsUp - 1)));
-    scoreGain(pts, true);
+    // [230826a] And on rows, which is where the ceiling lives — a wide band
+    // cleared on a hot combo is the biggest thing a player can do in this game,
+    // and it should read that way on the score.
+    // THE ROW SHARE IS A KNOB, and it is set to full deliberately. Rows already
+    // carry three multipliers (shape weight up to x2, peril x1.5, tidiness up to
+    // x1.9), so a perfect band at x4 combo is worth roughly four times what the
+    // same band was worth last build — around 12,000 points, against a whole
+    // 29,626-point run in the last recording. That is the intended shape of a
+    // mastery ceiling: enormous, and reachable perhaps twice in a good run.
+    // If play shows rows drowning out claims and coverage, halve this rather than
+    // touching getComboMult — the tiers are what the player reads, and they should
+    // not change meaning between one reward and another.
+    const _rowForge = pts;   // [230826b] the factory sees the pre-combo value
+    const _rowCombo = game._comboAtMove || 1;   // [230826c] frozen at move start
+    if (_rowCombo > 1) pts = Math.round(pts * (1 + (_rowCombo - 1) * COMBO_ROW_SHARE));
+    scoreGain(pts, true, _rowForge);
     // Colour climbs the rainbow with the band: single = understated white,
     // then violet → indigo → blue → green → yellow → orange, landing on RED
     // at ×10 — the spectrum walked end to end.
@@ -15876,7 +16583,7 @@ function celebrateLineBand(newRows) {
     bumpChain();
     checkRowMilestones();
     // Row praise is task-related (V9): the CLEAN SWEEP family, not the
-    // generic "NICE COMBO!" — combos keep their name, sweeps get theirs.
+    // generic gear praise — combos keep their name, sweeps get theirs.
     // [300726az] Praise reserved for the SINGLE-row case, where the label reads
     // only "LINE" and there is room for a word. A multi-row band already names
     // itself — DOUBLE LINE and DOUBLE SWEEP! are one fact twice — so the sweep
@@ -15917,7 +16624,102 @@ function drawLineFlashes() {
 }
 
 // ============ COMBO SYSTEM ============
-const COMBO_DURATION = 3000; // ms to keep combo alive without landing
+// [230826c] 3000 -> 1600. THE WINDOW IS THE DIFFICULTY, not the thresholds.
+// The tiers below were written when the counter advanced once per fresh CELL, so
+// a Square could take a cold streak to the ceiling in six landings. Counting
+// moves instead fixed the shape dependence but left a worse problem: in a
+// forced-scroll climber, moving onto fresh ground IS the mandatory action, and
+// three seconds is many times the natural gap between moves — so the ceiling
+// became a state a competent player simply lives in, which is the opposite of
+// what a mastery multiplier should be.
+// 1600ms is roughly two unhurried moves. Holding x4 now means twenty-three
+// decisions in a row with no hesitation and no wasted move, which is a thing
+// worth being paid for. It also gives the multiplier a second meaning it did not
+// have: stopping to think costs you, so the pressure is on reading the board
+// ahead rather than at it.
+// THESE ARE FIRST GUESSES. The `cm` field in rec('tick') samples the live
+// multiplier every 2s specifically so the next play export can settle them.
+const COMBO_DURATION = 1600; // ms of silence that ends a streak
+
+// [230826a] The tier at which the whole board's reward language turns gold.
+// Gold used to belong to a 1-in-8 random slot; it belongs to earned heat now.
+const COMBO_GOLD_AT = 2.5;
+// How much of the combo multiplier row bands receive. 1 = all of it. See the
+// note at the call site in celebrateLineBand before changing it.
+const COMBO_ROW_SHARE = 1;
+const COMBO_GOLD = GOLD_SLOT_COLOR;   // [230826b] one hex, one source — was a duplicate literal
+function comboIsHot() { return (game.comboMult || 1) >= COMBO_GOLD_AT; }
+// The colour any reward paints in right now — gold while hot, its own hue
+// otherwise. One call site each for claims, rows and sparks, so the board
+// changes character all at once rather than in pieces.
+function comboTint(base) { return comboIsHot() ? COMBO_GOLD : base; }
+
+function comboTierUp(mult, prev) {
+    if (!game.running || game.celebrating) return;
+    // [230826c] This guard was dead: comboTierUp is only ever called on a rising
+    // tier, so `mult <= _tierPeak` could never be true and nothing was ever
+    // coalesced. The rate limit is the whole test now — two tiers crossed inside
+    // 220ms draw one float, not two stacked at the same coordinate.
+    const nowT = performance.now();
+    if (nowT - (game._tierAt || 0) < 220) { game._tierPeak = mult; return; }
+    game._tierAt = nowT;
+    game._tierPeak = mult;
+    const hot = mult >= COMBO_GOLD_AT;
+    const top = mult >= 4.0;
+    const col = hot ? COMBO_GOLD : '#fde68a';
+    // The label names the multiplier, because the multiplier is the reward. The
+    // adjective is the only part that escalates, so the player reads the same
+    // shape of message every time and only has to notice one word.
+    // [230826d] WAS ON FIRE / SCORCHING / BLAZING / MASTERY. Heat words, reached
+    // for because every arcade game reaches for them, saying nothing about this
+    // game in particular. The streak is a magnetic body being brought up to
+    // speed, so it climbs through the states a motor actually passes through:
+    // charge goes in, the thing goes live, current fills it, the field takes
+    // hold, and it turns freely. LIVE is deliberately the gold tier — a live
+    // circuit is both the powerful state and the dangerous one, which is what a
+    // hot streak is.
+    const word = top ? 'FULL REVOLUTION' : mult >= 3.5 ? 'MAGNETISED'
+               : mult >= 3.0 ? 'FULL CURRENT' : hot ? 'LIVE' : 'CHARGING';
+    // 0.44, not 0.34: FULL HOUSE and NEW HIGH SCORE both land at 0.30-0.34.
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.44, `${word}\n\u00d7${mult.toFixed(1)}`, col, true,
+             { life: top ? 1800 : 1200, hold: top ? 900 : 600 });
+    // NOT triggerEdgeGlow — it has been disabled at source since [270726f] (a bare
+    // `return` at the top), so every call to it in this file is decoration that
+    // does nothing. The shake is the escalating channel that actually works.
+    if (typeof triggerShake === 'function') triggerShake(hot ? 3 + (mult - COMBO_GOLD_AT) * 3 : 2, 150);
+    // Audio escalates with the tier: a step tone below gold, the gold cue at and
+    // above it, and the ceiling gets the bass under it as well.
+    if (hot && sfx.gold) sfx.gold();
+    else if (sfx.claimStep) sfx.claimStep(1, 2);
+    if (top && sfx.bassImpact) sfx.bassImpact(0.9);
+}
+
+// [230826b] END THE STREAK, DELIBERATELY. Once the multiplier pays, three places
+// that never mattered before become exploits or lies:
+//   PAUSE — updateCombo runs after the paused early-return, so the timer froze.
+//           A player could stop at x4, study the board at leisure, plan a wide
+//           band and resume to cash it. The combo is a claim about unbroken
+//           rhythm; a pause is the definition of breaking it.
+//   LEVEL — the streak carried across the transition, so a level opened at x4 and
+//           its scorecard reported a "best combo" earned in the previous level.
+//   DEATH — losing a heart left the streak running.
+function breakCombo(reason) {
+    if (!game) return;
+    // [230826c] No early return on a cold streak: this also clears the chip, and
+    // a run that ENDED hot left it reading a gold x4.0 across the whole game-over
+    // screen. The tier-up coalescer is reset here too — otherwise _tierPeak stays
+    // stale at the old ceiling, which is harmless only as long as the rate limit
+    // stays at 220ms.
+    if (game.combo) rec('combo', { end: reason || '?', peak: game.comboMult, n: game.combo });
+    game.combo = 0;
+    game.comboMult = 1.0;
+    game.comboTimer = 0;
+    game._covFrac = 0;
+    game._comboAtMove = 1;
+    game._tierAt = 0;
+    game._tierPeak = 0;
+    if (typeof paintComboChip === 'function') paintComboChip();
+}
 
 function getComboMult(combo) {
     if (combo <= 1)  return 1.0;
@@ -15933,9 +16735,11 @@ function updateCombo(dt) {
     if (!game.running || game.combo === 0) return;
     game.comboTimer -= dt;
     if (game.comboTimer <= 0) {
-        game.combo = 0;
-        game.comboMult = 1.0;
-        game.comboTimer = 0;
+        const wasHot = comboIsHot();
+        breakCombo('timeout');   // [230826b] one definition of "the streak is over"
+        // Losing a hot streak is information the player wants immediately —
+        // without it the multiplier simply stops being true and nothing says so.
+        if (wasHot && sfx.wrongShape) sfx.wrongShape();
     }
 }
 // Track which streak runs have already been rewarded (prevents double-triggering)
@@ -17854,6 +18658,20 @@ function drawFlipHints() {
     }
 }
 
+// [220826a] THE PREFERENCE AND THE LIVE FLAG ARE DIFFERENT THINGS, and which one
+// each caller wants differs.
+// `game.hintsOn` is what is ON SCREEN right now. armHintsAutoOff() switches it
+// off five seconds after it goes on, because the guide is a glance, not a layer —
+// so for most of any run it is false even when the player has the feature turned
+// on. The two PILLS and the H key read this one: they are "show me the guide",
+// and toggling against the live state is what makes a second glance possible.
+// `hintsPref` is what the player ASKED FOR, and it only changes when they act.
+// startGame, saveSettings and the Settings checkbox read this one. Reading the
+// live flag instead — which all three used to do — meant the auto-off decayed the
+// saved setting to false on its own, and the guide was then off for every future
+// run with nothing on screen to explain why.
+let hintsPref = true;
+
 // Toggle plumbing — keeps checkbox, pill and game state in sync.
 function applyHints(on) {
     game.hintsOn = !!on;
@@ -17875,7 +18693,7 @@ function applyHints(on) {
       if (wc) wc.classList.toggle('off', !game.hintsOn); }
     if (typeof updateCoachBanner === 'function') updateCoachBanner();
 }
-function toggleHints() { applyHints(!game.hintsOn); }
+function toggleHints() { settingHints(!game.hintsOn); }   // [220826b] persists now, like T
 
 // ── JOYSTICK toggle ── module-level (survives the per-run game resets) and
 // persisted per device. The garage always shows the stick regardless.
@@ -17968,7 +18786,17 @@ let _hintsAutoOff = null;
 function armHintsAutoOff() {
     if (_hintsAutoOff) { clearTimeout(_hintsAutoOff); _hintsAutoOff = null; }
     if (game.hintsOn && game.running) {
-        _hintsAutoOff = setTimeout(() => { _hintsAutoOff = null; applyHints(false); }, 5000);
+        // [220826b] FIVE SECONDS OF PLAY, not five seconds of wall clock. The
+        // timer used to run through pauses — including the auto-pause that fires
+        // when the tab is backgrounded, so a player who looked away as a level
+        // opened came back to a guide that had already expired unseen.
+        const tick = () => {
+            if (game && (game.paused || game.introHold) && game.running) {
+                _hintsAutoOff = setTimeout(tick, 500); return;
+            }
+            _hintsAutoOff = null; applyHints(false);
+        };
+        _hintsAutoOff = setTimeout(tick, 5000);
     }
 }
 
@@ -17990,14 +18818,24 @@ const TIPS = {
     devolve:   'A minus trims a cube. Sometimes that\u2019s the plan.',
     trim:      'Too big? Trim down on a minus.',
     diag:      'Swipe diagonally \u2014 corners count.',
-    hourglass: 'Hourglass: +20 seconds on the clock.',
+    // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
+    // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
+    // save pays 15 — so the one number this tip existed to give was the one
+    // number the game never gives. It names both real tiers now, which is also
+    // the more useful lesson: the big ones are worth a detour.
+    hourglass: 'Hourglass: 10 seconds, or 30 for a big one.',
     // [040826b] The generic line named neither the problem nor the cure — and
     // "a rotate could" is often FALSE, since a turn cannot change board colour.
     // These say what is actually wrong, which is the difference between a
     // mystery and a puzzle.
     noroute:     'No flip reaches that shape from here.',
     diagParity:  'Wrong colour square. Only a STEP shifter crosses over.',
-    diagForm:    'Right size, wrong form. A TURN shifter reshapes you.',
+    // [240826d] The tool keeps its own name — this tip fires precisely when the
+    // fitter has diagnosed a missing PIVOT, so naming the pickup is the point.
+    // But the tip now says what the PLAYER needs to do as well as what to find:
+    // revolve is the player changing configuration without changing size, which
+    // is exactly the problem "right size, wrong form" describes.
+    diagForm:    'Right size, wrong form. Revolve — find a TURN shifter.',
     diagBigger:  'Too small for that slot. Find a green.',
     diagSmaller: 'Too big for that slot. A red will trim you down.',
     nofit:     'No slot fits you now. Evolve or devolve to match.'
@@ -18877,14 +19715,14 @@ function draw() {
                 roundedSqScaled(sx, sy, size, (size - 4.8) / size, rimColor, 1.6);
                 ctx.restore();
             }
-            // GOLDEN SLOT (D4) — extra gold ring over the family colour:
-            // family identity stays readable, the 2x gamble reads at a glance.
-            if (slot.golden) {
-                ctx.save();
-                ctx.globalAlpha = (0.5 + 0.5 * breathe) * bowAlpha;
-                roundedSq(sx - 1, sy - 1, size + 2, null, GOLD_SLOT_COLOR, 1.6);
-                ctx.restore();
-            }
+            // [230826b] NO GOLD RING HERE. The first version of this ringed every
+            // live slot in gold while the combo was hot — but the shifter ghost
+            // preview already draws in the same gold to mean "this move claims that
+            // slot", so ringing all of them at once made the preview's one specific
+            // promise unreadable among a board of general encouragement. The hot
+            // state is carried by the HUD chip, the spark colour and the claim
+            // payout instead: the readout, the feedback and the reward, none of
+            // which is competing for a meaning gold already had.
         }
     }
 
@@ -19746,22 +20584,41 @@ const SPEED_INTERVAL = 10;
 // scrub-then-resume added a parallel loop chain, doubling per-frame work each
 // review session. A generation token makes stale chains drop out: only the
 // most recently scheduled chain survives.
+// [220826b] A RUN IDENTITY THAT SURVIVES THE RESET. Deferred callbacks need to
+// ask "is the run that armed me still the run that is playing", and every
+// candidate field on `game` is wiped by the wholesale `game = {...}` literal in
+// startGame — which is exactly how the trap-death timer came to be able to reach
+// into the NEXT run. A module-level counter is outside that blast radius.
+let runToken = 0;
+// [220826d] Set when a run was started above level 1 or force-cleared. Module
+// level ON PURPOSE: `game` is replaced wholesale by the reset literal in
+// startGame, and the `?level` override necessarily runs before that — a flag
+// living on `game` would be silently erased, which is the same trap that hid the
+// hintsOn, tipsOn and _runStartT bugs.
+let syntheticRun = false;
 let _loopGen = 0;
 function scheduleLoop() { const g = ++_loopGen; requestAnimationFrame(t => loop(t, g)); }
 function loop(time, gen) {
     if (gen !== undefined && gen !== _loopGen) return;   // stale chain — let it die
     if (!game.running) return;
 
-    const dt = time - lastTime;
+    // [220826a] TWO DELTAS, ON PURPOSE. `rawDt` is real elapsed time and is what
+    // the frame-timing telemetry must measure. `dt` is what the SIMULATION is
+    // allowed to advance by, clamped to 100ms — because rAF does not fire in a
+    // backgrounded tab, so the first frame after a return carried the whole
+    // absence in one delta and dumped it straight into the run clock. Ten
+    // seconds on another tab used to cost ten seconds of the level.
+    const rawDt = time - lastTime;
     lastTime = time;
+    const dt = Math.min(rawDt, 100);
 
     // [180826s] FRAME TIMING into the recorder — "can it do 60fps" answered
     // per-device from exports rather than assumed. Rolling sum/count/worst,
     // read and reset by the 2s tick sampler. Cost: three additions per frame.
-    if (dt > 0 && dt < 500) {
-        game._ftSum = (game._ftSum || 0) + dt;
+    if (rawDt > 0 && rawDt < 500) {
+        game._ftSum = (game._ftSum || 0) + rawDt;
         game._ftN = (game._ftN || 0) + 1;
-        if (dt > (game._ftMax || 0)) game._ftMax = dt;
+        if (rawDt > (game._ftMax || 0)) game._ftMax = rawDt;
     }
     
     // Guard the whole frame: an unexpected error must never break the rAF chain
@@ -19830,7 +20687,7 @@ function loop(time, gen) {
       // scarce it would never fire, leaving the game in beginner grace forever
       // (crashes unable to kill, bumps costing nothing). Full charge is now a
       // fixed, achievable 90s, or simply clearing level 1.
-      if (game.spinUp && (momentumRemaining() >= 90 || advancedRound > 1)) {
+      if (game.spinUp && !game.introHold && (momentumRemaining() >= 90 || advancedRound > 1)) {
           game.spinUp = false;
           addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 30, 'FULL CHARGE!', '#22c55e', true, { life: 2200, hold: 1200 });
           triggerEdgeGlow('#22c55e', 1200);
@@ -19941,35 +20798,47 @@ function loop(time, gen) {
                       finalTrap ? { life: 5200, hold: 4400 } : { life: 4200, hold: 3400 });
                   for (const c of getPlayerCells())
                       addBurst(c.x * CELL + CELL/2, (c.y - game.cameraY) * CELL + CELL/2, '#ef4444');
+                  // [220826a] THE RUN CHECK MOVED ABOVE THE UNLOCK. This fires up
+                  // to 4800ms out, and the two lines it used to run first touched
+                  // the CURRENT game object whatever that had become. Quit during
+                  // a trap death and start again and it landed inside the new
+                  // run's intro hold, cleared the input lock the door depends on,
+                  // and then returned. Nothing is touched now unless the run that
+                  // armed it is still the run that is playing.
+                  const _trapRun = runToken;
                   setTimeout(() => {
+                      if (!game.running || runToken !== _trapRun) return;
                       game._trapDying = false;
                       game.inputLocked = false;
-                      if (!game.running) return;
                       captureSnapshot('\u2716 trapped');
                       handleDeath('trapped');
                   }, finalTrap ? 4800 : 700);
               }
           } else { game._trappedSince = 0; }
       }
-      // Chain expiry — chip fades when the window lapses.
-      if (chain.n && (nowT - chain.lastT) > CHAIN_WINDOW_MS) {
-          chain.n = 0;
-          const chip = document.getElementById('chainChip');
-          if (chip) chip.classList.remove('on');
-      }
+      // Chain expiry. [230826b] This used to hide the chip as well — it was the
+      // other half of the code that wrote "COMBO n" into it, and removing only the
+      // writer left the hider behind. chain.n runs on an 8s window and the combo
+      // on a 3s one, so eight seconds after a claim this stripped the chip off a
+      // multiplier that was live and paying. chain.n still expires for the fever
+      // visual; the chip belongs to paintComboChip alone.
+      if (chain.n && (nowT - chain.lastT) > CHAIN_WINDOW_MS) chain.n = 0;
     }
     
     // Update speed timer — slowed during bullet time so slo-mo doesn't punish
     // the run clock. The world scrolls at BULLET_SCROLL_MUL (0.27) during slo-mo,
     // so the countdown ticks at the same rate. Using bullet time is a clean win.
     const timerMul = bullet.active ? BULLET_SCROLL_MUL : 1;
-    if (!game.testDrive) game.speedTimer += (dt / 1000) * timerMul;   // TEST DRIVE: the wheel never drains
+    // [220826a] `introHold` joins testDrive as a reason the wheel does not drain:
+    // the LEVEL 1 door is opaque for 4400ms and the clock used to run behind it.
+    if (!game.testDrive && !game.introHold) game.speedTimer += (dt / 1000) * timerMul;
 
     // [270726za] TIME-PASSING REMINDERS — every 30s of level time the clock
     // digits blip (secondary); on the minute the blip is joined by one short
     // encouragement line (primary). Muted while the final-30s countdown owns
     // the urgency channel, and never during celebration.
-    game._elapsedLevel = (game._elapsedLevel || 0) + dt / 1000;
+    if (!game.introHold) game._elapsedLevel = (game._elapsedLevel || 0) + dt / 1000;
+    else if (game._elapsedLevel === undefined) game._elapsedLevel = 0;   // [220826a] not NaN
     {
         const mark = Math.floor(game._elapsedLevel / 30);
         const urgent = momentumRemaining() <= 30;
@@ -20158,7 +21027,10 @@ function loop(time, gen) {
         game.setBreather -= dt / 1000;
         scrollMul = 0.35;   // ease the pressure for a beat after banking a set
     }
-    const scroll = game.testDrive ? 0 : game.speed * dt * 0.00014 * scrollMul;   // TEST DRIVE: the world stands still
+    // [220826a] introHold joins testDrive: the clock was stopped behind the LEVEL
+    // 1 door but the world was still scrolling, so about half a row passed under
+    // a player who could neither see it nor move.
+    const scroll = (game.testDrive || game.introHold) ? 0 : game.speed * dt * 0.00014 * scrollMul;
     game.cameraY -= scroll;
     
     applyDrag(dt);
@@ -20297,22 +21169,27 @@ try {
             .map(r => ({ s: r.s, l: r.l || 1, t: r.t || 0, d: r.d || 0 }));
     }
 } catch(e) {}
-// [180826b] DUMMY SCORES while the table is empty — six plausible runs spread
-// across the ladder so the page shows its badge progression (steel through
-// bronze) rather than ten dashes. Marked d:1 and SELF-CLEANING: the first real
-// run recorded sweeps every dummy out (see recordRun), so they exist only
-// until the game has something true to say.
-if (!runs.length) {
-    const day = 86400000, now = Date.now();
-    runs = [
-        { s: 18450, l: 6, t: now - 1 * day, d: 1 },
-        { s: 12980, l: 5, t: now - 2 * day, d: 1 },
-        { s: 8640,  l: 4, t: now - 2 * day, d: 1 },
-        { s: 5210,  l: 3, t: now - 4 * day, d: 1 },
-        { s: 2470,  l: 2, t: now - 5 * day, d: 1 },
-        { s: 960,   l: 1, t: now - 6 * day, d: 1 }
-    ];
+// [220826a] AND ANY ALREADY WRITTEN TO A PLAYER'S DEVICE GO WITH THEM. Deleting
+// the seed only helps a fresh install; every player who ran a previous build has
+// six d:1 rows sitting in localStorage and would have kept seeing them until
+// their next real run swept them. One filter at load finishes the job.
+{
+    const _before = runs.length;
+    runs = runs.filter(r => !r.d);
+    // Write it back, or the rows stay on the device and are re-filtered on every
+    // single load — the point is to be rid of them, not to hide them.
+    if (runs.length !== _before) {
+        try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch (e) {}
+    }
 }
+// [220826a] THE DUMMY SCORES ARE GONE. Six invented runs seeded an empty table
+// so the page would show badge progression instead of ten dashes — but the
+// first thing a new player read on the scores page was six scores that were
+// not theirs and had never been played. The ladder below already carries the
+// badge progression, which was the real job; renderScores() now says the table
+// is empty in one line rather than filling it with fiction.
+// The d:1 flag and recordRun's sweep are kept: old saves may still hold dummies
+// and must still be able to clear them.
 
 function saveRuns() {
     try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch(e) {}
@@ -20487,6 +21364,13 @@ setInterval(function () {
     try {
         if (typeof game === 'undefined' || !game || !game.running || game.paused || game.testDrive) return;
         rec('tick', {
+            // [230826a] The combo multiplier, sampled every 2s. It pays real points
+            // now, and the tier thresholds in getComboMult were written when it paid
+            // none — so they have never been tested against play. This is the line
+            // that will say whether x4 is a ceiling a player reaches twice a run or
+            // a state they live in, and whether the late levels (where fresh ground
+            // runs out and the streak keeps dying) ever see gold at all.
+            cm: +(game.comboMult || 1).toFixed(1),
             v: (typeof countShiftersInView === 'function') ? countShiftersInView() : -1,
             m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
             c: Math.round(game.coverage || 0),
@@ -20764,7 +21648,11 @@ function renderScores() {
 
     // ── YOUR RUNS ──
     const runsEl = document.getElementById('scoresRuns');
-    if (runsEl) {
+    if (runsEl && !runs.length) {
+        // [220826a] Empty means empty. One line that tells the truth beats ten
+        // dashes, and beats six scores nobody played.
+        runsEl.innerHTML = '<div class="scores-empty">No runs yet — your first ten land here.</div>';
+    } else if (runsEl) {
         let html = '';
         for (let i = 0; i < RUNS_KEEP; i++) {
             const r = runs[i];
@@ -20859,10 +21747,26 @@ function startGame(testDrive = false) {
     initAudio();
     startMusic();
 
-    // Sync the hint overlay to the welcome-screen checkbox (default on).
-    applyHints(document.getElementById('hintsCheck') ? document.getElementById('hintsCheck').checked : true);
-    // Kick off the early-run coach tips (auto-retires after a couple of runs).
-    if (!testDrive) startCoachTips();
+    // [220826a] THE MOVE GUIDE PREFERENCE WAS BEING THROWN AWAY TWICE OVER.
+    // This line read `hintsCheck` — an element deleted from the DOM when the
+    // welcome-screen checkboxes moved into Settings — so the ternary always
+    // took its `: true` branch and forced hints ON over whatever loadSettings()
+    // had just restored. Worse, it ran BEFORE the `game = {...}` reset literal
+    // below, and that literal has no `hintsOn` key, so the value it set was
+    // wiped to undefined a few hundred lines later and the guide was in fact
+    // OFF for the whole run. Capture the live preference here; apply it after
+    // the reset, where it will survive.
+    const _hintsPref = hintsPref;
+    // [220826a] Tips had the identical defect and it was total: applyTips() is
+    // called once at load, startCoachTips() runs BELOW here but still above the
+    // `game = {...}` reset literal, and that literal has no `tipsOn` key — so
+    // game.tipsOn was undefined for the whole of every run and showTip() bailed
+    // on its first line. The coach tips, all 22 of them, never appeared once.
+    const _tipsPref = (typeof game !== 'undefined' && game && typeof game.tipsOn === 'boolean')
+        ? game.tipsOn : true;
+    // [220826a] The coach-tips kickoff moved BELOW the reset literal — see
+    // _tipsPref. Starting it here armed timers against a game object that was
+    // replaced a few hundred lines later.
     game.flipCount = 0; game.diagCount = 0;
     game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
     // [290726d] tally counters reset with the rest of the round trackers
@@ -20871,11 +21775,11 @@ function startGame(testDrive = false) {
     slotCredits = 2; slotDrought = {};                     // [300726an] open with targets
     game._reprieveGiven = false;                          // [050826n]
     if (typeof forgiveRunTips === 'function') forgiveRunTips();   // [050826p]
-    game._levelStartScore = 0;   // fresh run: the object is rebuilt below with score 0
     displayScore = 0; scoreRecordShown = false;
     chain.n = 0; chain.lastT = 0;
     _rotorVel = 0;   // the wheel starts from a dead stop
-    game._runStartT = performance.now();
+    // (_runStartT is stamped below, after the reset literal — writing it here
+    //  targeted the object that literal was about to throw away.)
     slotBurns = [];
     coverHeat.clear();
     game._covPopped = 0;
@@ -20896,13 +21800,43 @@ function startGame(testDrive = false) {
     // SPIN-UP: cover the open floor to build your 3 bands / full health).
     overflowPts = 0; factoryQueue = 0;
     advancedRound = 1;
+    syntheticRun = false;   // [220826d] every run is honest until proven otherwise
+    // [220826d] DEBUG LEVEL ENTRY — `?debug=1&level=10`. Reaching level 10 by
+    // playing takes the best part of an hour, which meant the finale was the one
+    // sequence in the game that could not practically be tested. Everything about
+    // a level derives from `advancedRound` through currentMission(), so setting it
+    // here — before the overlay, the set tracker and the slot seeding all read it
+    // — gives a genuine level N, not an approximation of one.
+    // The clock is NOT adjusted: the run still opens on the level-1 spin-up
+    // minute rather than the pool a real level-10 arrival would have carried
+    // through. That is deliberate. This tests the ENDING, not the economy, and
+    // pretending otherwise would produce a scorecard whose numbers mean nothing.
+    if (DEBUG_MODE && !testDrive) {
+        const m = /[?&]level=(\d+)/.exec(location.search || '');
+        if (m) {
+            const raw = parseInt(m[1], 10);
+            const want = Math.max(1, Math.min(ADVANCED_ROUNDS.length, raw || 1));
+            if (want !== raw) console.warn(`[ROTOR] debug: level=${m[1]} is out of range, using ${want}`);
+            advancedRound = want;
+            console.log(`[ROTOR] debug: starting on level ${want} of ${ADVANCED_ROUNDS.length}`);
+            // Anything above level 1 is a run the player did not play up to.
+            if (want > 1) syntheticRun = true;
+        }
+    }
+    // [220826a] The LEVEL BONUS line is cleared by showRoundOverlay when it
+    // paints it — but the finale never calls showRoundOverlay, so a bonus earned
+    // on the last level of a won campaign was still sitting there when the next
+    // run's LEVEL 1 door went up, announcing "LEVEL BONUS +500" for a level the
+    // player had not yet played. Cleared at the start of every run instead of
+    // relying on the display path to have run.
+    game._lastLevelBonus = 0;
     
     // Fire the ROUND 1 overlay at PEAK BLACK *before* hiding the welcome
     // screen so the player never glimpses the bare game canvas between
     // tapping PLAY and the round number appearing. The overlay sits in
     // the (currently hidden) game-container — applying the class now
     // means it's already at peak by the time the welcome screen hides.
-    if (!testDrive) showRoundOverlay(1, true);
+    if (!testDrive) showRoundOverlay(advancedRound, true);   // [220826d] was hard-coded 1
     
     document.getElementById('startScreen').classList.add('hidden');
     // [160826c] The scores screen has its own PLAY button, so startGame can be
@@ -21001,6 +21935,15 @@ function startGame(testDrive = false) {
         _lastMoveDir: null
     };
     
+    // [220826b] STRAIGHT AFTER THE RESET LITERAL, and it has to be here rather
+    // than further down: seedSlotsAtTop() runs below and reaches showTip('slot'),
+    // which bails on its first line if game.tipsOn is not yet true — so the one
+    // tip that fires at run start was still being dropped.
+    game._levelStartScore = 0;   // [220826d] moved below the reset literal, which has no key for it
+    game.tipsOn = _tipsPref;
+    game._pendingHints = _hintsPref;
+    game._pendingTips = _tipsPref;
+
     // ── TEST DRIVE (the garage) ── no clock, no hazards, no spawns: a fixed
     // open floor with a parity checkerboard, for learning the movement system.
     // Exit anytime via the home button (or Escape).
@@ -21019,7 +21962,13 @@ function startGame(testDrive = false) {
     transformAnim = null;
     nonFusionPulses = [];
     resetGenState();
-    if (!testDrive) generateChunk(0, -100);
+    resetSetTracker();
+    // [220826d] A real arrival at level N sets the slot counter AT the threshold
+    // (see the level-advance path), so the first landing forces a slot through.
+    // startGame left it at 0, which on a forced level-10 entry meant waiting 15
+    // landings for the 4th slot against a 6-requirement set — a thinner board
+    // than the level it claims to be reproducing.
+    if (advancedRound > 1) slotProgress = getSlotEveryLandings();
     // Seed multiple slots at the top of the visible viewport so the player
     // sees several SET targets the moment the round overlay clears — was
     // a single slot which felt slow on PLAY. seedSlotsAtTop() spawns up
@@ -21035,18 +21984,53 @@ function startGame(testDrive = false) {
     // a shared one for three call sites — but the comment above each now names
     // the animation it belongs to, so the next change has a thread to follow.
     if (currentMission() && !testDrive) {
-        setTimeout(() => {
+        // [220826a] Polls for the door to actually be open rather than assuming
+        // it took its full 4400ms — the player can now skip it, and a hint timed
+        // to an animation that no longer ran would land four seconds into play.
+        const _hintAt = performance.now();
+        const _waitForBoard = () => {
             if (!game.running) return;
+            if (game.introHold && performance.now() - _hintAt < 6000) {
+                setTimeout(_waitForBoard, 120); return;
+            }
             addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30,
                 'CLAIM EVERY SLOT', '#94a3b8');
-        }, 4400);
+        };
+        setTimeout(_waitForBoard, 300);
     }
     
+    // [220826b] Both of these were set ABOVE the reset literal and wiped by it.
+    // `_runStartT` is read by the idle-coast wheel decay, which had therefore been
+    // measuring from 0 — i.e. treating every run as having started at the epoch.
+    runToken++;
+    game._runStartT = performance.now();
+
+    // [220826b] THE GUIDANCE IS ARMED WHEN THE DOOR OPENS, NOT WHEN PLAY IS HIT.
+    // Both of these are timed, and both were being started against 4400ms of
+    // opaque black. The Move Guide arms a 5000ms auto-off (armHintsAutoOff — it
+    // is a glance, not a layer), so 4400 of its 5000ms burned behind the door and
+    // the player saw it for about half a second. Worse for the coach tips:
+    // startCoachTips fires 'start' and 'fresh' immediately, showTip() adds them to
+    // the persisted seen-list on the spot, and .coach-tip is z-index 15 under the
+    // overlay's 20 — so the first two tips of a player's first ever run played out
+    // on a black screen and were then marked as taught, forever.
+    // Both now wait for the board to be visible. See armRunGuidance().
+    // [220826a] Hold the clock behind the LEVEL 1 door — see beginIntroHold().
+    // TEST DRIVE has no door, so its guidance starts immediately.
+    if (!testDrive) beginIntroHold(4400); else armRunGuidance();
+
     lastTime = performance.now();
     scheduleLoop();
 }
 
 function endGame(reason = 'death') {
+    breakCombo('run-end');   // [230826c] or the chip keeps a gold x4.0 over the results screen
+    // [220826b] Drop focus. The game-over screen is keyboard-activated with
+    // Space/Enter, and that handler now defers to whatever is focused so it can't
+    // double-fire a focused link — which means a button still holding focus from
+    // the run (or from a previous game-over screen) would swallow the restart.
+    { const a = document.activeElement;
+      if (a && a !== document.body && typeof a.blur === 'function') a.blur(); }
     rec('end', { why: reason, score: game.score, r: advancedRound,
                  cov: Math.round(game.coverage || 0), tr: game.transforms });   // [160826p]
     // [210826l] The tip-demand rollup, emitted once per run — see showTip().
@@ -21060,6 +22044,13 @@ function endGame(reason = 'death') {
     if (typeof updateDangerAudio === 'function') updateDangerAudio(0);
     game.inputLocked = true;   // no further player move once the game is ending
     game.running = false;
+    hideLevelTally();   // [220826c] the finale ends FROM the tally; clear it behind us
+    hideLevelCard();
+    // [220826b] AFTER running = false, and that ordering is the point: endIntroHold
+    // opens the door and arms the run's guidance, so calling it while the run still
+    // looked live started a 5s Move Guide timer and burned the first two coach tips
+    // into the persisted seen-list for a run that was already over.
+    if (typeof endIntroHold === 'function') endIntroHold();
     stopMusic();
     stopHum();
     endCoach();   // clear any on-screen coach tip
@@ -21070,7 +22061,7 @@ function endGame(reason = 'death') {
         triggerShake(6, 350);
         const titleEl = document.getElementById('gameOverTitle');
         if (titleEl) {
-            titleEl.innerHTML = 'MISSION<br>COMPLETE!';
+            titleEl.innerHTML = 'FULL<br>ROTATION';   // [230826d] see completeSet
             titleEl.style.color = '#a3e635';
             titleEl.style.textShadow = '0 0 24px rgba(163,230,53,0.55)';
             // Reset any FAIL-state sizing from a prior run
@@ -21093,7 +22084,11 @@ function endGame(reason = 'death') {
             // names the failure, this names the result.
             // Eight characters against the old nine, so the 110px/8px-tracked
             // sizing below is unchanged.
-            titleEl.textContent = 'GROUNDED';
+            // [240826a] TWO LINES. 'GROUNDED' at 110px filled the width on its own;
+            // YOU'RE GROUNDED addresses the player rather than describing a state,
+            // so it stacks — the possessive small, the verdict large — and the type
+            // drops so the longer word still fits a phone.
+            titleEl.innerHTML = '<span class="go-youre">YOU\u2019RE</span>GROUNDED';
             if (currentTheme === 'day') {
                 // Deep blue reads on the white day game-over screen (the
                 // lighter dark-mode blue would wash out on white).
@@ -21104,8 +22099,8 @@ function endGame(reason = 'death') {
                 titleEl.style.color = '#7dd3fc';
                 titleEl.style.textShadow = '0 0 30px rgba(125,211,252,0.7), 0 0 60px rgba(125,211,252,0.3)';
             }
-            titleEl.style.fontSize = '110px';
-            titleEl.style.letterSpacing = '8px';
+            titleEl.style.fontSize = 'clamp(52px, 15vw, 84px)';   // [240826a] was 110px
+            titleEl.style.letterSpacing = '6px';
             titleEl.style.fontWeight = '900';
             // Re-trigger the shake-in animation
             titleEl.classList.remove('fail-impact');
@@ -21122,7 +22117,17 @@ function endGame(reason = 'death') {
     // the two records stay independent: the table is a list of whole runs, the
     // bests are per-stat maxima. Recorded here rather than in startGame's teardown
     // because this is the one place that has both the final score and the level.
-    recordRun(game.score, advancedRound);
+    // [220826d] A SYNTHETIC RUN IS NOT A RECORD OF PLAY. `?level=N` above 1 and
+    // the force-clear key both set syntheticRun, and a run carrying it is kept
+    // out of the scores table and the personal bests. Testing the finale a dozen
+    // times would otherwise fill TOP SCORES with level-10 clears that were never
+    // played, and fold a level-1 clock's coverage and time into the bests — in the
+    // exact records the balance work reads back from.
+    if (syntheticRun) {
+        console.log('[ROTOR] debug: synthetic run — not recorded to scores or bests');
+    } else {
+        recordRun(game.score, advancedRound);
+    }
 
     // Update personal bests
     const newBests = {
@@ -21146,8 +22151,7 @@ function endGame(reason = 'death') {
     
     // (All number stats removed from the end screen — taunt only.)
     
-    bests = newBests;
-    saveBests();
+    if (!syntheticRun) { bests = newBests; saveBests(); }
     
     // End-screen taunt — clean win/lose copy
     const tauntEl = document.getElementById('tauntBox');
@@ -21159,17 +22163,21 @@ function endGame(reason = 'death') {
         // the consolation rotates so repeat defeats don't repeat themselves.
         const CAUSE_LINES = {
             dissolved: 'A minus caught you at your smallest.',
-            void:      'The void collected you.',
+            // [230826d] Was 'The void collected you.' — the only cosmic line in
+            // the game, and spooky in a way nothing else is. Falling off the
+            // board is losing contact with the thing that was turning you.
+            void:      'You fell out of the field.',
             timeout:   'The clock ran dry.'
         };
         // [030826ad] Consolations in the same register — a machine that failed is
         // repairable, which is a kinder thing to tell someone than "bad luck".
         const CONSOLATIONS = [
-            'Every flipping legend loses a few cubes on the way.',
-            'The flips are in you now. Go again.',
-            'Every machine throws a tooth eventually.',
-            'Strip a gear, fit another.',
-            'Back to the workshop.',
+            // [230826d] Two flip puns replaced. They were the only lines in this
+            // pool speaking a different language from the other four, and the
+            // pun register does not survive the move to a machine that runs on
+            // current rather than one that gets repaired.
+            'Every circuit shorts eventually.',
+            'The charge is still in you. Go again.',
             'Even good bearings wear.'
         ];
         const causeLine = CAUSE_LINES[reason] || 'The run ended.';
@@ -21406,6 +22414,30 @@ document.addEventListener('keydown', e => {
         e.preventDefault();
         return;
     }
+    // [220826d] FORCE-CLEAR THE CURRENT LEVEL — 0, debug builds only. Clearing a
+    // level legitimately means claiming every slot in its set, which is the whole
+    // game; to reach the finale that has to happen ten times. This runs the exact
+    // same completeSet() the last claim would have run, so the card, the tally,
+    // the fireworks and the finale branch are all the real ones — only the
+    // claiming is skipped.
+    // Excluded during pause, celebration and the intro door: completeSet sets
+    // paused/celebrating itself and stacking a second one over the first would
+    // test nothing but the collision.
+    // testDrive because the garage has no levels to clear and no door, so
+    // introHold is undefined there and the rest of the guard passes; inputLocked
+    // because it is this file's signal that a transition already owns the player
+    // — including the trap-death sequence, which schedules a handleDeath up to
+    // 4800ms out and would otherwise land a death on top of the level clear.
+    if (DEBUG_MODE && e.key === '0' && !(e.code || '').startsWith('Numpad') &&
+        game.running && !game.paused && !game.celebrating && !game.introHold &&
+        !game.testDrive && !game.inputLocked) {
+        console.log(`[ROTOR] debug: force-clearing level ${advancedRound}`);
+        syntheticRun = true;   // this run is no longer a record of play
+        completeSet();
+        e.preventDefault();
+        return;
+    }
+
     // Bullet time — B triggers slo-mo when charged
     if (e.key === 'b' || e.key === 'B') {
         triggerBulletTime();
@@ -21415,20 +22447,27 @@ document.addEventListener('keydown', e => {
 
     // On-grid debug overlays on number keys (all off by default, so the grid is
     // clear). 1 = green log · 2 = movement-offset panel · 3 = grid coordinates.
-    if (e.key === '1') {
+    // [220826a] TWO PROBLEMS, ONE FIX. These three were the only debug toggles in
+    // the handler NOT behind DEBUG_MODE, so any player who pressed 1, 2 or 3 got
+    // developer overlays painted across a live board with no way to know what
+    // they had done. And with NumLock on — the normal state for anyone actually
+    // using a numpad — Numpad1/2/3 report e.key '1'/'2'/'3', so these branches
+    // sat above the movement map and swallowed SW, S and SE from the numpad ring
+    // the settings panel now advertises.
+    if (DEBUG_MODE && e.key === '1' && !(e.code || '').startsWith('Numpad')) {
         window.SHOW_GREEN_LOG = !window.SHOW_GREEN_LOG;
         addFloat(LOGICAL_W / 2, 70, window.SHOW_GREEN_LOG ? '1 · Green log ON' : '1 · Green log OFF', '#a3e635');
         e.preventDefault();
         return;
     }
-    if (e.key === '2') {
+    if (DEBUG_MODE && e.key === '2' && !(e.code || '').startsWith('Numpad')) {
         window.DEBUG_MOVE = !window.DEBUG_MOVE;
         if (window.DEBUG_MOVE) runMovementSelfTest();
         addFloat(LOGICAL_W / 2, 70, window.DEBUG_MOVE ? '2 · Move panel ON' : '2 · Move panel OFF', '#38bdf8');
         e.preventDefault();
         return;
     }
-    if (e.key === '3') {
+    if (DEBUG_MODE && e.key === '3' && !(e.code || '').startsWith('Numpad')) {
         window.SHOW_GRID_COORDS = !window.SHOW_GRID_COORDS;
         addFloat(LOGICAL_W / 2, 70, window.SHOW_GRID_COORDS ? '3 · Grid coords ON' : '3 · Grid coords OFF', '#38bdf8');
         e.preventDefault();
@@ -21477,6 +22516,12 @@ document.addEventListener('keydown', e => {
     if (!game.running) {
         // On game over screen: R enters replay review (debug builds only)
         if (DEBUG_MODE && e.key.toLowerCase() === 'r') { startReview(); e.preventDefault(); return; }
+        // [220826a] Space/Enter starts a run from the game-over screen — but the
+        // screen now contains focusable controls, and a keyboard player who has
+        // tabbed to PLAY AGAIN, Export or the source link would fire both that
+        // control and a fresh run. The activation belongs to whatever has focus.
+        const act = document.activeElement;
+        if (act && act.closest && act.closest('a, button')) return;
         if (e.key === ' ' || e.key === 'Enter') startGame();
         return;
     }
@@ -21510,8 +22555,28 @@ document.addEventListener('keydown', e => {
     // 'V' (free, and adjacent to the movement cluster).
     if (e.key.toLowerCase() === 'v') { toggleStick(); e.preventDefault(); return; }
 
-    const map = { q:'NW', w:'N', e:'NE', a:'W', d:'E', z:'SW', x:'S', c:'SE' };
-    const dir = map[e.key.toLowerCase()];
+    // [220826a] PHYSICAL POSITION, NOT LETTER. The map read `e.key`, which is the
+    // character the layout produces — so the eight-direction cluster only formed
+    // a ring on QWERTY. On AZERTY, Q and A swap and Z and W swap, which lands NW
+    // on the W key and N on the Z key: the ring is not rotated, it is shuffled,
+    // and no amount of playing teaches it. On Dvorak the eight keys scatter
+    // across the board entirely.
+    // `e.code` names the physical key regardless of layout, so KeyQ is whatever
+    // key sits where Q sits on a US board — which is exactly what an eight-way
+    // ring means. `e.key` is kept as a fallback for the handful of environments
+    // that report no code (some remote-desktop and on-screen keyboards).
+    const codeMap = {
+        KeyQ:'NW', KeyW:'N', KeyE:'NE',
+        KeyA:'W',              KeyD:'E',
+        KeyZ:'SW', KeyX:'S', KeyC:'SE',
+        // The numpad is the one input device shaped like the thing it controls.
+        // Free to support, and the natural home for eight-way movement.
+        Numpad7:'NW', Numpad8:'N', Numpad9:'NE',
+        Numpad4:'W',               Numpad6:'E',
+        Numpad1:'SW', Numpad2:'S', Numpad3:'SE'
+    };
+    const keyMap = { q:'NW', w:'N', e:'NE', a:'W', d:'E', z:'SW', x:'S', c:'SE' };
+    const dir = (e.code && codeMap[e.code]) || keyMap[e.key.toLowerCase()];
     if (dir) {
         move(dir);
         e.preventDefault();
@@ -21797,6 +22862,17 @@ canvas.addEventListener('touchcancel', e => {
 // Desktop: a mouse click on a ghost flies there too (touch taps suppress the
 // synthetic click via preventDefault in touchend, so no double-fire).
 canvas.addEventListener('click', e => {
+    // [230826b] A MOUSE CLICK RESUMES. Touch has always had tap-to-resume via
+    // touchend; a mouse had nothing — the board was inert and the only way back
+    // was the spacebar. That is why the pause screen's instruction used to have to
+    // guess at the hardware and get hybrid laptops wrong. It can now say one true
+    // thing to everyone.
+    // Deliberately not a click-to-PAUSE: a stray click during play must never stop
+    // the game, and pausing already has the key and the corner controls.
+    if (game.running && game.paused && !game.celebrating && !scrubbing) {
+        togglePause();
+        return;
+    }
     if (!game.testDrive) return;
     tdTapAt(e.clientX, e.clientY);
 });
@@ -22561,7 +23637,28 @@ function welcomeAudioKick() {
 // a suspended context never floods the scheduler with catch-up notes on resume.
 try { initAudio(); if (audioCtx && audioCtx.state === 'running') startMusic(); } catch (e) {}
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden) return;
+    // [220826a] LEAVING THE TAB PAUSES THE RUN. Steam's checklist asks that the
+    // overlay pause the game; in a browser the equivalent is the tab losing
+    // visibility, and this handler used to ignore it entirely — you came back to
+    // a board that had gone on without you. Auto-pause is one-way: the game does
+    // NOT resume itself on return, because the player has not looked at the
+    // board yet and the first thing they would meet is a live clock.
+    if (document.hidden) {
+        if (typeof game === 'undefined' || !game || !game.running) return;
+        // [220826b] The door comes down FIRST. The intro hold and the pause panel
+        // must never be live together — .pause-panel is z-index 100 inside
+        // .game-container and .round-overlay is 20, so Resume would paint on top
+        // of the black — but simply skipping the pause while the door was up left
+        // the 4400ms timer running in a backgrounded tab, so the player returned
+        // to a live board with the clock draining. Ending the hold resolves both:
+        // the door opens, then the normal pause applies.
+        if (game.introHold && typeof endIntroHold === 'function') endIntroHold();
+        if (!game.paused && !game.celebrating && typeof togglePause === 'function') {
+            togglePause();
+        }
+        return;
+    }
+    lastTime = performance.now();   // the absence is not a frame delta
     resumeAudio();
     // If music was running while backgrounded, realign the scheduler clock to
     // "now" so it doesn't dump every missed step at once on return.

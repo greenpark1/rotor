@@ -2194,9 +2194,17 @@ body.theme-day .scores-rung.you { background: rgba(2, 132, 199, 0.10); box-shado
 body.theme-day .scores-rung-you-tag { color: #ffffff; background: #0284c7; }
 
 /* ── BESTS ── */
+/* [210826z] THREE COLUMNS -> TWO, because the grid now holds FOUR cells.
+   Six divided cleanly into three; four does not — it would lay out as a row of
+   three and one orphan, with the wide BEST REVOLVES row beneath making the
+   ragged edge worse rather than hiding it. At two columns four cells are a
+   square 2x2 block, which is the arrangement that needs no exception.
+   The max-width override further down also sets two columns and is now a
+   no-op. Left in place: it costs nothing and it is the rule that will matter
+   again the moment a fifth cell is added. */
 .scores-bests {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
 }
 .scores-best {
@@ -2205,6 +2213,30 @@ body.theme-day .scores-rung-you-tag { color: #ffffff; background: #0284c7; }
     padding: 10px 6px;
 }
 body.theme-day .scores-best { background: rgba(148, 163, 184, 0.16); }
+/* [210826u] REVOLVES spans the full row. `1 / -1` rather than `span 3` so it
+   stays correct at the 2-column breakpoint below without a second rule. */
+.scores-best-wide { grid-column: 1 / -1; }
+/* [210826y] The lifetime line. Bigger than any bests cell and unboxed, so it
+   reads as a total rather than as a seventh statistic — the value is the point
+   and the label just names it. Tabular numerals because this number only grows
+   and will pass five figures quickly; without them the digits would shuffle
+   every time it ticks over. */
+.scores-lifetime {
+    margin-top: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.scores-life-label {
+    font-size: 11px; letter-spacing: 3px; font-weight: 700;
+    color: #64748b; text-transform: uppercase;
+}
+.scores-life-value {
+    font-size: clamp(26px, 8cqw, 40px); font-weight: 800; letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
+    color: #7dd3fc; text-shadow: 0 0 22px rgba(125, 211, 252, 0.35);
+    line-height: 1.05;
+}
+body.theme-day .scores-life-label { color: #64748b; }
+body.theme-day .scores-life-value { color: var(--wm-c0); text-shadow: none; }
 .scores-best-label {
     display: block;
     font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
@@ -2310,6 +2342,19 @@ body.theme-day #scoresScreen { background: #ffffff; }
     font-size: clamp(18px, 5.4cqw, 26px); font-weight: 800; letter-spacing: 2px;
     color: #e2e8f0; line-height: 1.1;
 }
+/* [210826x] The run's revolve count. Sized BELOW the label type of the stats
+   above it, not level with it: this is a fact the player can take or leave,
+   and it sits between two things that matter more — the rank/level pair and
+   the prose. Tabular numerals so a five-figure count does not jitter against
+   the fixed word beside it. Tracked wide, which is what makes a bare number
+   read as a stat rather than as stray text. */
+.taunt-box .go-revolves {
+    margin-top: clamp(10px, 2.6cqw, 16px);
+    font-size: clamp(11px, 3cqw, 13px); font-weight: 700; letter-spacing: 2.5px;
+    font-variant-numeric: tabular-nums;
+    color: #64748b;
+}
+body.theme-day .taunt-box .go-revolves { color: #94a3b8; }
 /* The two prose lines, at ONE size. They are the same voice; only their colour
    distinguishes what happened from what to make of it. */
 .taunt-box .go-prose { margin-top: clamp(16px, 4cqw, 26px); }
@@ -2435,6 +2480,52 @@ body.theme-day .coach-tip .coach-label { color: var(--wm-c0); }
     color: #94a3b8; text-transform: uppercase; margin-right: 3px;
 }
 body.theme-day .lives-label { color: #64748b; }
+/* ── [210826ai] RESERVE TANK GAUGE ──────────────────────────────────────────
+   A tank, drawn as one. Deliberately NOT another ring: the rotor gauge above it
+   is already a ring and two circular readouts side by side would be read as one
+   compound instrument. A horizontal bar that fills left to right is the shape
+   of a fuel gauge, which is exactly what this is.
+   The fill is amber rather than the clock's gold — this is not time yet, it is
+   time you have earned and not been given, and it should not be mistaken for
+   the number on the wheel. It turns bright and pulses at full, because full is
+   the state worth acting on: from there, one more covered cell is wasted. */
+.reserve-tank {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    margin-top: 6px;
+    border-radius: 7px;
+    overflow: hidden;
+    background: rgba(148, 163, 184, 0.14);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+}
+.reserve-fill {
+    position: absolute; inset: 0 auto 0 0;
+    width: 0%;
+    border-radius: 7px 0 0 7px;
+    background: linear-gradient(90deg, #b45309, #fb8b1e);
+    transition: width 260ms ease;
+}
+.reserve-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 800; letter-spacing: 2px;
+    color: #e2e8f0; opacity: 0.75;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+    pointer-events: none;
+}
+/* FULL — the one state the player should respond to. */
+.reserve-tank.full .reserve-fill { background: linear-gradient(90deg, #fb8b1e, #ffd60a); }
+.reserve-tank.full { animation: reserveFull 1.5s ease-in-out infinite; }
+@keyframes reserveFull {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 214, 10, 0); }
+    50%      { box-shadow: 0 0 10px rgba(255, 214, 10, 0.45); }
+}
+/* SPENDING — a quick flash as the tank empties into the wheel, so the rescue
+   is seen happening rather than merely having happened. */
+.reserve-tank.spent .reserve-fill { transition: width 420ms ease; }
+body.theme-day .reserve-tank { background: rgba(100,116,139,0.16); border-color: rgba(100,116,139,0.28); }
+body.theme-day .reserve-label { color: #1e293b; text-shadow: none; opacity: 0.7; }
 /* [300726ae] DEAD LEGACY PIP RULES REMOVED. This block came from the old
    retired lives-pips system (♥ via ::before, an `.on` class nothing sets any
    more). Because it was declared AFTER the current .life-pip rule at equal
@@ -2968,6 +3059,16 @@ body.theme-day .tally-count { color: #1e293b; }
    contribute zero. Only "lives lost" is in this state now. */
 .tally-row.nopay .tally-label,
 .tally-row.nopay .tally-count { opacity: 0.62; }
+/* [210826ae] A LOW CLOCK IS THE ONE ROW THAT SHOUTS. Amber, full opacity, and
+   the count carries the weight — this row exists to say "this is what will end
+   the next level", and a warning at 62% opacity is not a warning. Placed after
+   the .nopay rule so it overrides the dimming rather than fighting it. */
+.tally-row.low .tally-label,
+.tally-row.low .tally-count { color: #fbbf24; opacity: 1; }
+.tally-row.low .tally-count { font-weight: 800; }
+.tally-row.low .tally-icon { opacity: 1; }
+body.theme-day .tally-row.low .tally-label,
+body.theme-day .tally-row.low .tally-count { color: #b45309; }
 .tally-row.nopay .tally-icon { opacity: 0.72; }
 body.theme-day .tally-pts { color: #e8a800; }   /* [050826a] night gold, not burnt orange */
 .tally-row.gold .tally-label, .tally-row.gold .tally-count { color: #ffd60a; }
@@ -3285,6 +3386,11 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         <div class="scores-section-head">PERSONAL BESTS</div>
         <div class="scores-bests" id="scoresBests"></div>
 
+        <!-- [210826y] Lifetime revolutions. Deliberately outside the bests grid
+             and without its own section head — a head would make one number
+             look like the start of a list that does not exist. -->
+        <div class="scores-lifetime" id="scoresLifetime"></div>
+
         <div class="welcome-row full">
             <button class="start-btn" onclick="hideScores(); startGame();">▶ PLAY</button>
         </div>
@@ -3377,6 +3483,22 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
                 <div class="life-pips" id="lifePips">
                     <span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span><span class="life-pip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.7-9.3-9.2C1.2 8.1 3.4 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.6 0 5.8 3.6 4.3 7.3C19.5 16.3 12 21 12 21z" fill="currentColor"/></svg></span>
                 </div>
+                <!-- [210826ai] THE RESERVE TANK, MADE VISIBLE. It has existed
+                     since [180826p] and has always been invisible: 0.15s drips
+                     in per fresh cell, it caps at 12s, and it pays out silently
+                     at the exact moment the clock would take a life. A rescue
+                     the player cannot see coming is a rescue they cannot play
+                     towards — and this one is EARNED, by covering ground, which
+                     makes it the one safety net worth advertising.
+                     Sits directly under the hearts because it is the same kind
+                     of fact: what stands between you and losing one. -->
+                <!-- [210826aq] The reserve gauge added at [210826ai] is removed
+                     with the mechanic it displayed. It was built to make a
+                     hidden pool visible; the answer turned out to be not having
+                     a hidden pool. Rows pay the clock directly, so the clock —
+                     which is already on this row — is the only time readout the
+                     player needs. -->
+
             </div>
         </div>
         <!-- [300726ac] Controls get their OWN row. Sharing a row with the
@@ -6727,7 +6849,12 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // "9,545 to SOLENOID" is removed as asked, and it is the right cut: a target is
 // an invitation to keep going, and this is the screen where a run has just
 // ended. The card still shows it, which is where it belongs.
-const BUILD_VERSION = '250826-0920 ROTOЯ';
+// [210826t] Bumped so play data from the merged build is distinguishable from
+// 0920's. The analyser warns when an archive spans builds, and pooling runs
+// from before and after a seven-change merge would hide the effect rather than
+// show it. Same date, later time — adjust if the convention differs; what
+// matters is that it is not still 0920.
+const BUILD_VERSION = '050926-1015 ROTOЯ · HOLES';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -7253,7 +7380,69 @@ function drawTransitionRings() {
 
 
 
-function triggerEdgeGlow(color = '#a3e635', duration = 600) {
+// ── [210826am] THE EDGE FLASH — DIRECTIONAL, AND ONLY FOR DAMAGE ────────────
+// The old effect glowed the WHOLE FRAME, on every kind of event, which is why
+// [270726f] killed it: a border that lights up for evolutions, shifters,
+// claims, chains and full rows alike is a strobe, not a signal.
+// The fault was never the glow, it was that it had nothing to say. A frame
+// that lights all round tells you something happened; an edge that lights on
+// the side you HIT tells you what happened and where — without a word, which
+// is the whole of the field note. Bump a wall to your left and the left edge
+// flares; hit the ceiling and the top does.
+// So the old behaviour stays dead. The 16 existing call sites all pass no
+// side, so they still return immediately and the strobe never comes back. Only
+// a call that names a side draws anything, and the only callers that name one
+// are damage.
+// Drawn on the CANVAS rather than as a CSS box-shadow on the container: a
+// shadow can only surround, and this has to be able to appear on one side.
+let edgeFlash = null;   // { side, color, t0, dur }
+function edgeSideFor(dir) {
+    const v = HINT_DIR_VEC[dir];
+    if (!v) return null;
+    // Dominant axis. A diagonal into a corner picks its horizontal component —
+    // arbitrary, but consistent, and the player reads the side they were moving
+    // toward rather than a corner lighting ambiguously.
+    if (v[0] !== 0) return v[0] > 0 ? 'E' : 'W';
+    return v[1] > 0 ? 'S' : 'N';
+}
+function flashEdge(side, color, duration) {
+    if (!side || !game || !game.running) return;
+    edgeFlash = { side, color: color || '#ef4444', t0: performance.now(), dur: duration || 420 };
+}
+function drawEdgeFlash() {
+    if (!edgeFlash) return;
+    const age = performance.now() - edgeFlash.t0;
+    if (age >= edgeFlash.dur) { edgeFlash = null; return; }
+    // Fast in, slow out: the hit should arrive at full strength on the frame it
+    // happens, then decay. A symmetrical fade reads as a pulse rather than an
+    // impact.
+    const t = age / edgeFlash.dur;
+    const a = (t < 0.12 ? 1 : 1 - (t - 0.12) / 0.88) * 0.85;
+    const D = Math.round(Math.min(LOGICAL_W, LOGICAL_H) * 0.16);   // band depth
+    const s = edgeFlash.side;
+    const horizontal = (s === 'N' || s === 'S');
+    const x0 = s === 'E' ? LOGICAL_W - D : 0;
+    const y0 = s === 'S' ? LOGICAL_H - D : 0;
+    const w = horizontal ? LOGICAL_W : D;
+    const h = horizontal ? D : LOGICAL_H;
+    const g = ctx.createLinearGradient(
+        horizontal ? 0 : (s === 'W' ? 0 : LOGICAL_W),
+        horizontal ? (s === 'N' ? 0 : LOGICAL_H) : 0,
+        horizontal ? 0 : (s === 'W' ? D : LOGICAL_W - D),
+        horizontal ? (s === 'N' ? D : LOGICAL_H - D) : 0);
+    const col = edgeFlash.color;
+    g.addColorStop(0, col);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.globalCompositeOperation = 'lighter';   // adds light, never darkens the board beneath
+    ctx.fillStyle = g;
+    ctx.fillRect(x0, y0, w, h);
+    ctx.restore();
+}
+function triggerEdgeGlow(color = '#a3e635', duration = 600, side = null) {
+    // A named side means a directional damage flash — the only live path.
+    if (side) { flashEdge(side, color, duration); return; }
     // [270726f] DISABLED — the flashing frame/border glow (evolutions,
     // shifters, claims, chain fever, full rows all strobed it) was more
     // distraction than signal. All call sites are preserved untouched, so
@@ -7319,6 +7508,50 @@ const SPINUP_START_SEC = 60;      // [300726ax] Level 1 opens on a clean minute
 // countdown with no room to rebuild — the restart was itself part of the
 // spiral. A minute is enough to re-route and actually use the heart.
 const TIMEOUT_RESTART_SEC = 60;
+// ── [210826ao] CLOCK-ONLY MODE — ?debug=1&clock=1 ───────────────────────────
+// The Out Run experiment, gated so both models can be played in one sitting
+// rather than argued about in the abstract.
+// WHAT IT CHANGES, and why each one:
+//   Falls cost TIME, not a heart. Every other mistake in the game is already
+//     priced in seconds — a bump is 2, a red is 20 — and the fall was the one
+//     event charging a different currency, which is why it never felt connected
+//     to the pressure the player was under.
+//   The clock running out ENDS the run. Today it spends a heart and refills to
+//     TIMEOUT_RESTART_SEC, and because hearts reset every level that is three
+//     free clock refills per level, forever. The comment at handleDeath claims
+//     "two independent ways to lose"; there has only ever been one, and it was
+//     hearts.
+//   No per-level grant. Time comes only from what you collect and complete.
+// WHAT IT DOES NOT CHANGE: the reserve tank still fires at zero. It becomes the
+// only reprieve in the game, which is the job it was built for.
+// FALL_COST_SEC — 15 -> 45, and the reasoning behind the first number was
+// wrong in a way the play data made obvious.
+// I set 15 to be "painful but survivable, and cheap enough that a spiral is
+// recoverable". What it actually did was make the game EASIER than the hearts
+// it replaced. Three hearts meant three falls in one level ENDED THE RUN. Three
+// falls at 15s cost 45 seconds against a clock sitting at 100-200 — the
+// recorded clock-mode run died three times and never came close to failing.
+// I had removed a hard wall and replaced it with a rounding error.
+// 45s restores the stakes hearts carried: one fall hurts, two is trouble, three
+// is very probably over. And it improves on hearts in one respect — a clock
+// does not forget. Hearts reset every level, so a disastrous level cost nothing
+// on the next one; this follows you.
+// Modelled on the recorded clock run: 3 deaths at 45s is 135s against a clock
+// that sat between 60 and 105 through the back half. That run would have ended
+// naturally around level 5 or 6 instead of being quit at level 7.
+// THE RISK IS A SPIRAL — fall, panic, fall again, and 135s is gone in under a
+// minute. Left flat deliberately rather than pre-softened: a first-fall
+// discount or a cost capped by remaining clock are both easy to add, and both
+// are machinery for a problem that may not exist. Play it before building it.
+// [300826b] THE CLOCK IS NOW THE GAME, not an experiment behind a URL flag.
+// Hearts are PARKED, not deleted: every `if (CLOCK_ONLY)` branch in this file
+// still has its else, so the lives version is one character away from
+// returning. It is reachable at ?hearts=1 for comparison, and if the clock
+// settles for good the dead branches can be swept out then — sweeping them now
+// would throw away the A/B before the A/B is finished.
+// The separate clock/ build folder is retired by this: there is one build.
+const CLOCK_ONLY = !/[?&]hearts=1(?:&|$)/.test(location.search || '');
+const FALL_COST_SEC = 45;
 // [300726as] What a completed level GRANTS. It used to be the full ring
 // (MOMENTUM_MAX, now 600s) — so finishing level 1 handed over ten minutes
 // outright, whatever you had collected, which is why cutting hourglass
@@ -7327,8 +7560,60 @@ const TIMEOUT_RESTART_SEC = 60;
 // tighter rather than more generous. Carried ON TOP of whatever survived the
 // level, and clamped to the ring, so banking well still counts.
 function levelTimeGrant() {
+    // ── [210826ar] THIS IS THE CHECKPOINT, AND I DELETED IT ─────────────────
+    // [210826ao] returned 0 here in clock mode, reasoning that a grant for
+    // arriving was "forgiveness the mode exists to remove". That was wrong, and
+    // wrong in a way worth recording: in Out Run the checkpoint extension IS
+    // the reward structure. You are not given time for existing, you are given
+    // it for ARRIVING — and arriving is the whole game.
+    // So in trying to build the Out Run model I switched off the one piece of
+    // it the game already had. Modelled on the last recorded run: 6 levels
+    // completed, ~198s of checkpoint income, set to zero.
+    // Restored, and only MODESTLY larger — my first pass at this doubled it to
+    // 75-4r on the reasoning that the checkpoint now carries alone what three
+    // mechanics used to share. Modelling it against a real run showed that was
+    // wrong twice over: hourglasses were never removed (they are the single
+    // biggest source, 320s in that run), and banking and rows were ADDED. The
+    // checkpoint is one of four sources, not the only one.
+    // The taper is the part that matters more than the size: later stages pay
+    // less, so the run tightens as it goes. That is the pressure curve Out Run
+    // is built on, and it is what stops a strong player accumulating a clock
+    // they can never lose.
+    // [210826av] 55-4r -> 30-2r, roughly halved. The first number was set when
+    // levels ran 250 seconds and 45s was a modest top-up. The short-set build
+    // clears them in FIFTY, so the same grant became a near-total refund of the
+    // level that earned it — and a refund is a treadmill. The recorded run
+    // climbed 60 -> 199 momentum in under four minutes while covering 9% of the
+    // floor: racing, ignoring the income, and still unable to lose ground.
+    // In Out Run the checkpoint NEVER fully covers the stage. The player is
+    // always a little behind, and speed is the only thing that closes the gap.
+    // That shortfall is the entire pressure mechanism, and I had removed it by
+    // sizing the grant against the wrong level length.
+    // At ~26s against ~50s levels a good stage costs about half its clock back,
+    // and a bad one costs nearly all of it — so the penalty scales with how the
+    // level actually went rather than being fixed. It also finally makes the
+    // 45s fall cost bite: a fall can no longer be wiped by the next checkpoint.
+    if (CLOCK_ONLY) return Math.max(18, 30 - 2 * advancedRound);
     return Math.max(25, 48 - 3 * advancedRound);
 }
+// [210826ar] Banking a single requirement pays a little, so the road to the
+// checkpoint pays as well as the checkpoint itself. Deliberately small: the
+// arrival should be the event, and a set is 2-6 requirements, so this adds
+// 12-36s a stage against the grant's 45-75. Progress you can feel, without
+// making the checkpoint an anticlimax.
+// [210826ax] 6 -> 3. I sized this thinking a bank was an occasional event; the
+// recorded run banked TEN in under three minutes — one every seventeen seconds
+// — so at 6s it was quietly paying 60s, a third of the whole run's drain, for
+// doing the thing you were going to do anyway.
+const BANK_TIME_SEC = 3;
+// [210826ax] Hourglasses are halved in clock mode. They are the single largest
+// income in every recorded run (70-340s) and they were tuned for a game with
+// three heart-funded clock refills per level, none of which now exist. They are
+// also FREE — you walk over them — so they were paying the most for the least.
+// A multiplier rather than new tier values: the 10s/30s tiers are woven through
+// the spawner, the glyphs and the tips, and changing the tiers themselves would
+// mean changing what the game tells the player a pickup is worth.
+const TIME_PICKUP_MUL = 0.5;
 // [300726aq] Was "surplus points once the ring is full" — which almost never
 // fired, since filling a 600s ring is rare. Now it is the DIRECT reward for
 // scoring: every FACTORY_PTS points forges a shifter, whatever the clock says.
@@ -7368,7 +7653,7 @@ function inPeril() {
     for (const c of getPlayerCells())
         for (const dd of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) {
             const w = world[`${c.x + dd[0]},${c.y + dd[1]}`];
-            if (w === 'hazard' || w === 'wall') return true;
+            if (w === 'hazard' || w === 'wall' || w === 'void') return true;   // [HOLES] a hole is peril too
         }
     return false;
 }
@@ -7947,8 +8232,12 @@ const MUSIC_SUITE = [
         const k = i % 32;
         const lineA = [0, 3, 5, 7, 5, 3, 0, -2];
         const lineB = [5, 8, 12, 10, 8, 5, 3, 0];
-        const bassA = [-12, -12, -5, -5, -7, -7, -12, -12];
-        const bassB = [-7, -7, -3, -3, -5, -5, -7, -7];
+        // [300826a] FIVE-CHORD RULE. Four roots (C, F, G, A), and the A in bassB
+        // sat a tritone under the line's E flat. Both lines are plainly C minor
+        // — lineB spells F-Ab-C-Bb-Ab-F-Eb-C — so the bass now agrees with them:
+        // i-bVI-iv-v, then iv-III-VII-v. Six roots, no tritone.
+        const bassA = [-12, -12, -4, -4, -7, -7, -5, -5];
+        const bassB = [-7, -7, -9, -9, -2, -2, -5, -5];
         const line = sec ? lineB : lineA, bass = sec ? bassB : bassA;
         mPluck(mHt(12 + line[k % 8]), t, S * 0.7, 0.075 + 0.02 * I);
         if (k % 2 === 0) mPluck(mHt(bass[Math.floor(k / 2) % 8]), t, S * 0.9, 0.095, 'sine');
@@ -7975,10 +8264,21 @@ const MUSIC_SUITE = [
         const k = i % 32;
         const subjA = [0, 2, 4, 5, 7, 5, 4, 2, 7, 5, 4, 2, 0, 2, 4, 0];
         const subjB = [12, 10, 8, 7, 5, 7, 8, 10, 5, 7, 8, 10, 12, 10, 8, 12];
+        // [300826a] The bass used to double the subject two octaves down, so it
+        // stated no harmony of its own — firing only at k=0 and k=8, it landed
+        // on two notes per section and three roots across the whole piece.
+        // Replaced with a ground bass, which is what a canon like this would
+        // have sat on: the descending tetrachord in A, its minor form in B to
+        // meet subjB (which spells C-Bb-Ab-G-F). Eight roots, moving twice as
+        // often, and an octave up from the old one so it carries on a phone.
+        const groundA = [0, -1, -3, -5, -7, -5, -3, -1];
+        const groundB = [0, -2, -4, -5, -7, -9, -5, -5];
         const subj = sec ? subjB : subjA;
         mPluck(mHt(12 + subj[k % 16]), t, S * 0.85, 0.062 + 0.02 * I);
         if (k >= 8) mPluck(mHt(subj[(k - 8 + 32) % 16] - 5), t, S * 0.85, 0.050);
-        if (k % 8 === 0) mPluck(mHt(subj[k % 16] - 24), t, S * 2, 0.070, 'sine');
+        if (k % 4 === 0)
+            mPluck(mHt((sec ? groundB : groundA)[Math.floor(k / 4) % 8] - 12),
+                   t, S * 1.4, 0.070, 'sine');
     }},
     // 4 \u2014 HARP. B thins to a suspended chord high up and lets the silences open,
     // so the return of A feels like the piece resuming rather than repeating.
@@ -8014,9 +8314,14 @@ const MUSIC_SUITE = [
     { name: 'Tarantella', bpm: 168, len: 144, play(i, t, S, I) {
         const sec = [0, 0, 1, 0][Math.floor(i / 36) % 4];
         const k = i % 36;
-        const progA = [0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7];
-        const progB = [5, 5, 5, 5, 5, 5, 0, 0, 0, 0, 0, 0];
-        const r = (sec ? progB : progA)[k % 12];
+        // [300826a] Two roots per section, three across the piece (i, iv, v) —
+        // the figure carried the tune and the harmony just sat under it. Now
+        // the Andalusian cadence i-VII-VI-V, which is what a tarantella
+        // actually does, and a B that opens on iv and falls through III.
+        // Six roots, all C-minor diatonic, one per 6/8 bar.
+        const progA = [0, -2, -4, -5, 0, -5];
+        const progB = [5, 3, 0, -2, -4, -5];
+        const r = (sec ? progB : progA)[Math.floor(k / 6) % 6];
         const fig = sec ? [7, 5, 3, 0, 3, 5] : [0, 3, 5, 7, 5, 3];
         mPluck(mHt(12 + r + fig[k % 6]), t, S * 0.6, 0.068);
         if (k % 3 === 0) mPluck(mHt(r - 12), t, S * 0.9, 0.090, 'sine');
@@ -8065,8 +8370,11 @@ const MUSIC_SUITE = [
         const k = i % 16;
         const melA = [0, 2, 4, 5, 7, 5, 4, 2, 0, 4, 7, 4, 5, 2, 0, null];
         const melB = [7, 9, 11, 12, 11, 9, 7, 5, 4, 5, 7, 9, 7, 4, 0, null];
-        const progA = [0, 0, 5, 5, 7, 7, 0, 0];
-        const progB = [5, 5, 0, 0, 7, 7, 0, 0];
+        // [300826a] Was I-IV-V in both halves — three roots, and B differed from
+        // A only in running order, so the middle section wasn't a contrast at
+        // all. A now turns through ii, B through vi and iii. Six roots.
+        const progA = [0, 0, 5, 5, 2, 2, 7, 7];
+        const progB = [9, 9, 4, 4, 5, 5, 7, 7];
         const root = (sec ? progB : progA)[Math.floor(k / 2) % 8];
         const m = (sec ? melB : melA)[k % 16];
         if (m !== null) mPluck(mHt(24 + m), t, S * 1.1, 0.085, 'triangle');
@@ -9011,7 +9319,18 @@ const sfx = {
     // Two clips: a single quack for an ordinary wall bump, a double for the
     // heavier refusals. The synthesised drone stays as a fallback if decoding
     // fails, so the sound never simply disappears.
-    bonk: () => { retroQuack(false); },   // [150826u]
+    // [210826q] Throttled on its own clock rather than through the deny gate,
+    // because every call site fires the sound BEFORE flashPlayerDenied() and so
+    // cannot be gated from there without touching a dozen sites. Audio is the
+    // most punishing part of a held refusal — a shake decays on its own and a
+    // flash is silent, but a quack at 10Hz for nine seconds is unbearable, and
+    // it was measured at exactly that. The window matches DENY_REPEAT_MS.
+    bonk: () => {   // [150826u]
+        const now = performance.now();
+        if (now - (sfx._bonkT || 0) < 400) return;
+        sfx._bonkT = now;
+        retroQuack(false);
+    },
 
 
 
@@ -9624,6 +9943,35 @@ function composeSetByBudget(budget, round) {
         case 9:  picks = [St(), St(), D('A'), D('B'), J(), Q()]; break;
         default: picks = [St(), St(), D(), J(), Q(), Q()]; break;
     }
+    // ── [210826ap] CLOCK-ONLY: SHORTER SETS ─────────────────────────────────
+    // Removing the hearts and the grants only made the recorded run about 14%
+    // shorter — the forgiveness went, but the LENGTH did not, because length is
+    // set by how many requirements a level asks for, not by how much slack the
+    // player has. Measured level times were 289, 186, 324, 102, 287, 249 and
+    // 613 seconds; the target is 90-150.
+    // So the set is cut by roughly a third, tapering: two requirements early,
+    // three in the middle, four at the top, where six used to be. Same shapes,
+    // same escalation, same order of introduction — fewer things to find.
+    // The TRICKY single is the first thing dropped where a level loses one. It
+    // is the highest-variance requirement in the game (a ringed single can sit
+    // unreachable for a long time) and variance is what turns a 150-second
+    // level into a 600-second one.
+    // Gated so the default game is untouched and the two can be played back to
+    // back. If this shape is kept, it becomes the real table and the gate goes.
+    // [210826aw] THE SHORT-SET TABLE IS REVERTED. Clock mode now uses the same
+    // sets as the standard game — the switch above is the only one.
+    // It was added to shorten runs, on the assumption that a level's length
+    // follows from how many requirements it asks for. Three runs later that
+    // assumption is dead: levels of THREE requirements have taken 49s and 248s
+    // in the same build, and the difference was which SHAPES they contained,
+    // not how many. Measured time-to-bank runs 12s for a single and 80s for a
+    // J-shape; the count is noise beside that.
+    // Meanwhile the cost was real. Level 1 asked for two requirements, which is
+    // a thin opening for a game whose HUD says COLLECT THE SET — it barely
+    // teaches the mechanic it is named after.
+    // The shortening the mode needs comes from the clock bleeding between
+    // stages, which is where [210826av] has now put it. Set size was never the
+    // lever, and trimming it was paying for nothing.
     shuffleInPlace(picks);   // display order stays varied
     return picks;
 }
@@ -9935,13 +10283,41 @@ function viewAheadBand() {
 // being stuck is always solvable.
 const FITTER_STUCK_LANDINGS = 3;    // stuck this many landings before it acts
 const FITTER_COOLDOWN_MS    = 6000; // and no more often than this
+// ── [210826n] THE SECOND TRIGGER: GRINDING ─────────────────────────────────
+// The fitter fired only when the route solver reported NOTHING reachable, and
+// two recorded runs showed why that is the wrong gate. Both reached level 7,
+// both needed six requirements, both banked five, and in both the one never
+// banked was the 2x2 square. Run A banked its five in 145s and then spent 526
+// SECONDS failing to land the square; run B, 267. The fitter did not fire once
+// in either — the recorder logged zero `stuck` events across both — because
+// the square slot was technically REACHABLE the whole time.
+// Reachable and landable are not the same thing. The square is one of the three
+// parity-locked shapes: it can only ever rest on one colour of board square, so
+// a slot on the wrong colour stays permanently "reachable" to a solver that
+// does not model parity, while the player circles it for nine minutes.
+// So there are two ways to be stuck, and the old gate saw one:
+//   NOTHING REACHABLE  — the acute case. Landings-based, unchanged.
+//   NOTHING BANKING    — the chronic case. The player is moving, scoring, not
+//                        trapped, and the same requirement has been outstanding
+//                        for minutes. This is what ended both recorded runs.
+// 120s is set from the data, not taste: normal banking cadence in those runs
+// was 29s (A) and 88s (B) per requirement, and the grinds were 267s and 526s.
+// It sits clear of ordinary play and well inside both grinds, so it cannot fire
+// on a level that is merely going slowly.
+const FITTER_GRIND_MS = 120000;
 // Cardinal step indices in SLIP_VECTORS: N, E, S, W. These are the ONLY
 // directions that change board parity — the four diagonals preserve it — so a
 // parity-locked shape can be freed by nothing else.
 const CARDINAL_SLIPS = [0, 2, 4, 6];
-function diagnoseMissingTool() {
+// [210826n] `force` diagnoses a slot the solver still calls reachable. Needed
+// for the grinding case: the player is not trapped, they simply cannot land the
+// shape, and the reason is usually the parity clause below. Without this the
+// function returns null the moment a route exists, which is precisely when a
+// nine-minute square hunt looks healthy to it.
+function diagnoseMissingTool(force = false) {
     const r = getRoute();
-    if (!r || r.reachable) return null;
+    if (!r) return null;
+    if (r.reachable && !force) return null;
     const t = r.slot;
     if (!t) return null;
     const myMult   = SHAPES[game.shapeType] ? SHAPES[game.shapeType].mult : 1;
@@ -9982,6 +10358,14 @@ function uncoveredFloorInView() {
     for (let y = camI; y < camI + VIEW_H; y++)
         for (let x = 0; x < VIEW_W; x++) {
             const k = `${x},${y}`;
+            /* [HOLES] A void is something left to earn from, so it must be
+               counted BEFORE the truthy-world skip below — which would
+               otherwise treat it as furniture and pass over it. Without this
+               the two halves of the economy disagree: checkFullRow would hold
+               a row open because of an unfilled hole while this function
+               reported there was nothing left to do, and the reprieve would
+               fire on a board that still owed the player a row. */
+            if (world[k] === 'void') return true;
             if (world[k]) continue;                    // wall, hazard, pickup, shifter
             if (visited.has(k)) continue;              // already covered
             if (slots.some(sl => sl.keys.has(k))) continue;
@@ -10030,12 +10414,23 @@ function runFitter() {
     if (game.testDrive || !game.running || game.paused) return;
     if (!setNeeded.length) { game._stuckFor = 0; return; }
     const r = getRoute();
-    if (!r || r.reachable) { game._stuckFor = 0; return; }
+    if (!r) { game._stuckFor = 0; return; }
+    // [210826n] GRINDING — nothing banked for FITTER_GRIND_MS. Measured against
+    // the last bank, falling back to the level start so a level whose FIRST
+    // requirement never lands is caught too (the old gate could only see a
+    // player who was trapped, never one who was simply getting nowhere).
+    const sinceBank = nowPlay() - (game._lastBankAt || game._recLevelStart || 0);
+    const grinding = sinceBank > FITTER_GRIND_MS;
+    if (r.reachable && !grinding) { game._stuckFor = 0; return; }
     game._stuckFor = (game._stuckFor || 0) + 1;
-    if (game._stuckFor < FITTER_STUCK_LANDINGS) return;
+    // A grind has already served its own waiting period — two minutes of it —
+    // so it does not also have to accumulate three unreachable landings. That
+    // second gate exists to stop the acute case firing on a momentary block,
+    // which is not a risk here.
+    if (!grinding && game._stuckFor < FITTER_STUCK_LANDINGS) return;
     const now = performance.now();
     if (game._fitterAt && now - game._fitterAt < FITTER_COOLDOWN_MS) return;
-    const want = diagnoseMissingTool();
+    const want = diagnoseMissingTool(r.reachable);
     if (!want) return;
     // ── [210826l] THE DIAGNOSIS IS KEPT ─────────────────────────────────────
     // diagnoseMissingTool() already works out exactly why a slot is out of
@@ -10060,7 +10455,12 @@ function runFitter() {
         s: game.shapeType,
         c: game.shapeConfig,
         n: game._stuckFor,
-        r: advancedRound
+        r: advancedRound,
+        // [210826n] Which gate fired, and how long the drought had run. These
+        // two fields are what will show whether the new trigger is doing useful
+        // work or firing on levels that were going to resolve anyway.
+        g: grinding ? 1 : 0,
+        dry: Math.round(sinceBank / 1000)
     });
     // Plant it CLOSE — 2 to 5 rows ahead, in or beside the player's column — so
     // it reads as an answer to the situation rather than a coincidence.
@@ -10487,11 +10887,17 @@ function exitToWelcome() {
             transforms: Math.max(bests.transforms || 0, game.transforms || 0),
             streaks:    Math.max(bests.streaks || 0, game.streaks || 0),
             coverage:   Math.max(bests.coverage || 0, Math.round(game.coverage || 0)),
-            combo:      Math.max(bests.combo || 1.0, game.bestCombo || 1.0)
+            combo:      Math.max(bests.combo || 1.0, game.bestCombo || 1.0),
+            revolves:   Math.max(bests.revolves || 0, game.revolves || 0),   // [210826u]
+            // [210826y] SUM, not max — and banked through one guarded helper so
+            // a run can only ever be added once. See bankRevolves().
+            revolvesTotal: bests.revolvesTotal || 0
         };
+        bankRevolves();
         saveBests();
         rec('end', { why: 'home', score: game.score, r: advancedRound,
-                     cov: Math.round(game.coverage || 0), tr: game.transforms });
+                     cov: Math.round(game.coverage || 0), tr: game.transforms,
+                     rv: game.revolves || 0 });   // [210826u]
         recPersist();
     }
     hideLevelCard();
@@ -11045,6 +11451,149 @@ function tryDevolve(playerCells, hitCellIndex) {
 // ============ THE WORLD ============
 // VERTICAL SCROLLING: World indexed by "x,y" where y increases downward
 let world = {};
+
+/* ══ HOLES ═══════════════════════════════════════════════════════════════════
+   Ported from index-holes.html (fork of this build, 050926-0930) after it
+   passed the three conditions agreed before that work started: hole width is
+   readable at speed on a phone, shear deaths feel earned, and crossing a gap
+   is satisfying on its own with nothing scored. That last one was the gate.
+
+   ── THE RULE, IN ONE LINE ───────────────────────────────────────────────────
+       LANDING ON A VOID FILLS IT, AND THE CUBE THAT FILLED IT SHEARS OFF.
+
+   A cube is held if and only if its own cell is solid. Nothing rests over a
+   hole; whatever you put over one is spent buying that cell of ground. Ground
+   has a price and the price is your body, which is what makes size a wallet
+   rather than a scalar — a square buys four cells and walks away smaller, a
+   single buys one with its life.
+
+   ── WHY IT NEEDS ALMOST NO NEW MACHINERY ────────────────────────────────────
+   A VOID IS A HAZARD THAT PAYS YOU BACK. This game already has a cell type
+   that destroys the cubes landing on it and everything that requires —
+   detectCasualties, classifyShiftPush, classifyFlip, tryMultiDevolve, the trim
+   pass in checkCollisions. It already performs the fill, too, in
+   checkCollisions: `delete world[key]; markCovered(key);`
+
+   So most of this port is: wherever 'hazard' trims a cube, 'void' trims it and
+   ALSO turns that cell into ordinary floor.
+
+   ── THE ONE DELIBERATE DIFFERENCE ───────────────────────────────────────────
+   fillVoid does NOT call markCovered. You buy the ground; you still have to
+   walk it. That is what makes the row rule below bite.
+
+   ── WHY DEVOLUTION CANNOT FAIL ──────────────────────────────────────────────
+   Every shape fits a 2x2 box and ANY subset of a 2x2 is itself a legal config
+   (1 = single, 2 = pair or diagonal, 3 = jshape, 4 = square). tryMultiDevolve
+   therefore never fails on a partial shear: death happens at exactly one
+   threshold, when the LAST cube goes in, and nowhere else.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const isVoid = (x, y) => world[`${x},${y}`] === 'void';
+
+/* ── [HOLES] THE SPACE BELOW ────────────────────────────────────────────────
+   Every hole is a window onto one continuous space under the whole board —
+   not a box with its own back wall. Two holes on screen show the same thing
+   sliding past at the same rate, so the space is understood to run on behind
+   the ground between them.
+
+   IT IS MADE OF THIS BOARD'S OWN CELLS. The tile is the rounded square the
+   floor is drawn with, at the same proportions, just smaller, thinner and
+   fainter — twice over, near and far. An earlier version used a plain ruled
+   lattice and it read as graph paper behind a game rather than as more of the
+   game a long way down.
+
+   THE DRIFT IS THE DEPTH CUE, not the drawing. Both layers move on wall-clock
+   time, DETACHED from the camera, so the board rushes down past something
+   barely moving — which is how distance actually looks. They rise at
+   different rates and neither moves sideways at all.
+
+   Drawn as a cached repeating PATTERN: the far layer alone is thousands of
+   rounded rects a frame if built by hand, which is real work on a phone for
+   something nobody looks straight at. One tile, stamped.
+
+   Tuning carried over from the prototype after it was checked on an iPhone
+   and an iPad — reported back as reading like depth rather than noise. ───── */
+const UNDER_A_SCALE = 0.55,  UNDER_B_SCALE = 0.29;   // tile size vs CELL
+const UNDER_A_ALPHA = 0.26,  UNDER_B_ALPHA = 0.18;   // line alpha
+const UNDER_A_WIDTH = 1.3,   UNDER_B_WIDTH = 1.05;   // line width
+const UNDER_A_VY    = -2.94, UNDER_B_VY    = -1.12;  // px/sec, straight up
+const underPatterns = {};
+function underPattern(P, alpha, width) {
+    const key = `${P}|${alpha}|${width}`;
+    if (underPatterns[key] !== undefined) return underPatterns[key];
+    const c = document.createElement('canvas');
+    c.width = P; c.height = P;
+    const g = c.getContext('2d');
+    const size = P * 0.72, off = (P - size) / 2, r = Math.min(size * 0.22, 8);
+    g.strokeStyle = `rgba(104,142,190,${alpha})`;
+    g.lineWidth = width;
+    g.beginPath();
+    g.moveTo(off + r, off);
+    g.lineTo(off + size - r, off);
+    g.quadraticCurveTo(off + size, off, off + size, off + r);
+    g.lineTo(off + size, off + size - r);
+    g.quadraticCurveTo(off + size, off + size, off + size - r, off + size);
+    g.lineTo(off + r, off + size);
+    g.quadraticCurveTo(off, off + size, off, off + size - r);
+    g.lineTo(off, off + r);
+    g.quadraticCurveTo(off, off, off + r, off);
+    g.closePath();
+    g.stroke();
+    const p = ctx.createPattern(c, 'repeat') || null;
+    underPatterns[key] = p;
+    return p;
+}
+function drawUnderworld(camInt, camFrac) {
+    /* Clipped to the void cells' FULL GRID SQUARES, gutter included. Because
+       the squares of neighbouring voids share their edges they merge into one
+       continuous opening, so a 3x3 chasm is a single hole rather than nine
+       tiles in a square. Clipping to the inset cell box instead would give
+       every hole a lattice of its own and make its true extent guesswork. */
+    const holes = [];
+    for (let row = -1; row <= VIEW_H + 1; row++) {
+        const wy = camInt + row;
+        for (let col = 0; col < VIEW_W; col++)
+            if (world[`${col},${wy}`] === 'void')
+                holes.push([col * CELL, (row - camFrac) * CELL]);
+    }
+    if (!holes.length) return;
+
+    ctx.save();
+    ctx.beginPath();
+    for (const [x, y] of holes) ctx.rect(x, y, CELL, CELL);
+    ctx.clip();
+
+    ctx.fillStyle = currentTheme === 'day' ? '#0d1420' : '#050912';
+    ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
+
+    const t = performance.now() / 1000;
+    const wrap = (v, m) => { const r = v % m; return r > 0 ? r - m : r; };
+    const layer = (S, alpha, width, vy) => {
+        const P = Math.max(3, Math.round(S));
+        const pat = underPattern(P, alpha, width);
+        if (!pat) return;
+        const oy = wrap(t * vy, P);
+        ctx.save();
+        ctx.translate(0, oy);
+        ctx.fillStyle = pat;
+        ctx.fillRect(-P, -oy - P, LOGICAL_W + 2 * P, LOGICAL_H + 2 * P);
+        ctx.restore();
+    };
+    layer(CELL * UNDER_B_SCALE, UNDER_B_ALPHA, UNDER_B_WIDTH, UNDER_B_VY);   // far first
+    layer(CELL * UNDER_A_SCALE, UNDER_A_ALPHA, UNDER_A_WIDTH, UNDER_A_VY);
+    ctx.restore();
+}
+
+/* Buy one cell of ground with one cube. Returns true if a void was filled, so
+   callers can count the purchase. Deliberately does not markCovered() — see
+   above, and see checkFullRow, which is where the cost is repaid. */
+let voidsFilled = 0;
+function fillVoid(x, y) {
+    const k = `${x},${y}`;
+    if (world[k] !== 'void') return false;
+    delete world[k];
+    voidsFilled++;
+    return true;
+}
 // [290726m] HAZARD PROVENANCE — every red records who placed it and on which
 // move, and every red consumption records the same. Written to diagnose the
 // "consumed red came back" report: with this, the replay overlay can say
@@ -11105,8 +11654,16 @@ const TIME_T30_CELL_CHANCE = 0.0012;  // the treat — one every ~80 rows
 //       refilled only by ~80 more fresh cells. It fires at empty, so it can
 //       never flood the clock, and the heart it saves was bought with the
 //       game's most honest currency.
-const RESERVE_PER_CELL = 0.15;
-const RESERVE_CAP = 12;
+// [210826aq] RESERVE_PER_CELL, RESERVE_CAP, RESERVE_PER_ROW and
+// updateReserveHUD() are all removed — see the note on reserveDrip(). The
+// paragraph above them describing "(2) RESERVE TANK" is left in place as the
+// design log entry it is, marked here as history rather than current: it
+// records what the tank did and why, which is worth keeping now that the code
+// is gone. Time income is hourglasses, rows (bandSeconds) and nothing else.
+// A NO-OP is deliberately NOT left behind under the old name. A function that
+// exists and does nothing is how triggerEdgeGlow spent two builds looking alive
+// with sixteen call sites firing into a bare `return`; every caller here is
+// removed instead, so nothing can quietly go on calling it.
 function timeSpawnTilt() {
     // Fresh-cell stamps within the last 8 seconds -> 1.0 (idle) to 2.5 (grinding).
     if (!game._covStamps) return 1;
@@ -11114,18 +11671,30 @@ function timeSpawnTilt() {
     while (game._covStamps.length && game._covStamps[0] < cut) game._covStamps.shift();
     return Math.min(2.5, 1 + game._covStamps.length / 16);
 }
+// ── [210826aq] THE RESERVE TANK IS RETIRED ──────────────────────────────────
+// It stored 0.15s per fresh cell, capped at 12s, and paid out at the instant
+// the clock emptied. Three problems, and the third is the one that decided it:
+//   INVISIBLE. It was a hidden pool. The HUD gauge added at [210826ai] was an
+//     attempt to fix that and the designer's verdict was that it still did not
+//     land — a bar in the HUD is a third place to look while your eyes are on
+//     your own piece and the board.
+//   UNREADABLE AT PAYOUT. It fired at the exact moment the clock hit zero,
+//     which is the most chaotic instant in a run. Cause and effect were never
+//     visible together.
+//   IT PAID FOR THE WRONG THING. Coverage was its only source, and the play
+//     data showed the strongest strategy — race for slots, skip the painting —
+//     starving it. One recorded run fired the tank eleven times; the faster,
+//     higher-scoring run fired it twice and died by stall. The safety net was
+//     funded by the play style the scoring discourages.
+// Rows carry that income now, directly and on screen. `_covStamps` and
+// timeSpawnTilt() survive: they measure how HARD the player is working and
+// still tilt hourglass spawns toward someone grinding fresh ground, which is a
+// separate and still-good idea.
 function reserveDrip() {
     if (game.testDrive) return;
     if (!game._covStamps) game._covStamps = [];
     game._covStamps.push(performance.now());
     if (game._covStamps.length > 120) game._covStamps.shift();
-    const before = game.timeReserve || 0;
-    game.timeReserve = Math.min(RESERVE_CAP, before + RESERVE_PER_CELL);
-    // The tank announces FULL once per fill — the motivation has to be visible.
-    if (before < RESERVE_CAP && game.timeReserve >= RESERVE_CAP && !game._reserveFullShown) {
-        game._reserveFullShown = true;
-        addFloat(LOGICAL_W / 2, 76, 'RESERVE FULL', '#fb8b1e', false, { life: 1100, hold: 450 });
-    }
 }
 const MAX_VISIBLE_TIME = 6;
 const MERCY_THRESHOLD_SEC = 30;
@@ -11439,9 +12008,75 @@ function resetGenState() {
 function countBlockedCols(y) {
     let count = 0;
     for (let x = 0; x < VIEW_W; x++) {
-        if (world[`${x},${y}`] === 'wall') count++;
+        const v = world[`${x},${y}`];
+        if (v === 'wall' || v === 'void') count++;   // [HOLES] a hole blocks a column too
     }
     return count;
+}
+
+/* ── [HOLES] CARVING ────────────────────────────────────────────────────────
+   Holes go in at low frequency ALONGSIDE the existing terrain rather than
+   replacing any of it. Three rules, and each one closes a way this could go
+   wrong:
+
+   NEVER EAT ANYTHING. A carve only takes cells that are completely empty, so
+   it can never swallow a red, a green, an hourglass, a shifter or a wall. The
+   generator's own passes then skip the new voids for free, because every one
+   of them already begins `if (world[key]) continue;`.
+
+   ALWAYS LEAVE A WAY PAST. Every row a carve touches must keep at least
+   HOLE_MIN_SOLID columns clear of both wall and void. Without this the fill
+   economy grows a death spiral: spend down to a single, meet a hole you cannot
+   pay for, and watch yourself lose in slow motion. The board has to stay
+   walkable by the poorest shape, always.
+
+   STAY AWAY FROM SLOTS. Slice one keeps holes and slots apart — with a
+   one-cell margin, so a hole cannot even crowd a slot's approach. Two "go out
+   of your way" systems should not compete before either is proven. Islands
+   with sets inside a chasm are slice two, and they need persistence to be
+   reachable at all (a 3-deep moat cannot be crossed within one life).
+
+   Carving writes into rows the loop has not reached yet. That is safe for the
+   same reason as above: those rows will find the cells already occupied and
+   leave them alone. ─────────────────────────────────────────────────────── */
+const HOLE_MIN_SOLID = 3;      // clear columns that must survive every carve
+const HOLE_CHANCE    = 0.055;  // per eligible row
+let holeCooldown = 0;
+
+function holeCellFree(x, y) {
+    if (world[`${x},${y}`]) return false;
+    for (let dy = -1; dy <= 1; dy++)
+        for (let dx = -1; dx <= 1; dx++)
+            if (slots.some(s => s.keys.has(`${x + dx},${y + dy}`))) return false;
+    return true;
+}
+
+function maybeCarveHole(y, safeZoneEnd) {
+    if (holeCooldown > 0) { holeCooldown--; return; }
+    if (y > safeZoneEnd - 6) return;                 // let the opening breathe
+    if (Math.random() > HOLE_CHANCE) return;
+
+    const rows = 1 + ((Math.random() * 3) | 0);      // 1-3 deep
+    const w    = 2 + ((Math.random() * 4) | 0);      // 2-5 wide
+    if (VIEW_W - w < HOLE_MIN_SOLID) return;
+    const x0 = (Math.random() * (VIEW_W - w + 1)) | 0;
+
+    // Check the passage guarantee BEFORE writing anything.
+    for (let r = 0; r < rows; r++) {
+        const ry = y - r;
+        let blocked = 0;
+        for (let x = 0; x < VIEW_W; x++) {
+            const v = world[`${x},${ry}`];
+            if (v === 'wall' || v === 'void' || (x >= x0 && x < x0 + w)) blocked++;
+        }
+        if (VIEW_W - blocked < HOLE_MIN_SOLID) return;
+    }
+
+    let carved = 0;
+    for (let r = 0; r < rows; r++)
+        for (let i = 0; i < w; i++)
+            if (holeCellFree(x0 + i, y - r)) { world[`${x0 + i},${y - r}`] = 'void'; carved++; }
+    if (carved) holeCooldown = 5 + rows;
 }
 
 // Generate world by rows (negative Y direction - upward).
@@ -11468,6 +12103,7 @@ function generateChunk(fromY, toY) {
             // Full-width open. Maybe drop a small interior island to navigate
             // around, then scatter hazards; skip cells occupied by anything else.
             maybePlaceIsland(y, safeZoneEnd);
+            maybeCarveHole(y, safeZoneEnd);          // [HOLES]
             // [270726zn] Red scatter is budgeted: at most ONE red per row,
             // and none at all while the 10-row window already holds the cap.
             let rowRed = false;
@@ -11975,7 +12611,11 @@ function slotLeavesPassage(cells) {
         for (let y = minY; y <= maxY; y++) {
             const k = `${x},${y}`;
             const w = world[k];
-            if (w === 'wall' || w === 'hazard' || newKeys.has(k) ||
+            // [HOLES] A void does not count as passage. It is crossable, but
+            // only by spending cubes, and a guarantee that costs the player
+            // their body is not a guarantee — these route checks exist so a
+            // way through always EXISTS, and that has to mean a free one.
+            if (w === 'wall' || w === 'hazard' || w === 'void' || newKeys.has(k) ||
                 slots.some(s => !s.claimed && s.keys.has(k))) { open = false; break; }
         }
         if (open) return true;
@@ -12004,7 +12644,7 @@ function slotIsApproachable(cells) {
             const k = `${nx},${ny}`;
             if (seen.has(k)) continue;
             const wv = world[k];
-            if (!own.has(k) && (wv === 'wall' || wv === 'hazard')) continue;
+            if (!own.has(k) && (wv === 'wall' || wv === 'hazard' || wv === 'void')) continue;   // [HOLES]
             seen.add(k);
             q.push([nx, ny]);
         }
@@ -12029,7 +12669,7 @@ function reachableSpawnSet(yTop, yBot) {
             const k = `${nx},${ny}`;
             if (seen.has(k)) continue;
             const wv = world[k];
-            if (wv === 'wall' || wv === 'hazard') continue;
+            if (wv === 'wall' || wv === 'hazard' || wv === 'void') continue;   // [HOLES]
             seen.add(k);
             q.push([nx, ny]);
         }
@@ -12428,6 +13068,68 @@ function checkSlotClaims() {
                       via: chainLinks, left: setNeeded.length });   // [170826e] via = train length now
         game._lastBankAt = nowPlay();   // [160826w][170826b] drought clock restarts, play time
 
+        // [210826ar] BANKING PAYS TIME. The objective — the thing the whole
+        // game is about — paid nothing in the currency that keeps you alive.
+        // The last recorded run banked 24 requirements for zero seconds while
+        // painting rows for 195, which meant the optimal line (race the slots)
+        // and the survival line (paint the floor) pointed in opposite
+        // directions. This closes that.
+        // Clock mode only for now: in the default build the level grant and the
+        // clock refills already carry this, and adding a third source would
+        // change a balance nobody asked to change.
+        if (CLOCK_ONLY) {
+            momentumAddSeconds(BANK_TIME_SEC);
+            game.roundTimeSecs = (game.roundTimeSecs || 0) + BANK_TIME_SEC;
+            const _bc = (slot.cells && slot.cells[0]) || { x: game.playerX, y: game.playerY };
+            addFloat(_bc.x * CELL + CELL / 2, (_bc.y - game.cameraY) * CELL - 22,
+                     `+${BANK_TIME_SEC}s`, '#86efac');
+        }
+
+        // ── [210826ak] THE COMBOS THAT END IN A CLAIM ───────────────────────
+        // Both are "two things in one move", and the move is identified by
+        // game._moveToken — incremented once per move at the top of the
+        // resolution, so everything a single landing causes shares one token.
+        // That is what makes this a COMBO test rather than a coincidence test:
+        // a green eaten two moves ago and a slot claimed now are not the same
+        // act, and the token is the only thing that can tell the difference.
+        // Order-independent on purpose. A landing can complete a row and claim
+        // a slot, and which of those the engine resolves first is an
+        // implementation detail the player never sees — so both sites stamp
+        // their token and both check for the other, and _comboFiredToken makes
+        // sure the pair only ever pays once however they arrive.
+        // GROW wins over ROW when a move somehow does both, because it is the
+        // rarer act: changing shape and landing that shape correctly in one
+        // motion is a harder thing to see coming than finishing a row.
+        {
+            const _tk = game._moveToken;
+            game._claimAtToken = _tk;
+            const _at = (slot.cells && slot.cells[0]) || { x: game.playerX, y: game.playerY };
+            const _cx = _at.x * CELL + CELL / 2, _cy = (_at.y - game.cameraY) * CELL;
+            // Priority, rarest first. A landing can qualify as more than one —
+            // a shave that also finishes a row, say — and naming it twice would
+            // read as the game double-counting rather than as one good move.
+            //   SHAVE  you went THROUGH a red to arrive the right size
+            //   GROW   you ate a green and placed the new shape in one motion
+            //   ROW    the same landing also completed a row
+            // The shave test lives here rather than at its old site 130 lines
+            // down, which ran after this block and so could pay a second combo
+            // for the same landing.
+            const _shave = game._lastTrimT && (performance.now() - game._lastTrimT < 600);
+            if (game._comboFiredToken !== _tk) {
+                if (_shave) {
+                    game._lastTrimT = 0;
+                    game._comboFiredToken = _tk;
+                    registerCombo('shave', LOGICAL_W / 2, LOGICAL_H / 2 - 44);
+                } else if (game._growAtToken === _tk) {
+                    game._comboFiredToken = _tk;
+                    registerCombo('growclaim', _cx, _cy);
+                } else if (game._rowAtToken === _tk) {
+                    game._comboFiredToken = _tk;
+                    registerCombo('rowclaim', _cx, _cy);
+                }
+            }
+        }
+
         // FAMILY BOW-OUT: if this claim fully banks the requirement, any
         // sibling slots of the same item (same requirement id) are now
         // meaningless — so instead of blinking out, they take a fading bow off
@@ -12502,7 +13204,26 @@ function checkSlotClaims() {
                     `${chainName}\n+${claimPts}`, chainCol, true);
                 triggerEdgeGlow(chainLinks >= 2 ? '#ffd60a' : SHIFTER_FAMILY_COLOR,
                                 chainLinks >= 2 ? 1400 : 900);
-                if (typeof triggerShake === 'function') triggerShake(5 + chainLinks, 220 + chainLinks * 60);
+                // ── [210826al] SHAKE IS FOR DAMAGE NOW ──────────────────────
+                // triggerShake had 33 call sites. Claims shook, combos shook,
+                // rows shook, bumps shook, deaths shook — so a shake carried no
+                // information at all, and the player was left reading floats to
+                // find out what had happened. That is the whole of the field
+                // note: "it's better to see why the changes have occurred
+                // rather than having to read why".
+                // The cure is not more effects, it is fewer. Shake now means
+                // ONE thing — the board took something off you — so it can be
+                // felt rather than parsed. Removed from the five reward sites
+                // that fired during moment-to-moment play: the claim, the hot
+                // claim, the row milestone, the green fusion, the charge
+                // tier-up and the streak bonus.
+                // Deliberately KEPT at the level-end and run-end climaxes
+                // (completeSet, the victory). Those fire once and are meant to
+                // be an event; the problem was never the big moments, it was
+                // shake as constant background.
+                // The claim keeps its burst, its colour, its rising tone and
+                // its payout float. It loses only the channel it was borrowing
+                // from damage.
                 if (chainLinks >= 2 && sfx.gold) sfx.gold();
                 else if (sfx.firstEvolve) sfx.firstEvolve();
             } else {
@@ -12514,7 +13235,8 @@ function checkSlotClaims() {
                 addFloat(payCells[0].x * CELL + CELL/2, (payCells[0].y - game.cameraY) * CELL - 8,
                     hot ? `\u00d7${_comboAtClaim.toFixed(1)}\n+${claimPts}` : `+${claimPts}`,
                     payColor);
-                if (hot && typeof triggerShake === 'function') triggerShake(3, 160);   // [230826b] the glow is disabled at source
+                // [210826al] Shake removed — see the note above. A hot claim is
+                // still marked: it prints the multiplier it was taken at.
             }
             // BURN & MERGE (V9): flare for 2s, then melt into ordinary
             // covered floor. The claim CONVERTS the footprint into real
@@ -12535,10 +13257,12 @@ function checkSlotClaims() {
             // big for the slot, so you go THROUGH a red on the way in, lose a cube
             // to it, and land already the right size. A machine that cuts itself
             // to a dimension is machining, not shaving.
-            if (game._lastTrimT && performance.now() - game._lastTrimT < 600) {
-                game._lastTrimT = 0;
-                showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 44, 'MACHINED TO FIT!');
-            }
+            // [210826ak] The shave's detection MOVED UP to the claim-combo
+            // block beside rec('bank'), and is no longer tested here. It has to
+            // be decided in the same place as grow and row or a single landing
+            // can pay two combos: this site runs after that one, so a move that
+            // was both a grow-claim and a shave fired once there and again
+            // here. One decision point, one combo per move.
             if (typeGone) {
                 const fgBonus = Math.round(25 * (CLEAR_WEIGHT[slot.type] || 1));
                 scoreGain(fgBonus, false);
@@ -12636,12 +13360,58 @@ function checkSlotTraces() {
 // is used at game start so the game canvas never flashes through.
 // What debuts each round — shown on the level overlay so level-to-level
 // differences are legible at the door.
-const ROUND_NEW = {
-    3: 'NEW: DIAGONAL SHAPES',
-    4: 'NEW: J-SHAPE',
-    5: 'NEW: 2\u00d72 SQUARE',
-    9: 'NEW: TWO HARD SINGLES'
+// \u2500\u2500 [210826ag] THE ANNOUNCEMENT IS DERIVED, NOT DECLARED \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// This was a hand-written table \u2014 3: DIAGONAL, 4: J-SHAPE, 5: SQUARE \u2014 and all
+// three were wrong. The sets are actually composed by composeSetByBudget(),
+// whose per-round picks are explicit and deterministic:
+//     L4 is the first round containing a diagonal
+//     L6 is the first containing a J-shape
+//     L7 is the first containing a square
+// Both recorded runs match that exactly, which is what the field note found:
+// told "NEW: J-SHAPE" on level 4 and not shown one until level 6.
+// (A second red herring cost me a pass: ADVANCED_ROUNDS still carries `pool`
+// and `slotCount` fields listing diagonals from round 1, which read as the
+// source of truth. They are dead \u2014 resetSetTracker() notes that composition
+// supersedes them \u2014 so "diagonal appears in round 1" was never true; it was
+// vestigial data describing a system that no longer runs.)
+// So the table is now COMPUTED from the composer at load: run it once per
+// round, diff the shape types against every round before, and the first
+// appearance of a type is its debut. A hand-written list can drift from the
+// thing it describes; a derived one cannot. If the composer's picks are
+// retuned tomorrow, these announcements retune with them.
+const SHAPE_DEBUT_LABEL = {
+    pair:     'NEW: PAIRS',
+    diagonal: 'NEW: DIAGONAL SHAPES',
+    jshape:   'NEW: J-SHAPE',
+    square:   'NEW: 2\u00d72 SQUARE'
 };
+const ROUND_NEW = (() => {
+    const out = {};
+    const seen = new Set();
+    for (let r = 1; r <= 10; r++) {
+        let types;
+        try { types = composeSetByBudget(0, r).map(t => t.type); }
+        catch (e) { continue; }   // never let a label crash a level transition
+        for (const t of types) {
+            if (!seen.has(t)) {
+                seen.add(t);
+                // First label wins if a round debuts two shapes at once \u2014 the
+                // overlay has room for one line, and the larger shape is the
+                // one worth naming. Sorted by size via the label table order.
+                // Never on round 1: everything is new on the first level, so
+                // "NEW: PAIRS" there is noise attached to the one screen a
+                // first-time player has the least spare attention for.
+                if (r > 1 && SHAPE_DEBUT_LABEL[t] && !out[r]) out[r] = SHAPE_DEBUT_LABEL[t];
+            }
+        }
+    }
+    // Not a new SHAPE \u2014 a difficulty step. Round 9 is the first composed of two
+    // TRICKY singles, which the composer expresses as difficulty rather than
+    // type, so the diff above cannot see it. Set explicitly, and last, so it
+    // wins if round 9 ever also debuts a type.
+    out[9] = 'NEW: TWO HARD SINGLES';
+    return out;
+})();
 
 // [210826i] setIconSVG() is RETIRED. It was a second, slightly different
 // drawing of the requirement glyphs, kept alive only for this overlay while the
@@ -13102,10 +13872,34 @@ const MACHINE_PRAISES = [
 // [240826d] This is the pool about the PLAYER'S OWN TURNING, so it is where
 // revolve belongs — evolve and devolve describe the player's size changing, and
 // revolve describes its orientation changing. Three words, one subject: you.
+// [210826v] Two out. OVER SHE GOES! is cut outright — it is a person watching
+// a cart tip over, not a machine describing its own rotation.
+// FLIP FLOP! is not cut but MOVED, to the losing consolations below. It was
+// the odd one here because it names an oscillation with no progress, which is
+// exactly wrong as praise for a good turn and exactly right as the last word
+// on a run that has stopped. It also keeps a working double meaning in the
+// electrical register: a flip-flop is a real component, a circuit that holds
+// one of two states — which is what a run reduces to when it ends.
+// TURNED ON A SIXPENCE! is flagged, not removed. It is idiom rather than
+// machine, the same objection that took the other two, but it describes
+// PRECISION — the one thing the pool otherwise only says as "ROTATED CLEAN!" —
+// so cutting it costs a meaning the rest of the pool does not carry. Left in
+// pending a decision rather than removed on my own reading of one word.
+// [210826w] The remaining five cut — designer's call, and the common thread is
+// clear in hindsight: every one was a PERSON describing the turn from outside
+// (neatly, on a sixpence, that is the turn) where the sibling pools are the
+// machine naming its own state (IN PHASE!, FULL TORQUE!, COGS ALIGNED!).
+// FULLY REVOLVED! is the only line that was already speaking in that voice,
+// which is why it is the one left standing.
+// ⚠ A ONE-ITEM POOL. pickPraise(FLIP_PRAISES) is called directly at the turn
+// site, so this moment now says the same three words every single time. That is
+// not broken, but it is repetitive in a way the other two pools are not — they
+// carry four and six lines. Left at one deliberately rather than filled with
+// copy that has not been approved: this pool's wording has now been revised
+// three times, so guessing at replacements is the least useful thing I could
+// do. Candidates in the register are in the reply.
 const FLIP_PRAISES = [
-    'NEATLY TURNED!', 'FLIP FLOP!', 'END OVER END!', 'OVER SHE GOES!',
-    'TURNED ON A SIXPENCE!', 'THAT IS THE TURN!',
-    'ROTATED CLEAN!', 'FULLY REVOLVED!'
+    'FULLY REVOLVED!'
 ];
 // One pool for the general case, so a single call gets the whole vocabulary.
 const ALL_PRAISES = GEAR_PRAISES.concat(MACHINE_PRAISES, FLIP_PRAISES);
@@ -13136,6 +13930,58 @@ function bumpChain() {
 // the document — so the player's only sight of it was a past-tense line on the
 // scorecard after the level had ended. It lives in the HUD now, beside the
 // score, and it goes GOLD at the tier where the board does.
+// ── [210826ak] COMBOS: ONE IDEA, ONE WORD, ONE PLACE ────────────────────────
+// A combo is USING TWO THINGS TOGETHER IN ONE MOVE. That is the whole rule, and
+// every combo below is an instance of it rather than its own separate feature.
+// THE TEST THAT DECIDED THE LIST: can the player see it coming? A reward for
+// something they could not have planned is confetti — it tells them they were
+// clever when they were lucky, and it teaches nothing, because there is no
+// behaviour to repeat. Everything here is visible on the board before the move
+// that earns it:
+//     BAND         two or more rows finished by one landing. Both rows are on
+//                  screen, both are visibly one gap short.
+//     ROW + CLAIM  one landing completes a row AND claims a slot.
+//     GROW + CLAIM eat a green to become the required shape and land it on the
+//                  slot in the same motion. Green and slot both visible.
+//     SHAVE        trim through a red and claim in the same landing. Already
+//                  existed as MACHINED TO FIT; it just joins the family now.
+// DELIBERATELY EXCLUDED, and this is the more useful half of the design:
+//     MACHINE CLAIM — a shifter throwing you onto a needed slot. The best idea
+//       of the lot and it is not built, because the data says it cannot be
+//       planned yet: across 122 recorded claims only 6 came through a machine,
+//       6%, with one whole run at zero. Slots and shifters are placed
+//       independently, so it is coincidence. It becomes a combo the day the
+//       board guarantees the opportunity, and not before.
+//     GEAR TRAIN — fires up to five links deep; you cannot predict where you
+//       come to rest, so you cannot aim it.
+//     PARITY BREAK — the highest-skill act in the game, and unplannable while
+//       board parity is invisible (the tint was removed at [210826af]).
+// Routed through ONE function so a combo cannot come to mean different things
+// in different places: same count, same word, same telemetry, wherever it fires.
+const COMBO_LABEL = {
+    band:  'DOUBLE ROW!',
+    rowclaim: 'ROW + CLAIM!',
+    growclaim: 'GROW + CLAIM!',
+    shave: 'MACHINED TO FIT!'
+};
+function registerCombo(kind, x, y, extra) {
+    if (!game || game.testDrive) return;
+    game.roundCombos = (game.roundCombos || 0) + 1;
+    game.runCombos = (game.runCombos || 0) + 1;
+    let label = COMBO_LABEL[kind] || 'COMBO!';
+    // A band of three or more names its own size — "DOUBLE ROW!" for a triple
+    // would undersell the rarest thing on the board.
+    if (kind === 'band' && extra > 2) label = extra + ' ROWS AT ONCE!';
+    // Positioned at the event where one is given, centre-board otherwise. A
+    // combo is a thing that happened somewhere; naming it over the spot is what
+    // connects the word to the move that earned it.
+    const px = (x === undefined) ? LOGICAL_W / 2 : x;
+    const py = (y === undefined) ? LOGICAL_H * 0.38 : y;
+    if (typeof showCombo === 'function') showCombo(px, py, label);
+    else addFloat(px, py, label, '#ffd60a', true);
+    if (sfx.gold) sfx.gold();
+    rec('combo2', { k: kind, n: game.roundCombos, r: advancedRound });   // [210826ak]
+}
 function paintComboChip() {
     const chip = document.getElementById('chainChip');
     if (!chip) return;
@@ -13187,15 +14033,16 @@ function deepInDanger() {
     for (const c of cs) if (botRow - c.y <= 1) return true;
     return false;
 }
+// [210826an] SILENCED. Praise for playing near the edge is the purest case of
+// text that corresponds to nothing: it is not on the scorecard, it is not a
+// score, it is not an event the player caused deliberately, and it fires while
+// they are in the most dangerous position on the board — the one moment they
+// least need a sentence over the play area.
+// The pools are left intact rather than deleted; they are good writing and the
+// game-over screen still draws on the same vocabulary. This just stops them
+// interrupting play.
 function maybeEdgePraise() {
-    if (deepInDanger()) {
-        const d = pickPraise(DEEP_PRAISES);
-        showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 60, d);
-        return;
-    }
-    if (!nearPlayEdge()) return;
-    const t = pickPraise(EDGE_PRAISES);
-    showCombo(LOGICAL_W / 2, LOGICAL_H / 2 - 60, t);
+    return;
 }
 // V9 BURN & MERGE — a banked slot FLARES for 2s (family colour igniting to
 // white-hot, then dying down), and what's left is ordinary covered floor.
@@ -13254,7 +14101,11 @@ function hasAnyLegalMove() {
             if (c.x < 0 || c.x >= VIEW_W || c.y < topLawfulRow() || c.y > bottomRow) { blocked = true; return; }   // [270726zo] half-square grace
             const wv = world[`${c.x},${c.y}`];
             if (wv === 'wall') blocked = true;               // [270726o] walls refuse flips
-            else if (wv === 'hazard') redIdx.push(i);
+            // [HOLES] A void costs the cube that lands on it, exactly as a red
+            // does, so for the "is there any move left" question it behaves
+            // identically: survivable if the remainder is a legal shape,
+            // refused if it would take everything.
+            else if (wv === 'hazard' || wv === 'void') redIdx.push(i);
         });
         if (blocked) continue;
         // A survivable red trim is an exit; total destruction is refused.
@@ -13288,13 +14139,18 @@ function checkRowMilestones() {
     if (tier === 1) {
         const pts = 25 * lvl;
         scoreGain(pts, false);
-        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.36, `5 ROWS UP!\n+${pts}`, '#f8fafc', true);
+        // [210826an] Float cut. Rows are announced twice already — LINE! when
+        // one completes, DOUBLE ROW! when a landing takes two — then counted a
+        // third time on the card as "Rows completed". A fourth announcement for
+        // reaching five of them restates the same fact at headline size, mid
+        // play. The points still pay and the tone still fires.
+        // Tier 3 (FULL GRID) keeps its float: a jackpot, not a milestone, and
+        // the one thing here the card cannot express.
         if (sfx.line) sfx.line(2);
     } else if (tier === 2) {
         const pts = 60 * lvl;
         scoreGain(pts, true);
-        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.36, `8 ROWS STRONG!\n+${pts}`, '#a3e635', true);
-        if (sfx.line) sfx.line(4);
+        if (sfx.line) sfx.line(4);   // [210826an] float cut — see tier 1
         if (sfx.bassImpact) sfx.bassImpact(0.6);
         for (let i = 0; i < 3; i++) setTimeout(() => addBurst(
             60 + Math.random() * (LOGICAL_W - 120),
@@ -13302,11 +14158,23 @@ function checkRowMilestones() {
     } else if (tier === 3) {
         const pts = 150 * lvl;
         scoreGain(pts, true);
-        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `FULL HOUSE!\n+${pts}`, GOLD_SLOT_COLOR, true, { life: 2400, hold: 1400 });
+        // [210826v] FULL HOUSE is gone. It was the last card-game import in the
+        // game — a poker hand announcing an electric motor's best moment — and
+        // it named the wrong thing: a full house is a partial hand that happens
+        // to score well, while this is literally every visible row complete.
+        // REPLACED, NOT DELETED. This float is the jackpot's only announcement,
+        // and it pays 150 x level. Cutting the words alone would leave the
+        // biggest single payout in the game arriving in silence, which is the
+        // exact failure the handover flagged for this line. FULL GRID! is the
+        // handover's own proposal and says what actually happened: the grid,
+        // filled. If a true deletion is wanted, the payout needs somewhere else
+        // to be seen first — the tally already has a rows line it could sit on.
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `FULL GRID!\n+${pts}`, GOLD_SLOT_COLOR, true, { life: 2400, hold: 1400 });
         triggerEdgeGlow(GOLD_SLOT_COLOR, 1400);
         if (sfx.gold) sfx.gold();
         if (sfx.bassImpact) sfx.bassImpact(1);
-        if (typeof triggerShake === 'function') triggerShake(5, 300);
+        // [210826al] Shake removed — reward. The bass hit and the burst volley
+        // below already make this the loudest good thing on the board.
         for (let i = 0; i < 6; i++) setTimeout(() => addBurst(
             40 + Math.random() * (LOGICAL_W - 80),
             50 + Math.random() * (LOGICAL_H * 0.5), GOLD_SLOT_COLOR), i * 130);
@@ -13418,6 +14286,21 @@ function tallyIcon(kind) {
                                  <rect x="2" y="12.8" width="16" height="3.2" rx="1.4" fill="${BLUE}" opacity="0.45"/></svg>`;
         case 'slot':   return sq('rgba(125,211,252,0.15)', '#7dd3fc');
         case 'combo':  return `<svg viewBox="0 0 20 20"><path d="M11.6 2 5 11h4l-.6 7L15 9h-4z" fill="#fb923c"/></svg>`;
+        // [210826ad] The revolve mark: a circular arrow, drawn to match the TURN
+        // shifter's glyph rather than inventing a second symbol for the same
+        // idea — the player already reads that arc as "this turns you". Stroked
+        // 2.2 to sit at the same weight as the other icons at 20px.
+        // [210826ae] The hourglass, borrowed from the welcome screen's +TIME
+        // tile so the card names the clock with the mark the player already
+        // learned it by. 24-unit viewBox where the rest are 20 — the icon is
+        // sized by CSS, so the box only has to match the artwork it came from.
+        case 'clock':  return `<svg viewBox="0 0 24 24" fill="none" stroke="${BLUE}" stroke-width="2.2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                 <path d="M6.2 4.6h11.6M6.2 19.4h11.6M8.2 4.6c0 4 2.75 5.2 2.75 7.4s-2.75 3.4-2.75 7.4M15.8 4.6c0 4-2.75 5.2-2.75 7.4s2.75 3.4 2.75 7.4"/></svg>`;
+        case 'revolve':return `<svg viewBox="0 0 20 20" fill="none" stroke="${BLUE}" stroke-width="2.2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                 <path d="M16.5 10a6.5 6.5 0 1 1-2.2-4.9"/>
+                                 <path d="M14.8 2.6v3.1h-3.1"/></svg>`;
         case 'trim':   return `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5" fill="#c0392b"/>
                                  <rect x="5.5" y="8.8" width="9" height="2.4" rx="1.2" fill="#ffe3e0"/></svg>`;
         case 'impact': return `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5"
@@ -13473,7 +14356,25 @@ function buildTallyRows() {
     // below it, which are paid for finishing. 'Score board' was the first
     // suggestion and reads as the name of the whole card rather than this row;
     // 'Board score' keeps the sense and loses the collision.
-    rows.push({ icon: 'play', label: 'Board score', count: '',
+    // [210826ab] BOARD SCORE STAYS — I cut it and put it back within the minute.
+    // I had assumed the rows were a DESCRIPTION of the level's points and that
+    // LEVEL TOTAL was computed separately. It is the other way round: setTotal()
+    // is driven by `banked`, which accumulates each row's pts as it lands, and
+    // the grand total is grandBase + that same sum. The rows ARE the equation.
+    // Removing this line would have left LEVEL TOTAL short by every point earned
+    // in play and the grand total wrong by the same amount — which is precisely
+    // the failure [220826d] added the console audit to catch, after the speed
+    // bonus was once counted twice and the level bonus not at all.
+    // The naming objection was sound and still stands: four figures on one card,
+    // three of them called a score or a total. But that is a RENAME, not a cut.
+    // The row cannot leave unless the total stops being built from the rows.
+    // [210826ac] HIDDEN. Designer's call, and the right one: it is a sum of five
+    // different things (floor, rows, claims, combo multiplier, coverage bonus)
+    // with no breakdown and no benchmark, so it cannot tell you which of them
+    // you did well at or whether the figure is good. It stays in the arithmetic
+    // because LEVEL TOTAL is built from these rows; it leaves the card because
+    // as a line of information it was carrying none.
+    rows.push({ icon: 'play', label: 'Board score', count: '', hide: true,
                 pts: (game._levelPlayPoints || 0) + (game._lastCovBonus || 0) });   // [180826ab] cov bonus folded in
     // [050826a] The GOLD class made this row's label and count yellow — all but
     // unreadable on the white day card, and it was singling out an S grade with
@@ -13488,14 +14389,25 @@ function buildTallyRows() {
     // [030826r] "Swift clear" renamed to "Speed bonus". If the player has to ask
     // what a line on their own scorecard means — twice — the name is the thing at
     // fault, not the reader.
-    if ((game._lastSwiftBonus || 0) > 0)
-        rows.push({ icon: 'play', label: 'Speed bonus', count: (game._lastSwiftSec || 0) + 's',
-                    pts: game._lastSwiftBonus });
+    // [210826aa] SPEED BONUS ROW CUT. It taperes to zero at 120s and measured
+    // clears run 127-342s, so from level 4 it paid nothing and the row simply
+    // stopped appearing — a reward the player never saw arrive or miss. Total
+    // lifetime earnings across a 29,626-point run: 503 points.
+    // The BONUS ITSELF still computes and still pays, so nothing is taken from
+    // anyone; only the row is gone. If the window is ever retuned to real clear
+    // times, restore this and it works again.
     // [220826c] The level bonus paid but had no line, so the column never added
     // up. Every other row here earns its place by paying; this one was paying
     // without one.
     if ((game._lastLevelBonus || 0) > 0)
-        rows.push({ icon: 'set', label: 'Level bonus', count: 'LEVEL ' + lvl,
+        // [210826ac] HIDDEN, not deleted — same reason as Board score. "Remove
+        // the level bonus" cannot mean remove the row, because the row IS its
+        // points as far as the total is concerned; deleting it would shrink
+        // LEVEL TOTAL by the bonus while the run's real score kept it, and the
+        // card would disagree with the results screen. Hidden, the player stops
+        // being told about a reward they did not choose and cannot influence,
+        // and every number still adds up.
+        rows.push({ icon: 'set', label: 'Level bonus', count: 'LEVEL ' + lvl, hide: true,
                     pts: game._lastLevelBonus });
     // [010826a] "Set complete" line removed from the card. The bonus still pays
     // — it lands inside the level total — but the line itself said only "you
@@ -13516,17 +14428,80 @@ function buildTallyRows() {
     // [180826aa] Rows completed and best combo return to the card — designer's
     // call (they were demoted to the footnote in [300726ba]). Display-only,
     // pts 0: their points already landed inside "Board score".
-    if ((game.roundBestCombo || 0) >= 1.5)
-        rows.push({ icon: 'play', label: 'Best combo', count: '×' + game.roundBestCombo.toFixed(1), pts: 0 });
-    if ((game.roundChains || 0) > 0)
-        rows.push({ icon: 'play', label: 'Gear shifts', count: '×' + game.roundChains,
-                    pts: 0, gold: true });   // [180826h] gearbox vocabulary
+    // [210826aa] BEST COMBO and GEAR SHIFTS cut. Both paid 0 here because their
+    // points already landed inside Board score, so the card was listing the same
+    // earnings twice — once as a total and again as two zero-value rows. That is
+    // the exact fault [300726ba] cut this card from twelve rows to six to fix,
+    // and [180826aa] reintroduced. The counters still run and the points still
+    // pay; only the duplicate lines are gone.
+    // ROWS COMPLETED is kept though it also pays 0, because it is the one line
+    // that tells the player something they can act on next level: how much floor
+    // they actually cleared. Best combo and gear shifts describe how it felt.
     // [200826g] Rows completed moved to the BOTTOM of the list (designer's
     // call): the gold diamonds now sit together above it, so the card reads
     // as one gold column of earnings, then the odd-one-out counts below.
+    // ── [210826ad] COMBOS LEADS THE VISIBLE ROWS ────────────────────────────
+    // Placed first because it is the one line on this card that reports a SKILL
+    // rather than an outcome. A combo is not luck and it is not grind: it is the
+    // player having read the board — where the shifters are, what they connect
+    // to, which landing keeps the streak alive — and then executed it. The
+    // designer's own framing: affordance perception, direct detection. That is
+    // the game's most characteristic act and the card said nothing about it.
+    // A COUNT, not the peak multiplier. "×2.5" is a high-water mark that says
+    // nothing about how often you got there; "×4" combos says you did the good
+    // thing four times. The old Best combo row was the former, which is part of
+    // why it read as decoration.
+    // Shown even at zero — unlike every other conditional row here — because a
+    // level with no combos is information. A blank where a number should be is
+    // the card telling you what you did not do, and this is the one metric
+    // where that is worth saying.
+    // [210826ak] The number now counts COMBOS — band, shave, grow-and-claim,
+    // row-and-claim — and no longer counts completed fresh-ground streaks,
+    // which are CHARGE and were never a combo. Same row, honest contents.
+    rows.push({ icon: 'combo', label: 'Combos', count: '×' + (game.roundCombos || 0), pts: 0 });
     if ((game.roundRows || 0) > 0)
         rows.push({ icon: 'covered', label: 'Rows completed', count: '×' + game.roundRows, pts: 0 });
-    if (game.roundLivesLost > 0)
+    // [210826ad] REVOLUTIONS — every flip made this level. The most constant
+    // action in the game, the thing the game is named after, and until now
+    // never counted anywhere. Unconditional: it can never be zero, since
+    // reaching the end of a level requires moving.
+    rows.push({ icon: 'revolve', label: 'Revolutions', count: (game.roundRevolves || 0).toLocaleString(), pts: 0 });
+    // ── [210826ae] WHAT IS ACTUALLY KILLING THE PLAYER ──────────────────────
+    // The card reported what a level cost in LIVES and never mentioned the
+    // clock — and the clock is what ends runs. Both recorded runs finished by
+    // `stall`, the timer emptying, with hearts still in hand: 3 deaths in one
+    // and 4 in the other across seven levels, and lives reset every level
+    // anyway. Neither run came close to dying the way the card kept describing.
+    // The two are separate quantities and have been since [300726aa] — a life
+    // lost costs no time, and time collected returns no life — so "lives lost"
+    // could never stand in for the clock the way it reads as if it might.
+    // This is the number that carries into the next level and decides whether
+    // there is one.
+    // IT CHANGES COLOUR. A bare figure is a fact; the point of this row is to
+    // be a WARNING, and it can only warn if it looks different when things are
+    // bad. Under 20 seconds it goes amber — a threshold taken from the runs
+    // rather than picked: sampled momentum sat below 20 for 22% and 27% of the
+    // two sessions, so it marks real jeopardy often enough to be meaningful and
+    // rarely enough to still mean something when it fires.
+    // Paired with Lives lost at the foot of the card because they are the same
+    // kind of line: not what you earned, but what you are taking forward. The
+    // original six-row design named exactly this pair "the two CONSEQUENCES
+    // that follow you into the next level"; only one of them was ever built.
+    {
+        const secs = Math.max(0, Math.round(momentumRemaining()));
+        rows.push({ icon: 'clock', label: 'Time carried', count: secs + 's',
+                    pts: 0, low: secs < 20 });
+    }
+    // [210826ao] CLOCK-ONLY: falls are counted, not hearts. Same row, same
+    // position, honest contents — the card should report what the mode charges,
+    // and in this mode a fall costs seconds. Shown as a count and a total so
+    // the player can see both how often and how much.
+    if (CLOCK_ONLY) {
+        if ((game.roundLivesLost || 0) > 0)
+            rows.push({ icon: 'clock', label: 'Falls',
+                        count: '×' + game.roundLivesLost + '  −' + (game.roundLivesLost * FALL_COST_SEC) + 's',
+                        pts: 0, low: true });
+    } else if (game.roundLivesLost > 0)
         rows.push({ icon: 'lives', label: 'Lives lost',
                     hearts: game.roundLivesLost, count: '', pts: 0 });
     return rows;
@@ -13598,10 +14573,29 @@ function showLevelTally(onDone, opts) {
         });
         if (!ok) console.warn('[ROTOR] rows:', rows.map(r => `${r.label}: +${r.pts || 0}`));
     }
+    // ── [210826ac] HIDDEN ROWS: IN THE SUM, OFF THE CARD ────────────────────
+    // "Remove Board score" and "remove Level bonus" cannot be done by deleting
+    // the rows, because the total is BUILT from them — `banked` accumulates
+    // each row's pts as it lands and setTotal() drives both LEVEL TOTAL and the
+    // grand total from that running sum. Delete either row and the card is
+    // short by exactly its points, which is the failure [220826d] added the
+    // console audit to catch.
+    // So a row can now be marked `hide: true`: it still contributes its points
+    // to the total, it still passes the audit, it simply never becomes a node.
+    // The alternative was to decouple the total from the rows and compute it
+    // independently — which is precisely the arrangement that let the speed
+    // bonus be counted twice and the level bonus not at all, before [220826c]
+    // and [220826d] tied them back together. One source of truth is worth more
+    // than the convenience of deleting a line.
     const nodes = [];
     for (const r of rows) {
+        if (r.hide) { nodes.push({ node: null, row: r }); continue; }
         const d = document.createElement('div');
-        d.className = 'tally-row' + (r.gold ? ' gold' : '') + (r.pts ? '' : ' nopay');
+        // [210826ae] `low` marks a row that is a warning rather than a report.
+        // Applied after nopay deliberately, so the amber wins over the dimming:
+        // a zero-point row that is trying to warn you must not be the faintest
+        // thing on the card.
+        d.className = 'tally-row' + (r.gold ? ' gold' : '') + (r.pts ? '' : ' nopay') + (r.low ? ' low' : '');
         d.innerHTML = '<span class="tally-left"><span class="tally-icon"></span>' +
                       '<span class="tally-label"></span></span>' +
                       '<span class="tally-count"></span>' +
@@ -13682,6 +14676,14 @@ function showLevelTally(onDone, opts) {
     const STEP = 460;
     nodes.forEach((n, i) => {
         _tallyTimers.push(setTimeout(() => {
+            // [210826ac] A hidden row has no node. It still banks its points —
+            // silently and immediately, with no count-up and no sound, because
+            // there is nothing on screen for the animation to attach to. The
+            // total absorbs it and moves on.
+            if (!n.node) {
+                if (n.row.pts) { banked += n.row.pts; setTotal(banked); }
+                return;
+            }
             n.node.classList.add('in');
             if (sfx.seat) sfx.seat(); else if (sfx.collect) sfx.collect();
             // [220826c] The `pay` branch that used to live here is gone. No row
@@ -13722,16 +14724,31 @@ function skipLevelTally() {
         _tallyCancels = [];
         const host = document.getElementById('tallyRows');
         const rows = buildTallyRows();
-        let total = 0;
+        // ── [210826ac] THE SKIP PATH KNOWS ABOUT HIDDEN ROWS TOO ────────────
+        // This mapped DOM nodes to rows BY INDEX — nodes[i] to rows[i] — and
+        // summed the total inside that same loop. That held only while every
+        // row produced a node. The moment one is hidden the two lists diverge:
+        // node 1 would be paired with the wrong row, every later pairing shifts,
+        // and the fast-forward total would silently disagree with the total the
+        // unskipped animation produces for the identical level.
+        // Two separate fixes, because they were two conflated jobs:
+        //   the TOTAL is now summed from `rows` — all of them, hidden included,
+        //     which is the same figure showLevelTally() banks;
+        //   the DISPLAY walks `shown`, the visible subset, so index i means the
+        //     same thing on both sides.
+        // Skipping is what a player does when they already know the number, so
+        // it is the one path where a wrong total would be least likely to be
+        // noticed and most corrosive to trust.
+        const shown = rows.filter(r => !r.hide);
+        let total = rows.reduce((a, r) => a + (r.pts || 0), 0);
         if (host) {
             const nodes = host.querySelectorAll('.tally-row');
             nodes.forEach((n, i) => {
-                const r = rows[i];
+                const r = shown[i];
                 if (!r) return;
                 if (!n.classList.contains('in')) n.classList.add('in');   // [220826c] see showLevelTally
                 const ptsEl = n.querySelector('.tally-pts');
                 if (r.pts && ptsEl) ptsEl.textContent = '+' + r.pts;
-                total += r.pts || 0;
             });
         }
         const totalEl = document.getElementById('tallyTotal');
@@ -13910,7 +14927,10 @@ function completeSet() {
                 title: `LEVEL ${advancedRound} COMPLETE!`,
                 // [290726k] No score figures on the card — numbers appear
                 // only in the tally, at the moment they are counted.
-                covText: gold ? 'CLEAN SLATE!' : '',
+                // [210826az] Off the card — it now fires in play, on the tenth
+                // row. `gold` still rides along to keep the card's gold styling
+                // for a level that earned it.
+                covText: '',
                 gold,
                 praise: celebration,
                 extra: ''
@@ -13938,11 +14958,27 @@ function completeSet() {
             // through, so surviving level 1 with 40s spare and earning 45
             // starts level 2 on 85 — banking is rewarded, but nobody arrives
             // at the ceiling.
-            momentumAddSeconds(levelTimeGrant());
+            // [210826ar] THE CHECKPOINT, ANNOUNCED. The grant has always been
+            // paid silently at a level boundary — fine when it was one top-up
+            // among several, wrong now that it IS the reward structure. In
+            // clock mode it is named and shown, because a checkpoint the player
+            // does not notice arriving at is not a checkpoint, it is a number
+            // that went up while they were reading something else.
+            {
+                const _grant = levelTimeGrant();
+                momentumAddSeconds(_grant);
+                if (CLOCK_ONLY && _grant > 0) {
+                    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30,
+                             `CHECKPOINT\n+${_grant}s`, '#86efac', true,
+                             { life: 1900, hold: 900 });
+                    if (sfx.time30) sfx.time30();
+                }
+            }
             overflowPts = 0;
             game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
             // [290726d] tally counters reset with the rest of the round trackers
             game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+            game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
             game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
             breakCombo('level');   // [230826b] a new level starts cold
             // [300726an] A level OPENS with targets. Slots were gated behind
@@ -14081,7 +15117,10 @@ function completeSet() {
                 // is — ten parts climbing to the one the game is named after —
                 // so the ending says the ladder's own last word.
                 title: 'FULL ROTATION',
-                covText: gold ? 'CLEAN SLATE!' : '',
+                // [210826az] Off the card — it now fires in play, on the tenth
+                // row. `gold` still rides along to keep the card's gold styling
+                // for a level that earned it.
+                covText: '',
                 gold,
                 praise: celebration,
                 extra: 'EVERY POLE ALIGNED'
@@ -14269,6 +15308,20 @@ function magneticFuseCheck() {
 }
 
 function applyFusionMove(cells, fuse) {
+    // [210826r] Growing into a shape is a NEW occupancy of it, so the square's
+    // one free knock resets here. Without this, a player who shed a square and
+    // rebuilt it would inherit the spent grace of the old one — and the rebuilt
+    // square is the one that most needs steering, since it was just knocked off
+    // course. Cleared unconditionally: the check in applyImpactDevolve only
+    // grants grace when the shape actually is a square, so this cannot hand one
+    // to anything else.
+    game._sqGraceFor = null;
+    // [210826ak] Stamp the move a green was eaten on. If a claim lands on this
+    // same token the player grew into the required shape and placed it in one
+    // motion — GROW + CLAIM. Stamped rather than flagged so it expires by
+    // itself: the next move carries a different token and the stamp is simply
+    // stale, with nothing to remember to clear.
+    game._growAtToken = game._moveToken;
     scoreGain(5, false);   // green fusion — the biggest single-landing event
     rec('use', { k: 'green', s: game.shapeType });   // [160826p] shape BEFORE the grow
     flip.active = false;   // grow renders in place; not a move-flip (v1 scope)
@@ -14302,7 +15355,8 @@ function applyFusionMove(cells, fuse) {
             'A FLIPPING FLYING START!', '#a3e635', true, { life: 1600, hold: 900 });
     }
     addBurst(screenX, screenY, '#a3e635');
-    triggerShake(4, 150);
+    // [210826al] Shake removed — growing is the best thing that happens to you
+    // and it was announcing itself with the damage channel.
     triggerEdgeGlow('#a3e635', 500);
 
     // Couple fusion effect at the seam (midpoint between contact cell and green)
@@ -14343,7 +15397,7 @@ function commitFusion(cellsHere, fuse, dir) {
     fuseFlipsParity = true;        // a flip move; parity flips just after
     applyFusionMove(cellsHere, fuse);
     fuseFlipsParity = false;
-    game.faceParity ^= 1;   // every move flips the face
+    game.faceParity ^= 1; game.revolves = (game.revolves || 0) + 1; game.roundRevolves = (game.roundRevolves || 0) + 1;   // every move flips the face — and that IS the revolve [210826u][210826ab per level]
     game._lastMoveDir = dir;
     game._tdEchoDir = dir; game._tdEchoT = performance.now();   // joystick echo (all modes)
     game.dragDir = dir;
@@ -14703,7 +15757,10 @@ function nudgeSpawnClearOfSlots() {
             if (cy < topRow) return false;            // never above the visible top
             const k = `${cx},${cy}`;
             const w = world[k];
-            if (w === 'wall' || w === 'hazard' || w === 'pickup' ||
+            // [HOLES] Never hand the player back onto a hole. Respawning over
+            // one would shear the cube the instant the game resumed, which
+            // reads as being killed by the respawn rather than by the board.
+            if (w === 'wall' || w === 'hazard' || w === 'pickup' || w === 'void' ||
                 w === 'pivot' || w === 'slip') return false;
             if (slots.some(s => !s.claimed && s.keys.has(k))) return false;
         }
@@ -14818,6 +15875,13 @@ function respawnPlayer() {
     // white day board — a single mid amber would have been legible in one
     // theme and washed in the other. Night takes the bright #fbbf24; day takes
     // #b45309, which is the brown the day sweep is heading for anyway.
+    // [210826ao] CLOCK-ONLY: there is no life to have lost, and bumpCost() has
+    // already announced the seconds. A second banner over the same event would
+    // be the doubled-text fault this session has been cutting everywhere else.
+    // FIELD FAILING is not lost — it moves to where it now belongs, a warning
+    // about a low CLOCK rather than a last heart, which is what the words
+    // always meant. Wired at the timer, not here.
+    if (CLOCK_ONLY) return;
     const lastLife = remaining === 1;
     const lastLifeInk = currentTheme === 'day' ? '#b45309' : '#fbbf24';
     addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
@@ -15058,6 +16122,18 @@ function handleDeath(reason = 'death') {
     // back, so a mistake stays on the record for the whole run. The run ends
     // when the hearts are gone OR the clock empties — two independent ways to
     // lose, which is what lets time and lives be tuned separately at last.
+    // [210826ao] CLOCK-ONLY: the fall is priced in seconds and the run
+    // continues until the clock itself is empty. bumpCost() is the same funnel
+    // every other time penalty uses, so the loss is announced in the way the
+    // player already reads time losses — no new vocabulary for the one event
+    // that used to have its own.
+    if (CLOCK_ONLY) {
+        HAPTICS.fire(HAPTIC.heart, 200);
+        bumpCost(FALL_COST_SEC);
+        if (momentumRemaining() > 0) { respawnPlayer(); }
+        else { endGame(reason); }
+        return;
+    }
     lives = Math.max(0, lives - 1);
     HAPTICS.fire(HAPTIC.heart, 200);   // [060826m] the longest buzz in the set
     updateLivesHUD();
@@ -15093,11 +16169,19 @@ let deniedFlashT0 = 0;
 // [270726x] DENIAL RECOIL — every red flash perturbs the world: the player
 // is shoved to a clean square NEXT DOOR (side first — away from the
 // attempted direction when known — then above, below only as a last
-// resort), and the vacated cell nearest the obstruction hardens into a
-// wall. Retrying the same illegal move therefore bonks earlier each time;
-// stubbornness builds its own cage. The shove requires genuinely empty
-// ground (no items, no slots, on the visible board) so a punishment can
-// never trigger a pickup or a claim. Returns true if the shove happened.
+// resort). The shove requires genuinely empty ground (no items, no slots, on
+// the visible board) so a punishment can never trigger a pickup or a claim.
+// Returns true if the shove happened.
+// [210826s] THIS COMMENT WAS TWO BUILDS OUT OF DATE. It went on to say that
+// "the vacated cell nearest the obstruction hardens into a wall. Retrying the
+// same illegal move therefore bonks earlier each time; stubbornness builds its
+// own cage." None of that has been true since [300726r] removed the wall — see
+// the note further down, which explains that scarring every refusal is what
+// made pressing into the board edge march the player across the screen laying
+// bricks. The burst stayed; the wall did not.
+// Corrected because the stale half sent me looking for a cost the game has not
+// charged for two builds, and a wrong description is worse than none: the code
+// below can be read, this could only be believed.
 function denialRecoil(dirVec) {
     const cand = [];
     if (dirVec && dirVec.dx > 0) cand.push([-1, 0], [1, 0]);
@@ -15138,6 +16222,36 @@ function denialRecoil(dirVec) {
         // laying bricks. The burst stays: contact is still felt, just not
         // permanent.
         addBurst(impact.x * CELL + CELL / 2, (impact.y - game.cameraY) * CELL + CELL / 2, '#9aa3b2');
+    }
+    // ── [210826s] THE SHOVE SAYS SO — AND SAYS IT IN THE FIELD'S OWN WORD ────
+    // A bump has always cost something, and the game announced only half of it.
+    // A multi-cube shape loses a cube and the board says SHED. A single cannot
+    // pay a cube, so it pays GROUND — pushed off the square it chose onto one
+    // it did not — and that half happened in silence. The two read as one rule
+    // with an arbitrary exception, which is what made bumping feel unruly. It
+    // was never an exception; it was the same law charging the only currency
+    // the shape had left.
+    // REPELLED, not "shoved". I wrote SHOVED first, before the electromagnetic
+    // register was settled, and it describes the animation. REPELLED states the
+    // RULE — like repels like — which is the thing the concept doc calls the
+    // hardest mechanic in the game to signify. The instant a player is pushed
+    // off a square is parity's single best teaching moment, and spending it on
+    // a word about being jostled wastes it.
+    // Same steel as SHED deliberately: both are damage, and the family should
+    // be recognisable before the word is read. The distinction is what was
+    // taken — a cube, or your position.
+    // THROTTLED at 600ms on its own clock. Refusals ran to 133 in a 22-minute
+    // run, and a float per refusal would be a caption track. It cannot share
+    // the deny gate in flashPlayerDenied(): every call site runs the recoil
+    // FIRST, so consuming that gate here would leave the refusal unrecorded.
+    {
+        const nowT = performance.now();
+        if (nowT - (game._shoveSaidT || 0) > 600) {
+            game._shoveSaidT = nowT;
+            const at = impact || now[0];
+            if (at) addFloat(at.x * CELL + CELL / 2, (at.y - game.cameraY) * CELL,
+                             'REPELLED!', '#94a3b8');
+        }
     }
     startSlipAnim(oldCells, now);
     return true;
@@ -15190,6 +16304,33 @@ function topLawfulRow() { return Math.ceil(game.cameraY - 0.5); }
 // now bleeds a couple of seconds instead: reversible, and it feeds the
 // resource the game is actually about.
 const BUMP_COST_SEC = 2;
+// ── [210826as] A REFUSAL COSTS TWO SECONDS. ONCE. ───────────────────────────
+// bumpCost() charged 2s on EVERY refused move, and a refused move is not a rare
+// event — a held direction against a wall re-fires many times a second, and the
+// board-edge branch charges unconditionally without even attempting a recoil.
+// The play data caught it doing real damage. In the last recorded run momentum
+// fell from 188 to 24 in FOUR SECONDS — 164 seconds of clock — while the log
+// showed six denials, and the run ended by stall moments later. The player was
+// pressing west into a wall.
+// The reason it stayed invisible is mine: [210826q] throttled the bonk, the
+// edge flash and the deny telemetry to one per 400ms so a held refusal would
+// stop shouting. It never occurred to me to throttle the CHARGE, so the game
+// went on billing at frame rate while reporting at human rate. A cost the
+// player cannot hear, see or count is a cost they cannot learn from — and this
+// one could empty a full clock in under ten seconds.
+// (It also explains an earlier session: the designer held into a wall
+// deliberately "to end the game quickly", and it worked. At roughly 40s of
+// clock per second of holding, of course it did.)
+// The gate matches DENY_REPEAT_MS exactly, so the charge, the sound, the flash
+// and the record now describe the same event — one refusal, one of each.
+// EXPLICIT costs are untouched: a red burn passes its own 20s and must always
+// charge, because that is a thing the player did once and deliberately.
+function refusalCost() {
+    const now = performance.now();
+    if (now - (game._refusalChargedT || 0) < DENY_REPEAT_MS) return;
+    game._refusalChargedT = now;
+    bumpCost();
+}
 // [300726bb] A step shifter that shoves you over the edge. Sits between the
 // 2s frame bump and the 15s red: worse than brushing a wall, not as bad as
 // meeting the damage object, and foreseeable — the arrow is on the cell.
@@ -15259,14 +16400,60 @@ const DENIED_FLASH_MS = 930;   // [270726v] doubled again per feel
 // this. Recording the shape and direction as well, because "singles get
 // refused constantly" and "squares get refused constantly" are different
 // findings with different fixes.
+// ── [210826q] A HELD REFUSAL SETTLES INSTEAD OF HAMMERING ───────────────────
+// Measured, not guessed: leaning on a wall produced 7.7 to 11.5 refusals per
+// SECOND, sustained for seven to ten seconds — a bonk, a shake and a haptic
+// bump at roughly frame rate. The designer induced that deliberately, to run a
+// clock down, so it cost him nothing. A player who simply holds a direction
+// into a wall gets the same barrage without asking for it.
+// A refusal is one piece of information — "not that way" — and repeating it
+// sixty times a second does not make it clearer, it makes it noise, and buries
+// the one case that matters: a refusal in a direction not already refused.
+// A FIXED window, not a sliding one. The first version refreshed the timestamp
+// on every swallowed repeat, which meant a held direction spoke ONCE and then
+// stayed silent for as long as the finger was down — one refusal in ten
+// seconds. Silence under continuous input does not read as "you have been
+// told", it reads as the game having stopped listening, which is worse than the
+// noise it replaced. Leaving the timestamp alone lets the window expire on
+// schedule: about 2.5 refusals per second instead of 60, and a direction change
+// speaks immediately because that genuinely is new information.
+// The recorder honours the same gate, or the log fills with hundreds of
+// duplicates and pushes real events past REC_CAP. `n` carries how many were
+// folded in, so hold intensity stays measurable without one event per frame.
+const DENY_REPEAT_MS = 400;
+let _denyLast = { dir: null, t: 0, n: 0 };
+function denyIsFresh(dir) {
+    const now = performance.now();
+    if (_denyLast.dir === dir && (now - _denyLast.t) < DENY_REPEAT_MS) {
+        _denyLast.n++;
+        return false;
+    }
+    const folded = _denyLast.n;
+    _denyLast = { dir, t: now, n: 0 };
+    return { folded };
+}
 function flashPlayerDenied(why) {
-    deniedFlashT0 = performance.now();
+    const dir = (game.dragDir || game._lastMoveDir || '—');
+    const fresh = denyIsFresh(dir);
+    deniedFlashT0 = performance.now();   // the visual flash always refreshes:
+                                         // it decays on its own and is silent
+    if (!fresh) return;
+    // ── [210826am] THE EDGE YOU HIT, LIT ────────────────────────────────────
+    // Wired here rather than at the dozen refusal sites for the same reason the
+    // deny recording is: everything funnels through this function, so no
+    // refusal can be added later that forgets to light the edge.
+    // It rides the SAME freshness gate as the sound and the telemetry, so
+    // leaning on a wall flashes at the pace a person can read — about 2.5 a
+    // second — instead of sixty.
+    // Coloured by what it cost, which is the taxonomy the player is being asked
+    // to learn: steel when the board only pushed you back, red when it took a
+    // cube. Two colours, one rule.
+    {
+        const side = edgeSideFor(dir);
+        if (side) flashEdge(side, why === 'shed' ? '#ef4444' : '#94a3b8', why === 'shed' ? 520 : 380);
+    }
     try {
-        rec('deny', {
-            why: why || 'move',
-            s: game.shapeType,
-            d: game.dragDir || game._lastMoveDir || '—'
-        });
+        rec('deny', { why: why || 'move', s: game.shapeType, d: dir, n: fresh.folded });
     } catch (e) {}
 }
 
@@ -15381,9 +16568,13 @@ function move(dir) {
             // across the board. Obstacles still recoil (a nudge clear of a
             // wall is useful); the frame just says no, and costs a bump.
             const edgeOnly = probeCells.some(c => c.x < 0 || c.x >= VIEW_W);
-            if (edgeOnly) { flagOutOfBounds(newX < game.playerX ? 'left' : 'right'); bumpCost(); }
+            // [210826as] refusalCost(), not bumpCost() — throttled to one
+            // charge per refusal the player can perceive. The edge branch is the
+            // worst offender: it bills unconditionally, so holding a direction
+            // into the side of the board was the fastest way to lose a run.
+            if (edgeOnly) { flagOutOfBounds(newX < game.playerX ? 'left' : 'right'); refusalCost(); }
             else { const v = HINT_DIR_VEC[dir];
-              if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) bumpCost(); }
+              if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) refusalCost(); }
             triggerShake(3, 90);
             HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
@@ -15461,15 +16652,20 @@ function move(dir) {
                 // float, nothing on screen: the top was the one boundary you
                 // could hit for free, and silently.
                 // The recoil still happens; it simply no longer excuses the cost.
+                // [210826as] Throttled like the other two. [060826w] was right
+                // that the ceiling should charge like every other boundary —
+                // and every other boundary was overcharging, so it now charges
+                // like them at the corrected rate.
                 { const v = HINT_DIR_VEC[dir];
                   denialRecoil(v ? { dx: v[0], dy: v[1] } : null);
-                  if (!game.testDrive) bumpCost(); }
+                  if (!game.testDrive) refusalCost(); }
                 // Announce it ABOVE the shape, where there is board to draw on —
                 // the float defaults to the player's own cell, which at the
                 // ceiling is the one place with nothing above it. The clamp
                 // would rescue it, but a callout pinned to the very top edge
                 // reads as an error rather than as feedback.
                 flagOutOfBounds('top');
+                flashEdge('N', '#94a3b8', 380);   // [210826am] the ceiling, named
                 triggerShake(3, 90);
                 HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
@@ -15542,7 +16738,7 @@ function move(dir) {
         game.playerY = newY;
         game.shapeConfig = newConfig;
 
-        game.faceParity ^= 1;   // every move flips the face
+        game.faceParity ^= 1; game.revolves = (game.revolves || 0) + 1; game.roundRevolves = (game.roundRevolves || 0) + 1;   // every move flips the face — and that IS the revolve [210826u][210826ab per level]
         // Re-tread = every landed cell was already visited before this landing
         // (pure backtrack over old ground). Captured before checkCollisions marks
         // the new cells; played as a soft scuff at the landing.
@@ -15656,7 +16852,7 @@ function applyDrag(dt) {
             game.playerY = newY;
             game.shapeConfig = newConfig;
 
-            game.faceParity ^= 1;   // every move flips the face
+            game.faceParity ^= 1; game.revolves = (game.revolves || 0) + 1; game.roundRevolves = (game.roundRevolves || 0) + 1;   // every move flips the face — and that IS the revolve [210826u][210826ab per level]
             const _reTread = getPlayerCells().every(c => visited.has(`${c.x},${c.y}`));
             startFlip(game.dragDir, _flipFrom, _flipFromParity);
             flip.reTread = _reTread;
@@ -15679,7 +16875,22 @@ function applyDrag(dt) {
             if (!game._cruising) {
                 game._cruising = true;
                 game._cruiseAt = performance.now();
-                if (sfx.seat) sfx.seat();
+                // ── [210826ay] THE TWO NOTES, IDENTIFIED AND SILENCED ────────
+                // Field note: "the sound of two notes close together that seem
+                // to be activated randomly". This was it — sfx.seat, G3 then C4
+                // 45ms apart, fired the instant a held direction crosses the
+                // threshold into CRUISING.
+                // It felt random because it is not triggered by anything the
+                // player does discretely. They hold a direction; some way in,
+                // the game decides that is now cruising and plays a sound. From
+                // the outside there is no event, just a noise.
+                // Worse, seat is a REWARD cue — it is the sound of a slot
+                // clicking into its lock, and of a row landing on the tally.
+                // Using it for a movement state-change taught the ear that the
+                // reward sound means nothing in particular.
+                // The cruise still announces itself: the haptic below fires, and
+                // the speed itself is legible. It just no longer borrows the
+                // claim's voice to do it.
                 HAPTICS.fire([12], 0);
             }
         }
@@ -15713,8 +16924,13 @@ function checkCollisions() {
             if (isTimeCell(w)) {
                 // [300726n] Even during invulnerability, time is a pickup,
                 // not damage — same tiered reward as the normal path.
-                const sec = w === 't30' ? 30 : w === 't10' ? 10
-                          : w === 't45' ? 45 : w === 't30' ? 30 : 15;
+                // [210826ax] Discounted HERE, where sec is born, not inside
+                // momentumAddSeconds — so the float, the telemetry and the
+                // clock all report the same number. Applying it deeper would
+                // have printed "+30 SECONDS" while paying 15, which is the one
+                // thing a time economy must never do.
+                const sec = Math.round((w === 't30' ? 30 : w === 't10' ? 10
+                          : w === 't45' ? 45 : 15) * (CLOCK_ONLY ? TIME_PICKUP_MUL : 1));
                 scoreGain(3, false);
                 momentumAddSeconds(sec);
                 if (sec >= 20) { if (sfx.time30) sfx.time30(); }   // [030826af]
@@ -15760,8 +16976,14 @@ function checkCollisions() {
         const cell = cells[i];
         const key = `${cell.x},${cell.y}`;
         const wv = world[key];
-        if (wv === 'hazard' || (wv === 'wall' && !pendingWalls.has(key))) {
-            hazardHits.push({ index: i, x: cell.x, y: cell.y, key, wall: wv === 'wall' });
+        /* [HOLES] A VOID JOINS THE TRIM PASS. It costs the contacting cube
+           exactly as a red does — everything below already knows how to lose
+           cubes and devolve the survivors — and then the cell it took the cube
+           from becomes ordinary floor. That is the whole trade: body for
+           ground. */
+        if (wv === 'hazard' || wv === 'void' || (wv === 'wall' && !pendingWalls.has(key))) {
+            hazardHits.push({ index: i, x: cell.x, y: cell.y, key,
+                              wall: wv === 'wall', isVoid: wv === 'void' });
         }
     }
     
@@ -15772,11 +16994,25 @@ function checkCollisions() {
         // clearing it keeps that status rather than punching an un-fillable hole
         // in a row the player was completing.
         game._lastTrimT = performance.now();   // trim->claim in one landing = THE SHAVE
-        rec('trim', { n: hazardHits.filter(h => !h.wall).length, s: game.shapeType, c: Math.round(game.coverage || 0) });   // [160826p]
+        rec('trim', { n: hazardHits.filter(h => !h.wall && !h.isVoid).length, s: game.shapeType, c: Math.round(game.coverage || 0) });   // [160826p]
+        const _filled = hazardHits.filter(h => h.isVoid).length;
+        if (_filled) rec('fill', { n: _filled, s: game.shapeType });
         for (const hit of hazardHits) {
             if (hit.wall) {
                 // [270726o] Wall stands — it takes the cube, not the reverse.
                 addBurst(hit.x * CELL + CELL/2, (hit.y - game.cameraY) * CELL + CELL/2, '#9aa3b2');
+                continue;
+            }
+            if (hit.isVoid) {
+                /* [HOLES] The cube becomes the cell. Note what is NOT called
+                   here: markCovered. A red-born cell is handed to you already
+                   covered, because you were standing on the red when it went.
+                   A filled void is ground you have BOUGHT and not yet walked,
+                   and until you walk it the row it sits in cannot complete.
+                   Paying for ground and covering it are two separate prices,
+                   and this missing line is what keeps them separate. */
+                fillVoid(hit.x, hit.y);
+                addBurst(hit.x * CELL + CELL/2, (hit.y - game.cameraY) * CELL + CELL/2, '#7dd3fc');
                 continue;
             }
             delete world[hit.key];
@@ -16184,8 +17420,11 @@ function checkCollisions() {
             // [300726n] Three tiers, one path. 'warp' collects as +15 if any
             // linger from old saves. Tally banks SECONDS now, not counts.
             const v = world[key];
-            const sec = v === 't30' ? 30 : v === 't10' ? 10
-                      : v === 't45' ? 45 : v === 't30' ? 30 : 15;   // legacy cells keep their old value
+            // [210826ax] Halved in clock mode at the point of computation, so
+            // the float, the `time` telemetry and the clock cannot disagree.
+            const sec = Math.round((v === 't30' ? 30 : v === 't10' ? 10
+                      : v === 't45' ? 45 : 15)   // legacy cells keep their old value
+                      * (CLOCK_ONLY ? TIME_PICKUP_MUL : 1));
             delete world[key];
             game.roundWarps = (game.roundWarps || 0) + 1;
             game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
@@ -16439,10 +17678,29 @@ function checkCollisions() {
     // LINE completion — check every row this landing touched (plus the rows a
     // claim may have stamped are covered when the claim's own landing runs).
     {
+        // ── [210826ah] SCAN EVERY VISIBLE ROW, NOT JUST THE ONES LANDED ON ──
+        // This iterated `rowCells` — the rows the shape's own cubes touched on
+        // this landing — which misses every completion caused by something
+        // other than the landing itself. A red trim clears a cube and marks
+        // that cell covered; a green fusion covers the cell it grew into; a
+        // machine push moves you across cells you never chose. Any of those can
+        // fill the last gap in a row the landing never touched, and that row
+        // then went uncounted.
+        // Worse, it was not merely delayed. A row is only re-tested when a
+        // later landing happens to touch it, and the board scrolls: a completed
+        // row can leave the viewport before any landing goes near it again, so
+        // the completion is lost rather than late. That is the "rows cleared
+        // looked wrong" field note.
+        // Now the whole visible window is checked after every landing. Ten rows
+        // of ten cells, once per move — trivial next to what a landing already
+        // does, and the rowsCelebrated guard still means each row can only ever
+        // pay once.
         const newRows = [];
-        for (const ry of Object.keys(rowCells)) {
-            const row = Number(ry);
-            if (!rowsCelebrated.has(row) && checkFullRow(row)) newRows.push(row);
+        {
+            const _top = Math.floor(game.cameraY);
+            for (let row = _top; row < _top + VIEW_H; row++) {
+                if (!rowsCelebrated.has(row) && checkFullRow(row)) newRows.push(row);
+            }
         }
         if (newRows.length) {
             // A landing's completions are adjacent (shapes span ≤2 rows), so one
@@ -16469,9 +17727,29 @@ function checkCollisions() {
 // a claimed slot's floor stamp, OR a green/red square. Greens and reds count as
 // floor space that is already occupied: they never block a row and never need
 // to be touched, so a row can always be completed by covering the open ground.
+/* [HOLES] AND HERE IS WHY ANYONE WOULD EVER CROSS A HOLE.
+   Measured in the prototype: a player who simply avoids every hole spends
+   nothing and loses nothing, because generation always leaves a walkable
+   corridor past each feature. Holes were optional scenery, and the fill
+   economy had a sink with no demand — nothing ever made you pay.
+
+   This function is the demand, and it was already here. Rows pay the clock.
+   A row completes only when every non-wall cell in it has been visited, and a
+   VOID CAN NEVER BE VISITED — so a single hole silently kills that row's
+   income for the rest of the run unless you fill it in and then walk it.
+
+   That is the whole loop, and it comes out of this game's own economy rather
+   than being bolted onto the mechanic: you spend cubes on ground because
+   otherwise the ground never pays you time.
+
+   The rule was already implicit — 'void' is truthy, matches none of the
+   continues, and falls through to `return false`. It is written explicitly
+   because behaviour this load-bearing should not depend on a fall-through
+   nobody can see. */
 function checkFullRow(row) {
     for (let x = 0; x < VIEW_W; x++) {
         const key = `${x},${row}`;
+        if (world[key] === 'void') return false;   // [HOLES] unfilled: the row is dead until it is bought
         if (world[key] === 'wall') continue;
         if (world[key] === 'pickup' || world[key] === 'hazard') continue;   // greens & reds = already-occupied floor
         if (visited.has(key)) continue;
@@ -16488,6 +17766,41 @@ let lineFlashes = [];   // { y, t0 }
 // Completed rows are territory. Completing a row that touches other completed
 // rows forms a BAND, and the whole band pays its tier — so contiguity is the
 // skill, and bridging two bands with one row pays the merged tier.
+// ── [210826aq] ROWS PAY TIME ────────────────────────────────────────────────
+// The clock's income used to run coverage -> reserve tank -> (at zero) clock:
+// three steps, two of them invisible, paying out at the most chaotic moment in
+// the game. It is replaced by coverage -> rows -> clock. Same source, two
+// steps, both on screen.
+// WHY ROWS ARE THE RIGHT CARRIER, from the recorded runs:
+//   · they complete 4-5 times a minute — often enough to be an income, rare
+//     enough that each one is an event;
+//   · the FAST run completed MORE of them per minute than the slow one (5.3 vs
+//     3.9), so paying time for rows rewards racing rather than fighting it.
+//     That matters: the run that discovered the optimal strategy — go straight
+//     for slots, ignore coverage — died by stall, because the only real time
+//     source was the coverage it was correctly skipping. The game was punishing
+//     its own best line of play;
+//   · a row is visible, planned, and already telegraphed by the last-gap pulse.
+// THE CURVE MIRRORS bandPoints. A double is worth nearly three singles, a
+// triple more than five. Rows taken one at a time are an income; rows taken
+// together are a skill, and the gap between those two numbers is where a good
+// player lives. It also makes DOUBLE ROW! a real event rather than a label.
+// [210826ar] REBALANCED once arriving started paying. At 3s a single row and
+// 4-5 rows a minute, rows were covering a quarter of the drain on their own —
+// which made them the main road rather than the racing line, and left nothing
+// for the checkpoint to be. A single now pays 2s.
+// The BAND rates are deliberately NOT cut in proportion. A double stays at 8s,
+// which is now worth four singles rather than under three. The whole point of
+// the curve is the gap between taking rows as they come and setting them up,
+// and that gap should widen as the base rate falls: rows stop being an income
+// you accrue by playing and become something you go out of your way for.
+function bandSeconds(n) {
+    if (n <= 1) return 2;
+    if (n === 2) return 8;
+    if (n === 3) return 16;
+    if (n === 4) return 28;
+    return 28 + 14 * (n - 4);
+}
 function bandPoints(n) {
     if (n <= 1) return 20;
     if (n === 2) return 50;
@@ -16520,7 +17833,94 @@ function showCombo(sx, sy, text, color) {
 
 function celebrateLineBand(newRows) {
     // [290726d] rows completed this level, for the tally
-    game.roundRows = (game.roundRows || 0) + newRows.length;
+    const _rowsBefore = game.roundRows || 0;
+    game.roundRows = _rowsBefore + newRows.length;
+    // ── [210826az] CLEAN SLATE FIRES WHEN IT IS EARNED ──────────────────────
+    // It has always MEANT ten rows completed in the level — that part was
+    // right — but it only ever APPEARED on the level card, which is shown when
+    // the set is banked. So the player saw it arrive at the moment they
+    // finished the set, and read it as a reward for the set. Field note: "it
+    // shouldn't appear for the sets to be completed, it should appear when all
+    // possible rows have been landed."
+    // Now it lands on the tenth row, in play, at the moment the tenth row
+    // completes. Same meaning, honest timing.
+    // PLACED HIGH, at 0.22, clear of the combo floats at 0.38 and the charge
+    // tier at 0.44 — and SUPPRESSED if a combo has already claimed this move,
+    // because a tenth row is very often also a band. One event, one banner.
+    if (_rowsBefore < 10 && game.roundRows >= 10 &&
+        game._comboFiredToken !== game._moveToken) {
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.22, 'CLEAN SLATE!', '#a3e635', true,
+                 { life: 1700, hold: 800 });
+        if (sfx.gold) sfx.gold();
+    }
+    // ── [210826ai] ROWS FEED THE RESERVE ────────────────────────────────────
+    // The field note asked what the incentive for clearing rows is, and how the
+    // player is supposed to know. The honest answer was that rows paid points
+    // into a total the player could not attribute, and nothing else — no tip,
+    // no visible consequence, nothing to aim at.
+    // [210826aq] Superseded: the tank is gone and a completed row now pays the
+    // CLOCK directly. The point of the original note survives — points vanish
+    // into a total, time is visible — it just arrives in one step instead of
+    // two. Kept rather than deleted because the reasoning is why rows carry the
+    // income at all.
+    // (was: tops up the reserve tank, which is on screen and
+    // filling. Points vanish into a number; this goes into a bar the player
+    // watches move, and that bar is the thing that later saves a life.) Cause
+    // and effect, both visible, a few seconds apart.
+    // Capped like every other drip — a wide band cannot overfill the tank, it
+    // just fills it faster.
+    // ── [210826aq] THE PAYOUT ───────────────────────────────────────────────
+    // Paid on the BAND, not per row, so the curve can be steep. Announced at
+    // the row itself rather than centre-screen: the player should see the time
+    // arrive from the thing that earned it, and the clock is climbing at the
+    // same moment.
+    // momentumAddSeconds() is the same funnel hourglasses use — full-ring
+    // clamp, overflow to the factory, wheel kicked. A second route into the
+    // clock would be a second set of rules to keep in step.
+    {
+        const secs = bandSeconds(newRows.length);
+        momentumAddSeconds(secs);
+        game.roundTimeSecs = (game.roundTimeSecs || 0) + secs;
+        // Positioned from newRows, NOT from lo/hi — those are declared with
+        // `let` further down this function, so reading them here would throw a
+        // temporal-dead-zone ReferenceError on every completed row. A syntax
+        // check cannot see that; it only shows up when a row completes.
+        const _mid = (newRows[0] + newRows[newRows.length - 1]) / 2;
+        addFloat(LOGICAL_W / 2, (_mid - game.cameraY) * CELL - 6,
+                 `+${secs}s`, '#86efac', newRows.length > 1);
+        rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound });   // [210826aq]
+    }
+    // [210826ak] BAND = two or more rows finished by ONE landing. It already
+    // paid (+10% per extra row, weighted by the finishing shape); it was never
+    // named, so the player got more points and no idea why. Now it says so.
+    // newRows is what THIS landing completed, so the count cannot drift into
+    // "rows completed this level" — a player who finishes ten rows one at a
+    // time has done something impressive and has not done this.
+    if (newRows.length >= 2) {
+        registerCombo('band', LOGICAL_W / 2,
+                      (newRows[0] - game.cameraY) * CELL, newRows.length);
+        game._comboFiredToken = game._moveToken;   // a band is this move's combo
+    }
+    // [210826ak] Stamp the move, and catch the case where the claim resolved
+    // BEFORE the row on the same landing — see the note at the claim site.
+    {
+        const _tk = game._moveToken;
+        game._rowAtToken = _tk;
+        if (game._claimAtToken === _tk && game._comboFiredToken !== _tk) {
+            game._comboFiredToken = _tk;
+            registerCombo('rowclaim', LOGICAL_W / 2, (newRows[0] - game.cameraY) * CELL);
+        }
+    }
+    // [210826aj] Taught on the FIRST completed row, not on a near-miss. The
+    // last-gap pulse would be the better teaching moment — a row one cell short
+    // is the instant the lesson is actionable — but that detection lives in the
+    // render loop, and showTip() counts every call for the tip-demand telemetry,
+    // so firing it there would log sixty requests a second for one situation.
+    // Here it lands once, immediately after the reward, and explains what just
+    // paid out.
+    showTip('rowline');
+    // [210826aq] The reserve top-up that lived here is gone with the tank —
+    // rows now pay the clock directly, above.
     for (const r of newRows) rowsCelebrated.add(r);
     // Expand through already-completed neighbours (either side) to find the band
     let lo = Math.min(...newRows), hi = Math.max(...newRows);
@@ -16681,12 +18081,34 @@ function comboTierUp(mult, prev) {
     const word = top ? 'FULL REVOLUTION' : mult >= 3.5 ? 'MAGNETISED'
                : mult >= 3.0 ? 'FULL CURRENT' : hot ? 'LIVE' : 'CHARGING';
     // 0.44, not 0.34: FULL HOUSE and NEW HIGH SCORE both land at 0.30-0.34.
-    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.44, `${word}\n\u00d7${mult.toFixed(1)}`, col, true,
-             { life: top ? 1800 : 1200, hold: top ? 900 : 600 });
+    // \u2500\u2500 [210826an] THE CHARGE TIER FLOAT IS CUT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    // The rule the text now follows: IN-PLAY TEXT ANNOUNCES ONLY WHAT THE
+    // SCORECARD WILL REPORT. Anything else is a sentence the player has to read
+    // during play and can never check afterwards, which is the whole complaint.
+    // Charge fails that test twice over. It is not on the card at all \u2014 Best
+    // combo was cut at [210826z] \u2014 and it is ALREADY on screen permanently, as
+    // the \u00d7N chip in the HUD, which paintComboChip() updates and marks hot. So
+    // this float duplicated a readout the player can see at any moment, in the
+    // busiest part of the board, at the exact moment they are moving fastest.
+    // It was also the most frequent text in the game: a tier-up fires on every
+    // streak that crosses a threshold, several times a level.
+    // The chip keeps the number. The audio step below keeps the escalation.
+    // Nothing is lost except the reading.
+    if (top) {
+        // FULL REVOLUTION is the exception: the top tier is reached rarely, it
+        // is the run's high-water mark, and a chip cannot celebrate.
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.44, `${word}\n\u00d7${mult.toFixed(1)}`, col, true,
+                 { life: 1800, hold: 900 });
+    }
     // NOT triggerEdgeGlow — it has been disabled at source since [270726f] (a bare
     // `return` at the top), so every call to it in this file is decoration that
     // does nothing. The shake is the escalating channel that actually works.
-    if (typeof triggerShake === 'function') triggerShake(hot ? 3 + (mult - COMBO_GOLD_AT) * 3 : 2, 150);
+    // [210826al] Shake removed. The comment above it claimed "the shake is the
+    // escalating channel that actually works" — written when the edge glow was
+    // dead and shake was all that was left. Both are true and neither is a
+    // reason to keep it: an escalating channel shared with every wall bump does
+    // not escalate, it blends in. The tier float and the audio step carry it,
+    // and the edge glow is being revived at [210826am] to carry it properly.
     // Audio escalates with the tier: a step tone below gold, the gold cue at and
     // above it, and the ceiling gets the bass under it as well.
     if (hot && sfx.gold) sfx.gold();
@@ -16711,6 +18133,12 @@ function breakCombo(reason) {
     // stale at the old ceiling, which is harmless only as long as the rate limit
     // stays at 220ms.
     if (game.combo) rec('combo', { end: reason || '?', peak: game.comboMult, n: game.combo });
+    // [210826ak] The roundCombos increment that lived here is GONE. It counted
+    // completed fresh-ground streaks, which is now called CHARGE and is not a
+    // combo — see registerCombo(). Counting streaks under the combo name is
+    // exactly the conflation the rename exists to end.
+    // Nothing replaces it: a streak ending is not an event worth counting on
+    // its own, and its peak already survives as roundBestCombo / bests.combo.
     game.combo = 0;
     game.comboMult = 1.0;
     game.comboTimer = 0;
@@ -16801,7 +18229,7 @@ function checkStreakBonuses(cx, cy) {
         game.pts_streaks += r.points;
         game.streaks++;
         sfx.streak();
-        triggerShake(3, 200);
+        // [210826al] Shake removed — reward.
         triggerEdgeGlow(r.color, 600);
     }
 }
@@ -16849,6 +18277,39 @@ function applyImpactDevolve(hitIndices, label) {
     if (game.testDrive) return false;
     if (game.shapeType === 'single') return false;
     if (!hitIndices || !hitIndices.length) return false;
+    // ── [210826r] THE SQUARE SURVIVES ITS FIRST KNOCK ───────────────────────
+    // A 2x2 sheds on contact and presents more surface than anything else in
+    // the game, so in practice it cannot be steered — only sprinted. The
+    // recorded runs put a number on it: 18 seconds of square across two
+    // sessions totalling 51 minutes, in runs that both stalled needing one.
+    // One free collision is the difference between a shape you carry and a
+    // shape you lose. Not a hit-point system: the grace is per occupancy of the
+    // square, so a second knock costs a cube as before, and shedding back down
+    // and re-forming a square earns a fresh one because that is a new square
+    // that has to be steered somewhere new.
+    // ONLY THE SQUARE. The J-shape was held 12.4% of the time — already usable,
+    // and grace it does not need would be difficulty quietly removed.
+    // NEVER THE VOID. That caller ignores this function's return value:
+    //     if (offIdx.length && offIdx.length < cellsNow.length) {
+    //         flagOutOfBounds('bottom'); captureSnapshot(...);
+    //         applyImpactDevolve(offIdx, 'void');   // <- result discarded
+    //     }
+    // so returning false there would not produce a refusal — it would leave a
+    // cube sitting outside the board with nothing having happened. The void has
+    // always been the one boundary that takes payment, and it still is.
+    if (game.shapeType !== 'square') {
+        game._sqGraceFor = null;
+    } else if (label !== 'void' && game._sqGraceFor !== 'square') {
+        game._sqGraceFor = 'square';
+        const c0 = getPlayerCells()[hitIndices[0]] || getPlayerCells()[0];
+        if (c0) addFloat(c0.x * CELL + CELL / 2, (c0.y - game.cameraY) * CELL, 'HELD!', '#7dd3fc');
+        triggerShake(3, 120);
+        flashPlayerDenied('grace');
+        // Recorded so the change can be judged rather than assumed: if squares
+        // still die instantly, or now never die, this is the number that says so.
+        rec('grace', { s: 'square', ch: label, r: advancedRound });
+        return false;   // caller falls back to a plain refusal — no cube lost
+    }
     const cells = getPlayerCells();
     // [300726bd] SHED BEFORE YOU DIE. A horizontal pair flipped east at the
     // right edge puts BOTH cubes out of bounds, so this branch used to hand
@@ -16909,24 +18370,36 @@ function applyImpactDevolve(hitIndices, label) {
     // ceiling, edge — shed cubes with bursts and a sound but NO WORDS, while
     // the red and shifter channels both announced "DEVOLVE!". Field note: "I am
     // going to bump into something to devolve my shape... this concept needs
-    // explaining more to players." The designer was using an unnamed verb. Now
-    // every shrink says the same word the welcome key already teaches, and the
-    // recorder tags WHICH channel (ch) so the pricing across channels can be
-    // checked from data rather than assumed.
+    // explaining more to players."
+    // ── [210826p] TWO WORDS, BECAUSE THESE ARE TWO THINGS ───────────────────
+    // 180826d's diagnosis was right — bumping WAS unexplained — but the cure
+    // named damage with the instrument's verb, and the red '-' square stopped
+    // being the thing that devolves you.
+    // The distinction worth drawing is not which channel but which KIND:
+    //   DEVOLVE is an instrument. You chose it, you aimed at it, and the red
+    //     trim pays 3 points for the transaction.
+    //   SHED is damage. The board took a cube because you hit something. It
+    //     pays nothing, and it arrives with a recoil and a denial flash.
+    // Same physics, different sentence, and the sentence is what tells the
+    // player whether they spent a cube or lost one.
+    // ALSO: this block used to fire TWO floats for one event — "DEVOLVE!" here
+    // and "IMPACT!" a few lines below, a screen apart in the source and a few
+    // pixels apart on the board. Two words for one thing is most of why the
+    // mechanic read as messy. IMPACT was the older of the pair and says the
+    // less useful half (that you hit something, which the recoil and the shake
+    // already say), so SHED replaces both.
     {
         const first = cells[idx[0]];
         addFloat(first.x * CELL + CELL / 2, (first.y - game.cameraY) * CELL,
-            idx.length > 1 ? `DEVOLVE x${idx.length}!` : 'DEVOLVE!', '#ef4444');
-        showTip('devolve');
+            idx.length > 1 ? `SHED x${idx.length}!` : 'SHED!', '#94a3b8');
+        showTip('shed');
         rec('hurt', { from: prevType, to: result.shapeType, ch: label });
     }
     signalSizeChange(prevType, result.shapeType, true);
     triggerShake(5, 220);
-    flashPlayerDenied();
-    const at = cells[idx[0]];
-    addFloat(at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL,
-        idx.length > 1 ? `IMPACT x${idx.length}!` : 'IMPACT!', '#94a3b8');
-    showTip('devolve');
+    flashPlayerDenied('shed');
+    // [210826p] The orphaned second showTip('devolve') that followed the
+    // removed IMPACT float is gone with it — this path teaches 'shed' now, once.
     return true;
 }
 
@@ -17055,6 +18528,10 @@ function detectCasualties(newCells) {
         const c = newCells[i];
         if (c.x < 0 || c.x >= VIEW_W) { indices.push(i); continue; }
         const k = `${c.x},${c.y}`;
+        // [HOLES] Pushed onto a void, a cube is a casualty like any other — and
+        // the cell it falls into becomes ground. A shove can buy you terrain
+        // you never chose to buy.
+        if (world[k] === 'void') { fillVoid(c.x, c.y); indices.push(i); continue; }
         if (world[k] === 'wall' || world[k] === 'hazard') { indices.push(i); continue; }
         // NOTE: slot cells are NOT casualties. Ground never becomes solid just
         // because you arrived by push — a cube shoved onto a slot simply lands
@@ -17082,7 +18559,10 @@ function classifyShiftPush(newCells) {
         const c = newCells[i];
         if (c.x < 0 || c.x >= VIEW_W || c.y < topB || c.y > botB) { redIndices.push(i); continue; }   // [270726zk] knocked out of the band
         const k = `${c.x},${c.y}`;
-        if (world[k] === 'hazard' || world[k] === 'wall') redIndices.push(i);
+        // [HOLES] A shove into a hole trims the cube and buys the cell, same as
+        // detectCasualties. The fill happens where the push is applied, not
+        // here — this pass only decides who dies.
+        if (world[k] === 'hazard' || world[k] === 'wall' || world[k] === 'void') redIndices.push(i);
     }
     if (!redIndices.length) return { trim: null };
     let result = tryMultiDevolve(newCells, redIndices);
@@ -17741,7 +19221,7 @@ function computeShifterPreviewFor(aim) {
     for (const c of landed) {
         if (c.x < 0 || c.x >= VIEW_W) return null;
         const w = world[`${c.x},${c.y}`];
-        if (w === 'wall' || w === 'hazard') return null;
+        if (w === 'wall' || w === 'hazard' || w === 'void') return null;   // [HOLES]
     }
     // Trigger scan in THE SAME ORDER as the landing handler, including the
     // [160826r] rule that a pivot ignores a single.
@@ -18816,6 +20296,25 @@ const TIPS = {
     shifter:   'Gear shifters rotate or nudge you.',
     wrong:     'Wrong shape. Evolve to match.',
     devolve:   'A minus trims a cube. Sometimes that\u2019s the plan.',
+    // [210826p] The shed path used to borrow the 'devolve' tip, so hitting a
+    // wall taught the player about the minus square \u2014 an explanation for a
+    // thing they had not done. Now that the two events have separate words they
+    // need separate lessons, and this one carries the distinction the whole
+    // split exists for: the board took it, you did not spend it.
+    shed:      'Hit something and you lose a cube. No points \u2014 that\u2019s damage, not a trim.',
+    // \u2500\u2500 [210826aj] THE ROW TIP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+    // There was no tip about rows at all. Rows pay well \u2014 weighted by the shape
+    // that finished them, 1.5x in peril, +10% for each extra row in the band \u2014
+    // and none of that was ever said. A player could finish a run without
+    // discovering that filling a row was worth aiming at.
+    // The line names the ACTION and the REWARD, in that order, and stops. It
+    // deliberately does not mention the peril bonus or the band arithmetic: a
+    // tip that lists three modifiers is a manual, and the one thing worth
+    // knowing is that whole rows are worth going for.
+    // "Fills your reserve" is the concrete half, and it is now literally true \u2014
+    // a completed row tops up the tank the player can see on the HUD. That is a
+    // reward they can watch arrive, where points disappear into a total.
+    rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
     trim:      'Too big? Trim down on a minus.',
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
@@ -19246,7 +20745,9 @@ function draw() {
     
     const camInt = Math.floor(game.cameraY);
     const camFrac = game.cameraY - camInt;
-    
+
+    drawUnderworld(camInt, camFrac);   // [HOLES] the space seen through the holes
+
     // Draw all cells in viewport. New visual language: every cell is a
     // discrete rounded shape. Empty walkable cells are faint outlines,
     // visited cells are solid pale fills (the trail), walls are solid slate
@@ -19271,7 +20772,17 @@ function draw() {
             // over them in a later pass, so drawing floor here only lets the
             // visited/empty fill bleed around the player's edges.
             if (playerNow.has(key)) continue;
-            
+
+            /* [HOLES] A VOID DRAWS NOTHING. It is not an object that gets
+               painted, it is a cell that is not there — and drawUnderworld has
+               already shown the space below through it. Everything that used
+               to announce a hole was tried in the prototype and cut: a bright
+               lip round the rim, a slab edge cut into its top, a wash inside
+               it, a vignette. The board says it better by simply not drawing a
+               cell, and adjacent voids merge into one opening so a chasm reads
+               as one hole rather than a row of tiles. */
+            if (item === 'void') continue;
+
             if (item === 'wall') {
                 // Organic walls only — claimed-slot cells are no longer
                 // walls, so this branch only handles real wall geometry now.
@@ -19533,14 +21044,60 @@ function draw() {
                       }
                   } }
             } else if (!item) {
-                // TEST DRIVE checkerboard: (x+y) parity tinted from the very
-                // first tap. Diagonal/J anchors can never change tone by
-                // flipping alone — the board says so silently.
+                // ── [210826o] THE POLE MAP LEAVES THE PRACTICE ARENA ────────
+                // The (x+y) parity checkerboard has existed since the garage
+                // was built, with a comment stating the problem exactly:
+                // "Diagonal/J anchors can never change tone by flipping alone
+                // — the board says so silently." It was right, and it was then
+                // shown ONLY in test drive, so in the actual game the board
+                // said nothing at all.
+                // Two recorded runs put a cost on that silence. Both reached
+                // level 7, both banked five of six requirements, and in both
+                // the one left standing was the 2x2 square — one of the three
+                // parity-locked shapes. Run A spent 526 seconds hunting a
+                // placement it could not see was impossible; run B, 267. A
+                // player cannot reason about a rule the board refuses to draw.
+                // This is also the pole map the concept now calls for: the grid
+                // has two poles, like repels like, a locked shape sits on one
+                // of them, and only a STEP shifter crosses over.
+                // LOUDER WHEN IT MATTERS. At rest this is a whisper — most
+                // shapes ignore parity entirely. While a PARITY-LOCKED shape is
+                // held (diagonal, J, square) the squares that shape can
+                // actually occupy lift, so the reachable half of the board
+                // becomes visible exactly when it constrains you.
+                // Cost: two integer reads and a bitwise AND per empty cell. At
+                // 100 cells and 60fps that is noise, and it buys not having to
+                // restructure the draw loop to hoist it.
+                // [210826af] REVERTED TO TEST DRIVE ONLY — designer's call, and
+                // I think the right one. The checkerboard was added at 210826o
+                // to make parity legible in play, on the evidence that the 2x2
+                // square is unlandable when you cannot see which colour you are
+                // locked to. That reasoning still holds, but the cure was worse
+                // than the problem: a permanent alternating tint over every
+                // empty square is a second pattern competing with the board's
+                // real content, and the board has to stay clear.
+                // The parity problem has two other fixes already in this build
+                // that cost the player nothing visually — the fitter's grind
+                // gate [210826n], which now intervenes when a requirement goes
+                // 120s unbanked, and the red-guarantee suppression [210826r],
+                // which stops the game handing you a shrink tool while you are
+                // carrying the shape it just asked for. Those address the same
+                // failure without painting the floor.
+                // The garage keeps it: a practice arena is where a player goes
+                // to be shown the rules, and there the tint has nothing to
+                // compete with.
+                const _mine = false;
                 if (game.testDrive && ((col + worldY) & 1) === 0) {
                     if (currentTheme === 'day') {
-                        roundedSq(sx, sy, CELL_SIZE, '#e6ebf2', '#b9c0c9', 1);
+                        roundedSq(sx, sy, CELL_SIZE,
+                                  _mine ? '#dbe3ee' : (game.testDrive ? '#e6ebf2' : '#eef2f7'),
+                                  _mine ? '#a8b4c4' : '#c9d2dc', 1);
                     } else {
-                        roundedSq(sx, sy, CELL_SIZE, 'rgba(148, 163, 184, 0.10)', palette().emptyOutline, 1.4);
+                        roundedSq(sx, sy, CELL_SIZE,
+                                  _mine ? 'rgba(148,163,184,0.14)'
+                                        : (game.testDrive ? 'rgba(148,163,184,0.10)'
+                                                          : 'rgba(148,163,184,0.055)'),
+                                  palette().emptyOutline, 1.4);
                     }
                 } else if (currentTheme === 'day') {
                     // Day empty — solid white floor tile with a light-grey
@@ -20029,6 +21586,11 @@ function draw() {
     // Coin shower
     drawCoins();
     
+    // [210826am] The edge flash sits under the text and over the board: it is
+    // world feedback, so it should not obscure a float, and a float should not
+    // have to compete with it.
+    drawEdgeFlash();
+
     // Floating texts
     const now = Date.now();
     floats = floats.filter(f => {
@@ -20181,6 +21743,17 @@ function draw() {
 
 // Sync the three life-pip elements with the current `lives` count.
 function updateLivesHUD() {
+    // [210826ao] CLOCK-ONLY: the hearts come off the HUD entirely. A row of
+    // pips that never changes is worse than no pips — it reads as a resource
+    // and behaves like decoration, which is the exact fault [230826a] fixed
+    // when it removed the two hearts that could never be filled.
+    // The reserve bar sits directly beneath and takes the space.
+    if (CLOCK_ONLY) {
+        const w = document.getElementById('lifePips');
+        if (w) w.style.display = 'none';
+        updateRotorGauge();
+        return;
+    }
     // [300726aa] `lives` is NO LONGER derived here. This line was overwriting
     // the real counter with the momentum band count on every HUD refresh, so
     // any life lost was silently restored the moment the player collected
@@ -20720,7 +22293,29 @@ function loop(time, gen) {
       // red within arm's reach — the way DOWN the chain is never more than
       // one flip away for the big shapes. Checked on a 2s cooldown; places
       // a red on a free cell orthogonally adjacent to the shape.
+      // ── [210826r] NOT WHILE YOU STILL NEED TO BE THIS SHAPE ────────────────
+      // This rule fires BECAUSE you are holding a J or a 2x2, and its purpose
+      // is that the way DOWN the chain is never more than one flip away. Good
+      // rule — except it takes no account of WHY you are holding the shape.
+      // If a square is still an outstanding requirement, you are holding one in
+      // order to bank one, and the game responds by planting a shrink tool
+      // within arm's reach. The supply system was working against the mission
+      // it had just issued.
+      // The measurement that found it: across two recorded runs the square was
+      // held for 18 SECONDS in total — 1.5% of one run, and it never appeared
+      // at all in the other — while both runs stalled on level 7 with the
+      // square as the one requirement never banked. 40 of 86 reds in run B came
+      // from this rule alone. A shape cannot be steered to a slot if the board
+      // keeps offering to take it apart.
+      // So the guarantee stands down for exactly as long as the shape you are
+      // wearing is one the set still wants. The moment it is banked the rule
+      // resumes and the exit is one flip away again — which is the whole point
+      // of it, and now it only applies when leaving is the right move.
+      const _needThisShape = typeof setNeeded !== 'undefined' && setNeeded.some(id => {
+          try { return parseRequirement(id).type === game.shapeType; } catch (e) { return false; }
+      });
       if (!game.testDrive && (game.shapeType === 'jshape' || game.shapeType === 'square') &&
+          !_needThisShape &&
           game.running && !game.paused &&
           countVisibleHazards() < MAX_VISIBLE_REDS &&   // [270726zn] budget
           (!game._adjRedT || nowT - game._adjRedT > 2000)) {
@@ -20884,6 +22479,19 @@ function loop(time, gen) {
         if (!game.spinUp && !breathing && remainingSec <= 30 && remainingSec > 0 && remainingSec !== lastTickSecond) {
             if (remainingSec <= 5) sfx.tickFinal();
             else sfx.tick();
+            // [210826ao] CLOCK-ONLY: FIELD FAILING moves here from the last
+            // heart. The words were always about the clock — the field is what
+            // holds the rotor up — and in this mode a low clock IS the last
+            // life, so the warning finally sits on the thing it describes.
+            // Fired ONCE, at 10 seconds. The countdown tone already marks every
+            // second below 30; a banner that repeated would be noise on top of
+            // a signal that is already working. Ten is late enough to mean
+            // something and early enough to act on.
+            if (CLOCK_ONLY && remainingSec === 10) {
+                addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20, 'FIELD FAILING',
+                         currentTheme === 'day' ? '#b45309' : '#fbbf24', true,
+                         { life: 1400, hold: 600 });
+            }
             lastTickSecond = remainingSec;
             // [300726bh] "PAUSE — THINKING IS FREE" removed. The pause is
             // discoverable (a tap on open board, or Space/K), and a line of copy
@@ -20915,41 +22523,22 @@ function loop(time, gen) {
         }
     }
     if (game.speedTimer >= LEVEL_TIME_LIMIT) {
-        // ── [180826p] THE RESERVE TANK FIRES ────────────────────────────────
-        // At the exact moment the wheel would take a heart, ground already
-        // covered pays out instead: the tank dumps into the wheel, the heart
-        // stays, and the run breathes. Only at empty, only what was earned.
-        if ((game.timeReserve || 0) >= 1) {
-            const give = Math.round(game.timeReserve);
-            game.timeReserve = 0;
-            game._reserveFullShown = false;
-            momentumAddSeconds(give);
-            rec('reserve', { sec: give, r: advancedRound, cov: Math.round(game.coverage || 0) });
-            // [180826t] THE POUR: sparks stream from the player into the wheel
-            // — covered ground visibly becoming time.
-            if (game._rotorTgt) {
-                const px = game.playerX * CELL + CELL / 2, py = (game.playerY - game.cameraY) * CELL + CELL / 2;
-                for (let i = 0; i < 14; i++) {
-                    setTimeout(() => {
-                        if (!game.running) return;
-                        rotorSparks.push({ x: px + (Math.random() * 26 - 13), y: py + (Math.random() * 26 - 13),
-                                           tx: game._rotorTgt.x, ty: game._rotorTgt.y, t: performance.now() });
-                    }, i * 45);
-                }
-            }
-            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.32, `RESERVE TANK!\n+${give}s`, '#fb8b1e', true,
-                     { life: 1900, hold: 900 });
-            triggerEdgeGlow('#fb8b1e', 1200);
-            if (sfx.time30) sfx.time30();
-            // [200826j] THE [300726aw] RULE, RELEARNED: every early return in
-            // loop() must schedule its own next frame. This branch didn't, so
-            // the tank firing at 0:00 froze the game solid until pause (whose
-            // toggle schedules a fresh frame) revived it — the same corpse,
-            // one grave over. Draw too, so the RESERVE TANK float paints now.
-            draw();
-            scheduleLoop();
-            return;   // no heart lost this beat — the tank took the hit
-        }
+        // [210826aq] THE RESERVE TANK PAYOUT IS GONE with the tank itself.
+        // Rows pay the clock directly now — while the row is completing, at the
+        // row, with the clock climbing in the same moment — rather than a
+        // hidden pool discharging at 0:00, which was the least readable
+        // instant it could have chosen.
+        // The [200826j] lesson this branch learned the hard way — every early
+        // return in loop() must schedule its own next frame, or the game
+        // freezes solid — no longer applies HERE, because there is no longer a
+        // branch to return from. It still applies to every other early return
+        // in this function, which is why the note is kept rather than deleted
+        // with the code that earned it.
+        // [210826ao] CLOCK-ONLY: an empty clock is the end, full stop. No heart
+        // to spend, no refill. This is the line that makes the clock the life —
+        // without it the timer is just a slower way of spending hearts, which
+        // is what it has always been.
+        if (CLOCK_ONLY) { endGame('stall'); return; }
         lives = Math.max(0, lives - 1);
         updateLivesHUD();
         if (lives <= 0) { endGame('stall'); return; }
@@ -21100,6 +22689,11 @@ function loop(time, gen) {
         cellsNow.forEach((c, i) => { if ((c.y - game.cameraY) > VIEW_H - 0.5) offIdx.push(i); });
         if (offIdx.length && offIdx.length < cellsNow.length) {
             flagOutOfBounds('bottom');
+            // [210826am] The void is the only thing that has killed a player in
+            // any recorded run — every death across four sessions was a bottom
+            // edge. It gets the loudest flash in the game: red, and half again
+            // as long as a wall, because it is the one edge that matters.
+            flashEdge('S', '#ef4444', 620);
             captureSnapshot('↓ edge trim');
             applyImpactDevolve(offIdx, 'void');
         } else if (offIdx.length) {
@@ -21138,12 +22732,47 @@ function loop(time, gen) {
 }
 
 // ============ PERSONAL BESTS ============
-let bests = { score: 0, time: 0, transforms: 0 };
+// [210826y] `revolvesTotal` is the odd one in here and is labelled as such:
+// every other field is a MAXIMUM, Math.max'd on its own, and this one is a
+// RUNNING SUM. It lives in this object anyway rather than getting its own
+// localStorage key, because a second key means a second save path, and a
+// second save path is the exact shape of drift that produced two of the bugs
+// found in this file today. One key, one write, one thing to keep correct.
+let bests = { score: 0, time: 0, transforms: 0, revolves: 0, revolvesTotal: 0 };   // [210826u][210826y]
 try {
     const saved = JSON.parse(localStorage.getItem('rotor_bests') || localStorage.getItem('rotorrise2_bests') || '{}');
-    bests = { score: saved.score || 0, time: saved.time || 0, transforms: saved.transforms || 0, streaks: saved.streaks || 0, coverage: saved.coverage || 0, combo: saved.combo || 1.0 };
+    // [210826u] `revolves` defaults to 0 for saves written before it existed,
+    // so an existing player's first run sets the record rather than the load
+    // throwing on a missing key.
+    bests = { score: saved.score || 0, time: saved.time || 0, transforms: saved.transforms || 0, streaks: saved.streaks || 0, coverage: saved.coverage || 0, combo: saved.combo || 1.0, revolves: saved.revolves || 0, revolvesTotal: saved.revolvesTotal || 0 };
 } catch(e) {}
 
+// ── [210826y] BANKING A RUNNING TOTAL, ONCE ─────────────────────────────────
+// A maximum is idempotent: run Math.max twice on the same run and nothing
+// happens. A SUM is not. Every save path that touches revolvesTotal has to add
+// each run exactly once, and there are two of them — endGame() on a death or a
+// win, exitToWelcome() on a quit — plus the possibility of either being reached
+// twice for one run.
+// The two paths are already mutually exclusive in practice: exitToWelcome only
+// banks `if (game.running && game.score > 0)`, and endGame sets running = false
+// before anything else, so quitting from the end screen cannot bank a second
+// time. That is a property of code elsewhere though, and this function should
+// not depend on it staying true.
+// So the guard is local and explicit: a run id, stamped when banked. Re-entry
+// with the same id is a no-op, and the id is the run's own start timestamp
+// (recRunId), which is already unique per run and already reset by
+// recStartRun(). No new state to keep in sync.
+// This is the difference between a lifetime counter and a lifetime counter that
+// slowly inflates — and an inflating one is worse than none, because the whole
+// point of the stat is that the player can trust it only ever goes up honestly.
+function bankRevolves() {
+    try {
+        const id = (typeof recRunId !== 'undefined' && recRunId) ? recRunId : 0;
+        if (!id || bests._bankedRun === id) return;
+        bests._bankedRun = id;
+        bests.revolvesTotal = (bests.revolvesTotal || 0) + (game.revolves || 0);
+    } catch (e) {}
+}
 function saveBests() {
     try { localStorage.setItem('rotor_bests', JSON.stringify(bests)); } catch(e) {}
 }
@@ -21375,7 +23004,12 @@ setInterval(function () {
             m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
             c: Math.round(game.coverage || 0),
             s: game.shapeType,
-            rv: Math.round(game.timeReserve || 0),   // [180826p] reserve level
+            // [210826aq] `rv` was the reserve level, sampled every 2s. The tank
+            // is gone, so the field would now always be 0 — worse than absent,
+            // because a column of zeros in an export looks like a broken
+            // mechanic rather than a removed one. Row income is recorded per
+            // event as `rowtime` instead, which is more useful anyway: it says
+            // what was earned and for how many rows.
             // [180826s] fps = frames actually delivered; fw = worst frame ms.
             fps: game._ftN ? Math.round(1000 / (game._ftSum / game._ftN)) : 0,
             fw: Math.round(game._ftMax || 0)
@@ -21704,17 +23338,82 @@ function renderScores() {
     if (bestsEl) {
         const t = Math.max(0, Math.floor(bests.time || 0));
         const mmss = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+        // ── [210826z] TWO CELLS CUT ─────────────────────────────────────────
+        // SCORE was the same number as run #1 in YOUR RUNS, six inches up the
+        // same screen. `runs` is sorted descending and capped at RUNS_KEEP, so
+        // runs[0].s and bests.score are not merely similar — they are always
+        // identical, and a screen that prints one number twice teaches the
+        // reader that its numbers do not mean much.
+        // EVOLVES went because it was the narrowest of THREE activity counters
+        // once revolves arrived (EVOLVES, BEST REVOLVES, TOTAL REVOLUTIONS),
+        // all answering "how much did you do" and none answering "how well".
+        // Of the three it is the most derivative: it counts greens taken, which
+        // coverage and score already reflect, where a revolve counts every move
+        // the player has ever made and is the game's own verb.
+        // TRACKING IS UNTOUCHED — this removes two rows from a render, nothing
+        // more. bests.score is load-bearing elsewhere (the ladder reads it, so
+        // does the NEW BEST pill) and bests.transforms is still written on both
+        // save paths, so an existing player's record survives and either cell
+        // can come back as a one-line change.
         const cells = [
-            ['SCORE',    (bests.score || 0).toLocaleString()],
             ['TIME',     mmss],
-            ['EVOLVES',  (bests.transforms || 0).toLocaleString()],
             ['STREAK',   (bests.streaks || 0).toLocaleString()],
             ['COVERAGE', Math.round(bests.coverage || 0) + '%'],
-            ['COMBO',    (bests.combo || 1).toFixed(1) + '×']
+            // [210826ak] WAS 'COMBO'. The fresh-ground streak keeps every one of
+            // its mechanics and loses the word, because the word was wrong: a
+            // combo is something you spot and set up, and this is something you
+            // get for not stopping. It rewards continuous motion — which is a
+            // real job, it stops turtling — but the player never chooses it.
+            // CHARGE was already the streak's language everywhere it speaks:
+            // the tier words have read CHARGING / LIVE / FULL CURRENT /
+            // MAGNETISED / FULL REVOLUTION since [230826d]. Only this cell and
+            // the tally still said combo, so the rename is a two-line change to
+            // finish a move the text had already made.
+            // 'Combo' is now free for the acts the player can anticipate — see
+            // registerCombo().
+            ['CHARGE',   (bests.combo || 1).toFixed(1) + '×']
         ];
+        // [210826u] REVOLVES sits beside EVOLVES, which is the argument for
+        // putting it here rather than on the level card: this is a table of
+        // records, and a revolve count is a record, not something a player acts
+        // on. The tally was the obvious home and is the wrong one — [300726ba]
+        // cut that card from twelve rows to six against an explicit test
+        // ("would a player do anything differently next level knowing this?")
+        // and the code there states it plainly: "The card is a reward, not a
+        // report." A revolve total fails that test; it passes this one.
+        // Full width rather than a seventh cell in a 3-column grid, which would
+        // leave an orphan at every breakpoint. It also suits the stat: the most
+        // constant action in the game gets the line under everything else.
+        // [210826y] Relabelled BEST REVOLVES. It sits in a grid headed PERSONAL
+        // BESTS and it IS a best — the most in one run — but plain "REVOLVES"
+        // beside a lifetime total on the next line would have read as the same
+        // quantity twice with two different numbers.
         bestsEl.innerHTML = cells.map(([l, v]) =>
             `<div class="scores-best"><span class="scores-best-label">${l}</span><span class="scores-best-value">${v}</span></div>`
-        ).join('');
+        ).join('') +
+        `<div class="scores-best scores-best-wide"><span class="scores-best-label">BEST REVOLVES</span>` +
+        `<span class="scores-best-value">${(bests.revolves || 0).toLocaleString()}</span></div>`;
+    }
+    // ── [210826y] THE LIFETIME COUNT ────────────────────────────────────────
+    // Its own line, outside the bests grid, because it is the only figure on
+    // this screen that is not a personal best and not a run — it is everything,
+    // added up. Given prominence on purpose: this is here to find out whether an
+    // accumulating number is rewarding, and a stat buried in a grid of six
+    // cannot answer that question. If it turns out to be dead weight it is one
+    // line to remove; if it works it is the beginning of a lifetime-stats
+    // section.
+    // It is also the only number in the game that cannot go down. Score, rank,
+    // level and every cell above are reports on how well a run went. This one
+    // just accumulates, which is a different kind of reward — nothing to
+    // protect, nothing to lose, and a bad run still adds to it.
+    {
+        const lifeEl = document.getElementById('scoresLifetime');
+        if (lifeEl) {
+            const n = bests.revolvesTotal || 0;
+            lifeEl.innerHTML =
+                `<span class="scores-life-label">TOTAL REVOLUTIONS</span>` +
+                `<span class="scores-life-value">${n.toLocaleString()}</span>`;
+        }
     }
 }
 
@@ -21744,6 +23443,29 @@ function toggleDetails() {
 }
 
 function startGame(testDrive = false) {
+    // ── [210826m] A NEW RUN STARTS WITH NO FINGER ON THE GLASS ──────────────
+    // startGame() MUTATES the existing `game` object rather than rebuilding it,
+    // so every input flag survives into the new run — and _stickTouch is a
+    // module-level object it never touched at all.
+    // Harmless when a run starts from a button press: the previous touch is
+    // long over. Not harmless when a run starts from INSIDE a touch, which the
+    // touchend path was doing until the guard above.
+    // PRECAUTIONARY, and labelled honestly. I first wrote this asserting it
+    // fixed an observed failure — three auto-started runs in the play data,
+    // each with zero transforms and a wall of refusals, which I read as leaked
+    // input state driving phantom moves. The designer then explained those
+    // refusals: he was holding the cube against a wall deliberately to run the
+    // clock down. That accounts for the numbers without any leaked state, and
+    // it is the simpler explanation. No recorded run has been shown to need
+    // this reset. It is still right — a run should not begin believing a finger
+    // is down — but it is hygiene, not a demonstrated fix.
+    game.isTouching = false;
+    game.dragDir = null;
+    game.dragTimer = 0;
+    game._cruising = false;
+    game._touchMoved = false;
+    game._touchBeganRunning = false;
+    if (typeof _stickTouch !== 'undefined') { _stickTouch.active = false; _stickTouch.dir = null; }
     initAudio();
     startMusic();
 
@@ -21767,10 +23489,37 @@ function startGame(testDrive = false) {
     // [220826a] The coach-tips kickoff moved BELOW the reset literal — see
     // _tipsPref. Starting it here armed timers against a game object that was
     // replaced a few hundred lines later.
+    // ── [210826u] THE REVOLVE COUNTER ───────────────────────────────────────
+    // The concept work named revolve as the third word beside evolve and
+    // devolve — the player's orientation changing, the thing that happens on
+    // EVERY move, the machine word, the name of the game — and noted the game
+    // counts evolves and has never counted this.
+    // NOT REUSING flipCount. That already existed and looked like the answer,
+    // but it is a watchdog for the diagonal-discovery tip and it is wired to
+    // trackDiagonalUse(), which is called at two of the THREE places the face
+    // turns over. The fusion path — every move that eats a green — flips parity
+    // without calling it, so flipCount undercounts by exactly the number of
+    // greens taken: 88 of them in one recorded run. A counter that is wrong by
+    // a fifth is worse than no counter, and quietly fixing flipCount would have
+    // moved the diagonal tip's threshold as a side effect.
+    // So the count lives at the DEFINITION instead: `faceParity ^= 1` is the
+    // line that means "the face turned over", it appears at all three commit
+    // sites, and it already carries the comment "every move flips the face".
+    // Incrementing there makes the counter true by construction — if a fourth
+    // way to move is ever added, it will be counted the moment it flips parity,
+    // because that is what a revolve is.
+    game.revolves = 0;
+    // [210826ak] runCombos is per RUN, so it resets here and not on level
+    // advance — the opposite of roundCombos. Both exist because the tally asks
+    // "this level" and the end screen may later ask "this run"; a single
+    // counter cannot answer both, and a counter that resets at the wrong time
+    // is the kind of wrong that looks plausible for a long while.
+    game.runCombos = 0;
     game.flipCount = 0; game.diagCount = 0;
     game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
     // [290726d] tally counters reset with the rest of the round trackers
     game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+            game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
     game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
     slotCredits = 2; slotDrought = {};                     // [300726an] open with targets
     game._reprieveGiven = false;                          // [050826n]
@@ -21909,7 +23658,15 @@ function startGame(testDrive = false) {
         cellsGenerated: 0,  // total non-wall, non-pickup cells generated
         cellsVisited: 0,    // total visited (from above set)
         _rowsThisRound: new Set(),   // [160826t] rows generated this round (coverage ledger)
-        timeReserve: 0, _covStamps: [], _reserveFullShown: false,   // [180826p] reservoir
+        // [210826aq] timeReserve and _reserveFullShown removed with the tank.
+        // _covStamps stays: it feeds timeSpawnTilt(), which biases hourglass
+        // spawns toward a player grinding fresh ground — a separate idea, still
+        // wanted, and now the only thing coverage does for the clock.
+        _covStamps: [],
+        // [210826ai] The gauge is repainted right after this literal runs — see
+        // the call at the foot of startGame. Without it a second run opens
+        // showing the previous run's fill, because nothing else touches the bar
+        // until the first fresh cell is covered.
         coverage: 0,        // percentage 0-100
         speedTimer: LEVEL_TIME_LIMIT - SPINUP_START_SEC,   // SPIN-UP: Level 1 starts cold — build the wheel to full
         spinUp: true,       // suppresses panic signals until the ring first fills
@@ -22032,7 +23789,8 @@ function endGame(reason = 'death') {
     { const a = document.activeElement;
       if (a && a !== document.body && typeof a.blur === 'function') a.blur(); }
     rec('end', { why: reason, score: game.score, r: advancedRound,
-                 cov: Math.round(game.coverage || 0), tr: game.transforms });   // [160826p]
+                 cov: Math.round(game.coverage || 0), tr: game.transforms,
+                 rv: game.revolves || 0 });   // [160826p][210826u] tr = evolves, rv = revolves
     // [210826l] The tip-demand rollup, emitted once per run — see showTip().
     // Counts how many times the game WANTED to teach each lesson, including
     // the times it was suppressed because the player had already been told.
@@ -22136,8 +23894,11 @@ function endGame(reason = 'death') {
         transforms: Math.max(bests.transforms, game.transforms),
         streaks:    Math.max(bests.streaks || 0, game.streaks),
         coverage:   Math.max(bests.coverage || 0, coverage),
-        combo:      Math.max(bests.combo || 1.0, game.bestCombo)
+        combo:      Math.max(bests.combo || 1.0, game.bestCombo),
+        revolves:   Math.max(bests.revolves || 0, game.revolves || 0),   // [210826u]
+        revolvesTotal: bests.revolvesTotal || 0   // [210826y] summed by bankRevolves()
     };
+    bankRevolves();
     
     function setBestEl(id, val, bestVal, isBetter) {
         const el = document.getElementById(id);
@@ -22176,6 +23937,17 @@ function endGame(reason = 'death') {
             // pool speaking a different language from the other four, and the
             // pun register does not survive the move to a machine that runs on
             // current rather than one that gets repaired.
+            // [210826v] FLIP FLOP! comes back here — designer's call — arriving
+            // from FLIP_PRAISES rather than as a new line. It failed as praise
+            // because it names an oscillation that gets nowhere, which is the
+            // wrong thing to say about a good turn and the right thing to say
+            // about a run that has stopped. And it survives the register move
+            // the 230826d cut was made for: a flip-flop is a circuit that holds
+            // one of two states, so it reads as electrical here rather than as
+            // the pun it was up there.
+            // Kept as a SHOUT among quiet lines deliberately — the others are
+            // sentences, this is the one that sounds like the machine itself.
+            'FLIP FLOP!',
             'Every circuit shorts eventually.',
             'The charge is still in you. Go again.',
             'Even good bearings wear.'
@@ -22218,6 +23990,22 @@ function endGame(reason = 'death') {
                 `<div class="go-stat"><span class="go-lbl">LEVEL</span>` +
                     `<span class="go-val">${lvlTxt}</span></div>` +
             `</div>` +
+            // ── [210826x] THE RUN'S OWN REVOLVE COUNT ───────────────────────
+            // [210826u] added the counter and put the personal BEST on the
+            // scores screen, which is not what was asked for: the request was
+            // the total for a single game, and the number a player most wants
+            // is the one they just made. Best-only meant the count existed and
+            // was never shown for the run that produced it.
+            // NOT joined to RANK and LEVEL above. Those two were paired at
+            // [160826c] because they are the same kind of fact — where you got
+            // to — and a third item would break that reading. This is a
+            // different kind: how much you did. Its own quiet line, under the
+            // pair and above the prose, is the honest place for it.
+            // It is also the one number on this screen that never goes down
+            // with a bad run. Score, rank and level all report how well it
+            // went; this reports that it happened at all, which is the right
+            // last word on a run that ended badly.
+            `<div class="go-revolves">${(game.revolves || 0).toLocaleString()} REVOLVES</div>` +
             `<div class="go-prose">` +
                 `<span class="go-cause">${causeLine}</span>` +
                 `<span class="go-consolation">${consolation}</span>` +
@@ -22434,6 +24222,30 @@ document.addEventListener('keydown', e => {
         console.log(`[ROTOR] debug: force-clearing level ${advancedRound}`);
         syntheticRun = true;   // this run is no longer a record of play
         completeSet();
+        e.preventDefault();
+        return;
+    }
+
+    // ── [210826at] END THE RUN NOW — debug '9' ──────────────────────────────
+    // Built because the play data revealed the designer ending sessions by
+    // holding into a wall until the clock drained. That worked, at roughly 40
+    // seconds of clock per second of holding, and it read in the telemetry as a
+    // catastrophic economy failure — I spent a whole analysis pass diagnosing a
+    // bug that was somebody trying to leave.
+    // Two problems with it, and the second is the one that matters:
+    //   it corrupts the data. The run's final minute is not play, it is an
+    //     exit, and it lands in the same export as everything else.
+    //   [210826as] just made it TEN TIMES SLOWER by throttling the refusal
+    //     charge — a correct fix that makes the workaround worse.
+    // So: one key, immediate, and NOT marked synthetic. Unlike '0' this does not
+    // fabricate a result — everything up to the keypress really happened, and
+    // that is exactly the data worth keeping. It just stops the run cleanly
+    // instead of requiring the player to beat themselves to death on a wall.
+    if (DEBUG_MODE && e.key === '9' && !(e.code || '').startsWith('Numpad') &&
+        game.running && !game.paused) {
+        console.log('[ROTOR] debug: ending run at level ' + advancedRound +
+                    ', score ' + game.score);
+        endGame('quit');
         e.preventDefault();
         return;
     }
@@ -22667,6 +24479,10 @@ addStickAware('touchstart', e => {
     // user gesture. Touchstart is the earliest reliable hook.
     initAudio();
     game._touchT0 = performance.now();   // [300726aj] for tap-vs-swipe
+    // [210826m] Was this touch begun DURING a run? The touchend handler needs
+    // to know — see the note there. Captured at touchstart because by the time
+    // touchend fires the answer may have changed, which is the entire bug.
+    game._touchBeganRunning = !!game.running;
     game._touchMoved = false;
     // If paused, a tap resumes the game (mobile has no spacebar)
     if (game.running && game.paused) {
@@ -22793,7 +24609,36 @@ addStickAware('touchmove', e => {
 // separate element, so handlers on the canvas alone never saw it — the
 // enlarged stick would have been drawn perfectly and done nothing.
 addStickAware('touchend', e => {
-    if (!game.running) { startGame(); return; }
+    // ── [210826m] THE DEATH THAT RESTARTED THE GAME ─────────────────────────
+    // This line was `if (!game.running) { startGame(); return; }`, and on a
+    // touch device it made the final move of a run start the next one.
+    // The sequence, which needs the DOM's touch model to see:
+    //   1. touchstart lands on the canvas — the browser now BINDS this touch
+    //      to the canvas for its whole life.
+    //   2. the swipe resolves into the move that kills the player.
+    //   3. endGame() sets game.running = false and shows the end screen, a
+    //      fixed overlay at z-index 100 covering the canvas.
+    //   4. the finger lifts. touchend does NOT go to the overlay — a touch is
+    //      delivered to its touchstart target for its entire duration — so it
+    //      arrives here, sees game.running is false, and calls startGame().
+    // Result: die by a swipe on iPad and a fresh run at level 1 begins
+    // immediately, with the end screen visible for a single frame. Confirmed
+    // in play data before the fix: three runs began 10-110ms after the
+    // previous one ended, which no human does. The run itself survives
+    // (recPersist runs inside endGame) but the screen carrying the export
+    // button is gone before it can be pressed.
+    // No timer or distance threshold can fix this: the touch is legitimate, it
+    // is simply being read as a NEW intention when it is the tail of an old
+    // one. The flag records what was true when the touch BEGAN, which is the
+    // only moment at which the player's intention is unambiguous.
+    // Tap-to-start is kept for touches that genuinely begin while no run is in
+    // progress — the welcome screen — and both stopped screens have their own
+    // explicit button besides.
+    if (!game.running) {
+        if (!game._touchBeganRunning) startGame();
+        game._touchBeganRunning = false;
+        return;
+    }
 
     // [300726aj] TAP ON EMPTY BOARD = PAUSE. Mobile lost its pause button when
     // the utility row left the HUD, and J/K/L/Space are keyboard-only. A short,

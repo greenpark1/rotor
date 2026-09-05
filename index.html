@@ -36,7 +36,7 @@ body {
    drifting out of relation to the board. The game-container already declares
    container-type, so cqw resolves against it. vw is the fallback for anything
    that does not support container queries. */
-h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
+h1 { color: var(--wm-c0); margin: 0 0 6px; line-height: 1;
      text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
      font-size: clamp(22px, 8vw, 44px);
      font-size: clamp(22px, 9cqw, 44px);
@@ -98,7 +98,7 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
        but it tilted every measurement below it, and the frame's own inset is the
        one thing that should obviously be symmetrical. */
     padding: 10px;
-    border-radius: 12px;
+    border-radius: 17px;
     /* [030826m] More air above the game. 10px put the wordmark hard against the
        top of the screen — and the fixed corner buttons sit at top:12px, so the
        title was crowding them too. Responsive rather than fixed, and it uses
@@ -164,7 +164,7 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
     gap: 8px;
     background: rgba(15, 23, 42, 0.92);
     border: 1px solid rgba(148, 163, 184, 0.35);
-    border-radius: 12px;
+    border-radius: 17px;
     padding: 10px 14px;
     z-index: 100;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -195,7 +195,7 @@ h1 { color: #38bdf8; margin: 0 0 6px; line-height: 1;
 .game-canvas {
     display: block;
     background: #0f172a;
-    border-radius: 8px;
+    border-radius: 11px;
     /* [160826m] A HAIRLINE AROUND THE WHOLE GRID. box-shadow, not border: the
        global `* { box-sizing: border-box }` at the top of this file means a real
        border would be drawn INSIDE the canvas box, shrinking the content area
@@ -307,7 +307,7 @@ body.layout-beside.in-play #stickPad { width: auto; }
     flex: 1 1 auto; min-width: 0;
     font: 13px/1.3 ui-monospace, Menlo, monospace;
     color: #e2e8f0; background: rgba(30, 41, 59, 0.9);
-    border: 1px solid rgba(148, 163, 184, 0.4); border-radius: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.4); border-radius: 11px;
     padding: 8px 10px; outline: none;
 }
 .note-bar input:focus { border-color: #fbbf24; }
@@ -324,12 +324,12 @@ body.theme-day .note-bar input { color: #1e293b; background: #f1f5f9; }
     position: absolute; inset: 0; z-index: 15;
     display: flex; align-items: center; justify-content: center;
     background: rgba(2, 6, 23, 0.42);
-    pointer-events: none; border-radius: 8px;
+    pointer-events: none; border-radius: 11px;
 }
 .level-card.hidden { display: none; }
 .level-card-box {
     display: flex; flex-direction: column; align-items: center; gap: 12px;
-    max-width: 86%; padding: 26px 36px; border-radius: 16px;
+    max-width: 86%; padding: 26px 36px; border-radius: 22px;
     background: rgba(15, 23, 42, 0.80);
     border: 1px solid rgba(148, 163, 184, 0.25);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -340,7 +340,7 @@ body.theme-day .note-bar input { color: #1e293b; background: #f1f5f9; }
 .level-card-title  { animation-delay: 0.10s; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #a3e635; }
 .level-card-cov    { animation-delay: 0.50s; font-size: 17px; font-weight: 700; letter-spacing: 1px; color: #cbd5e1; font-variant-numeric: tabular-nums; }
 .level-card-cov.gold { color: #ffd60a; text-shadow: 0 0 14px rgba(255, 214, 10, 0.5); }
-.level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: #22d3ee; text-transform: uppercase; }
+.level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: var(--wm-c0); text-transform: uppercase; }
 .level-card-extra  { animation-delay: 1.25s; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #7dd3fc; }
 @keyframes lcCardIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes lcRowIn { to { opacity: 1; transform: translateY(0); } }
@@ -361,7 +361,7 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
     pointer-events: none;
     background: rgba(0,0,0,0);
     z-index: 20;
-    border-radius: 8px;
+    border-radius: 11px;
 }
 /* ── [210826e] +3s ON THE DOOR, ADDED TO THE HOLD ONLY ──────────────────────
    1800ms -> 4800ms and 1400ms -> 4400ms across every round-overlay animation.
@@ -669,7 +669,7 @@ body.theme-day .round-overlay-mission-label { color: #b45309; text-shadow: none;
     align-items: center;
     padding: 10px 15px;
     background: rgba(30, 41, 59, 0.8);
-    border-radius: 8px;
+    border-radius: 11px;
     margin-bottom: 10px;
     border: 1px solid rgba(56, 189, 248, 0.15);
 }
@@ -864,7 +864,20 @@ body.in-play.test-drive .play-corner { display: none; }
     justify-content: flex-start;
     transform-origin: left center;
 }
-.set-band-label { align-items: flex-start; }
+/* ── COLLECT / THE SET SPANS THE SOCKETS EXACTLY ────────────────────────────
+   The two lines used to be a centred block of their own height sitting beside
+   a taller socket grid, so on every screen size they floated somewhere in the
+   middle of it — and where exactly depended on how big the sockets had grown,
+   which varies with set size and viewport. Never aligned to anything.
+
+   Two rules do it, and they hold at any size because neither carries a number:
+   the ROW stretches, so the label column is exactly as tall as the sockets
+   beside it; and the label spaces its two lines apart, so COLLECT is pinned to
+   the top of that height and THE SET to the bottom. The gap between the lines
+   absorbs the difference, which is what makes it work on a phone and a laptop
+   without a breakpoint. */
+.hud-row-set { align-items: stretch; }
+.set-band-label { align-items: flex-start; justify-content: space-between; }
 @keyframes setThrob {
     /* [290726c] Throb is now OPACITY ONLY. The animated transform promoted
        this row to its own compositing layer, which on some browsers paints
@@ -879,6 +892,22 @@ body.theme-day .set-band-label { color: #b45309; text-shadow: none; }
    [270726w] Empty sockets keep their space but are invisible — the band
    shows only this round's requirements, layout never shifts. */
 .set-slot.socket-empty { visibility: hidden; }
+/* [SETS] The xN badge on a grouped requirement. Sits on the glyph's lower
+   right, small and steel so it annotates the shape rather than competing with
+   it; goes the set's own gold once the family is complete. The slot needs
+   position:relative for it, which it did not have — nothing was ever placed
+   inside a socket before. */
+.set-slot { position: relative; }
+.set-mult {
+    position: absolute; right: -2px; bottom: -3px;
+    font-size: clamp(9px, 2.4cqw, 14px); font-weight: 800;
+    letter-spacing: 0.02em; line-height: 1;
+    color: var(--text-steel);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.75);
+    pointer-events: none;
+}
+.set-mult.done { color: #ffe97a; }
+body.theme-day .set-mult.done { color: #b45309; }
 .hud-row-set { flex-wrap: nowrap; }
 .set-band-icons { gap: clamp(3px, 1vw, 8px); }
 .set-band-icons .set-slot svg { width: clamp(32px, 9vw, 58px); height: auto; }
@@ -914,7 +943,7 @@ body.theme-day .level-label { color: #334155; }
     color: #ffffff;
     font-size: 22px;
     padding: 8px 14px;
-    border-radius: 9px;
+    border-radius: 13px;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -969,7 +998,7 @@ body.theme-day .hud-exit-btn:hover, body.theme-day .hud-exit-btn:active {
 .set-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .trace-pips { display: flex; gap: 3px; margin-top: 2px; }
 .trace-pips .pip {
-    width: 12px; height: 5px; border-radius: 3px;
+    width: 12px; height: 5px; border-radius: 4px;
     background: rgba(148, 163, 184, 0.22);
     transition: background 0.2s, box-shadow 0.2s;
 }
@@ -1197,8 +1226,8 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 }
 .hud-value { font-size: 18px; font-weight: bold; color: var(--text-steel); transition: transform 0.1s; }
 .hud-value.score { color: #fbbf24; }
-.hud-value.distance { color: #38bdf8; }
-.hud-value.shape { color: #22d3ee; font-size: 14px; }
+.hud-value.distance { color: var(--wm-c0); }
+.hud-value.shape { color: var(--wm-c0); font-size: 14px; }
 .hud-value.shape.flash { animation: shapeFlash 0.35s ease-out; }
 .size-pip { display:flex; align-items:center; justify-content:center; gap:4px; margin-top:2px; height:12px; }
 .pip-dots { font-size:9px; letter-spacing:2px; color:#5fe0d0; line-height:1; }
@@ -1214,9 +1243,9 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 .hud-value.speed { color: #a3e635; }
 
 @keyframes shapeFlash {
-    0%   { transform: scale(1.0); color: #22d3ee; }
+    0%   { transform: scale(1.0); color: var(--wm-c0); }
     40%  { transform: scale(1.5); color: #a3e635; text-shadow: 0 0 12px #a3e635; }
-    100% { transform: scale(1.0); color: #22d3ee; }
+    100% { transform: scale(1.0); color: var(--wm-c0); }
 }
 
 .controls { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
@@ -1233,7 +1262,7 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     padding: 10px;
     font-size: 14px;
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 11px;
     color: #e2e8f0;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -1247,7 +1276,7 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 }
 .control-btn:hover { background: linear-gradient(180deg, #2d4a6f 0%, #1a4a7a 100%); }
 .control-btn.diag:hover { background: linear-gradient(180deg, #3d2b6f 0%, #2a1f5a 100%); }
-.control-btn:active { background: #38bdf8; color: #0f172a; transform: scale(0.95); }
+.control-btn:active { background: var(--wm-c0); color: #0f172a; transform: scale(0.95); }
 .control-btn.diag:active { background: #a78bfa; color: #0f172a; transform: scale(0.95); }
 .control-btn.hide { visibility: hidden; }
 .control-btn.pause-center {
@@ -1263,7 +1292,7 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     margin-top: 10px;
     padding: 6px 14px;
     font-size: 11px;
-    border-radius: 8px;
+    border-radius: 11px;
     border: 1px solid rgba(253, 230, 138, 0.35);
     background: rgba(253, 230, 138, 0.08);
     color: #fde68a;
@@ -1281,20 +1310,20 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     gap: 10px;
     padding: 12px;
     background: rgba(8, 12, 22, 0.95);
-    border-top: 1px solid #38bdf8;
+    border-top: 1px solid var(--wm-c0);
 }
 .scrub-bar.hidden { display: none; }
 .scrub-btn {
     padding: 10px 16px;
     font-size: 14px;
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 11px;
     border: 1px solid rgba(56, 189, 248, 0.4);
     background: linear-gradient(180deg, #1e3a5f, #0f3460);
     color: #e2e8f0;
     cursor: pointer;
 }
-.scrub-btn:active { background: #38bdf8; color: #0f172a; }
+.scrub-btn:active { background: var(--wm-c0); color: #0f172a; }
 .scrub-btn.resume {
     border-color: rgba(163, 230, 53, 0.5);
     background: linear-gradient(180deg, #2d5f1e, #1a4a0f);
@@ -1303,7 +1332,7 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 .scrub-counter {
     font-family: monospace;
     font-size: 13px;
-    color: #38bdf8;
+    color: var(--wm-c0);
     min-width: 96px;
     text-align: center;
 }
@@ -1419,7 +1448,7 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     height: auto;
     aspect-ratio: 4 / 3;   /* the capture's native ratio */
     display: block;
-    border-radius: 10px;
+    border-radius: 14px;
     flex: 0 0 auto;
     /* Match the how-to key icons' brightness (dark theme; day theme overrides below). */
     filter: brightness(1.4) saturate(1.22) contrast(1.04);
@@ -1479,7 +1508,7 @@ body.theme-day .welcome-box .objective-text { color: var(--wm-steel); }
     color: #94a3b8;
     border: 1px solid rgba(56, 189, 248, 0.18);
     padding: 10px 0;
-    border-radius: 10px;
+    border-radius: 14px;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
@@ -1535,7 +1564,7 @@ body.test-drive .mobile-controls { display: none !important; }
     flex: 0 0 auto;
     width: 88px;
     height: 88px;
-    border-radius: 16px;
+    border-radius: 22px;
     border: 1.5px solid rgba(148, 163, 184, 0.35);
     background: rgba(15, 23, 42, 0.6);
     cursor: pointer;
@@ -1578,7 +1607,7 @@ body.theme-day .td-shape.active rect { fill: var(--wm-c0); }
     gap: 8px;
 }
 
-.screen-title { font-size: 108px; line-height: 1.0; margin-bottom: 5px; color: #38bdf8; text-shadow: 0 0 28px rgba(56, 189, 248, 0.45); }
+.screen-title { font-size: 108px; line-height: 1.0; margin-bottom: 5px; color: var(--wm-c0); text-shadow: 0 0 28px rgba(56, 189, 248, 0.45); }
 
 
 /* Brief player-facing objective — sits between the demo canvas and the
@@ -1650,7 +1679,31 @@ body.theme-day .objective-text {
    the night value would have vanished into the page. */
 :root { --rank-locked: #475569; }
 body.theme-day { --rank-locked: #94a3b8; }
-:root { --wm-steel: #b8c9d9; --wm-c0: #22d3ee; --wm-c1: #a3e635; --wm-c3: #e8b96a; --wm-c4: #ef4444;
+/* ── THE WORDMARK STAYS ONE BLUE ────────────────────────────────────────────
+   The ritual used to flip each letter into a board object's colour at 68% of
+   its 70s loop — O to lime, T to steel, O to amber, Я to red — so the title
+   briefly became a legend for the game's palette. Designer's call: no object
+   colours in the title, blue throughout. The flips themselves are untouched;
+   only the colour keyframes now resolve to --wm-c0.
+
+   c1, c3, c4 and the title steel are kept as variables rather than deleted, so
+   the sequence can be put back by changing four references rather than
+   rebuilding the animation.
+
+   ── AND ONE BLUE MEANS ONE BLUE ─────────────────────────────────────────────
+   The UI had drifted into four near-identical cyans: #38bdf8 across 28 places
+   including the PLAY button, #0ea5e9 as that button's gradient foot, #38dcf0
+   on a settings hover, against the wordmark's var(--wm-c0). Close enough to look
+   like a mistake rather than a choice — which is exactly how it read on the
+   welcome page, the title in one blue and the button beneath it in another.
+   All of them now resolve to the wordmark's blue, and the gradient's foot is a
+   darkened cut of that same colour rather than a different hue.
+
+   NOT touched: --wm-c0's DAY override (#4ba3e3), which is a deliberately
+   deeper blue so the mark reads on white, and the board's playerCyan, which is
+   an object identity like the green and the red rather than interface chrome. */
+:root { --wm-steel: #b8c9d9; --wm-c0: #22d3ee; --wm-c0-deep: #1898ab;
+        --wm-c1: #a3e635; --wm-c3: #e8b96a; --wm-c4: #ef4444;
         /* [300726d] Steel is the voice of the interface: main text on the
            welcome and game screens speaks in the shifter metal. Day uses a
            deeper cut of the same steel so it prints on white. (Also repairs
@@ -1670,7 +1723,22 @@ body.theme-day {
        themes now read at the same strength rather than one being a faded copy
        of the other. */
     --text-steel: #334155;
-    --wm-c0: #4ba3e3;
+    /* [BRAND] #4ba3e3 -> #155e75. The old day blue was chosen as "less thin
+       than the night cyan", and measured it never actually worked: 2.7:1 on
+       white, below even the 3.0 minimum for UI and large text, where night's
+       var(--wm-c0) enjoys 9.9:1 on navy. It softened the problem rather than
+       fixing it.
+
+       #155e75 is 7.3:1 on white — the same treatment [070826p] already gave
+       the TEXT colour, whose note reads "the two themes now read at the same
+       strength rather than one being a faded copy of the other." The blue had
+       never been held to that standard.
+
+       It is a darker cut of the SAME cyan hue, not a different blue, so it
+       reads as one brand colour tuned for a white ground rather than as two
+       colours. One brand blue, two tuned values. */
+    --wm-c0: #155e75;
+    --wm-c0-deep: #0e7490;
 }
 /* [290726t] Day re-inks the wordmark: the night palette is tuned for glow on
    navy and washes out on the white overlay. Same five identities, deeper. */
@@ -1763,8 +1831,8 @@ body.theme-day .wm-ritual .wl { text-shadow: none; }
     21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
     52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
     67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-c1); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c1); }
+    68%    { color: var(--wm-c0); }
+    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
     85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
     86%,100% { color: var(--wm-c0); }
     88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
@@ -1777,8 +1845,8 @@ body.theme-day .wm-ritual .wl { text-shadow: none; }
     21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
     52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
     67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-title-steel); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-title-steel); }
+    68%    { color: var(--wm-c0); }
+    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
     85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
     86%,100% { color: var(--wm-c0); }
     88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
@@ -1791,8 +1859,8 @@ body.theme-day .wm-ritual .wl { text-shadow: none; }
     21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
     52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
     67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-c3); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c3); }
+    68%    { color: var(--wm-c0); }
+    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
     85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
     86%,100% { color: var(--wm-c0); }
     88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
@@ -1819,8 +1887,8 @@ body.theme-day .wm-ritual .wl { text-shadow: none; }
     35.43% { transform: rotateY(540deg); }
     36.57% { transform: rotateY(720deg); }
     67.43% { transform: rotateY(720deg); color: var(--wm-c0); }
-    68.57%,84% { transform: rotateY(900deg); color: var(--wm-c4); }
-    85.14% { transform: rotateY(900deg); color: var(--wm-c4); }
+    68.57%,84% { transform: rotateY(900deg); color: var(--wm-c0); }
+    85.14% { transform: rotateY(900deg); color: var(--wm-c0); }
     86.29% { transform: rotateY(1080deg); color: var(--wm-c0); }
     87.43% { transform: rotateY(1260deg); }
     88.57%,100% { transform: rotateY(1260deg); color: var(--wm-c0); }   /* pinned: no fade back to base */
@@ -1925,14 +1993,14 @@ body.theme-day .toggle-box {
     margin: 12px 0 4px 0;
     background: rgba(15, 23, 42, 0.4);
     padding: 4px;
-    border-radius: 10px;
+    border-radius: 14px;
 }
 .theme-toggle button {
     background: transparent;
     color: #94a3b8;
     border: none;
     padding: 6px 14px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
@@ -1957,7 +2025,7 @@ body.theme-day .toggle-box {
 
 /* Demo canvas on start screen */
 #demoCanvas {
-    border-radius: 8px;
+    border-radius: 11px;
     border: 1px solid rgba(56,189,248,0.2);
     background: #0f172a;
     margin: 8px 0 10px 0;
@@ -1977,10 +2045,10 @@ body.theme-day .toggle-box {
     padding: 15px 50px;
     font-size: 22px;
     font-weight: bold;
-    background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
+    background: linear-gradient(180deg, var(--wm-c0) 0%, #1898ab 100%);
     color: #0f172a;
     border: none;
-    border-radius: 12px;
+    border-radius: 17px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
     transition: all 0.2s;
@@ -2034,12 +2102,12 @@ body.theme-day .scores-empty { color: rgba(71, 85, 105, 0.7); }
     font-family: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.10em;
     color: rgba(148, 163, 184, 0.9);
     background: transparent; border: 1px solid rgba(148, 163, 184, 0.3);
-    border-radius: 9px; text-decoration: none; cursor: pointer;
+    border-radius: 13px; text-decoration: none; cursor: pointer;
     transition: color 0.18s, border-color 0.18s, background 0.18s, transform 0.18s;
 }
 .ext-link svg { width: 14px; height: 14px; }
 .ext-link:hover {
-    color: #38bdf8; border-color: rgba(56, 189, 248, 0.6);
+    color: var(--wm-c0); border-color: rgba(56, 189, 248, 0.6);
     background: rgba(56, 189, 248, 0.08); transform: scale(1.03);
 }
 body.theme-day .ext-link { color: rgba(71, 85, 105, 0.85); border-color: rgba(29, 42, 58, 0.22); }
@@ -2067,16 +2135,16 @@ body.theme-day .ext-link:hover { color: #0284c7; border-color: rgba(2, 132, 199,
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
     padding: 9px 22px;
     font-family: inherit; font-size: 13px; font-weight: 700; letter-spacing: 0.10em;
-    color: #38bdf8;
+    color: var(--wm-c0);
     background: transparent;
     border: 2px solid rgba(56, 189, 248, 0.55);
-    border-radius: 10px;
+    border-radius: 14px;
     cursor: pointer;
     transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
 }
 .scores-link svg { width: 15px; height: 15px; }
 .scores-link:hover {
-    background: #38bdf8; color: #0f172a; border-color: #38bdf8;
+    background: var(--wm-c0); color: #0f172a; border-color: var(--wm-c0);
     transform: scale(1.04);
 }
 body.theme-day .scores-link { color: #0284c7; border-color: rgba(2, 132, 199, 0.5); }
@@ -2140,7 +2208,7 @@ body.theme-day .scores-run-name { color: #334155; }
 }
 .scores-run-score {
     font-size: 17px; font-weight: 800;
-    color: #38bdf8;
+    color: var(--wm-c0);
     font-variant-numeric: tabular-nums;
 }
 body.theme-day .scores-run-score { color: #0284c7; }
@@ -2182,14 +2250,14 @@ body.theme-day .scores-rung-name { color: #334155; }
 .scores-rung.locked .scores-rung-name { color: var(--text-steel, #8fa3b8); font-weight: 600; }
 .scores-rung.you {
     background: rgba(56, 189, 248, 0.10);
-    border-radius: 8px;
+    border-radius: 11px;
     box-shadow: inset 0 0 0 1.5px rgba(56, 189, 248, 0.42);
 }
 body.theme-day .scores-rung.you { background: rgba(2, 132, 199, 0.10); box-shadow: inset 0 0 0 1.5px rgba(2, 132, 199, 0.38); }
 .scores-rung-you-tag {
     font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
-    color: #0f172a; background: #38bdf8;
-    padding: 3px 8px; border-radius: 5px;
+    color: #0f172a; background: var(--wm-c0);
+    padding: 3px 8px; border-radius: 7px;
 }
 body.theme-day .scores-rung-you-tag { color: #ffffff; background: #0284c7; }
 
@@ -2209,7 +2277,7 @@ body.theme-day .scores-rung-you-tag { color: #ffffff; background: #0284c7; }
 }
 .scores-best {
     background: rgba(30, 41, 59, 0.55);
-    border-radius: 9px;
+    border-radius: 13px;
     padding: 10px 6px;
 }
 body.theme-day .scores-best { background: rgba(148, 163, 184, 0.16); }
@@ -2256,15 +2324,15 @@ body.theme-day .scores-best-value { color: #1e293b; }
     position: fixed; top: 14px; left: 14px;
     width: 40px; height: 40px;
     display: flex; align-items: center; justify-content: center;
-    color: #38bdf8;
+    color: var(--wm-c0);
     background: transparent;
     border: 2px solid rgba(56, 189, 248, 0.5);
-    border-radius: 10px;
+    border-radius: 14px;
     cursor: pointer; z-index: 110;
     transition: background 0.18s, color 0.18s;
 }
 .scores-back svg { width: 20px; height: 20px; }
-.scores-back:hover { background: #38bdf8; color: #0f172a; }
+.scores-back:hover { background: var(--wm-c0); color: #0f172a; }
 body.theme-day .scores-back { color: #0284c7; border-color: rgba(2, 132, 199, 0.45); }
 body.theme-day .scores-back:hover { background: #0284c7; color: #ffffff; }
 body.theme-day #scoresScreen { background: #ffffff; }
@@ -2276,7 +2344,7 @@ body.theme-day #scoresScreen { background: #ffffff; }
 .instructions {
     background: rgba(30, 41, 59, 0.8);
     padding: 16px 24px;
-    border-radius: 12px;
+    border-radius: 17px;
     margin: 8px 15px;
     max-width: 400px;
     text-align: left;
@@ -2284,14 +2352,14 @@ body.theme-day #scoresScreen { background: #ffffff; }
     line-height: 1.6;
     border: 1px solid rgba(56, 189, 248, 0.2);
 }
-.instructions h3 { color: #38bdf8; margin-bottom: 10px; text-align: center; }
+.instructions h3 { color: var(--wm-c0); margin-bottom: 10px; text-align: center; }
 .instructions p { margin: 5px 0; }
 
 .game-over-stats { text-align: center; margin: 10px 0; font-size: 15px; }
 .game-over-stats .stat-row { margin: 6px 0; display: flex; justify-content: center; align-items: baseline; gap: 8px; }
 .stat-label { color: #94a3b8; }
 .stat-value { color: #fbbf24; font-weight: bold; font-size: 20px; }
-.stat-best { font-size: 12px; color: #22d3ee; }
+.stat-best { font-size: 12px; color: var(--wm-c0); }
 .stat-best.new-best { color: #a3e635; font-weight: bold; animation: bestPop 0.5s ease-out; }
 @keyframes bestPop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
@@ -2378,7 +2446,7 @@ body.theme-day .taunt-box .go-consolation { color: #1e293b; }
 .taunt-box {
     background: rgba(30, 41, 59, 0.9);
     border: 1px solid rgba(251, 191, 36, 0.5);
-    border-radius: 12px;
+    border-radius: 17px;
     padding: 18px 24px;
     margin: 12px 15px;
     max-width: 360px;
@@ -2392,7 +2460,7 @@ body.theme-day .taunt-box .go-consolation { color: #1e293b; }
 .details-toggle {
     background: none;
     border: 1px solid rgba(100,116,139,0.4);
-    border-radius: 8px;
+    border-radius: 11px;
     color: #64748b;
     font-size: 12px;
     padding: 6px 16px;
@@ -2408,12 +2476,12 @@ body.theme-day .taunt-box .go-consolation { color: #1e293b; }
     margin: 6px 0;
     background: rgba(30, 41, 59, 0.8);
     padding: 6px 10px;
-    border-radius: 8px;
+    border-radius: 11px;
     cursor: pointer;
     border: 1px solid rgba(56, 189, 248, 0.2);
 }
 .toggle-box input { width: 18px; height: 18px; margin-right: 8px; }
-.toggle-box span { color: #38bdf8; font-weight: bold; font-size: 13px; }
+.toggle-box span { color: var(--wm-c0); font-weight: bold; font-size: 13px; }
 /* Move-hint pill under the canvas — secondary affordance (the HUD is full with
    the move-review buttons). Tap to toggle; H key also works. */
 /* (.hint-pill rules removed at 040826i — the play controls are corner icons now.) */
@@ -2428,7 +2496,7 @@ body.theme-day .taunt-box .go-consolation { color: #1e293b; }
     transform: translateX(-50%) translateY(8px);
     max-width: 86%;
     padding: 10px 16px;
-    border-radius: 12px;
+    border-radius: 17px;
     background: rgba(15, 23, 42, 0.88);
     border: 1px solid rgba(56, 189, 248, 0.45);
     color: #e0f2fe;
@@ -2502,7 +2570,7 @@ body.theme-day .lives-label { color: #64748b; }
 .reserve-fill {
     position: absolute; inset: 0 auto 0 0;
     width: 0%;
-    border-radius: 7px 0 0 7px;
+    border-radius: 10px 0 0 10px;
     background: linear-gradient(90deg, #b45309, #fb8b1e);
     transition: width 260ms ease;
 }
@@ -2542,14 +2610,14 @@ body.theme-day .reserve-label { color: #1e293b; text-shadow: none; opacity: 0.7;
 .combo-bar-wrap {
     height: 4px;
     background: rgba(255,255,255,0.1);
-    border-radius: 2px;
+    border-radius: 3px;
     margin-top: 3px;
     overflow: hidden;
     width: 60px;
 }
 .combo-bar {
     height: 100%;
-    border-radius: 2px;
+    border-radius: 3px;
     transition: width 0.1s linear;
     background: linear-gradient(90deg, #fb923c, #fbbf24);
 }
@@ -2558,7 +2626,7 @@ body.theme-day .reserve-label { color: #1e293b; text-shadow: none; opacity: 0.7;
 .score-breakdown {
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgba(251, 191, 36, 0.2);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 12px 20px;
     margin: 6px 15px;
     max-width: 340px;
@@ -2586,17 +2654,17 @@ body.theme-day .reserve-label { color: #1e293b; text-shadow: none; opacity: 0.7;
 
 .legend { display: flex; gap: 12px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #94a3b8; }
-.legend-box { width: 14px; height: 14px; border-radius: 3px; }
+.legend-box { width: 14px; height: 14px; border-radius: 4px; }
 .coverage-badge {
     display: inline-block;
     padding: 2px 7px;
-    border-radius: 10px;
+    border-radius: 14px;
     font-size: 11px;
     font-weight: bold;
     margin-left: 4px;
 }
 .grade-s { background: rgba(163,230,53,0.2); color: #a3e635; border: 1px solid rgba(163,230,53,0.4); }
-.grade-a { background: rgba(56,189,248,0.2); color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); }
+.grade-a { background: rgba(56,189,248,0.2); color: var(--wm-c0); border: 1px solid rgba(56,189,248,0.4); }
 .grade-b { background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); }
 .grade-c { background: rgba(148,163,184,0.2); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3); }
 
@@ -2607,12 +2675,12 @@ body.theme-day .reserve-label { color: #1e293b; text-shadow: none; opacity: 0.7;
 .howto-item { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 56px; }
 .howto-item { gap: clamp(4px, 1.3cqw, 8px); width: clamp(52px, 16.5cqw, 112px); }
 .howto-tile {
-    width: 26px; height: 26px; border-radius: 6px;
+    width: 26px; height: 26px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
 }
 .howto-tile {
     width: clamp(30px, 11cqw, 76px); height: clamp(30px, 11cqw, 76px);
-    border-radius: clamp(7px, 2.5cqw, 17px);
+    border-radius: clamp(10px, 3.5cqw, 23px);
 }
 .howto-tile svg { width: 16px; height: 16px; display: block; }
 .howto-tile svg { width: 62%; height: 62%; }
@@ -2646,7 +2714,7 @@ body.theme-day .howto-label { color: #64748b; }
 .howto-wrap { width: 100%; }
 .howto-group {
     display: flex; flex-direction: column; align-items: center; gap: 5px;
-    padding: 5px 9px 6px; border-radius: 10px;
+    padding: 5px 9px 6px; border-radius: 14px;
     border: 1px solid rgba(148,163,184,0.28);
 }
 .howto-grouplabel {
@@ -2895,7 +2963,7 @@ body.theme-day .settings-overlay { background: #e8eef5; }
 .settings-card {
     width: min(460px, 94%); max-height: 94%; overflow-y: auto;
     background: #0f172a; border: 1px solid rgba(56,189,248,0.25);
-    border-radius: 16px; padding: 22px 24px 26px;
+    border-radius: 22px; padding: 22px 24px 26px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -2909,18 +2977,18 @@ body.theme-day .settings-title { color: var(--wm-c0); }
 .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; font-size: 14px; }
 .settings-row + .settings-row { border-top: 1px solid rgba(148,163,184,0.10); }
 .settings-row.slider-row { flex-direction: column; align-items: stretch; gap: 6px; }
-.settings-row input[type="range"] { width: 100%; accent-color: #22d3ee; height: 22px; }
-.settings-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: #22d3ee; cursor: pointer; flex: none; }
+.settings-row input[type="range"] { width: 100%; accent-color: var(--wm-c0); height: 22px; }
+.settings-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--wm-c0); cursor: pointer; flex: none; }
 .settings-theme { display: flex; gap: 6px; }
 .settings-seg {
-    padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    padding: 6px 10px; border-radius: 11px; font-size: 12px; cursor: pointer;
     background: rgba(30,41,59,0.6); border: 1px solid rgba(148,163,184,0.22); color: #cbd5e1;
 }
-.settings-seg.active { background: rgba(34,211,238,0.18); border-color: #22d3ee; color: #e0f7ff; }
+.settings-seg.active { background: rgba(34,211,238,0.18); border-color: var(--wm-c0); color: #e0f7ff; }
 body.theme-day .settings-seg { background: #e2e8f0; color: #475569; }
 body.theme-day .settings-seg.active { background: rgba(75,163,227,0.16); border-color: var(--wm-c0); color: #0c4a6e; }
 .settings-testdrive {
-    width: 100%; margin-top: 14px; padding: 11px; border-radius: 10px;
+    width: 100%; margin-top: 14px; padding: 11px; border-radius: 14px;
     background: transparent; border: 2px solid rgba(94, 234, 212, 0.5);
     color: #5eead4; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; cursor: pointer;
 }
@@ -2939,7 +3007,7 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: var(--wm-c0); b
 .keymap kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 11px; line-height: 1; min-width: 1.5em; text-align: center;
-    padding: 4px 6px; border-radius: 5px;
+    padding: 4px 6px; border-radius: 7px;
     background: rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.35);
     color: #cbd5e1;
 }
@@ -2947,10 +3015,10 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: var(--wm-c0); b
 body.theme-day .keymap kbd { background: rgba(255,255,255,0.85); border-color: rgba(29,42,58,0.22); color: #334155; }
 body.theme-day .keymap-what { color: #475569; }
 .settings-done {
-    width: 100%; margin-top: 18px; padding: 11px; border: none; border-radius: 10px;
-    background: #22d3ee; color: #06222b; font-weight: 700; font-size: 14px; cursor: pointer;
+    width: 100%; margin-top: 18px; padding: 11px; border: none; border-radius: 14px;
+    background: var(--wm-c0); color: #06222b; font-weight: 700; font-size: 14px; cursor: pointer;
 }
-.settings-done:hover { background: #38dcf0; }
+.settings-done:hover { background: var(--wm-c0); }
 
 /* ── [290726d] LEVEL TALLY ────────────────────────────────────────────────
    The between-levels scorecard. Sits over the game container (above the
@@ -3006,7 +3074,7 @@ body.theme-day .keymap-what { color: #475569; }
     /* Fully opaque: at 0.97 the board and HUD read faintly through a card that
        is meant to be a separate screen. */
     background: #04081a;
-    border-radius: 12px;
+    border-radius: 17px;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     opacity: 0; pointer-events: none; transition: opacity 260ms ease;
 }
@@ -3207,8 +3275,8 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #e8a800; text-shad
     padding: clamp(9px, 2.5cqw, 17px) 23px;
     /* [170826b] 5% smaller — field note. */
     font-size: clamp(15px, 4.4cqw, 27px); font-weight: 700; letter-spacing: 3px;
-    border: none; border-radius: 12px; cursor: pointer;
-    background: #22d3ee; color: #06222b;
+    border: none; border-radius: 17px; cursor: pointer;
+    background: var(--wm-c0); color: #06222b;
     opacity: 0; pointer-events: none; transform: translateY(6px);
     transition: opacity 260ms ease, transform 260ms ease;
 }
@@ -4245,7 +4313,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // the verbs line; day overrides for --wm-c0..c4 removed, and the ritual's
 // multicolour T rides a fixed --wm-title-steel so the exhibit matches night.
 // --wm-steel keeps its day pewter for the board, mini-mark and tiles.
-// (2) Day verbs override (#0ea5e9) removed: FLIP · NAVIGATE · EVOLVE rides
+// (2) Day verbs override (#1898ab) removed: FLIP · NAVIGATE · EVOLVE rides
 // --wm-c0 in both themes, exactly matching the title blue. (3) "Collect the
 // set to level up" wears the TILE metal (--wm-steel): night steel, day
 // pewter — the same colour as the TURN/STEP icons beneath it.
@@ -5365,11 +5433,11 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // which dulled every square even at full momentum. Now the lilac grout
 // (#c4b5fd) the day palette already uses.
 // 050826-0648: ONE DAY BLUE, SAMPLED FROM THE BUTTON — #4ba3e3. Day had been
-// riding --wm-c0's #22d3ee, a cyan tuned to GLOW on navy, which against white
+// riding --wm-c0's var(--wm-c0), a cyan tuned to GLOW on navy, which against white
 // is thin and hard to read. Rather than repaint each rule, the THEME REDEFINES
 // THE VARIABLE: every blue in day now follows — the wordmark ritual, the verbs,
 // all four corner icons and their outlines, the pills. Seven rules that had
-// hardcoded their own day blues (#0369a1, #0ea5e9) are moved onto it as well,
+// hardcoded their own day blues (#0369a1, #1898ab) are moved onto it as well,
 // so the theme has ONE blue instead of four.
 // Score: the tally's points and level total keep the NIGHT gold (#e8a800)
 // rather than burnt orange, matching the HUD fix from 040826p.
@@ -6854,7 +6922,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '050926-1015 ROTOЯ · HOLES';
+const BUILD_VERSION = '060926-0330 ROTOЯ · CLOCK ONLY · QUIET SIDES';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -6873,7 +6941,19 @@ const BUILD_VERSION = '050926-1015 ROTOЯ · HOLES';
                 stamp = `${p(m.getDate())}${p(m.getMonth() + 1)}${String(m.getFullYear()).slice(-2)}-${p(m.getHours())}${p(m.getMinutes())}`;
             }
         } catch (e) {}
-        bs.textContent = 'BUILD ' + stamp;
+        /* [HOLES] AND THE CODE IDENTITY BESIDE IT. The measured time is the
+           right primary — it cannot be wrong about which FILE this is — but it
+           cannot tell two builds apart when they were written minutes from
+           each other, which is exactly what an iterating session produces.
+           Three times in one session the question "which build am I playing?"
+           could not be answered from the screen: 040926-2321 and 040926-2337
+           were different games sixteen minutes apart, and on Pages the number
+           is the deploy time regardless.
+
+           So BUILD_VERSION rides alongside it. The measured stamp says which
+           file; the tag says which code. */
+        const tag = BUILD_VERSION.replace(' ROTOЯ', '').trim();
+        bs.textContent = 'BUILD ' + stamp + (tag ? '  ·  ' + tag : '');
     }
 }
 
@@ -6983,7 +7063,7 @@ function drawHourglassIcon(sx, sy) {
 // force-clear below, and the scorecard audit.
 const DEBUG_MODE = /[?&]debug=1(?:&|$)/.test(location.search || '');
 if (DEBUG_MODE) console.log('%c[ROTOR] debug mode — ?level=N to start on a level, 0 to clear the current one',
-                            'color:#38bdf8;font-weight:bold');
+                            'color:var(--wm-c0);font-weight:bold');
 // ────────────────────────────────────────────────────────────────────────
 
 // On-screen debug log for green-cube interactions (so you can read what
@@ -7110,8 +7190,39 @@ function addBurst(screenX, screenY, color = '#a3e635') {
 // "square" shape — matching the HUD's chunky-cube aesthetic. The caller
 // inset the rect by 2-3px to keep visible gaps between neighbouring cells
 // so the world reads as DISCRETE shapes, not a grid.
+/* ── ONE CORNER RADIUS FOR THE WHOLE CANVAS ─────────────────────────────────
+   Softer corners, designer's call — the old 0.22 read as pointy. Every rounded
+   square the game draws now takes these two numbers: cells, the player, walls,
+   greens, reds, shifters, plugs, the underworld tiles and the demo reel. They
+   were four separate copies of the same formula with three different caps, so
+   "make the corners rounder" would otherwise have meant finding all four and
+   hoping.
+
+   0.22 -> 0.30 of the square's size, cap 8 -> 11px. The cap is what actually
+   bites at board scale: a 44px cell wants 13px of radius at 0.30, so the cap
+   holds it at 11 and keeps a square reading as a square rather than drifting
+   toward a circle. */
+const CORNER_K   = 0.30;
+const CORNER_MAX = 11;
+
+/* [HOLES] The same rounded-square outline as a PATH ONLY — no beginPath, no
+   paint — so many of them can be accumulated into one region and clipped to.
+   Used to make every cell a window onto the space below. */
+function roundedSqPath(sx, sy, size) {
+    const r = Math.min(size * CORNER_K, CORNER_MAX);
+    ctx.moveTo(sx + r, sy);
+    ctx.lineTo(sx + size - r, sy);
+    ctx.quadraticCurveTo(sx + size, sy, sx + size, sy + r);
+    ctx.lineTo(sx + size, sy + size - r);
+    ctx.quadraticCurveTo(sx + size, sy + size, sx + size - r, sy + size);
+    ctx.lineTo(sx + r, sy + size);
+    ctx.quadraticCurveTo(sx, sy + size, sx, sy + size - r);
+    ctx.lineTo(sx, sy + r);
+    ctx.quadraticCurveTo(sx, sy, sx + r, sy);
+    ctx.closePath();
+}
 function roundedSq(sx, sy, size, fill, stroke, strokeW) {
-    const r = Math.min(size * 0.22, 8);
+    const r = Math.min(size * CORNER_K, CORNER_MAX);
     ctx.beginPath();
     ctx.moveTo(sx + r, sy);
     ctx.lineTo(sx + size - r, sy);
@@ -7550,8 +7661,37 @@ const TIMEOUT_RESTART_SEC = 60;
 // settles for good the dead branches can be swept out then — sweeping them now
 // would throw away the A/B before the A/B is finished.
 // The separate clock/ build folder is retired by this: there is one build.
+/* ── HEARTS OFF AGAIN, AND THIS TIME THE DATA DECIDED IT ────────────────────
+   They were turned on when holes landed, on the reasoning that cubes buy
+   ground and lives buy runs. One export settles it: SEVEN deaths in 6.2
+   minutes, spread across every shape. Lives refill on each level-up, so at
+   that rate they are not a scarce resource — they are a speed bump that
+   occasionally ends a run without warning.
+
+   And that death rate is not a fault. Falling into a hole is now the only
+   thing on the board that can kill you, so dying is SUPPOSED to be
+   commonplace. Frequent death plus hearts gives abrupt endings; frequent death
+   plus a time cost gives a bleed you can see coming and can fight.
+
+   THE STRONGER ARGUMENT IS LEGIBILITY. Rows pay 2 seconds, a trim costs 12, a
+   fall costs 20 — everything here is priced in one currency, so any two things
+   can be weighed against each other. A heart sits on its own scale and can be
+   compared to nothing. [210826ao] said it first, before holes existed: "there
+   is no life to have lost, and bumpCost() has already announced the seconds."
+
+   Back to the original sense: clock-only by default, `?hearts=1` to play with
+   them. MAX_LIVES and every decrement site stay exactly where they are. */
 const CLOCK_ONLY = !/[?&]hearts=1(?:&|$)/.test(location.search || '');
-const FALL_COST_SEC = 45;
+/* 45 -> 20. The old number was set when dying was rare and a fall was the
+   worst thing that could happen to you. With holes, death is commonplace by
+   design — 7 in 6.2 minutes in the last export — and 45s each would have taken
+   315 seconds off that run, which is not a penalty, it is the end of the game.
+
+   20 sits properly in the ladder it now belongs to: bump 2, shifter shove 10,
+   trim 12, THIS, and nothing above it. Still the heaviest single charge, still
+   clearly worse than paying to cross, but survivable often enough that a run
+   can absorb a mistake and continue. */
+const FALL_COST_SEC = 20;
 // [300726as] What a completed level GRANTS. It used to be the full ring
 // (MOMENTUM_MAX, now 600s) — so finishing level 1 handed over ten minutes
 // outright, whatever you had collected, which is why cutting hourglass
@@ -8842,9 +8982,26 @@ function edgeTierNow() {
     //  two, which is what stopped it oscillating in the first place.)
     const inT3 = _edgeTier >= 3 ? closing < 2.1 : closing < 1.55;
     if (inT3) return 3;
-    const nearest = Math.min(top, side);
-    const inT2 = _edgeTier >= 2 ? nearest < 1.6 : nearest < 1.0;
+    /* ── THE SIDES NO LONGER RING THE CEILING'S ALARM ───────────────────────
+       Reported as "two notes close together, activated randomly" — and that is
+       exactly what it was. Tier 2 plays C5 then E5 ninety milliseconds apart,
+       and this line fired it on `Math.min(top, side)`, so coming within a cell
+       of the LEFT OR RIGHT edge rang the same warning as the ceiling closing
+       in. It read as random because the player is tracking the scroll, not the
+       sides, so a warning arrived about a thing that was not perceived as a
+       threat at all.
+
+       It also got steadily more frequent without anyone changing the audio:
+       holes make you route around them, routing pushes you against the sides,
+       and the last export shows 7 edge contacts in 6 minutes.
+
+       The two are not the same danger and should not share a sound. The
+       ceiling closes ON ITS OWN while you do nothing wrong; a side edge only
+       arrives if you steer into it, and bumping one already costs a cube and
+       flashes. Tier 2 is the ceiling now. The sides keep their tier 1 tick. */
+    const inT2 = _edgeTier >= 2 ? top < 1.6 : top < 1.0;
     if (inT2) return 2;
+    const nearest = Math.min(top, side);
     const inT1 = _edgeTier >= 1 ? (nearest < 2.6 || bottom < 3.6)
                                 : (nearest < 1.8 || bottom < 2.8);
     return inT1 ? 1 : 0;
@@ -10069,6 +10226,11 @@ function resetSetTracker() {
     let targets = composeSetByBudget(roundBudget(round), round);
     if (!targets.length) targets = [{ type: 'single', config: 'A' }];   // safety
     setNeeded = targets.map(t => requirementId(t.type, t.config, t.difficulty));
+    // [SETS] A matched-pair streak belongs to ONE set. `game` survives a level
+    // change, so without this a repeat could be credited across the boundary —
+    // the last claim of the old set matching the first of the new one, which
+    // is not a decision the player made.
+    game._lastClaimId = null; game._repeatRun = 1;
     setDisplayOrder = targets.slice();
     rec('level', { r: round, set: targets.map(t => t.type + ':' + t.config + (t.difficulty === 'tricky' ? '!' : '')) });   // [160826p]
     game._recLevelStart = nowPlay();   // [160826p][170826b] per-level, play time
@@ -10157,7 +10319,11 @@ function stampGuardMaze(slot) {
             if (!world[key]) { world[key] = type; written.push(key); }
         }
     };
-    putTracked(GUARD_WALLS, 'wall');
+    // [HOLES] The guard maze is the big one — it writes its material through a
+    // variable, so a search for the literal 'wall' misses it entirely. This is
+    // where "walls everywhere" was coming from after every other site had been
+    // converted.
+    putTracked(GUARD_WALLS, WALLS_AS_HOLES ? 'void' : 'wall');
     putTracked(GUARD_REDS, 'hazard');
     put(GUARD_PATH, null);
     // [030826u] THE MAZE MUST NOT SEAL WHAT IT GUARDS. put() skips any cell
@@ -10217,7 +10383,7 @@ function seedSlotsAtTop() {
             const keys = [];
             for (let i = 0; i < len; i++) keys.push(`${Math.min(VIEW_W - 1, x + i)},${y}`);
             if (keys.some(k => world[k] || slots.some(sl => sl.keys.has(k)))) continue;
-            for (const k of keys) world[k] = 'wall';
+            for (const k of keys) blockCell(k);   // [HOLES] guard maze -> moat
             placed++;
         }
     }
@@ -10365,7 +10531,9 @@ function uncoveredFloorInView() {
                a row open because of an unfilled hole while this function
                reported there was nothing left to do, and the reprieve would
                fire on a board that still owed the player a row. */
-            if (world[k] === 'void') return true;
+            // Only owed while the row rule is on — see VOID_BLOCKS_ROW. The two
+            // must agree or the reprieve fires on a board that owes nothing.
+            if (world[k] === 'void') { if (VOID_BLOCKS_ROW) return true; continue; }
             if (world[k]) continue;                    // wall, hazard, pickup, shifter
             if (visited.has(k)) continue;              // already covered
             if (slots.some(sl => sl.keys.has(k))) continue;
@@ -10733,9 +10901,9 @@ function scatterTrickyObstacles(slotCells) {
         if (count <= 0) break;
         // Row-passage guard: never push a row past 6 blocked cells.
         let rowBlocked = 0;
-        for (let x = 0; x < VIEW_W; x++) { const w = world[`${x},${cand.y}`]; if (w === 'wall' || w === 'hazard') rowBlocked++; }
+        for (let x = 0; x < VIEW_W; x++) { const w = world[`${x},${cand.y}`]; if (w === 'wall' || w === 'hazard' || w === 'void') rowBlocked++; }
         if (rowBlocked >= 6) continue;
-        world[cand.key] = Math.random() < 0.6 ? 'wall' : 'hazard';
+        world[cand.key] = Math.random() < 0.6 ? (WALLS_AS_HOLES ? 'void' : 'wall') : 'hazard';   // [HOLES]
         count--;
     }
 }
@@ -10763,7 +10931,7 @@ function drawMoveDebug() {
     ctx.save();
     ctx.globalAlpha = 0.92;
     ctx.fillStyle = '#0b1220';
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#22d3ee';
     ctx.lineWidth = 1;
     ctx.fillRect(x0, y0, w, 188);
     ctx.strokeRect(x0, y0, w, 188);
@@ -10771,7 +10939,7 @@ function drawMoveDebug() {
     ctx.globalAlpha = 1;
     ctx.textAlign = 'left';
     ctx.font = 'bold 12px monospace';
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#22d3ee';
     ctx.fillText(`${shape.name}  ·  config ${cfg}`, x0 + 8, y0 + 18);
 
     ctx.font = '10px monospace';
@@ -10982,11 +11150,22 @@ function drawPauseOverlay() {
     ctx.fillStyle = day ? '#0f172a' : '#e2e8f0';
     ctx.font = 'bold 34px sans-serif';
     ctx.fillText('PAUSED', LOGICAL_W / 2, LOGICAL_H / 2 - 6);
-    // The instruction fades with the wash — it has done its job once read, and a
-    // permanent caption over the board would be the clutter the panel was.
+    /* THE INSTRUCTION STAYS READABLE. It still softens once read — that was the
+       point, and a caption shouting over the board forever is the clutter the
+       old panel was — but its floor was 0.25, which with the 0.75 base put it
+       at 19% opacity while the wash behind it had also thinned to 0.20. The
+       result reads as text UNDERNEATH the grid rather than over it: cell
+       outlines cross the letters and win.
+
+       Floor is 0.8 now, so it settles around 60% instead of 19% — still
+       visibly quieter than PAUSED above it, still legible against a board full
+       of cells. The shadow is also thickened for this line alone: PAUSED is
+       34px bold and carries itself, while 15px text over a lattice needs the
+       halo to separate it from the outlines behind. */
     ctx.font = 'bold 15px sans-serif';
-    ctx.fillStyle = day ? `rgba(15,23,42,${0.72 * Math.max(0.25, k)})`
-                        : `rgba(226,232,240,${0.75 * Math.max(0.25, k)})`;
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = day ? `rgba(15,23,42,${0.72 * Math.max(0.8, k)})`
+                        : `rgba(226,232,240,${0.8 * Math.max(0.8, k)})`;
     ctx.fillText(PAUSE_PROMPT, LOGICAL_W / 2, LOGICAL_H / 2 + 26);
     ctx.restore();
 }
@@ -11145,12 +11324,12 @@ function drawScrubOverlay(snap) {
     const h = 58, y = LOGICAL_H - h;
     ctx.fillStyle = 'rgba(8, 12, 22, 0.86)';
     ctx.fillRect(0, y, LOGICAL_W, h);
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#22d3ee';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(LOGICAL_W, y); ctx.stroke();
 
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#22d3ee';
     ctx.font = 'bold 13px monospace';
     // [210826d] A sub-frame says so. Without this the hop frames read as
     // duplicate move numbers and the review looks broken rather than detailed.
@@ -11489,6 +11668,33 @@ let world = {};
    ═══════════════════════════════════════════════════════════════════════════ */
 const isVoid = (x, y) => world[`${x},${y}`] === 'void';
 
+/* ── [HOLES] NO VISIBLE WALLS: THE MATERIAL CHANGES, THE STRUCTURE DOES NOT ──
+   Designer's call — no walls on the board. The obvious way to do that is to
+   stop generating them, and it is the wrong way: walls are load-bearing here.
+   They are what guards a slot (stampGuardMaze), what an island is made of,
+   and what gives a tunnel its sides. Delete them and slots become free to
+   claim, the navigation obstacles vanish and the tunnel sections open out —
+   three difficulty systems quietly removed for a cosmetic reason.
+
+   So nothing is deleted. Every place that used to write a wall now writes a
+   VOID, through blockCell() below. All of main's level design survives
+   unchanged — the same mazes, the same islands, the same corridors, in the
+   same places — but the substance they are built from stops saying NO and
+   starts quoting a price. The original brief's line, applied to the whole
+   board: "Walls say no; holes quote a price."
+
+   ── WHAT THIS CHANGES ABOUT PLAY, AND IT IS NOT SMALL ───────────────────────
+   A guard maze becomes a MOAT. Slot approaches used to be a path-finding
+   problem — go round — and are now an economic one: go round, or pay cubes to
+   cut through. That is the "replace some guard mazes with moats" option from
+   the slot question, which was declined for slice one when walls were staying.
+   With walls gone it is no longer optional; it is what a guard becomes.
+
+   Set WALLS_AS_HOLES = false to put every wall back exactly as it was. The two
+   states differ by this one constant and nothing else. ─────────────────────── */
+const WALLS_AS_HOLES = true;
+function blockCell(key) { world[key] = WALLS_AS_HOLES ? 'void' : 'wall'; }
+
 /* ── [HOLES] THE SPACE BELOW ────────────────────────────────────────────────
    Every hole is a window onto one continuous space under the whole board —
    not a box with its own back wall. Two holes on screen show the same thing
@@ -11512,8 +11718,47 @@ const isVoid = (x, y) => world[`${x},${y}`] === 'void';
 
    Tuning carried over from the prototype after it was checked on an iPhone
    and an iPad — reported back as reading like depth rather than noise. ───── */
+/* Ground is a LID over a window; a hole is where the lid is missing. Carried
+   from the prototype at 0.60, which is the value the phone test was run
+   against. The resulting ladder of how much of the space below comes through:
+
+       void          100%   no lid at all
+       ground         40%   lid at 0.60
+       covered        27%   lid, then the plum trail at 0.32 over it
+       gutter          0%   outside the clip entirely
+
+   Night only. Day's floor is opaque white tiles by design and hides the layer,
+   which is correct for a light theme — the space below is a dark-board idea. */
+/* THE LID IS MAIN'S OWN BOARD COLOUR, not the prototype's. rgba(13,20,36,.60)
+   came straight from the fork and was wrong here, for a reason that only shows
+   up in this file: the underworld paints a #050912 base inside every cell it
+   is clipped to, and main's board is #0f172a. A darker lid over a darker base
+   left every ground cell VISIBLY DARKER THAN THE GUTTER between cells — which
+   inverts main's night design, where the board shows through and cells are
+   drawn as outlines on it. The grid would have read as light lines over dark
+   tiles, the opposite of the intended surface.
+
+   Using the board's own colour at 0.66 brings a ground cell back to roughly
+   the tone it always had, with the drift faintly visible behind it. Ported
+   values are not portable when the surface underneath them differs. */
+const GROUND_LID = 'rgba(15,23,42,0.66)';
 const UNDER_A_SCALE = 0.55,  UNDER_B_SCALE = 0.29;   // tile size vs CELL
-const UNDER_A_ALPHA = 0.26,  UNDER_B_ALPHA = 0.18;   // line alpha
+/* Up again to 0.42 / 0.30, and this is only safe because the top layer moved
+   first. The hierarchy is held by three things at once now, not by alpha
+   alone:
+
+     WEIGHT   cell outline 1.8px, near layer 1.3, far 1.05
+     COLOUR   the board is near-WHITE (226,232,240); the space below is a
+              muted blue (104,142,190) and never goes white. Hue is what keeps
+              it recessive no matter how bright it gets — a desaturated blue
+              at 0.42 still reads as "behind" where white at 0.42 would read
+              as "another grid".
+     LID      through walkable ground only 40% of it survives, so the layer is
+              at full strength exactly where there is no floor and muted
+              everywhere there is.
+
+   Ratio near:far unchanged at 1.4, so distance reads as before. */
+const UNDER_A_ALPHA = 0.42,  UNDER_B_ALPHA = 0.30;   // line alpha
 const UNDER_A_WIDTH = 1.3,   UNDER_B_WIDTH = 1.05;   // line width
 const UNDER_A_VY    = -2.94, UNDER_B_VY    = -1.12;  // px/sec, straight up
 const underPatterns = {};
@@ -11523,7 +11768,7 @@ function underPattern(P, alpha, width) {
     const c = document.createElement('canvas');
     c.width = P; c.height = P;
     const g = c.getContext('2d');
-    const size = P * 0.72, off = (P - size) / 2, r = Math.min(size * 0.22, 8);
+    const size = P * 0.72, off = (P - size) / 2, r = Math.min(size * CORNER_K, CORNER_MAX);
     g.strokeStyle = `rgba(104,142,190,${alpha})`;
     g.lineWidth = width;
     g.beginPath();
@@ -11548,18 +11793,40 @@ function drawUnderworld(camInt, camFrac) {
        continuous opening, so a 3x3 chasm is a single hole rather than nine
        tiles in a square. Clipping to the inset cell box instead would give
        every hole a lattice of its own and make its true extent guesswork. */
-    const holes = [];
+    /* ── EVERY CELL IS A WINDOW; THE GUTTER IS NOT ─────────────────────────
+       Two shapes of clip, and the difference between them is the point.
+
+       GROUND cells clip to their rounded box, so the space below shows through
+       each one as a discrete tile and the inset gutter between them stays
+       solid board. That gutter is why this is a clip rather than a
+       transparent background — fully transparent, the layers came through
+       every gap and put a grid of bright seams across the whole screen.
+
+       VOID cells clip to their FULL GRID SQUARE, gutter included. Because
+       neighbouring voids share their edges they merge into ONE continuous
+       opening: a 3x3 chasm is a single hole in the board, not nine tiles
+       arranged in a square. Clipped to boxes, a chasm's true extent would be
+       guesswork.
+
+       The first port of this clipped ONLY the voids, which meant the layer
+       could not be seen through ground at all — half the idea. ─────────── */
+    const INSET = currentTheme === 'day' ? 1 : 2;
+    const BOX = CELL - INSET * 2;
+    const ground = [], holes = [];
     for (let row = -1; row <= VIEW_H + 1; row++) {
         const wy = camInt + row;
-        for (let col = 0; col < VIEW_W; col++)
-            if (world[`${col},${wy}`] === 'void')
-                holes.push([col * CELL, (row - camFrac) * CELL]);
+        for (let col = 0; col < VIEW_W; col++) {
+            const y = (row - camFrac) * CELL;
+            if (world[`${col},${wy}`] === 'void') holes.push([col * CELL, y]);
+            else ground.push([col * CELL + INSET, y + INSET]);
+        }
     }
-    if (!holes.length) return;
+    if (!holes.length && !ground.length) return;
 
     ctx.save();
     ctx.beginPath();
-    for (const [x, y] of holes) ctx.rect(x, y, CELL, CELL);
+    for (const [x, y] of ground) roundedSqPath(x, y, BOX);
+    for (const [x, y] of holes)  ctx.rect(x, y, CELL, CELL);
     ctx.clip();
 
     ctx.fillStyle = currentTheme === 'day' ? '#0d1420' : '#050912';
@@ -11586,13 +11853,146 @@ function drawUnderworld(camInt, camFrac) {
 /* Buy one cell of ground with one cube. Returns true if a void was filled, so
    callers can count the purchase. Deliberately does not markCovered() — see
    above, and see checkFullRow, which is where the cost is repaid. */
+/* ── [HOLES] THE BOARD REMEMBERS WHAT YOU BOUGHT ────────────────────────────
+   Ground paid for with cubes survives your death. Without this, dying resets
+   the terrain and the cell you spent a life on is gone before you ever stood
+   on it — which makes "lose a cube but fill the void" a sentence about
+   nothing, and makes a chasm you cannot afford permanently unaffordable.
+
+   With it, a hole you died into three times is a causeway the fourth time, and
+   the run that finally crosses it is standing on the three that did not. It is
+   also what makes islands reachable at all: a moat cannot be crossed inside a
+   single life, so the only way in is across the bodies of earlier attempts.
+
+   Re-applied AFTER generation each time, so a freshly carved hole can never
+   re-open ground already bought. Cleared only on a genuinely new world. */
+let persistentFills = new Set();
 let voidsFilled = 0;
 function fillVoid(x, y) {
     const k = `${x},${y}`;
     if (world[k] !== 'void') return false;
     delete world[k];
+    persistentFills.add(k);
     voidsFilled++;
+    addPlug(x, y);
     return true;
+}
+
+/* ── [HOLES] BALL JOINTS — WHERE YOU ARE ANCHORED ───────────────────────────
+   Every cube carries the ball end of a joint at each of its four corners. A
+   corner finds a SOCKET wherever solid ground meets that grid intersection —
+   any one of the four cells touching the point being real floor is enough.
+
+   ── WHAT THIS IS, AND WHAT IT DELIBERATELY IS NOT ──────────────────────────
+   In the prototype the socket did two jobs: it decided whether a move was
+   ALLOWED, and it showed the player where they were anchored. Only the second
+   is ported. Nothing here refuses a move — in this game a hole quotes a price
+   and you may always pay it, and putting refusals back would mean a lot of
+   dead presses on a board that is now roughly half holes.
+
+   So this is a read, not a rule: at a glance, how much of you is over
+   something solid. Over open ground every corner is socketed and the marks
+   are unremarkable; leaning out across a chasm, they thin out on the side
+   that is about to cost you.
+
+   Shown only while the shape MOVES, and fading after — a permanent lattice of
+   marks over every intersection on the board is wallpaper, and the question
+   "what is holding me?" is only ever asked at the moment of committing. ──── */
+function socketAt(x, y) {
+    // The four cells meeting this intersection; solid ground in any one of
+    // them is a socket. Off-board columns count as nothing.
+    return !isVoid(x - 1, y - 1) || !isVoid(x, y - 1)
+        || !isVoid(x - 1, y)     || !isVoid(x, y);
+}
+/* THE JOINT THE TURN WAS MADE ON — not every joint available.
+   The first pass lit every socketed corner of the shape, which is a different
+   and much less interesting statement: it says "here is all the ground you are
+   touching" rather than "here is the point you just pivoted about". On a
+   four-cube shape that is up to nine marks, and the one that mattered was
+   indistinguishable among them.
+
+   A flip rotates about the corners the two footprints SHARE. contactPoints
+   finds them — the grid points common to where you were and where you landed —
+   and only those that have a socket are real joints; the rest are just where
+   the hinge line happens to pass. Lighting an unsocketed one was the exact bug
+   the prototype hit: a joint apparently floating in the middle of a chasm,
+   which is precisely where there cannot be one. */
+function contactPoints(from, to) {
+    const cornersOf = c => [[c.x, c.y], [c.x + 1, c.y], [c.x, c.y + 1], [c.x + 1, c.y + 1]];
+    const have = new Set();
+    for (const c of from) for (const p of cornersOf(c)) have.add(p.join(','));
+    const out = [], seen = new Set();
+    for (const c of to) for (const p of cornersOf(c)) {
+        const k = p.join(',');
+        if (have.has(k) && !seen.has(k)) { seen.add(k); out.push(p); }
+    }
+    return out;
+}
+let jointFlash = { t: 0, pts: null };
+function noteJointFlash(fromCells, toCells) {
+    const pts = contactPoints(fromCells, toCells).filter(([x, y]) => socketAt(x, y));
+    jointFlash = pts.length ? { t: performance.now(), pts } : { t: 0, pts: null };
+}
+const JOINT_DUR = 620;
+function drawJoints() {
+    if (!jointFlash.pts) return;
+    const age = performance.now() - jointFlash.t;
+    if (age > JOINT_DUR) { jointFlash.pts = null; return; }
+    const k = age / JOINT_DUR;
+    ctx.save();
+    for (const [gx, gy] of jointFlash.pts) {
+        const px = gx * CELL, py = (gy - game.cameraY) * CELL;
+        ctx.globalAlpha = (1 - k) * 0.6;
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath(); ctx.arc(px, py, 2.6, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = (1 - k) * 0.3;
+        ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(px, py, 3 + k * 8, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+}
+
+/* ── [HOLES] THE PLUG — THE CUBE GOING INTO THE HOLE ────────────────────────
+   The port's biggest omission, and it is not cosmetic. In the prototype a
+   sheared cube DROPPED the depth of one cell, landed, settled, and stopped —
+   and the ground it landed on was the ground it had just become. Main had none
+   of it: the cube simply vanished behind a coloured burst.
+
+   That matters because of what the play data showed. Every death in two runs
+   was a fill — the player is dying to buy ground — and with no animation of
+   the purchase there is nothing on screen that distinguishes "you lost a cube"
+   from "you bought a cell". A death that produces ground reads as a death that
+   produced nothing.
+
+   Deliberately does NOT recede to nothing like a hazard burst: a cube that
+   vanishes reads as loss, and this one is a purchase. It lands and stays for a
+   beat on the ground it made. ─────────────────────────────────────────────── */
+let plugs = [];
+const PLUG_DUR = 420;
+function addPlug(x, wy) {
+    // Main has no per-family colour map, so the plug takes the cool tone the
+    // fill burst already uses — it reads as the board's own material, which is
+    // what the cube has just become.
+    plugs.push({ x, wy, t: performance.now(), color: '#7dd3fc' });
+}
+function drawPlugs() {
+    if (!plugs.length) return;
+    const now = performance.now();
+    plugs = plugs.filter(p => {
+        const t = (now - p.t) / PLUG_DUR;
+        if (t >= 1) return false;
+        const k = t < 0.62 ? (t / 0.62) : 1;
+        const drop = CELL * 0.55 * (k * k);
+        const bounce = t > 0.62 ? Math.sin((t - 0.62) / 0.38 * Math.PI) * 3.5 * (1 - t) : 0;
+        const sx = p.x * CELL + 4;
+        const sy = (p.wy - game.cameraY) * CELL + 4 - CELL * 0.55 + drop - bounce;
+        ctx.save();
+        ctx.globalAlpha = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
+        ctx.shadowColor = p.color; ctx.shadowBlur = 14 * (1 - t);
+        roundedSq(sx, sy, CELL - 8, p.color, null);
+        ctx.restore();
+        return true;
+    });
 }
 // [290726m] HAZARD PROVENANCE — every red records who placed it and on which
 // move, and every red consumption records the same. Written to diagnose the
@@ -11774,7 +12174,7 @@ function placeWallBlock(x, y, w, h) {
     for (let dx = 0; dx < w; dx++) {
         for (let dy = 0; dy < h; dy++) {
             const key = `${x + dx},${y + dy}`;
-            world[key] = 'wall';
+            blockCell(key);   // [HOLES]
         }
     }
 }
@@ -11782,7 +12182,7 @@ function placeWallBlock(x, y, w, h) {
 function placeWallShape(x, y, cells) {
     for (const [dx, dy] of cells) {
         const key = `${x + dx},${y + dy}`;
-        world[key] = 'wall';
+        blockCell(key);   // [HOLES]
     }
 }
 
@@ -11966,7 +12366,7 @@ function maybePlaceIsland(y, safeZoneEnd) {
             if (!anyOpen) return;   // this island would seal the board — skip it
         }
     }
-    for (const key of keys) world[key] = 'wall';
+    for (const key of keys) blockCell(key);   // [HOLES] island -> a hole to route around
     // [150826m] An island is the commonest way a pocket forms — it lands beside
     // an existing wall and closes the gap between them. Breach the band it was
     // written into, so the space it just enclosed is opened again.
@@ -12051,7 +12451,140 @@ function holeCellFree(x, y) {
     return true;
 }
 
+/* ══ [ISLANDS] A SET WORTH CROSSING FOR ═════════════════════════════════════
+   The stepping-stone idea, and the reason holes exist at all.
+
+   Measured across two runs, filling a hole to unblock a row led to that row
+   completing 1 time in 11, then 2 in 10. The rule is real and the player
+   cannot feel it: you fill a hole and the row still wants eight more squares,
+   so you walk away and finish an easier one. A reason nobody can act on is not
+   a reason.
+
+   An island replaces it with something you can see. A platform in the middle
+   of a moat, carrying a GREEN and hosting a SLOT — so the thing on the other
+   side of the gap is a set piece you need, and the gap is priced in cubes and
+   seconds. You close it because of what is over there, not because a rule says
+   a row is blocked.
+
+   ── WHY THIS IS ONLY POSSIBLE NOW ───────────────────────────────────────────
+   It was deferred twice, for a reason that has since gone. A moat could not be
+   crossed within one life: past the first row of void there is no solid cell
+   beside the contact line, so every deeper move was refused, and a single that
+   stepped in died. Two changes fixed it. A single now pays TRIM_COST_SEC
+   instead of its life, so it can walk a moat for seconds; and fills persist
+   within a run, so a crossing part-made survives dying somewhere else.
+
+   ── THE GREEN IS NOT DECORATION ─────────────────────────────────────────────
+   An island you can reach but not leave is a trap wearing the costume of a
+   choice. Arriving costs cubes, so you land smaller than you set out; the
+   green on the platform is what funds the trip back. Build the moat without
+   it and the reward is a cage. ─────────────────────────────────────────────── */
+const ISLAND_MOAT   = 2;      // cells of void on every side
+const ISLAND_CHANCE = 0.018;  // per eligible row — rare, it is the big feature
+let islandCells = new Set();  // platform keys: slots may sit here despite the moat
+let islandCooldown = 0;
+
+/* ── ISLANDS ARE PLACES, NOT PRIZES ─────────────────────────────────────────
+   Designer's call: an island should carry the means to CHANGE SHAPE — a green
+   to evolve, a red to devolve, and sometimes a shifter — and they should come
+   in sizes.
+
+   That turns a moat from a toll into a workshop. Arriving costs cubes, so you
+   land smaller than you set out; a bare platform would leave you stranded with
+   whatever survived the crossing. With a green and a red on it you can rebuild
+   or deliberately trim to whatever the slot actually wants, and the crossing
+   becomes a plan rather than a gamble: get across with anything, then MAKE the
+   shape once you are standing there.
+
+   The red matters as much as the green, which is not obvious. Sets ask for
+   specific configurations — a set wanting a single is unclaimable by a square,
+   and a red is the only way to get smaller on purpose. An island with only a
+   green can grow you past what you needed.
+
+   SIZE VARIES because it changes the question. A 1x1 with a green is a stepping
+   stone; a 3x2 with a green, a red and a shifter is somewhere you work for a
+   while. Bigger platforms carry more, and the moat scales with them so a big
+   island is a bigger commitment rather than just a bigger target. */
+function carveIslandSet(y, safeZoneEnd) {
+    if (islandCooldown > 0) { islandCooldown--; return; }
+    if (y > safeZoneEnd - 14) return;
+    if (Math.random() > ISLAND_CHANCE) return;
+
+    /* SIZE GROWS DOWNWARD, NOT SIDEWAYS, and that is forced by the board.
+       The width budget is tight: VIEW_W is 10 and HOLE_MIN_SOLID demands 3
+       clear columns, so an island footprint can never exceed 7 — which with a
+       2-cell moat each side caps the platform at 3 wide. A first pass gave big
+       islands a 3-deep moat as well and they were rejected every time: 3 + 3 +
+       3 is 9 columns, leaving 1. Measured, not one large island generated in
+       4000 rows.
+
+       So the moat stays 2 on every size and islands get TALLER instead. Height
+       is unconstrained — the board scrolls, so a 3x3 platform is a bigger
+       commitment in the axis that actually costs you time. */
+    const roll = Math.random();
+    const pw = roll < 0.34 ? 1 : roll < 0.72 ? 2 : 3;      // platform width, capped at 3
+    const ph = roll < 0.34 ? 1 : roll < 0.72 ? 2 : 3;      // height carries the size
+    const moat = ISLAND_MOAT;
+
+    const w = pw + moat * 2, rows = ph + moat * 2;
+    if (VIEW_W - w < HOLE_MIN_SOLID) return;               // a way past must survive
+    const x0 = 1 + ((Math.random() * (VIEW_W - w - 1)) | 0);
+
+    // Nothing may already be here — never eat a red, green, slot or shifter.
+    for (let r = 0; r < rows; r++)
+        for (let i = 0; i < w; i++)
+            if (!holeCellFree(x0 + i, y - r)) return;
+
+    // Moat first, then punch the platform back out of it.
+    for (let r = 0; r < rows; r++)
+        for (let i = 0; i < w; i++) world[`${x0 + i},${y - r}`] = 'void';
+
+    const px = x0 + moat, py = y - moat;
+    const plat = [];
+    for (let ry = 0; ry < ph; ry++)
+        for (let rx = 0; rx < pw; rx++) {
+            const k = `${px + rx},${py - ry}`;
+            delete world[k];
+            islandCells.add(k);
+            plat.push(k);
+        }
+
+    /* THE WORKSHOP. A green always — it is the fare home and without it the
+       island is a cage. A red once there is room for one, so you can trim to
+       the shape the set wants rather than only grow. A shifter on the biggest
+       platforms, where there is space to use one. Each takes a cell, so the
+       tools never fill the platform: at least one square is always left to
+       stand on, or you could arrive and have nowhere to be. */
+    const free = plat.slice();
+    const take = () => free.length > 1 ? free.splice((Math.random() * free.length) | 0, 1)[0] : null;
+
+    /* THE GREEN MAY TAKE THE LAST CELL; THE RED MAY NOT.
+       A first pass guarded every tool behind "leave one square free", and it
+       left five of eighteen islands with no green at all — every 1x1 stepping
+       stone was a bare rock. The guard was wrong for a green specifically: a
+       pickup is CONSUMED on contact, so landing on the only square takes the
+       green and leaves you standing there. A red is the opposite — it trims
+       the cube that lands on it, so a red on the only square means you cannot
+       be on the island at all. Hence one rule each way, not one rule for
+       both. */
+    const g = free.length ? free.splice((Math.random() * free.length) | 0, 1)[0] : null;
+    if (g) world[g] = 'pickup';                                          // evolve
+    if (plat.length >= 3) { const r = take(); if (r) world[r] = 'hazard'; }   // devolve
+    if (plat.length >= 5 && Math.random() < 0.6) {
+        const s = take();
+        if (s) world[s] = Math.random() < 0.5 ? 'slip' : 'pivot';       // a shifter to work with
+    }
+    islandCooldown = 40;
+}
+
 function maybeCarveHole(y, safeZoneEnd) {
+    /* [HOLES] Redundant once walls ARE holes. Measured: converting the walls
+       alone puts ~670 void cells in 500 rows, against 159 from this carver on
+       its own — every tunnel flank, island and guard maze is now a hole, so
+       the board already has more of them than the carver was ever adding.
+       Running both saturates it. This exists for the WALLS_AS_HOLES = false
+       case, where holes are a new feature sitting alongside real walls. */
+    if (WALLS_AS_HOLES) return;
     if (holeCooldown > 0) { holeCooldown--; return; }
     if (y > safeZoneEnd - 6) return;                 // let the opening breathe
     if (Math.random() > HOLE_CHANCE) return;
@@ -12104,6 +12637,7 @@ function generateChunk(fromY, toY) {
             // around, then scatter hazards; skip cells occupied by anything else.
             maybePlaceIsland(y, safeZoneEnd);
             maybeCarveHole(y, safeZoneEnd);          // [HOLES]
+            carveIslandSet(y, safeZoneEnd);          // [ISLANDS] a set worth crossing for
             // [270726zn] Red scatter is budgeted: at most ONE red per row,
             // and none at all while the 10-row window already holds the cap.
             let rowRed = false;
@@ -12154,7 +12688,7 @@ function generateChunk(fromY, toY) {
                     continue;
                 }
                 if (slots.some(s => s.keys.has(key))) continue;
-                world[key] = 'wall';
+                blockCell(key);   // [HOLES] tunnel sides
             }
         } else if (genMode === 'funnel-in') {
             // Walls grow from edges toward the upcoming tunnel's pattern.
@@ -12163,8 +12697,8 @@ function generateChunk(fromY, toY) {
             const partial = (genFunnelStep + 1) / (FUNNEL_ROWS + 1);
             const lExt = Math.floor(partial * genTunnelPattern.leftWalls);
             const rExt = Math.floor(partial * genTunnelPattern.rightWalls);
-            for (let x = 0; x < lExt; x++) world[`${x},${y}`] = 'wall';
-            for (let x = VIEW_W - rExt; x < VIEW_W; x++) world[`${x},${y}`] = 'wall';
+            for (let x = 0; x < lExt; x++) blockCell(`${x},${y}`);                    // [HOLES] funnel edge
+            for (let x = VIEW_W - rExt; x < VIEW_W; x++) blockCell(`${x},${y}`);      // [HOLES]
             // [030826y] Count what is ACTUALLY open, cell by cell. This used to
             // be arithmetic — VIEW_W minus the wall columns — which silently
             // counted any ISLAND wall already written into this row as floor.
@@ -12177,8 +12711,8 @@ function generateChunk(fromY, toY) {
         } else { // tunnel
             // Full tunnel pattern — 6-wide corridor flanked by walls
             const { leftWalls, rightWalls } = genTunnelPattern;
-            for (let x = 0; x < leftWalls; x++) world[`${x},${y}`] = 'wall';
-            for (let x = VIEW_W - rightWalls; x < VIEW_W; x++) world[`${x},${y}`] = 'wall';
+            for (let x = 0; x < leftWalls; x++) blockCell(`${x},${y}`);               // [HOLES] tunnel flank
+            for (let x = VIEW_W - rightWalls; x < VIEW_W; x++) blockCell(`${x},${y}`); // [HOLES]
             // [030826y] Same fix as the funnel: count open cells, not arithmetic.
             for (let x = 0; x < VIEW_W; x++) if (!world[`${x},${y}`]) game.cellsGenerated++;
             // [300726p] TUNNEL PAYOFF. A tunnel is a commitment: you enter it,
@@ -12223,6 +12757,11 @@ function generateChunk(fromY, toY) {
 
         genRowsRemaining--;
     }
+    // [HOLES] Re-lay every cell a previous life paid for. Applied AFTER the
+    // terrain is written, so a carve or a converted guard maze can never
+    // re-open ground the player already bought with a cube.
+    if (persistentFills.size)
+        for (const k of persistentFills) if (world[k] === 'void') delete world[k];
     // [300726v] The 0910 hybrid spent slot credits HERE — at the generation
     // frontier, which ensureWorldGenerated keeps FIFTY rows ahead of the
     // camera. So every slot was born 50 rows off-screen and needed ~50 rows
@@ -12337,7 +12876,19 @@ function ensureWorldGenerated(cameraY) {
 let currentTheme = 'night';
 const PALETTES = {
     night: {
-        emptyOutline: 'rgba(148, 163, 184, 0.24)',
+        /* [HOLES] 0.24 -> 0.46, and near-white rather than slate. Lifted for
+           the same reason the prototype lifted it: with the walls gone and no
+           lip, slab or wash marking a rim, THESE OUTLINES ARE THE ONLY THING
+           DISTINGUISHING GROUND FROM HOLE. A hole is legible as the place the
+           cells stop, so the cells have to be legible first. At 0.24 slate
+           they sat barely above the board they were drawn on — fine when a
+           brick wall was doing the talking, not fine now. */
+        /* [HOLES] 0.46 -> 0.60. See the width bump at the draw call too: the
+           top layer is separated from the space below on TWO axes now, not
+           one. They were within a whisker of each other on weight (1.4px cell
+           outline against a 1.3px near layer), so brightness was carrying the
+           whole hierarchy alone and raising either one flattened it. */
+        emptyOutline: 'rgba(226, 232, 240, 0.60)',
         visitedFill:  'rgba(129, 90, 175, 0.32)',   // [270726n] muted plum trail, presence raised again per feel — still below the item colours
         // [200826d] Fine cell outline on the trail, ported from day mode — but
         // inverted for neon: day is a DARKER edge on a lighter fill; neon
@@ -12429,7 +12980,10 @@ let game = {
     
     speedTimer: 0,
     speedCountdown: 10,
-    hintsOn: true,        // move-hint overlay (toggle: welcome checkbox, H key, or pill)
+    // [HOLES] Move Guide OFF by default, designer's call — the board is the
+    // thing to read, and the guide answers the question before it is asked.
+    // Still one tap away in Settings, on the welcome page, and on H.
+    hintsOn: false,       // move-hint overlay (toggle: welcome checkbox, H key, or pill)
     tipsOn: true,         // 💡 Tips pill (event-driven first-encounter advice)
     lastTick: 0,
     lastDangerSound: 0,
@@ -12624,6 +13178,8 @@ function slotLeavesPassage(cells) {
 }
 
 function slotIsApproachable(cells) {
+    // [ISLANDS] Is this slot on a platform we deliberately moated?
+    const _toIsland = cells.some(c => islandCells.has(`${c.x},${c.y}`));
     const top = Math.min(...cells.map(c => c.y)) - 2;
     const bot = Math.max(...cells.map(c => c.y)) + VIEW_H;   // a screen's worth of room below
     const seen = new Set();
@@ -12644,7 +13200,14 @@ function slotIsApproachable(cells) {
             const k = `${nx},${ny}`;
             if (seen.has(k)) continue;
             const wv = world[k];
-            if (!own.has(k) && (wv === 'wall' || wv === 'hazard' || wv === 'void')) continue;   // [HOLES]
+            /* [ISLANDS] A void is impassable to this check — a route that costs
+               the player their body is not a guaranteed route — EXCEPT when the
+               slot sits on an island, where the moat is the whole point. There
+               the guarantee is different in kind: not "you can walk to it" but
+               "you can PAY to walk to it", which is affordable now that a
+               single spends seconds rather than its life. */
+            if (!own.has(k) && (wv === 'wall' || wv === 'hazard' ||
+                                (wv === 'void' && !_toIsland))) continue;   // [HOLES]
             seen.add(k);
             q.push([nx, ny]);
         }
@@ -13059,6 +13622,35 @@ function checkSlotClaims() {
         const _comboAtClaim = game._comboAtMove || 1;   // [230826c] frozen at move start
         const _claimForge = claimPts;   // [230826b] the factory sees the pre-combo value
         if (_comboAtClaim > 1) claimPts = Math.round(claimPts * _comboAtClaim);
+
+        /* ── [SETS] THE MATCHING PAIR ───────────────────────────────────────
+           A combo variant that only exists because sets can now ask for two of
+           a kind: bank the SAME requirement twice in a row and the second one
+           pays more.
+
+           It rewards a real decision rather than luck. When a set wants two
+           cubes you can take them as they come, or you can hold your shape and
+           take them back to back — which means keeping a configuration you
+           might otherwise have traded away, and steering to the second socket
+           before the board offers you something easier. That is a line the
+           player chooses, and it is exactly the "stepping stone" flavour of
+           planning the route rather than reacting to it.
+
+           Deliberately modest, and multiplicative with the move combo rather
+           than replacing it: this stacks on top of a hot streak instead of
+           competing with one. Broken by banking any other requirement, so it
+           cannot accumulate passively over a whole level. */
+        const _repeat = (game._lastClaimId === slot.id);
+        game._lastClaimId = slot.id;
+        if (_repeat) {
+            game._repeatRun = (game._repeatRun || 1) + 1;
+            claimPts = Math.round(claimPts * 1.5);
+            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.36,
+                     game._repeatRun > 2 ? `MATCHED x${game._repeatRun}!` : 'MATCHED PAIR!', '#ffe97a', true);
+            rec('match', { id: slot.id, run: game._repeatRun });
+        } else {
+            game._repeatRun = 1;
+        }
 
         const ni = setNeeded.indexOf(slot.id);
         if (ni >= 0) setNeeded.splice(ni, 1);
@@ -13640,7 +14232,7 @@ function showRoundOverlay(roundNum, instant = false) {
     { const lbl = overlay.querySelector('.round-overlay-label');
       if (lbl) {
           const w = LEVEL_WASH[roundNum];
-          const base = endlessDepth > 0 ? '#db2777' : (w ? w[0] : '#38bdf8');
+          const base = endlessDepth > 0 ? '#db2777' : (w ? w[0] : '#22d3ee');
           lbl.style.color = currentTheme === 'day' ? base : lightenHex(base, 0.45);
       } }
     const nu = document.getElementById('roundOverlayNew');
@@ -16342,7 +16934,52 @@ const SHIFT_OOB_COST_SEC = 10;
 // exactly one pickup — cheap enough to plough through routinely, which stops a
 // red being something you plan around. Two pickups is a price worth avoiding,
 // and keeps the arithmetic clean.
-const RED_BURN_COST_SEC = 20;
+/* ── ONE PRICE FOR TAKING ONE UNIT OF YOU ───────────────────────────────────
+   Was 20 for a red and, once holes arrived, 12 for a hole. Two numbers for one
+   rule, which is the drift [300726bj] already caught once: RED_BUMP_COST_SEC
+   sat at 15 with a comment describing hourglass tiers that had since changed,
+   meaning nothing and quietly going stale. The fix then was one rule, one
+   number. This is the same fix a second time.
+
+   THE RULE: the board takes one unit of you. A shape with cubes pays a cube; a
+   single has none to give, so it pays in seconds. Reds and holes are the same
+   event under that rule, so they are the same number.
+
+   WHY 12 AND NOT 20. Scaled against the ladder it sits in — bump 2, shifter
+   shove 10, THIS, fall 45 — and against the fact that it lands on the shape
+   least able to afford anything, in a game whose board is now roughly half
+   holes. At 20 a single bled two shifter-shoves for the commonest interaction
+   on the board.
+
+   NO SCORE PENALTY, deliberately. Shape size IS the scoring rate (single 1,
+   pair 2, diagonal 2, jshape 3, square 4), so losing a cube already cuts what
+   you earn until you regrow — a compounding, self-repairing cost that needs no
+   help. And a red is not a punishment: the trim pays 3, and the supply system
+   plants one NEXT TO YOU when you need to shed cubes. You do not guarantee a
+   supply of punishments. ───────────────────────────────────────────────────── */
+const TRIM_COST_SEC = 12;
+const RED_BURN_COST_SEC = TRIM_COST_SEC;
+/* [HOLES] Now the same constant as a red — see TRIM_COST_SEC above. It briefly
+   had its own value, set by feel rather than by any argument, which is how the
+   drift starts. */
+const VOID_BURN_COST_SEC = TRIM_COST_SEC;
+
+/* ── [HOLES] WHY THERE IS NO INTERVAL GREEN INCOME HERE ─────────────────────
+   The prototype grew one: greens every N rows of open ground, because a soak
+   showed the player ratcheting down to a single with no way back up. Porting
+   it looked obvious, and the play export says it would have been wrong.
+
+   Run two, 587 seconds: 51 greens SPAWNED, 28 collected. Supply is not the
+   constraint — main's demand-driven pickup system is already offering income
+   faster than it can be taken. And every single shrink event in both runs was
+   pair->single or diagonal->single: the player is not starved of greens, they
+   are being knocked back down as fast as they climb.
+
+   So the drain is the problem, not the income, and adding a second supply
+   stream would have papered over it while breaking main's scarcity design
+   (which has explicit notes about not coupling supply to success). The two
+   real levers are the price of a hole — see VOID_BURN_COST_SEC above — and how
+   many holes exist at all, which is WALLS_AS_HOLES. ─────────────────────── */
 // [300726bj] RED_BUMP_COST_SEC deleted — every red contact now charges
 // RED_BURN_COST_SEC. A second constant for the same event is a second number to
 // forget to update, which is exactly what happened when the tiers changed.
@@ -16545,6 +17182,30 @@ function move(dir) {
                 break;
             }
         }
+        /* ── [HOLES] NO SOCKET, NO FLIP ─────────────────────────────────────
+           Designer's call, and it restores the rule the prototype was built
+           around. The whole game is flipping: a flip rotates about the corners
+           the old and new footprints SHARE, and a corner is only a hinge if
+           solid ground meets that grid point. Over open ground every press has
+           one and nothing changes. Deep inside a hole there is none, and the
+           press is refused rather than carrying you further into nothing.
+
+           This is a REFUSAL, not a cost — nothing is charged, because you did
+           not hit anything. The price of misreading the board is that you do
+           not move; the price of crossing it is cubes and seconds. Two
+           different mistakes, two different answers.
+
+           IT DOES NOT TRAP YOU, and the fill is why. Stepping in from the rim
+           always has a socket, so the first move into a hole is always legal —
+           and once you have paid for it that cell is ground, which gives the
+           next step its own socket. You bootstrap across a moat one bought
+           cell at a time. Without the fill economy this rule would seal a
+           chasm permanently; with it, the rule and the economy are the same
+           mechanism seen from two sides. */
+        if (!refuse) {
+            const eng = contactPoints(getPlayerCells(), probeCells);
+            if (eng.length && !eng.some(([gx, gy]) => socketAt(gx, gy))) refuse = true;
+        }
         const redIdx = [];
         if (!refuse) probeCells.forEach((c, i) => {
             const wv = world[`${c.x},${c.y}`];
@@ -16554,13 +17215,22 @@ function move(dir) {
         if (refuse) {
             // [290726g] More than one cube? The contact costs you the cubes
             // that touched. A single keeps the old recoil-and-wall answer.
+            /* [HOLES] LABEL IT BY WHAT ACTUALLY HAPPENED. This branch handles
+               two different contacts — the board's side EDGE and a WALL — and
+               reported both as 'wall'. With walls converted to holes there are
+               none left, so every one of these is an edge, and the last export
+               duly showed 9 damage events blamed on a wall in a game that
+               generates zero. Same shared-path, hardcoded-label fault as the
+               red/void channel, found the same way. */
             const impactIdx = [];
+            let _edge = 0, _wall = 0;
             probeCells.forEach((c, i) => {
-                if (c.x < 0 || c.x >= VIEW_W) { impactIdx.push(i); return; }
+                if (c.x < 0 || c.x >= VIEW_W) { impactIdx.push(i); _edge++; return; }
                 const wv = world[`${c.x},${c.y}`];
-                if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) impactIdx.push(i);
+                if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) { impactIdx.push(i); _wall++; }
             });
-            if (applyImpactDevolve(impactIdx, 'wall')) return;
+            if (applyImpactDevolve(impactIdx,
+                _edge && _wall ? 'mixed' : _wall ? 'wall' : 'edge')) return;
             showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
             // [300726r] The BOARD EDGE simply refuses — no lateral shove.
             // Being pushed across the screen for pressing into the frame is a
@@ -16579,6 +17249,65 @@ function move(dir) {
             HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
             return;
+        }
+        /* ── [HOLES] A SINGLE BUYS GROUND WITH SECONDS, NOT ITS LIFE ────────
+           Straight from the play data, and it was not close: 13 of 13 deaths
+           across two runs happened within two seconds of a fill, and 11 of
+           those 13 died as a SINGLE. Nothing else killed the player — not the
+           clock, not reds, not the ceiling. One failure mode: shrink down,
+           then the last cube goes into a hole.
+
+           That is the ratchet the prototype warned about arriving in main,
+           and it arrives harder here because slice one did not port the
+           prototype's interval greens — main's greens are demand-driven and
+           capped at two on screen, so a single has no reliable way back up.
+
+           The fix is this game's own, not a new invention. [300726bc] already
+           decided that a single BURNS THROUGH a red rather than bouncing off
+           it, paying RED_BURN_COST_SEC because "singles pay in seconds what
+           bigger shapes pay in cubes". A hole is the same situation with the
+           same answer: the single moves on, the cell becomes ground, and the
+           price is time.
+
+           Bigger shapes are untouched — they still pay a cube, and the last
+           cube of a multi-cube shape is still a death. What has gone is the
+           case where the smallest and most agile shape was also the only one
+           that could not survive touching the board's commonest object. */
+        /* ── WHY A HOLE CAN KILL AND A RED CANNOT ───────────────────────────
+           Worth stating, because the two are deliberately NOT symmetrical and
+           the difference was first noticed as a bug.
+
+           A multi-cube shape that would lose EVERY cube to reds does not die:
+           redBump() bounces it back, charges the trim, and the reds survive.
+           The same shape losing every cube to holes DOES die — nothing catches
+           it here, the collision pass trims all of it, and no survivor is
+           found.
+
+           That asymmetry is kept on purpose. A red is an object sitting ON
+           ground; a hole is the ABSENCE of ground. Bouncing off a thing is
+           reasonable, bouncing off nothing is not — falling into a hole you
+           committed your whole shape to should end you, and it is foreseeable
+           in a way almost nothing else here is: you can see you are stepping
+           entirely over a chasm before you press.
+
+           It is also the only thing left on the board that CAN kill you, now
+           that walls are holes and reds bounce. Make holes match reds and the
+           three lives become nearly unspendable. */
+        if (game.shapeType === 'single') {
+            const vIdx = [];
+            probeCells.forEach((c, i) => { if (world[`${c.x},${c.y}`] === 'void') vIdx.push(i); });
+            if (vIdx.length) {
+                for (const i of vIdx) {
+                    const vc = probeCells[i];
+                    fillVoid(vc.x, vc.y);
+                    addBurst(vc.x * CELL + CELL/2, (vc.y - game.cameraY) * CELL + CELL/2, '#7dd3fc');
+                }
+                bumpCost(VOID_BURN_COST_SEC,
+                         probeCells[vIdx[0]].x * CELL + CELL/2,
+                         (probeCells[vIdx[0]].y - game.cameraY) * CELL);
+                rec('fill', { n: vIdx.length, s: 'single', paid: 'sec' });
+                HAPTICS.fire(HAPTIC.red, 90);
+            }
         }
         if (redIdx.length > 0 && !tryMultiDevolve(probeCells, redIdx)) {
             // [300726bc] ONE RED RULE: THE RED IS ALWAYS CONSUMED. It used to
@@ -16746,6 +17475,7 @@ function move(dir) {
         startFlip(dir, _flipFrom, _flipFromParity);
         flip.reTread = _reTread;
         game._lastMoveDir = dir;
+        noteJointFlash(_flipFrom, getPlayerCells());   // [HOLES] only the joint turned on
         game._tdEchoDir = dir; game._tdEchoT = performance.now();   // joystick echo (all modes)
         trackDiagonalUse(dir);
 
@@ -16995,8 +17725,24 @@ function checkCollisions() {
         // in a row the player was completing.
         game._lastTrimT = performance.now();   // trim->claim in one landing = THE SHAVE
         rec('trim', { n: hazardHits.filter(h => !h.wall && !h.isVoid).length, s: game.shapeType, c: Math.round(game.coverage || 0) });   // [160826p]
-        const _filled = hazardHits.filter(h => h.isVoid).length;
-        if (_filled) rec('fill', { n: _filled, s: game.shapeType });
+        /* [HOLES] The fill now carries the ROW it bought into, and how much of
+           that row was still uncovered at the time. Without the row there is
+           no way to ask the question this whole mechanic rests on — did the
+           ground you paid for ever pay you back? The first export could only
+           show fills and row completions as two unrelated streams, and the
+           best I could do was correlate them by timestamp (4 of 17 within
+           twenty seconds), which is suggestive and not evidence. */
+        const _voids = hazardHits.filter(h => h.isVoid);
+        if (_voids.length) {
+            const ry = _voids[0].y;
+            let owed = 0;
+            for (let x = 0; x < VIEW_W; x++) {
+                const k = `${x},${ry}`, w = world[k];
+                if (w === 'wall' || w === 'pickup' || w === 'hazard') continue;
+                if (!visited.has(k)) owed++;
+            }
+            rec('fill', { n: _voids.length, s: game.shapeType, row: ry, owed });
+        }
         for (const hit of hazardHits) {
             if (hit.wall) {
                 // [270726o] Wall stands — it takes the cube, not the reverse.
@@ -17038,15 +17784,42 @@ function checkCollisions() {
         sfx.devolve();
         scoreGain(3, false);   // tool use — the trim transaction pays 3
         // [180826t] The casualty beat: flash the cubes the reds took, hold.
-        devolveStage = { cas: hazardHits.filter(h => !h.wall).map(h => ({ x: h.x, y: h.y })),
+        devolveStage = { cas: hazardHits.filter(h => !h.wall)
+                                        .map(h => ({ x: h.x, y: h.y, v: h.isVoid })),
                          t0: performance.now(), dur: 340 };
         game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
-        rec('hurt', { from: prevType, to: result.shapeType, ch: 'red' });   // [160826q][180826d] channel-tagged
+        /* [HOLES] TAG THE CHANNEL HONESTLY. This said ch:'red' unconditionally,
+           and once voids started arriving through the same trim pass it began
+           reporting holes as reds: measured in the first play export, 13 of 28
+           damage events happened in the same millisecond as a fill and every
+           one of them was filed as a red. Reds were over-counted roughly two
+           to one, which is precisely the poisoned-numerator problem [210826l]
+           was written to prevent — "how often is the red square used?" cannot
+           be answered from a counter that also counts holes.
+
+           A hit can be mixed (a red and a void in one landing), so the tag
+           names what actually happened rather than picking one. */
+        const _nV = hazardHits.filter(h => h.isVoid).length;
+        const _nR = hazardHits.filter(h => !h.isVoid && !h.wall).length;
+        const _nW = hazardHits.filter(h => h.wall).length;
+        const _ch = _nV && _nR ? 'mixed' : _nV ? 'void' : _nW && !_nR ? 'wall' : 'red';
+        rec('hurt', { from: prevType, to: result.shapeType, ch: _ch,
+                      nv: _nV, nr: _nR });   // [160826q][180826d] channel-tagged
         signalSizeChange(prevType, result.shapeType, true); // pip only; devolve() is the audio
         const hitCell = hazardHits[0];
         const screenX = hitCell.x * CELL + CELL/2;
         const screenY = (hitCell.y - game.cameraY) * CELL;
-        addFloat(screenX, screenY, hazardHits.length > 1 ? `DEVOLVE x${hazardHits.length}!` : 'DEVOLVE!', '#ef4444');
+        /* [HOLES] A purchase is not announced as a loss. Cubes given to a hole
+           bought ground, so they say so, in the fill's blue — and this is also
+           the missing half of "make the purchase legible": until now a shear
+           lost you a cube and told you nothing about what you got for it. A
+           mixed landing (a red and a hole in one move) still reports as a
+           devolve, because the red is the part that cost you nothing back. */
+        if (_nV && !_nR)
+            addFloat(screenX, screenY,
+                     _nV > 1 ? `+${_nV} GROUND` : '+1 GROUND', '#7dd3fc');
+        else
+            addFloat(screenX, screenY, hazardHits.length > 1 ? `DEVOLVE x${hazardHits.length}!` : 'DEVOLVE!', '#ef4444');
         showTip('devolve');
         game.roundTrims = (game.roundTrims || 0) + 1;
 
@@ -17746,10 +18519,35 @@ function checkCollisions() {
    continues, and falls through to `return false`. It is written explicitly
    because behaviour this load-bearing should not depend on a fall-through
    nobody can see. */
+/* ── AND WHY IT IS NOW OFF ──────────────────────────────────────────────────
+   The rule above is sound and the player cannot feel it. Measured twice: of
+   the holes filled, the row later completed 1 time in 11, then 2 in 10. You
+   fill a hole and the row still owes eight squares, so you leave it and finish
+   an easier one. A reason nobody can act on is not a reason.
+
+   It also cost something nobody intended. A BAND is two or more rows finished
+   by one landing and it pays a bonus tier — and across 68 row completions in
+   three exports there was exactly ONE band. Bands need ADJACENT rows both
+   clear, and a board with holes through it almost never has two in a row. So
+   this rule quietly switched off a whole scoring tier to deliver a loop that
+   fires twice in twenty.
+
+   The demand it was meant to create now comes from ISLANDS instead: a set you
+   can see on the far side of a moat is a reason that needs no explaining.
+
+   Kept as a flag rather than deleted, because turning it off and adding
+   islands in the same build means neither can be credited alone. Flip this
+   back to true to isolate it. */
+const VOID_BLOCKS_ROW = false;
+
 function checkFullRow(row) {
     for (let x = 0; x < VIEW_W; x++) {
         const key = `${x},${row}`;
-        if (world[key] === 'void') return false;   // [HOLES] unfilled: the row is dead until it is bought
+        // With the rule ON a void kills the row; with it OFF the void is simply
+        // skipped, exactly as a wall is — not a cell you owe. It must CONTINUE
+        // rather than return, or the first hole would complete the row without
+        // the remaining squares ever being checked.
+        if (world[key] === 'void') { if (VOID_BLOCKS_ROW) return false; continue; }
         if (world[key] === 'wall') continue;
         if (world[key] === 'pickup' || world[key] === 'hazard') continue;   // greens & reds = already-occupied floor
         if (visited.has(key)) continue;
@@ -17888,7 +18686,11 @@ function celebrateLineBand(newRows) {
         const _mid = (newRows[0] + newRows[newRows.length - 1]) / 2;
         addFloat(LOGICAL_W / 2, (_mid - game.cameraY) * CELL - 6,
                  `+${secs}s`, '#86efac', newRows.length > 1);
-        rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound });   // [210826aq]
+        // [HOLES] `rows` carries WHICH rows completed, so a fill can be matched
+        // to the row it bought into and the loop measured directly instead of
+        // guessed at by timestamp proximity.
+        rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound,
+                         rows: newRows.slice(0, 8) });   // [210826aq]
     }
     // [210826ak] BAND = two or more rows finished by ONE landing. It already
     // paid (+10% per extra row, weighted by the finishing shape); it was never
@@ -18213,7 +19015,7 @@ function checkStreakBonuses(cx, cy) {
     const results = [];
 
     // Vertical — moving upward (dy = -1 in world coords = player moved up)
-    const v = checkStreakDir(cx, cy, 0, -1, '↑ VERTICAL! +', '#38bdf8', 75 * mult);
+    const v = checkStreakDir(cx, cy, 0, -1, '↑ VERTICAL! +', '#22d3ee', 75 * mult);
     if (v) results.push(v);
 
     // Diagonal NE (x+1, y-1)
@@ -20447,7 +21249,11 @@ function applyTips(on) {
     updateCoachBanner();
 }
 function toggleTips() { applyTips(!game.tipsOn); }
-try { applyTips(localStorage.getItem('rotor_tips_on') !== '0'); } catch (e) { applyTips(true); }
+/* [HOLES] Tips OFF by default too. Read as: on only if the player has
+   explicitly turned them on before ( === '1' ), where it used to be on unless
+   explicitly turned off ( !== '0' ). A saved preference still wins either way,
+   so anyone who has already chosen keeps their choice. */
+try { applyTips(localStorage.getItem('rotor_tips_on') === '1'); } catch (e) { applyTips(false); }
 
 // ── [290726e] EDGE PROXIMITY ────────────────────────────────────────────────
 // One shared readout for every boundary. Distance is measured in whole cells
@@ -21011,6 +21817,11 @@ function draw() {
                 drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
                 if (pvInert) ctx.restore();   // [170826b] matched exit
             } else if (visited.has(key)) {
+                // [HOLES] The same lid as an unwalked cell, under the trail —
+                // so a covered square dims the space below MORE than a plain
+                // one rather than less. Night only; day's tiles are opaque by
+                // design and hide the layer anyway.
+                if (currentTheme !== 'day') roundedSq(sx, sy, CELL_SIZE, GROUND_LID, null);
                 // TEST DRIVE: keep the parity tone faintly readable under the
                 // translucent night trail (day trail is opaque — skip).
                 if (game.testDrive && currentTheme !== 'day' && ((col + worldY) & 1) === 0) {
@@ -21029,6 +21840,15 @@ function draw() {
                     // palette note) — neon tube outline per covered cell.
                     roundedSq(sx, sy, CELL_SIZE, palette().visitedFill, palette().visitedStroke, 1);
                 }
+                /* [HOLES] AND THE CELL KEEPS ITS OWN OUTLINE. Covering a
+                   square swapped the white outline for a plum one, so the
+                   moment you claimed a cell it stopped looking like the cells
+                   around it — the lattice broke wherever you had been, which
+                   is most of the board by the end of a run. The trail colour
+                   is the STATE; the white outline is the cell itself, and it
+                   is drawn last so nothing paints over it. Same rule the
+                   unwalked branch follows, same width. */
+                roundedSq(sx, sy, CELL_SIZE, null, palette().emptyOutline, 1.8);
                 // FRESH PAINT COOLS (V9): just-covered cells bloom brighter
                 // in the trail hue and settle over ~1.2s — you watch yourself
                 // paint the board. Brightness + motion, zero new hues.
@@ -21107,7 +21927,25 @@ function draw() {
                     // white and showed through).
                     roundedSq(sx, sy, CELL_SIZE, dayTileFill(), '#c4b5fd', 1);   // [040826s] lilac grout, not grey
                 } else {
-                    roundedSq(sx, sy, CELL_SIZE, null, palette().emptyOutline, 1.4);
+                    /* [HOLES] THE LID. Night's empty cell is outline-only with
+                       no fill — which was right when there was nothing behind
+                       it, and wrong now that every cell is a window onto the
+                       space below: plain floor would be exactly as transparent
+                       as a hole, and the distinction the whole mechanic rests
+                       on would vanish.
+
+                       So ground gets a lid and a hole does not. That is the
+                       entire difference between them now, and it makes the
+                       ladder read: a void shows the layer at full strength, a
+                       walkable cell dims it, a covered cell dims it further,
+                       and the gutter between cells shows nothing at all. */
+                    roundedSq(sx, sy, CELL_SIZE, GROUND_LID, null);
+                    // [HOLES] 1.4 -> 1.8. Weight is the axis brightness cannot
+                    // fake: at 1.8 against the near layer's 1.3 the board's own
+                    // cells are unmistakably the heavier mark, which is what
+                    // lets the space below get brighter without climbing over
+                    // them.
+                    roundedSq(sx, sy, CELL_SIZE, null, palette().emptyOutline, 1.8);
                 }
             }
             // (Other items — pickup, hazard-circle-overlay — are now handled
@@ -21569,6 +22407,8 @@ function draw() {
     if (game.testDrive || stickOn) drawJoystickGuide();
 
     // Burst rings
+    drawJoints();           // [HOLES] where the shape is anchored, while it moves
+    drawPlugs();            // [HOLES] the cube landing as the ground it bought
     drawBursts();
     drawSparks();
     
@@ -21797,24 +22637,42 @@ function renderSetIcons() {
         // randomised on round-start when targets > 2). Falls back to the
         // mission's targets list if displayOrder was never populated.
         const order = (setDisplayOrder && setDisplayOrder.length) ? setDisplayOrder : [];
-        // [270726q] One glyph PER requirement — duplicates display as that
-        // many cubes to collect (no multiplier). Claimed instances fill
-        // left-to-right within each duplicate family.
-        const totalById = {}, remById = {}, idxById = {};
+        /* [270726q] used ONE GLYPH PER REQUIREMENT, so a set needing two cubes
+           drew two identical cubes side by side. That reads as two unrelated
+           errands rather than one requirement of size two, and it spends two
+           of the six sockets saying the same word twice.
+
+           Grouped now: one glyph per DISTINCT requirement, carrying a "xN"
+           badge and its own progress. "cube x2" with one banked shows the
+           glyph claimed-tinted and the badge reading 1/2, so the row says what
+           is left at a glance instead of asking you to count repeats.
+
+           The requirement DATA is untouched — setNeeded still holds one entry
+           per instance and each claim splices one out, which is what already
+           made multiple pickups of a type work. Only the display groups. */
+        const totalById = {}, remById = {};
         for (const t of order) { const tid = requirementId(t.type, t.config, t.difficulty); totalById[tid] = (totalById[tid] || 0) + 1; }
         for (const x of setNeeded) remById[x] = (remById[x] || 0) + 1;
-        let html = '';
+        const seen = new Set();
+        let html = '', shown = 0;
         for (const target of order) {
             const id = requirementId(target.type, target.config, target.difficulty);
-            const k = idxById[id] = (idxById[id] || 0) + 1;      // 1-based instance
-            const claimedCount = (totalById[id] || 0) - (remById[id] || 0);
-            const claimed = k <= claimedCount;
+            if (seen.has(id)) continue;                       // grouped: one entry per family
+            seen.add(id);
+            const total = totalById[id] || 1;
+            const claimedCount = total - (remById[id] || 0);
+            const allDone = claimedCount >= total;
             const color = slotColorFor(target.type, target.config, target.difficulty);
-            const pop = claimed && k === claimedCount && game._setPop && game._setPop.id === id && (performance.now() - game._setPop.t) < 900;
-            html += `<div class="set-slot${claimed ? ' claimed' : ''}${pop ? ' pop' : ''}">${miniShapeGlyph(target.type, color, claimed ? 1 : 0, target.config)}</div>`;
+            const pop = game._setPop && game._setPop.id === id && (performance.now() - game._setPop.t) < 900;
+            const badge = total > 1
+                ? `<span class="set-mult${allDone ? ' done' : ''}">${claimedCount}/${total}</span>` : '';
+            html += `<div class="set-slot${allDone ? ' claimed' : ''}${pop ? ' pop' : ''}">`
+                  + miniShapeGlyph(target.type, color, allDone ? 1 : 0, target.config)
+                  + badge + `</div>`;
+            shown++;
         }
         // Pad to the fixed six sockets with empty 2×2 grids.
-        for (let s = order.length; s < SET_SOCKETS; s++)
+        for (let s = shown; s < SET_SOCKETS; s++)
             html += `<div class="set-slot socket-empty">${emptySocketSVG()}</div>`;
         if (setsCompleted > 0)
             html += `<span style="color:#a3e635;font-size:22px;font-weight:bold;margin-left:8px;">×${setsCompleted}</span>`;
@@ -22619,7 +23477,10 @@ function loop(time, gen) {
     // [220826a] introHold joins testDrive: the clock was stopped behind the LEVEL
     // 1 door but the world was still scrolling, so about half a row passed under
     // a player who could neither see it nor move.
-    const scroll = (game.testDrive || game.introHold) ? 0 : game.speed * dt * 0.00014 * scrollMul;
+    // [060926] Base rate down 10%: 0.00014 -> 0.000126. One number, so every
+    // multiplier above it (bullet time, the post-set breather, the level ramp)
+    // scales with it rather than drifting apart.
+    const scroll = (game.testDrive || game.introHold) ? 0 : game.speed * dt * 0.000126 * scrollMul;
     game.cameraY -= scroll;
     
     applyDrag(dt);
@@ -23168,8 +24029,41 @@ function drawAnimFX() {
         else {
             ctx.save();
             const pulse = 0.5 + 0.5 * Math.sin(now / 42);
+            /* [HOLES] TWO CASUALTIES, TWO ANIMATIONS.
+               The beat was already here and it spoke one language: every
+               casualty strobed red under a white cross. The strobe is
+               sin(now/42) — about 24 flashes a second — and on a frozen frame
+               that reads as the whole board vibrating. Designer's note: you
+               cannot see what actually happened in that moment. It is right
+               for a red, where the message is just "gone"; it is wrong for a
+               hole, where the message is "this cube became that ground" and
+               you need to be able to WATCH it.
+
+               So a red keeps its strobe and its cross, and a hole gets the
+               prototype's motion instead: the cube SETTLES — a smooth dip on a
+               cosine ease, a slow 2.4Hz idle wobble (a tenth the strobe's
+               rate), and a soft shadow under it that grows as it sinks. Then
+               drawPlugs takes over and drops it onto the cell it bought.
+
+               Same 340ms, same freeze, entirely different reading: one is a
+               thing being destroyed, the other is a thing letting go. */
             for (const c of devolveStage.cas) {
                 const sx = c.x * CELL + 3, sy = (c.y - game.cameraY) * CELL + 3;
+                if (c.v === true) {
+                    const settle = Math.min(1, k * 1.6);
+                    const dip = 5.5 * (1 - Math.cos(settle * Math.PI)) / 2
+                              + 1.6 * Math.sin(settle * Math.PI * 2) * (1 - settle)
+                              + 0.9 * Math.sin(now / 420);
+                    ctx.save();
+                    ctx.globalAlpha = 0.34 * (1 - k * 0.3);
+                    ctx.fillStyle = '#000'; ctx.filter = 'blur(3px)';
+                    const shrink = 5 + dip * 0.6;
+                    roundedSq(sx + shrink * 0.5, sy + 13 + dip * 1.4, (CELL - 6) - shrink, '#000', null);
+                    ctx.restore();
+                    ctx.globalAlpha = 0.88 * (1 - k * 0.35);
+                    roundedSq(sx, sy + dip, CELL - 6, '#7dd3fc', null);
+                    continue;
+                }
                 ctx.globalAlpha = (0.5 + 0.35 * pulse) * (1 - k * 0.4);
                 roundedSq(sx, sy, CELL - 6, '#ef4444', null);
                 ctx.globalAlpha = 0.9 * (1 - k * 0.4);
@@ -23601,7 +24495,21 @@ function startGame(testDrive = false) {
     if (dt2) dt2.textContent = 'Details ▾';
     const pb = document.querySelector('.pause-center');
     if (pb) pb.textContent = '⏸';
-    
+
+    /* [HOLES] FILLS DO NOT CROSS RUNS, and that is a real difference from the
+       prototype rather than an omission. There, generation ran off a seeded
+       PRNG so every run rebuilt the SAME landscape, and carrying fills forward
+       meant returning to the exact chasm you died into. Main generates a fresh
+       random world per run, so a remembered coordinate would land on unrelated
+       terrain — a scatter of solid cells with no relationship to any hole the
+       player ever paid for.
+
+       Within a run the memory still holds, and that is where it matters: the
+       world is not rebuilt on death, so ground you bought is still there when
+       you respawn, and three lives can be spent bridging one chasm. */
+    persistentFills.clear();
+    islandCells.clear(); islandCooldown = 0;   // [ISLANDS] platforms belong to one run
+
     world = {};
     worldGenY = 0;
     visited = new Set();
@@ -24037,17 +24945,38 @@ let _fitScale = 1;
 // natural 480px; this keeps it at the same ratio the board is at, using
 // `zoom` so layout height follows. Multiplies correctly with the whole-
 // container transform below (that one handles total-height overflow).
+/* [HUD PARITY] Measured against the BOARD, not the container.
+   This used to derive its scale from the game container's inner width, which
+   is the same thing as the board only in the stacked layout. In the BESIDE
+   arrangement the canvas is explicitly sized and positioned — `side` px wide
+   with the stick next to it — so the container is much wider than the board,
+   and the HUD sat over a panel wider than the grid beneath it. Reading the
+   canvas's own rendered rect is true in both layouts, on a phone, a tablet and
+   a laptop, because it asks the element rather than inferring from the frame.
+
+   Width AND scale, not scale alone. Zoom shrinks the HUD's fixed pixel
+   contents so they keep the board's proportions; the explicit width then makes
+   the panel span exactly the grid. Since zoom multiplies the used width, the
+   width set here is divided by it so the rendered result lands on the board's
+   measurement rather than k times it. */
 function fitHudToBoard() {
-    const gc = document.querySelector('.game-container');
+    const cv  = document.getElementById('canvas');
     const hud = document.querySelector('.hud');
-    if (!gc || !hud || !('zoom' in hud.style)) return;
-    const cs = getComputedStyle(gc);
-    const inner = gc.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    if (!inner) return;
-    const k = Math.max(0.55, Math.min(1, inner / 480));
-    const cur = hud.style.zoom === '' ? 1 : parseFloat(hud.style.zoom);
-    if (Math.abs(k - cur) < 0.01) return;
-    hud.style.zoom = k >= 0.995 ? '' : String(k);
+    if (!cv || !hud) return;
+    const boardW = cv.getBoundingClientRect().width;
+    if (!boardW) return;
+    const k = Math.max(0.55, Math.min(1, boardW / 480));
+    if ('zoom' in hud.style) {
+        const cur = hud.style.zoom === '' ? 1 : parseFloat(hud.style.zoom);
+        if (Math.abs(k - cur) >= 0.01) hud.style.zoom = k >= 0.995 ? '' : String(k);
+    }
+    const want = Math.round(boardW / (('zoom' in hud.style) ? k : 1));
+    if (hud.style.width !== want + 'px') {
+        hud.style.width = want + 'px';
+        hud.style.boxSizing = 'border-box';
+        hud.style.marginLeft = 'auto';
+        hud.style.marginRight = 'auto';
+    }
 }
 // ── [160826j] THE THREE-ZONE LAYOUT ─────────────────────────────────────────
 // Constants transcribed from the harness, where they were tuned against real
@@ -24275,13 +25204,13 @@ document.addEventListener('keydown', e => {
     if (DEBUG_MODE && e.key === '2' && !(e.code || '').startsWith('Numpad')) {
         window.DEBUG_MOVE = !window.DEBUG_MOVE;
         if (window.DEBUG_MOVE) runMovementSelfTest();
-        addFloat(LOGICAL_W / 2, 70, window.DEBUG_MOVE ? '2 · Move panel ON' : '2 · Move panel OFF', '#38bdf8');
+        addFloat(LOGICAL_W / 2, 70, window.DEBUG_MOVE ? '2 · Move panel ON' : '2 · Move panel OFF', '#22d3ee');
         e.preventDefault();
         return;
     }
     if (DEBUG_MODE && e.key === '3' && !(e.code || '').startsWith('Numpad')) {
         window.SHOW_GRID_COORDS = !window.SHOW_GRID_COORDS;
-        addFloat(LOGICAL_W / 2, 70, window.SHOW_GRID_COORDS ? '3 · Grid coords ON' : '3 · Grid coords OFF', '#38bdf8');
+        addFloat(LOGICAL_W / 2, 70, window.SHOW_GRID_COORDS ? '3 · Grid coords ON' : '3 · Grid coords OFF', '#22d3ee');
         e.preventDefault();
         return;
     }
@@ -24806,7 +25735,7 @@ demoCanvas.height = D_ROWS * D_CELL;
 
 // Demo-local rounded-square primitive (uses demoCtx). Mirrors the game's.
 function demoRoundedSq(sx, sy, size, fill, stroke, strokeW) {
-    const r = Math.min(size * 0.22, 6);
+    const r = Math.min(size * CORNER_K, CORNER_MAX * 0.8);   // demo reel draws smaller
     demoCtx.beginPath();
     demoCtx.moveTo(sx + r, sy);
     demoCtx.lineTo(sx + size - r, sy);

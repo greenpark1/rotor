@@ -2468,6 +2468,12 @@ body.theme-day #scoresScreen { background: #ffffff; }
    the prose. Tabular numerals so a five-figure count does not jitter against
    the fixed word beside it. Tracked wide, which is what makes a bare number
    read as a stat rather than as stray text. */
+/* [090926h] the daily's result line and copy button on the game-over card */
+.taunt-box .go-daily { color: #fbbf24; }
+body.theme-day .taunt-box .go-daily { color: #b45309; }
+.go-copy { margin-top: 8px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(251,191,36,0.5); background: transparent; color: #fbbf24; font-weight: 700; font-size: 12px; letter-spacing: 0.12em; cursor: pointer; }
+body.theme-day .go-copy { color: #b45309; border-color: rgba(180,83,9,0.5); }
+.daily-btn { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); }
 .taunt-box .go-revolves {
     margin-top: clamp(10px, 2.6cqw, 16px);
     font-size: clamp(11px, 3cqw, 13px); font-weight: 700; letter-spacing: 2.5px;
@@ -3454,6 +3460,10 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         </div>
         <div class="welcome-row full">
             <button class="start-btn" onclick="startGame()">▶ PLAY</button>
+        </div>
+        <!-- [090926h] THE DAILY — the same five levels for everyone today, timed -->
+        <div class="welcome-row full">
+            <button class="start-btn daily-btn" onclick="startDaily()">☀ TODAY'S ROTOЯ</button>
         </div>
         <!-- [160826c] TOP SCORES — a DESTINATION, not a toggle. The two corner
              controls on this screen (Move Guide, Tips) are both switches you
@@ -6997,7 +7007,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '090926-1300 ROTOЯ · DAY: WHITE DEPTHS · NO BLACK INK';
+const BUILD_VERSION = '090926-2000 ROTOЯ · OPENING · DAILY · NO REDS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8731,10 +8741,32 @@ function updateMusicFade() {
     }
 }
 
+/* ══ [090926f] THE COMBO LAYER — the music knows the window is open ═════════
+   The combo window is the skill loop and it was silent. While it is open a
+   bright, quiet shimmer rides the beat — a short bell on every step, walking
+   a five-note figure high above the track — and it goes with the window. The
+   figure is root, second, fifth, sixth and octave: no third, so it sits inside
+   every track whether it leans major or minor. Louder with a longer combo,
+   fading as the window drains, so the player feels the window without looking
+   at the bar. In the track's own key, off the track's own root (mHt). ══════ */
+const COMBO_FIGURE = [12, 14, 19, 21, 24, 21, 19, 14];
+function comboLayerLevel() {
+    if (typeof game === 'undefined' || !game || !game.running || game.paused) return 0;
+    const left = (typeof chainWindowLeft === 'function') ? chainWindowLeft() : 0;
+    if (left <= 0) return 0;
+    const n = (game._rowChain && game._rowChain.rows.length) || 1;
+    return left * Math.min(1, 0.45 + 0.25 * n);
+}
 function scheduleMusicStep(step, time) {
     const T = currentTrack(step);
     const S = (60 / T.bpm) / 2;
     T.play(step % T.len, time, S, musicIntensity);
+    const lvl = comboLayerLevel();
+    if (lvl > 0) {
+        const semi = COMBO_FIGURE[step % COMBO_FIGURE.length];
+        mPluck(mHt(semi + 12), time, S * 0.9, 0.028 * lvl, 'sine');            // the bell
+        if (step % 2 === 0) mPluck(mHt(semi), time, S * 0.6, 0.016 * lvl, 'triangle');   // its shadow, an octave down
+    }
 }
 
 function musicScheduler() {
@@ -10435,7 +10467,7 @@ function resetSetTracker() {
     // pool/slotCount fields in ADVANCED_ROUNDS are now superseded for set
     // composition; the other per-round fields (wall/hazard/cadence/celebration)
     // still tune the round.
-    let targets = composeSetByBudget(roundBudget(round), round);
+    let targets = withDailyRand(() => composeSetByBudget(roundBudget(round), round));   // [090926h] the same sets for everyone today
     if (!targets.length) targets = [{ type: 'single', config: 'A' }];   // safety
     setNeeded = targets.map(t => requirementId(t.type, t.config, t.difficulty));
     // [SETS] A matched-pair streak belongs to ONE set. `game` survives a level
@@ -10544,7 +10576,7 @@ function stampGuardMaze(slot) {
     // where "walls everywhere" was coming from after every other site had been
     // converted.
     putTracked(GUARD_WALLS, WALLS_AS_HOLES ? 'void' : 'wall');
-    putTracked(GUARD_REDS, 'hazard');
+    if (!NO_REDS) putTracked(GUARD_REDS, 'hazard');   // [090926g]
     put(GUARD_PATH, null);
     /* [080926i] The maze is a lattice of single cells; the 2×2 rule thickens it
        into a moat here, and anything it voids is tracked so the rollback below
@@ -10720,7 +10752,9 @@ function diagnoseMissingTool(force = false) {
     const needMult = SHAPES[t.type] ? SHAPES[t.type].mult : 1;
     // Wrong SIZE is the simplest diagnosis: grow or trim.
     if (needMult > myMult) return { kind: 'green' };
-    if (needMult < myMult) return { kind: 'hazard' };
+    // [090926g] Too big for the set: with reds gone the slot itself trims you
+    // (MACHINED TO FIT), so the fitter plants nothing — approach the slot.
+    if (needMult < myMult) return NO_REDS ? null : { kind: 'hazard' };
     // Right size, no route: it is a POSITION or a FORM problem.
     // Parity first, because it is the one a player cannot solve by trying
     // harder — diagonal, J and square are locked to one board colour, and only
@@ -10735,7 +10769,7 @@ function diagnoseMissingTool(force = false) {
     // Otherwise the form is wrong and a turn is what changes it. (A single has
     // nothing to turn, so it gets a step instead.)
     if (game.shapeType === 'single') return { kind: 'slip' };
-    return { kind: 'pivot' };
+    return { kind: ONE_SHIFTER ? 'slip' : 'pivot' };   // [090926g]
 }
 // ── [050826n] THE LAST RESORT — a reprieve when the board is spent ──────────
 // A distinct dead end from the one the mercy injector covers. That one fires
@@ -11137,6 +11171,7 @@ function scatterTrickyObstacles(slotCells) {
         /* [080926l] A SINGLE-CELL OBSTACLE IS A RED, NEVER A HOLE. This scattered
            lone void cells around tricky slots — the 1×1 holes the field note
            caught on screen. A hole has a minimum size now; a red does not. */
+        if (NO_REDS) continue;   // [090926g] no reds, no tricky scatter
         world[cand.key] = WALLS_AS_HOLES ? 'hazard' : (Math.random() < 0.6 ? 'wall' : 'hazard');
         count--;
     }
@@ -11927,6 +11962,26 @@ const isVoid = (x, y) => world[`${x},${y}`] === 'void';
    Set WALLS_AS_HOLES = false to put every wall back exactly as it was. The two
    states differ by this one constant and nothing else. ─────────────────────── */
 const WALLS_AS_HOLES = true;
+/* ══ [090926g] THE OBJECT DIET — fewer kinds of thing, not fewer things ══════
+   Designer's direction: simplicity-led, and "reduce the number of criminals".
+   Two objects were doing jobs something else does better:
+
+     REDS trim a cube. So do holes — and a hole can be crossed ON PURPOSE,
+     where a red is only ever a mistake. The one thing reds still did, letting
+     you shrink to fit a set, the slot does itself: a cube that touches a slot
+     it does not fit is shed (MACHINED TO FIT). With NO_REDS every red writer
+     is skipped — terrain scatter, the trim-supply and guarantee injectors, the
+     guard maze's reds, the island's red, the tricky scatter — and the per-frame
+     tidy strips any that slip through. The board loses its only object that
+     is purely punishment.
+
+     TWO SHIFTERS (slip and pivot) are two rules where one would do. Exports
+     put slip ahead of pivot three to one in use. ONE_SHIFTER turns every pivot
+     into a slip at the point of writing.
+
+   Both are flags, both default on, both one keystroke from the old board. */
+const NO_REDS = true;
+const ONE_SHIFTER = true;
 function blockCell(key) {
     /* [060926] AN ISLAND PLATFORM IS NEVER BLOCKED. This is the single choke
        point for every structural writer — tunnel sides, funnel edges, tunnel
@@ -12338,6 +12393,11 @@ function fillVoid(x, y) {
        how much new ground it happened to take). Gated to one per 70ms so a
        multi-cell purchase is heard as the one transaction it actually is. */
     const _now = performance.now();
+    /* [090926d] THE SHEAR IS THE SIGNATURE BEAT: the world holds for 70ms as the
+       cube goes. Scroll and clock pause (see the loop), input does not — a
+       hitstop, the oldest trick in action games, spent on the one moment this
+       game is about: the wallet opening. Once per landing, not per cell. */
+    if (_now - (game._hitstopUntil || 0) > 200) game._hitstopUntil = _now + 70;
     if (_now - (game._fillSfxAt || 0) > 70) {
         game._fillSfxAt = _now;
         if (typeof sfx !== 'undefined' && sfx.ground) sfx.ground();
@@ -12764,10 +12824,13 @@ let visited = new Set();
 // so playing the objects never costs coverage. addGenerated is for cells
 // that were EXCLUDED from the generated count at terrain time (hazard-born
 // cells): they join both sides of the ratio at once.
+const visitedAt = new Map();   // [090926e] cell key -> when it was walked; the trail carries time
+const TRAIL_COOL_MS = 30000;   // fresh ground cools to the base trail tone over half a minute
 function markCovered(key, addGenerated = false) {
     if (visited.has(key)) return;
     visited.add(key);
     coverHeat.set(key, performance.now());
+    visitedAt.set(key, performance.now());
     // [160826t] OLD-ROUND GROUND JOINS BOTH SIDES OF THE RATIO. The counters
     // reset at each round, but the board still holds rows generated LAST round
     // — visiting those bumped the numerator while only new rows fed the
@@ -13034,6 +13097,9 @@ function resetGenState() {
     // small clumps land in the first screen without crowding it.
     genIslandCooldown = 4;
     genBarrierGapX = 0;
+    // [090926h] The daily needs EVERY piece of generator state to start the
+    // same for every player; these three were left to carry over between runs.
+    holeCooldown = 0; islandCooldown = 0; tunnelPaidThisRun = false;
 }
 
 // Count blocked columns at row y
@@ -13300,10 +13366,10 @@ function carveIslandSet(y, safeZoneEnd) {
        guard moat, neither of which fits a three-cell platform); flagged, not
        faked. */
     if (plat.length >= 3) { const h = take(); if (h) { world[h] = 't30'; rec('spawn', { k: 't30', src: 'island' }); } }   // the reason to cross
-    if (plat.length >= 4) { const r = take(); if (r) world[r] = 'hazard'; }   // devolve
+    if (!NO_REDS && plat.length >= 4) { const r = take(); if (r) world[r] = 'hazard'; }   // devolve [090926g]
     if (plat.length >= 5 && Math.random() < 0.6) {
         const s = take();
-        if (s) world[s] = Math.random() < 0.5 ? 'slip' : 'pivot';       // a shifter to work with
+        if (s) world[s] = (ONE_SHIFTER || Math.random() < 0.5) ? 'slip' : 'pivot';       // a shifter to work with [090926g]
     }
     islandCooldown = 12;   // [060926] was 40, then 20 — see ISLAND_CHANCE [070926f]
 }
@@ -13368,7 +13434,119 @@ function maybeCarveHole(y, safeZoneEnd) {
 // Generate world by rows (negative Y direction - upward).
 // Caverns: open + optional hazards. Tunnels: 6-wide corridor. Funnel:
 // transition between. The generation state persists between calls.
-function generateChunk(fromY, toY) {
+/* ══ [090926h] THE DAILY ═══════════════════════════════════════════════════
+   Designer's direction: a reason to come back tomorrow — a new game each day,
+   and bragging rights for finishing it in a time.
+
+   Everyone who opens the game today gets the SAME five levels. Two things
+   shape a board: the terrain generator and the mission roll, and both draw
+   from Math.random. In daily mode each runs under a random source seeded from
+   today's date — swapped in for the duration of that one call and swapped
+   straight back — so terrain and sets are identical for every player, while
+   everything the PLAYER causes (where shifters spawn on a landing, which green
+   arrives) stays live. The board is the same; the run is yours.
+
+   The date is the seed: 2026-09-09 gives one game, 2026-09-10 the next. Five
+   levels, then a finish with a time, a result line you can copy, and a
+   personal best kept per day. Rankings across players need somewhere to keep
+   results, which a single file does not have; the result line is built so a
+   later leaderboard can take it as-is. ═════════════════════════════════════ */
+let dailyMode = false;
+const DAILY_ROUNDS = 5;
+let dailyRand = Math.random;
+function mulberry32(a) {
+    return function () {
+        a |= 0; a = a + 0x6D2B79F5 | 0;
+        let t = Math.imul(a ^ a >>> 15, 1 | a);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+}
+function dailyKey(d = new Date()) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dailySeed(key) { let h = 2166136261; for (const ch of key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function withDailyRand(fn) {
+    if (!dailyMode) return fn();
+    const real = Math.random; Math.random = dailyRand;
+    try { return fn(); } finally { Math.random = real; }
+}
+/* ══ [090926i] THE OPENING, BY HAND ═════════════════════════════════════════
+   Level 1's first forty rows are a fixed board. A first-time player meets
+   each rule at the moment it is needed and never before:
+
+     rows  1-5    open floor           flip; a row completes; the clock climbs
+     rows  6-7    one 2×2 hole          a hole exists; there is room to go round
+     rows  8-12   a green               you can grow
+     rows 13-14   a chasm, 4 wide       the price of crossing, with a way past
+     rows 15-16   open floor + a green  recover
+     rows 17-22   an island             a green and a t30 across a moat: the
+                                        reason to bridge, seen once, safely
+     rows 23-27   open floor + a slip   the shifter, on plain ground
+     rows 28-40   open floor            room to breathe before the dice take over
+
+   Every stretch keeps HOLE_MIN_SOLID clear columns and every hole is at least
+   2×2, so the rules that govern the random board govern this one too. The
+   tips system still fires; the board is the tip. Applies to the daily as well
+   — the same opening is the same for everyone by definition. ══════════════ */
+const OPENING_ROWS = [
+    '..........',   // -1
+    '..........',
+    '..........',
+    '..........',
+    '..........',   // -5
+    '....##....',   // -6   one hole, 2x2
+    '....##....',   // -7
+    '..........',
+    '..........',
+    '.....g....',   // -10  a green
+    '..........',
+    '..........',
+    '...####...',   // -13  the chasm
+    '...####...',   // -14
+    '..........',
+    '..g.......',   // -16  recover
+    '..######..',   // -17  the island: moat
+    '..######..',
+    '..##gt##..',   // -19  platform: green + hourglass
+    '..##..##..',   // -20
+    '..######..',
+    '..######..',   // -22
+    '..........',
+    '..........',
+    '.....s....',   // -25  the shifter
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',   // -30
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',   // -35
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',   // -40
+];
+function writeOpeningRow(y, pattern) {
+    for (let x = 0; x < VIEW_W; x++) {
+        const ch = pattern[x] || '.', key = `${x},${y}`;
+        if (world[key]) continue;                      // never overwrite a seeded slot's neighbourhood
+        if (ch === '#') world[key] = 'void';
+        else if (ch === 'g') world[key] = 'pickup';
+        else if (ch === 't') { world[key] = 't30'; rec('spawn', { k: 't30', src: 'opening' }); }
+        else if (ch === 's') world[key] = 'slip';
+        else game.cellsGenerated++;                    // open floor counts toward coverage
+    }
+    // the island's platform cells are platforms, so the passage and 2×2 passes leave them be
+    if (pattern.includes('g') && pattern.includes('t')) for (let x = 0; x < VIEW_W; x++) if (pattern[x] !== '#' && pattern[x] !== '.') islandCells.add(`${x},${y}`);
+    if (pattern === '..##..##..') { islandCells.add(`4,${y}`); islandCells.add(`5,${y}`); }
+}
+function generateChunk(fromY, toY) { return withDailyRand(() => generateChunkInner(fromY, toY)); }
+function generateChunkInner(fromY, toY) {
     // [170826b] LEAD-IN HALVED: -8 kept the first EIGHT rows above the start
     // line permanently bare — field note counted them waiting for anything to
     // interact with. -4 starts the world four rows sooner; the opening breath
@@ -13382,6 +13560,13 @@ function generateChunk(fromY, toY) {
         // [160826t] Tag the row as generated THIS round — the coverage fix
         // below needs to tell this round's ground from the last one's.
         if (game && game._rowsThisRound) game._rowsThisRound.add(y);
+
+        /* [090926i] THE AUTHORED OPENING — level 1's first forty rows are laid by
+           hand, not by the dice. See OPENING_ROWS for what each stretch teaches. */
+        if (advancedRound === 1 && y <= -1 && -y - 1 < OPENING_ROWS.length) {
+            writeOpeningRow(y, OPENING_ROWS[-y - 1]);
+            continue;
+        }
 
         if (genRowsRemaining <= 0) advanceGenSection();
 
@@ -13398,7 +13583,7 @@ function generateChunk(fromY, toY) {
                 const key = `${x},${y}`;
                 if (world[key]) continue;
                 if (slots.some(s => s.keys.has(key))) continue;
-                if (!rowRed && Math.random() < hazardChance &&
+                if (!NO_REDS && !rowRed && Math.random() < hazardChance &&
                     countRedsWindow(y) < MAX_VISIBLE_REDS) {
                     world[key] = 'hazard';
                     hazardBorn[key] = 'terrain@' + replayMoveCount;
@@ -14379,7 +14564,7 @@ function spawnShifter() {
             ? Math.min(...setNeeded.map(id => SHAPE_SIZE[parseRequirement(id).type] || 1))
             : 1;
         const needTrim = SHAPES[game.shapeType].mult > minNeed;
-        if ((needTrim && vis < 2) || (SHAPES[game.shapeType].mult === 4 && vis === 0)) {
+        if (!NO_REDS && ((needTrim && vis < 2) || (SHAPES[game.shapeType].mult === 4 && vis === 0))) {   // [090926g] the slot trims you now
             world[k] = 'hazard';
             hazardBorn[k] = 'supply@' + replayMoveCount;
             addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ef4444');
@@ -14415,6 +14600,7 @@ function spawnShifter() {
     // [270726zn] Green budget: at the cap, the spawn becomes a shift instead.
     if (kind === 'green' && countVisibleGreens() >= MAX_VISIBLE_GREENS)
         kind = Math.random() < 0.4 ? 'pivot' : 'slip';
+    if (ONE_SHIFTER && kind === 'pivot') kind = 'slip';   // [090926g] one shifter
 
     // [300726n] MERCY INJECTOR — the +45 rescue. Trim-supply pattern: if the
     // player's clock is under threshold, NO time is visible anywhere, and
@@ -15270,6 +15456,7 @@ function endIntroHold(keepSwallowing) {
     if (!keepSwallowing) _introDetach();
     if (!game || !game.introHold) return;
     game.introHold = false;
+    if (dailyMode && game._dailyStartPlay == null) game._dailyStartPlay = nowPlay();   // [090926h] the daily clock starts when play does
     // [220826b] Only a LIVE run gets its input unlocked. This is now called from
     // endGame and exitToWelcome as part of teardown, both of which have just set
     // inputLocked true on purpose — clearing it unconditionally would hand control
@@ -15869,13 +16056,28 @@ function drawRowGapPulses() {
     const pulse = 0.22 + 0.18 * Math.sin(performance.now() / 300);
     const playerCells = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
     for (let row = camInt + 1; row < camInt + VIEW_H; row++) {
-        let gap = null, gaps = 0;
+        let gap = null, gaps = 0; const gapList = [];
         for (let x = 0; x < VIEW_W; x++) {
             const key = `${x},${row}`;
             if (!rowCellOwed(key)) continue;   // [080926f] the one predicate the row check uses
             gaps++;
-            if (gaps > 1) break;
-            gap = { x, key };
+            if (gaps > 2) break;
+            gap = { x, key }; gapList.push(gap);
+        }
+        /* [090926e] TWO SHORT — the flourish before the flourish. A row with two
+           cells left breathes faintly on both, no number; at one cell it becomes
+           the full pulse with the quote. Completeness announces itself as it
+           approaches, not only as it arrives. */
+        if (gaps === 2) {
+            ctx.save();
+            ctx.globalAlpha = pulse * 0.45;
+            for (const g of gapList) {
+                if (playerCells.has(g.key)) continue;
+                roundedSq(g.x * CELL + 2, (row - game.cameraY) * CELL + 2, CELL - 4, null,
+                          currentTheme === 'day' ? '#b98da0' : '#d9c6f7', 1.2);
+            }
+            ctx.restore();
+            continue;
         }
         if (gaps !== 1 || !gap) continue;
         if (playerCells.has(gap.key)) continue;
@@ -16586,7 +16788,7 @@ function completeSet() {
     const fwDuration = mission.fwDuration || 2500;
     // D6 ENDLESS: no win-exit. Round 10 completion celebrates the campaign
     // then rolls straight into Endless rounds via the normal advance path.
-    const campaignDone = (advancedRound === ADVANCED_ROUNDS.length);
+    const campaignDone = (advancedRound === (dailyMode ? DAILY_ROUNDS : ADVANCED_ROUNDS.length));   // [090926h] the daily is five
     // [220826a] THE GAME ENDS NOW. `isFinale` was hard-coded false, which made
     // the entire finale branch below — MISSION COMPLETE, the closing
     // celebration, endGame('win') — unreachable code, and rolled level 10
@@ -16728,7 +16930,7 @@ function completeSet() {
             // leftover visited (pink) squares from the previous level's path.
             // (Claimed-slot stamps clear on their own when resetSetTracker
             // empties `slots`.)
-            visited.clear();
+            visited.clear(); visitedAt.clear();   // [090926e]
             game.trail = [];
             slotBurns = [];
             coverHeat.clear();
@@ -17427,6 +17629,7 @@ function startFlip(dir, fromCells, fromParity, repel = false) {
     // animation ends — at full speed the animation never ends (see the note
     // at the ft >= 1 branch in draw). A repel never lands, so it stays silent.
     if (!repel && typeof sfx !== 'undefined' && sfx.move) sfx.move(getDangerLevel());
+    if (!repel) { game._landAt = performance.now() + FLIP_DUR; game._landCells = getPlayerCells(); }   // [090926d] the squash and the socket flare, timed to the landing
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     for (const c of fromCells) {
         if (c.x < minX) minX = c.x;
@@ -23463,11 +23666,31 @@ function draw() {
                        again anyway — 1.12:1 measured. #ffc2d4 is 1.51:1, close to the
                        ceiling for pink-on-white before it stops being pink —
                        going further means leaving the hue, not deepening it. */
-                    roundedSq(sx, sy, CELL_SIZE, '#ffc2d4', '#ff8fa6', 1);
+                    {   // [090926e] day trail cools too: hot pink fresh -> the pale pink base
+                        const age = performance.now() - (visitedAt.get(key) || 0);
+                        const f = Math.max(0, Math.min(1, 1 - age / TRAIL_COOL_MS));
+                        const fill = f > 0.01 ? `rgb(255, ${Math.round(194 - 40 * f)}, ${Math.round(212 - 30 * f)})` : '#ffc2d4';
+                        roundedSq(sx, sy, CELL_SIZE, fill, '#ff8fa6', 1);
+                    }
                 } else {
                     // [200826d] Fine bright edge on the night trail (see
                     // palette note) — neon tube outline per covered cell.
-                    roundedSq(sx, sy, CELL_SIZE, palette().visitedFill, palette().visitedStroke, 1);
+                    /* ── [090926e] THE TRAIL CARRIES TIME ──────────────────────
+                       Fresh ground is a warmer, brighter violet; it cools to the
+                       trail's base tone over TRAIL_COOL_MS. The board becomes a
+                       map of your last half-minute: a combo reads as a bright
+                       streak, and "where haven't I been lately" is visible with
+                       no number. Completeness is not lost — a cooled cell is
+                       still unmistakably walked, it is just not RECENTLY walked.
+                       Nothing about what a cell IS changes; only its age shows. */
+                    {
+                        const age = performance.now() - (visitedAt.get(key) || 0);
+                        const f = Math.max(0, Math.min(1, 1 - age / TRAIL_COOL_MS));   // 1 fresh -> 0 cooled
+                        const fill = f > 0.01
+                            ? `rgba(${Math.round(124 + 36 * f)}, ${Math.round(96 + 30 * f)}, ${Math.round(196 + 30 * f)}, ${(0.88 + 0.06 * f).toFixed(3)})`
+                            : palette().visitedFill;
+                        roundedSq(sx, sy, CELL_SIZE, fill, palette().visitedStroke, 1);
+                    }
                 }
                 /* [HOLES] AND THE CELL KEEPS ITS OWN OUTLINE. Covering a
                    square swapped the white outline for a plum one, so the
@@ -23805,6 +24028,19 @@ function draw() {
                 roundedSq(col * CELL + _o, (row - camFrac) * CELL + _o, _s, null, _stroke, CELL_OUTLINE_W);
             }
         }
+        /* [090926d] THE SOCKET FLARE — the cells the shape has just taken flash
+           their outline for one beat as the ball seats. 130ms, white, fading;
+           timed from the same landing moment as the squash. */
+        if (game._landAt && game._landCells) {
+            const la = performance.now() - game._landAt;
+            if (la >= 0 && la < 130) {
+                ctx.save();
+                ctx.globalAlpha = 0.9 * (1 - la / 130);
+                for (const c of game._landCells)
+                    roundedSq(c.x * CELL + _o, (c.y - game.cameraY) * CELL + _o, _s, null, '#ffffff', CELL_OUTLINE_W + 1.6);
+                ctx.restore();
+            }
+        }
     }
 
     // Player faces — same cyan hue, two brightness levels, with a metallic sheen.
@@ -23973,6 +24209,23 @@ function draw() {
             ctx.transform(flipSX, flipBShear, 0, flipSY, 0, 0); // foreshorten + tumble shear
         }
         ctx.translate(-flipAX, -flipAY);
+    } else if (game._landAt) {
+        /* ── [090926d] THE LANDING — a hair of squash as the shape takes the
+           ground. The flip is the verb; this is the last 150ms of it. The
+           shape widens and flattens by a few per cent and springs back, about
+           the player's own centre, so the fold reads as a body with weight
+           arriving rather than a sprite changing cells. Skipped while a new
+           flip is already in the air, so a fast run never stacks squashes. */
+        const la = performance.now() - game._landAt;
+        if (la >= 0 && la < 150) {
+            const s = Math.sin(Math.PI * (la / 150));
+            let cx = 0, cy = 0;
+            for (const c of renderCells) { cx += c.x * CELL + CELL / 2; cy += (c.y - game.cameraY) * CELL + CELL / 2; }
+            cx /= renderCells.length; cy /= renderCells.length;
+            ctx.translate(cx, cy);
+            ctx.scale(1 + 0.07 * s, 1 - 0.09 * s);
+            ctx.translate(-cx, -cy);
+        } else if (la >= 150) game._landAt = 0;
     }
     // (Player glow removed — cubes render as clean flat-filled rounded
     // squares without an aura. Shape identity comes from the family colour
@@ -24891,7 +25144,7 @@ function loop(time, gen) {
               }
               if (hasAdj) break;
           }
-          if (!hasAdj && candidates.length) {
+          if (!NO_REDS && !hasAdj && candidates.length) {   // [090926g]
               const pick = candidates[(Math.random() * candidates.length) | 0];
               world[pick.key] = 'hazard';
               hazardBorn[pick.key] = 'guarantee@' + replayMoveCount;
@@ -24977,7 +25230,7 @@ function loop(time, gen) {
     const timerMul = bullet.active ? BULLET_SCROLL_MUL : 1;
     // [220826a] `introHold` joins testDrive as a reason the wheel does not drain:
     // the LEVEL 1 door is opaque for 4400ms and the clock used to run behind it.
-    if (!game.testDrive && !game.introHold) {
+    if (!game.testDrive && !game.introHold && !(game._hitstopUntil && performance.now() < game._hitstopUntil)) {   // [090926d] the clock holds with the world
         game.speedTimer += (dt / 1000) * timerMul;
         // [070926d] Seconds the clock has actually DRAINED this run. Wall-clock
         // is not it: level doors, tally cards, pauses and bullet time all stop or
@@ -25239,7 +25492,8 @@ function loop(time, gen) {
     // [060926] Base rate down 10%: 0.00014 -> 0.000126. One number, so every
     // multiplier above it (bullet time, the post-set breather, the level ramp)
     // scales with it rather than drifting apart.
-    const scroll = (game.testDrive || game.introHold) ? 0 : game.speed * dt * 0.000126 * scrollMul;
+    const _hitstop = game._hitstopUntil && performance.now() < game._hitstopUntil;   // [090926d] the shear holds the world
+    const scroll = (game.testDrive || game.introHold || _hitstop) ? 0 : game.speed * dt * 0.000126 * scrollMul;
     game.cameraY -= scroll;
     
     applyDrag(dt);
@@ -25277,6 +25531,11 @@ function loop(time, gen) {
     {
         const _ci = Math.floor(game.cameraY);
         for (let i = 0; i < 3 && enforceMinHoleSize(_ci + VIEW_H + 2, _ci - 3, null, true) > 0; i++) {}
+        // [090926g] and no red survives on screen while the diet is on — a
+        // backstop for any writer the six guards above did not reach
+        if (NO_REDS) for (let y = _ci - 3; y <= _ci + VIEW_H + 2; y++) for (let x = 0; x < VIEW_W; x++) {
+            const k = `${x},${y}`; if (world[k] === 'hazard') delete world[k];
+        }
     }
     if (checkCollisions() === 'death') {
         captureSnapshot(game._lastMoveDir || '✗ death');
@@ -26120,7 +26379,15 @@ function toggleDetails() {
     btn.textContent = hidden ? 'Details ▾' : 'Details ▴';
 }
 
-function startGame(testDrive = false) {
+function startDaily() { startGame(false, true); }
+function startGame(testDrive = false, daily = false) {
+    /* [090926h] THE DAILY: same seed for everyone today, five levels, timed. */
+    dailyMode = !!daily && !testDrive;
+    if (dailyMode) {
+        game._dailyKey = dailyKey();
+        dailyRand = mulberry32(dailySeed(game._dailyKey));
+        game._dailyStartPlay = null;   // set once the run is live, below, so the door does not count
+    }
     // ── [210826m] A NEW RUN STARTS WITH NO FINGER ON THE GLASS ──────────────
     // startGame() MUTATES the existing `game` object rather than rebuilding it,
     // so every input flag survives into the new run — and _stickTouch is a
@@ -26296,6 +26563,7 @@ function startGame(testDrive = false) {
        world is not rebuilt on death, so ground you bought is still there when
        you respawn, and three lives can be spent bridging one chasm. */
     persistentFills.clear(); bridgeRemainders.clear();   // [090926b]
+    visitedAt.clear();   // [090926e]
     islandCells.clear(); islandCooldown = 0;   // [ISLANDS] platforms belong to one run
 
     world = {};
@@ -26476,6 +26744,35 @@ function startGame(testDrive = false) {
     scheduleLoop();
 }
 
+/* [090926h] The daily's result: text a player can say, a button that copies it,
+   and a personal best per day. Play time, not wall time — pauses do not count. */
+function dailyElapsedMs() { return Math.max(0, nowPlay() - (game._dailyStartPlay || 0)); }
+function fmtMS(ms) { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function dailyResultText(won) {
+    const d = new Date(); const day = d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear();
+    const lvl = won ? `finished ${DAILY_ROUNDS}/${DAILY_ROUNDS}` : `level ${Math.min(advancedRound, DAILY_ROUNDS)}/${DAILY_ROUNDS}`;
+    return `ROTOЯ daily ${day} — ${lvl} in ${fmtMS(dailyElapsedMs())} · ${game.runRows || 0} rows · combo ×${game.runBestChain || 1}`;
+}
+function dailyResultHtml(won) {
+    const txt = dailyResultText(won);
+    let best = null;
+    try {
+        const key = 'rotorDaily:' + (game._dailyKey || dailyKey());
+        const prev = JSON.parse(localStorage.getItem(key) || 'null');
+        const mine = { lvl: won ? DAILY_ROUNDS + 1 : advancedRound, ms: dailyElapsedMs() };
+        const better = !prev || mine.lvl > prev.lvl || (mine.lvl === prev.lvl && won && mine.ms < prev.ms);
+        if (better) localStorage.setItem(key, JSON.stringify(mine));
+        best = better ? 'TODAY’S BEST' : '';
+    } catch (e) {}
+    game._dailyResult = txt;
+    return `<div class="go-revolves go-daily">${won ? 'FINISHED' : 'DAILY'} · ${fmtMS(dailyElapsedMs())}${best ? ' · ' + best : ''}</div>` +
+           `<button class="go-copy" onclick="event.stopPropagation(); copyDailyResult(this)">COPY RESULT</button>`;
+}
+function copyDailyResult(btn) {
+    const t = game._dailyResult || '';
+    const done = () => { if (btn) btn.textContent = 'COPIED'; };
+    try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, done); else done(); } catch (e) { done(); }
+}
 function endGame(reason = 'death') {
     breakCombo('run-end');   // [230826c] or the chip keeps a gold x4.0 over the results screen
     // [220826b] Drop focus. The game-over screen is keyboard-activated with
@@ -26677,9 +26974,10 @@ function endGame(reason = 'death') {
         //   then the two lines of prose, at one size
         // The "9,545 to SOLENOID" line is gone: a target is an invitation to keep
         // going, and this screen is where a run has just ended.
-        const lvlTxt = advancedRound > 10
-            ? 'ENDLESS ' + (advancedRound - 10)
-            : advancedRound + ' of 10';
+        const _cap = dailyMode ? DAILY_ROUNDS : 10;   // [090926h]
+        const lvlTxt = advancedRound > _cap
+            ? 'ENDLESS ' + (advancedRound - _cap)
+            : advancedRound + ' of ' + _cap;
         const isBest = game.score > (game._startBest || 0) && (game._startBest || 0) > 0;
         tauntEl.innerHTML =
             `<div class="go-scorewrap">` +
@@ -26717,6 +27015,10 @@ function endGame(reason = 'death') {
                Revolves keep their place as the lifetime odometer on the scores
                screen, which is where an effort total belongs. */
             `<div class="go-revolves">${Math.round(-(game.cameraY || 0))} ROWS DEEP</div>` +
+            /* [090926h] THE DAILY RESULT — the line you can say to someone, and a
+               button that copies it. Level reached (or FINISHED), the play time,
+               rows and best combo. Personal best for the day kept locally. */
+            (dailyMode ? dailyResultHtml(won) : '') +
             `<div class="go-revolves">${(game.runRows || 0)} ROWS · COMBO ×${game.runBestChain || 1} · ${game.runFalls || 0} FALL${(game.runFalls || 0) === 1 ? '' : 'S'}</div>` +
             `<div class="go-prose">` +
                 `<span class="go-cause">${causeLine}</span>` +

@@ -2437,12 +2437,26 @@ body.theme-day #scoresScreen { background: #ffffff; }
     letter-spacing: 4px; color: #64748b;
 }
 .taunt-box .go-scorewrap { display: block; }
+/* ── [110926a] SCORE, TWICE THE SIZE, AND IN THE GAME'S OWN GOLD ────────────
+   Field note: "make the text 'score' twice its size, and the score number the
+   same colour that it has during normal play."
+   The label was set at the same 10–13px as LEVEL's, so the one number the
+   screen exists for was introduced in the smallest type on it. Doubled, and
+   only here — LEVEL keeps the quiet label, which is what makes the pair read
+   as a hierarchy rather than a list.
+   The number was #e2e8f0, the general text white: the score changed colour
+   between the run and the summary of the run, so it stopped being the same
+   object. It now takes .score-display's #e8a800 and its glow, in both themes,
+   exactly as the HUD carries it. */
+.taunt-box .go-scorewrap .go-lbl { font-size: clamp(20px, 5.2cqw, 26px); letter-spacing: 6px; }
 .taunt-box .go-score {
     display: block; margin-top: 2px;
     font-size: clamp(40px, 12cqw, 64px); font-weight: 800; letter-spacing: 1px;
     font-variant-numeric: tabular-nums;
-    color: #e2e8f0; line-height: 1.05;
+    color: #e8a800; text-shadow: 0 0 12px rgba(255, 214, 10, 0.30);
+    line-height: 1.05;
 }
+body.theme-day .taunt-box .go-score { color: #e8a800; text-shadow: none; }
 .taunt-box .go-newbest {
     display: inline-block; margin-top: 6px;
     padding: 3px 10px; border-radius: 999px;
@@ -2507,7 +2521,23 @@ body.theme-day .taunt-box .go-consolation { color: var(--day-ink); }
     border-radius: 17px;
     padding: 18px 24px;
     margin: 12px 15px;
-    max-width: 360px;
+    /* ── [110926a] THE CARD IS THE WIDTH OF THE BOARD ───────────────────────
+       Field note: "the message at the end of play needs to fit into a box that
+       is the same width as the squares for symmetry; at present it is square,
+       which looks a bit odd."
+       It was: a 360px cap on content that happened to be about 360px tall, so
+       the card came out roughly square and sat inside the board's footprint
+       with a margin down each side that belonged to nothing. The board is the
+       only measure on this screen the eye already knows, so the card takes it —
+       --board-w is written from the canvas's real rendered width when the
+       screen is shown (see endGameNow), and the fallback keeps the old cap for
+       the first paint. Width, not max-width, so a short card still spans it.
+       `container-type` finally makes the cqw units inside resolve against this
+       box, which is what they were written for: the score now scales with the
+       board rather than with the viewport. */
+    container-type: inline-size;
+    width: min(var(--board-w, 360px), calc(100vw - 30px));
+    box-sizing: border-box;
     color: #fbbf24;
     font-size: 17px;
     font-style: italic;
@@ -2749,7 +2779,10 @@ body.theme-day .reserve-label { color: var(--day-ink); text-shadow: none; opacit
    shifter tile — a translucent white over a light grey is grey. Solid white at
    3px reads on every tile, the steel included, and matches the board's 2.4px
    at the tiles' larger scale. */
-.howto-tile { box-shadow: inset 0 0 0 2.5px #f0f4fa; }   /* [080926g] eased with the board's outline */
+/* [110926e] 2.5px -> 1.75px, exactly 70% on the designer's call. Night only:
+   the day rule below draws its ring in ink, not white, and was tuned on its own
+   ground. */
+.howto-tile { box-shadow: inset 0 0 0 1.75px #f0f4fa; }   /* [080926g] eased with the board's outline */
 /* [090926c] Lilac measured 1.0-1.2:1 against the sand, steel and lime tiles —
    invisible on three of five. The rim is now the day ink, the same slate every
    day-mode word uses: 4.6-5.6:1 on every tile, 8.4:1 on the page, one colour
@@ -3392,6 +3425,38 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     .round-overlay-set .set-slot svg { width: clamp(38px, 11vw, 58px); }
     .round-overlay-set { gap: clamp(6px, 2vw, 12px); }
 }
+/* ── [100926g] THE REPLAY'S FRAME — top bar over the HUD, bottom bar over the
+   joystick zone, the board untouched between them. ──────────────────────── */
+.replay-bar {
+    position: fixed; z-index: 25; box-sizing: border-box;
+    container-type: inline-size;   /* [110926d] so the clock scales with the board */
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; padding: 8px 12px; border-radius: 14px; pointer-events: none;
+    background: rgba(6, 20, 29, 0.94); color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.18);
+}
+body.theme-day .replay-bar { background: rgba(255, 255, 255, 0.97); color: var(--day-ink, #3b4f66); box-shadow: 0 0 0 1px rgba(59, 79, 102, 0.28); }
+.replay-bar[hidden] { display: none !important; }
+.replay-head { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 12px; font-weight: 700; opacity: 0.85; }
+/* [110926d] The clock, in the HUD's own gold and tabular figures, between the
+   tag and the move count. Red when the move was made inside the warning
+   window — so a replay of a run that ran out of time shows it running out. */
+.replay-clock {
+    font-size: clamp(20px, 5.6cqw, 28px); font-weight: 800; letter-spacing: 1px;
+    font-variant-numeric: tabular-nums; color: #e8a800; opacity: 1;
+    text-shadow: 0 0 10px rgba(255, 214, 10, 0.30);
+}
+.replay-clock.warn { color: #f87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.35); }
+body.theme-day .replay-clock { text-shadow: none; }
+.replay-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f87171; margin-right: 8px; vertical-align: 1px; animation: replayDot 1.2s ease-in-out infinite; }
+@keyframes replayDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+.replay-cap { display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 0; }
+.replay-cap:empty { display: none; }
+.replay-cap span { font-size: clamp(15px, 4.4vw, 20px); font-weight: 800; letter-spacing: 0.06em; line-height: 1.2; opacity: 0; animation: replayLine 0.22s ease-out forwards; white-space: nowrap; }
+@keyframes replayLine { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.replay-skip { font-size: 11px; font-weight: 700; opacity: 0.55; }
 </style>
 </head>
 <body>
@@ -3461,10 +3526,8 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
         <div class="welcome-row full">
             <button class="start-btn" onclick="startGame()">▶ PLAY</button>
         </div>
-        <!-- [090926h] THE DAILY — the same five levels for everyone today, timed -->
-        <div class="welcome-row full">
-            <button class="start-btn daily-btn" onclick="startDaily()">☀ TODAY'S ROTOЯ</button>
-        </div>
+        <!-- [090926h] THE DAILY exists (startDaily) but its button is held back for
+             now, per the designer — on the list until rankings can back it up. -->
         <!-- [160826c] TOP SCORES — a DESTINATION, not a toggle. The two corner
              controls on this screen (Move Guide, Tips) are both switches you
              flip and stay put; this takes you somewhere and needs a way back, so
@@ -3483,13 +3546,8 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
              TOP SCORES and above the stamp: the third thing you might want,
              directly above the line that tells you which build you are on, which
              is the other half of a bug report. -->
-        <div class="welcome-row full">
-            <a class="ext-link" href="https://github.com/greenpark1/rotor"
-               target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-                <span>SOURCE &amp; UPDATES</span>
-            </a>
-        </div>
+        <!-- [090926j] SOURCE & UPDATES link removed per the designer. -->
+
         <!-- [300726e] Stamp on its own row: the flex row seated it BESIDE
              the button (visible in the 0626 screenshot). -->
         <div class="welcome-row full">
@@ -3562,11 +3620,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
     <button class="details-toggle" onclick="recExport()">⇓ Export play data</button>
     <!-- [220826a] The end of a run is where a player is most likely to want the
          project — they have just been beaten by it or just finished it. -->
-    <a class="ext-link" href="https://github.com/greenpark1/rotor"
-       target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        <span>SOURCE &amp; UPDATES</span>
-    </a>
+    <!-- [090926j] SOURCE & UPDATES link removed per the designer. -->
 </div>
 
 <!-- [300726ai] PLAY-SCREEN CORNER CONTROLS. Same placement and styling as the
@@ -3695,6 +3749,23 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
          touch devices; a mouse keeps the in-board stick, where there is no
          thumb to occlude anything. -->
     <canvas id="stickPad" width="300" height="300" aria-hidden="true"></canvas>
+    <!-- [100926g] THE REPLAY'S FRAME. Not letterbox bars — on a square board in
+         a portrait screen they would cover the top and bottom rows. The HUD
+         strip becomes the top bar and the joystick zone (dead while a replay
+         runs) becomes the bottom bar for the captions; the board stays whole.
+         Positioned over those elements by syncReplayBars() each frame. -->
+    <div class="replay-bar" id="replayTop" hidden>
+        <!-- [110926d] The clock rides the top bar. The replay covers the HUD, so
+             without it the one number the whole game is about was missing from
+             the account of how the run ended. It shows the time as it stood ON
+             THAT MOVE, not now. -->
+        <div class="replay-head"><span id="replayTag"><i class="replay-dot"></i>REPLAY</span><span class="replay-clock" id="replayClock"></span><span id="replayCount"></span></div>
+        <div class="replay-cap" id="replayCapTop"></div>
+    </div>
+    <div class="replay-bar" id="replayBottom" hidden>
+        <div class="replay-cap" id="replayCapBottom"></div>
+        <div class="replay-skip">TAP TO SKIP</div>
+    </div>
     <!-- [090826e] A visible error readout. "Uncaught Error: Script error." is
          what a browser reports when it will not disclose the real message, so
          three builds have now been spent guessing. This prints the actual
@@ -7007,7 +7078,7 @@ body.theme-day .tally-continue { background: var(--wm-c0); color: #ffffff; }
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '090926-2000 ROTOЯ · OPENING · DAILY · NO REDS';
+const BUILD_VERSION = '100926-1000 ROTOЯ · THE SWEEP';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -7037,8 +7108,20 @@ const BUILD_VERSION = '090926-2000 ROTOЯ · OPENING · DAILY · NO REDS';
 
            So BUILD_VERSION rides alongside it. The measured stamp says which
            file; the tag says which code. */
-        const tag = BUILD_VERSION.replace(' ROTOЯ', '').trim();
-        bs.textContent = 'BUILD ' + stamp + (tag ? '  ·  ' + tag : '');
+        /* [100926b] Day, month, year, time — nothing else, per the designer. The
+           code tag still exists in BUILD_VERSION for the export and for me; the
+           welcome screen shows only when the file was made. Read from the
+           file's own modified time (the honest source), falling back to the
+           stamp in BUILD_VERSION. */
+        let d = null;
+        try { const m = new Date(document.lastModified); if (!isNaN(m)) d = m; } catch (e) {}
+        if (!d) {
+            const s = BUILD_VERSION.slice(0, 11);   // DDMMYY-HHMM
+            d = new Date(2000 + +s.slice(4, 6), +s.slice(2, 4) - 1, +s.slice(0, 2), +s.slice(7, 9), +s.slice(9, 11));
+        }
+        const p = n => String(n).padStart(2, '0');
+        const MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        bs.textContent = `${p(d.getDate())} ${MON[d.getMonth()]} ${d.getFullYear()}  ${p(d.getHours())}:${p(d.getMinutes())}`;
     }
 }
 
@@ -7069,6 +7152,30 @@ function drawShifterGlyph(gcx, gcy, item, meta) {
         // read at cell size). CW = ↻, CCW = ↺ (mirrored).
         const ccw = meta && meta.dir === 'ccw';
         const R = CELL * 0.16, GAP = 0.72, HEAD = CELL * 0.145;
+        /* [SWEEP] THE HALF TURN wears the same ring cut in TWO, each half with
+           its own head — the ring's "twice". Same weight, same ink, same
+           metal; read as a relative of the quarter turn, not a new object. */
+        if (typeof turnsOf === 'function' && turnsOf(meta) === 2) {
+            const G2 = 0.62, span = Math.PI - G2;
+            for (const base of [-Math.PI / 2, Math.PI / 2]) {
+                const b0 = base + (ccw ? -G2 / 2 : G2 / 2);
+                const b1 = b0 + (ccw ? -span : span);
+                ctx.beginPath();
+                ctx.arc(gcx, gcy, R, b0, b1, ccw);
+                ctx.stroke();
+                const hx = gcx + R * Math.cos(b1), hy = gcy + R * Math.sin(b1);
+                const tt = ccw ? (b1 - Math.PI / 2) : (b1 + Math.PI / 2);
+                const qx = Math.cos(tt + Math.PI / 2), qy = Math.sin(tt + Math.PI / 2);
+                ctx.beginPath();
+                ctx.moveTo(hx + Math.cos(tt) * HEAD, hy + Math.sin(tt) * HEAD);
+                ctx.lineTo(hx + qx * HEAD * 0.66, hy + qy * HEAD * 0.66);
+                ctx.lineTo(hx - qx * HEAD * 0.66, hy - qy * HEAD * 0.66);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+            return;
+        }
         const a0 = -Math.PI / 2 + (ccw ? -GAP : GAP);
         const a1 = a0 + (ccw ? -(Math.PI * 2 - GAP * 2) : (Math.PI * 2 - GAP * 2));
         ctx.beginPath();
@@ -7090,7 +7197,7 @@ function drawShifterGlyph(gcx, gcy, item, meta) {
     {
         // Step arrow: shaft through the centre plus two head strokes,
         // aimed along the slip's direction vector.
-        const v = SLIP_VECTORS[meta ? meta.dir : 0];
+        const v = slipVectorOf(meta);
         const th = Math.atan2(v.dy, v.dx);
         const L = CELL * 0.155, HEAD = CELL * 0.105;
         const tx = gcx + L * Math.cos(th), ty = gcy + L * Math.sin(th);
@@ -7425,6 +7532,7 @@ function drawBursts() {
 // seam, the lost cube flings outward and fades, shape recoils (inverse squash).
 let fusions = [];   // { seamX, seamY, cubeX, cubeY, dir, t }
 const FUSION_DUR = 300; // ms
+const FUSION_COUPLE_DUR = 420;   // [100926d] a green becoming a cube: long enough to watch, short enough to keep pace
 
 // scale multiplier applied to the whole player shape during the pop/recoil
 let fusionScale = 1.0;
@@ -7463,8 +7571,9 @@ function drawFusions() {
 
     fusions = fusions.filter(f => {
         const age = now - f.t;
-        if (age > FUSION_DUR) return false;
-        const t = age / FUSION_DUR;          // 0 → 1
+        const dur = f.dir === 'couple' ? FUSION_COUPLE_DUR : FUSION_DUR;   // [100926d] the bond takes longer than a flash
+        if (age > dur) return false;
+        const t = age / dur;          // 0 → 1
         const couple = f.dir === 'couple';
         const annihilate = f.dir === 'annihilate';
 
@@ -7518,12 +7627,29 @@ function drawFusions() {
         ctx.save();
         if (couple) {
             // New cube bleeds green→(shape's current face) as it joins
+            /* ── [100926d] THE GREEN BECOMES A CUBE, VISIBLY ────────────────
+               Field note, with four stills: bonding with a green showed "a
+               random sharp-edged blue square hovering over the pair". That was
+               this branch — a plain fillRect, the only square-cornered thing
+               on a board of rounded cells, drawn over the new cube as it
+               appeared. The morph is now the green's own cell, rounded like
+               every other, turning from green to the player's colour with the
+               cell outline held throughout, its "+" fading as it stops being a
+               pickup, over FUSION_COUPLE_DUR — long enough to be a thing you
+               watch. The seam weld below runs along the shared edge at the
+               same time: two cells becoming one body. */
             const g = [163, 230, 53], c = f.faceRGB;
-            const mix = i => Math.round(g[i] + (c[i] - g[i]) * t);
-            ctx.globalAlpha = 0.85;
-            ctx.fillStyle = `rgb(${mix(0)},${mix(1)},${mix(2)})`;
-            const inset = 4 - 3 * t;
-            ctx.fillRect(f.cubeX - CELL/2 + inset, f.cubeY - CELL/2 + inset, CELL - 2*inset, CELL - 2*inset);
+            const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            const mix = i => Math.round(g[i] + (c[i] - g[i]) * ease);
+            ctx.globalAlpha = 0.96;
+            const inset = cellInset();
+            roundedSq(f.cubeX - CELL/2 + inset, f.cubeY - CELL/2 + inset, CELL - 2 * inset,
+                      `rgb(${mix(0)},${mix(1)},${mix(2)})`, palette().emptyOutline, CELL_OUTLINE_W);
+            ctx.globalAlpha = 0.9 * (1 - ease);
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+            const a = CELL * 0.151;
+            ctx.beginPath(); ctx.moveTo(f.cubeX - a, f.cubeY); ctx.lineTo(f.cubeX + a, f.cubeY);
+            ctx.moveTo(f.cubeX, f.cubeY - a); ctx.lineTo(f.cubeX, f.cubeY + a); ctx.stroke();
         } else {
             // Lost cube flings outward from the seam and fades
             const dx = f.cubeX - f.seamX, dy = f.cubeY - f.seamY;
@@ -8014,9 +8140,123 @@ function pivotAroundTrigger(cellsNow, tx, ty, ccw, type, newConfig) {
     return { anchorX, anchorY, newCells, rotated };
 }
 
+/* ── [SWEEP] QUARTER TURNS, ONE OR TWO ──────────────────────────────────────
+   A 180° tile is two quarter turns about the same pinned cube, done by the
+   same function twice — so the anchor, the canonical cells and the parity
+   rules are the ones already measured, not a second implementation. `rotated`
+   keeps input order through both quarters, so each cube still arcs on its own
+   constant radius. Returns null for a shape the tables do not cover. */
+function turnsOf(meta) { return (SWEEP_HALF_TURNS && meta && meta.turns === 2) ? 2 : 1; }
+function turnAroundTrigger(cellsNow, tx, ty, ccw, type, config, turns) {
+    const table = ccw ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
+    let cur = cellsNow, cfg = config, pv = null;
+    for (let q = 0; q < (turns || 1); q++) {
+        const nc = table[type] && table[type][cfg];
+        if (nc === undefined) return null;
+        pv = pivotAroundTrigger(cur, tx, ty, ccw, type, nc);
+        cur = pv.rotated; cfg = nc;
+    }
+    return { anchorX: pv.anchorX, anchorY: pv.anchorY, newCells: pv.newCells,
+             rotated: pv.rotated, newConfig: cfg };
+}
+/* ── [SWEEP] WHAT THE ARM PASSES OVER ───────────────────────────────────────
+   Every cell whose CENTRE a turning cube covers on its way round — the cube
+   is drawn axis-aligned, so that is exactly "the cube's centre passed over
+   the cell". Cells the body stands on before or after the turn are excluded:
+   those are the start (solid by definition) and the landing (which pays if
+   it is a hole). Sampled once per degree along the same arc animatedCellsAt
+   draws. Each cell carries `k`, the fraction of the arc at which the cube's
+   leading edge first reaches its centre — that is when it stitches shut.
+   Sorted by k, so the fills run in order along the arm. Pure: reads nothing
+   from the board. */
+function sweptCells(oldCells, rotated, tx, ty, ccw, turns) {
+    const sweep = (ccw ? -1 : 1) * (turns || 1) * Math.PI / 2;
+    const start = new Set(oldCells.map(c => c.x + ',' + c.y));
+    const end = new Set(rotated.map(c => c.x + ',' + c.y));
+    const first = new Map();
+    const N = 90 * (turns || 1);
+    for (const o of oldCells) {
+        const dx = o.x - tx, dy = o.y - ty, r = Math.sqrt(dx * dx + dy * dy);
+        if (r < 0.01) continue;                       // the pinned cube does not move
+        const a0 = Math.atan2(dy, dx);
+        for (let s = 1; s < N; s++) {
+            const k = s / N, a = a0 + sweep * k;
+            const px = tx + Math.cos(a) * r, py = ty + Math.sin(a) * r;
+            const cx = Math.round(px), cy = Math.round(py);
+            if (Math.abs(px - cx) > 0.4999 || Math.abs(py - cy) > 0.4999) continue;   // on a seam
+            const key = cx + ',' + cy;
+            if (start.has(key) || end.has(key)) continue;
+            if (!first.has(key) || k < first.get(key)) first.set(key, k);
+        }
+    }
+    return [...first].map(([key, k]) => {
+        const p = key.split(','); return { x: +p[0], y: +p[1], k };
+    }).sort((a, b) => a.k - b.k);
+}
+// The swept cells that are holes right now and inside the playable band —
+// the ones a turn would actually lay.
+function sweptVoids(oldCells, rotated, tx, ty, ccw, turns) {
+    const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
+    return sweptCells(oldCells, rotated, tx, ty, ccw, turns).filter(c =>
+        c.x >= 0 && c.x < VIEW_W && c.y >= topB && c.y <= botB &&
+        world[`${c.x},${c.y}`] === 'void');
+}
+
+/* ══ [110926g] WHAT EACH SHIFTER ACTUALLY DOES — MEASURED, NOT REASONED ══════
+   Written down because it was got WRONG TWICE in one sitting. Both times by
+   comparing bounding-box corners instead of the game's own anchor, which
+   pivotAroundTrigger derives from the config's offsets (anchorX = minRX-minOX).
+   Reason about pole parity from the ANCHOR pivotAroundTrigger returns, or not
+   at all. The table below was produced by driving that function over every
+   shape, every config, every trigger cube, both spins — 50 cases cross-checked.
+
+     shape      STEP (arrow)              TURN 90°                TURN 180°
+     single     moves 1, form kept        nothing                 nothing
+     pair       moves 1, form kept        H<->V, pole 2 of 4      form kept, POLE ALWAYS
+     diagonal   moves 1, form kept        A<->B, POLE ALWAYS      form kept, pole never
+     jshape     moves 1, form kept        adjacent cfg, POLE ALWAYS   handedness, pole never
+     square     moves 1, form kept        form kept, POLE ALWAYS  form kept, pole never
+
+   THE HEADLINE: the 90° turn flips the pole EVERY TIME for the diagonal, the J
+   and the square — which are exactly the three pole-locked shapes. The step
+   manages it on four of its eight arrows and only if the board spawned a
+   cardinal one. So the 90° turn is the RELIABLE parity tool and the step is
+   the unreliable one; retiring the pivot under ONE_SHIFTER removed the good
+   one. (The square's case is the striking one: a 2x2 is rotationally
+   symmetric, so its form does not change, but its pole always does and two
+   cubes stay put — the only steering move that shape has.)
+
+   ALSO TRUE: every turn pins the trigger cube (the square pins two on a 90°),
+   so a turn is the only move you cannot fall into a hole with. And NEITHER
+   turn touches faceParity or increments revolves — a shifter move costs
+   nothing on the odometer. Only move() and the fusion paths flip the face.
+   Verified in the harness: see suite.js beside this file. ═══════════════════ */
 // Slip direction encoding (0..7): N/NE/E/SE/S/SW/W/NW.
 // dx, dy use SCREEN convention (positive y = down, positive x = right).
 // World y decreases going up the scroller, so a screen-up slip subtracts from y.
+/* ══ [100926a] THE VANISHING BOARD, FOR REAL THIS TIME ════════════════════
+   Three screens (iPhone, iPad, laptop): a few seconds in, every row below a
+   certain point stopped being drawn, with the depths showing through. Not a
+   flood of void at all — the harness reproduced it as a FRAME ERROR:
+
+       TypeError: Cannot read properties of undefined (reading 'dy')
+           at drawShifterGlyph
+
+   A slip tile whose meta had no valid direction index was looked up as
+   SLIP_VECTORS[undefined]; the draw threw at that cell; the loop's
+   frame-error recovery kept the game running; and everything the floor pass
+   had not yet reached — every row below the slip — was simply never painted.
+   The player kept scrolling on a board that was there and invisible, which is
+   exactly "flying blind". A slip without a direction can arrive from any of
+   the newer writers (the authored opening, an island, a pivot turned slip).
+
+   Two fixes. Every read of a slip's direction goes through slipVectorOf,
+   which never returns undefined — a slip with no direction points north. And
+   the renderer no longer takes the whole frame down with it (see draw). ═══ */
+function slipVectorOf(meta) {
+    const i = meta && Number.isInteger(meta.dir) ? meta.dir : 0;
+    return SLIP_VECTORS[i] || SLIP_VECTORS[0];
+}
 const SLIP_VECTORS = [
     { dx:  0, dy: -1, name: 'N',  glyph: '↑' },
     { dx:  1, dy: -1, name: 'NE', glyph: '↗' },
@@ -8120,6 +8360,10 @@ function chooseShifterKind() {
         }
         const turnPressure = Math.min(1, turnNeed / Math.max(1, setNeeded.length * 2));
         w.pivot *= 1 + 1.3 * turnPressure;
+        // [SWEEP] BRIDGE DEMAND — holes between the player and a live set (or
+        // a set on an island): the turn has a second job, so it turns up more.
+        // A lean, per [040826b]: 28 -> ~45, level with steps, never the only answer.
+        if (SWEEP && sweepBridgeDemand()) w.pivot *= 1.6;
         // ── [160826w] DROUGHT-BREAKER ───────────────────────────────────────
         // Measured: droughts of 169-230 seconds with nothing banked, and every
         // run so far has died mid-drought. The ordinary lean is proportional;
@@ -9499,6 +9743,30 @@ const sfx = {
         setTimeout(() => playTone(NOTE.C5, 0.15, WAVE.reward, VOL.event * 0.9), 160);
     },
     // [reward · major] first-ever evolution fanfare — extended ascending run.
+    /* [110926a] END OF PLAY — the jingle between the run ending and the replay.
+       Field note: "between the end of the game and the replay of what happened
+       put in a suitable upbeat music jingle that signifies the end of play."
+       Deliberately UPBEAT after a loss. The run ending is not a failure state
+       here, it is the end of a performance — and what comes next is the replay
+       of the best of it, so the sound that introduces it should be applause,
+       not a verdict. Built from the game's own vocabulary rather than a new
+       instrument: the reward triangle, and the same C-E-G-C rise the
+       first-evolve fanfare uses, carried two steps further and closed on a
+       held major third with a root underneath. About 1.1s, which is the gap
+       the death replay's lead-in holds open for it. */
+    endOfPlay: () => {
+        const t = (n, at, dur, vol, wave) =>
+            setTimeout(() => playTone(n, dur, wave || WAVE.reward, vol), at);
+        t(NOTE.C5,   0, 0.10, VOL.event);
+        t(NOTE.E5,  90, 0.10, VOL.event);
+        t(NOTE.G5, 180, 0.10, VOL.event);
+        t(NOTE.C6, 270, 0.16, VOL.major);
+        t(NOTE.G5, 430, 0.10, VOL.event);
+        t(NOTE.C6, 520, 0.10, VOL.event);
+        t(NOTE.E6, 610, 0.34, VOL.major);
+        t(NOTE.G6, 645, 0.32, VOL.event);                  // the third, held over it
+        t(NOTE.C4, 610, 0.46, VOL.event * 0.7, WAVE.ui);   // and a root underneath
+    },
     firstEvolve: () => {
         playTone(NOTE.C5, 0.08, WAVE.reward, VOL.event);
         setTimeout(() => playTone(NOTE.E5, 0.08, WAVE.reward, VOL.event), 70);
@@ -10513,6 +10781,23 @@ function slotFootprint(type, config, ax, ay) {
 // mirrored per slot. Re-stamped periodically so procedural generation
 // can never corrupt the route while the slot lives.
 const GUARD_WALLS = [[-1,-1],[0,-1],[1,-1],[2,-1],[-1,0],[2,0],[-1,1],[0,1],[2,1],[2,2],[-1,3],[1,3],[2,3],[-1,4]];
+/* ══ [090926j] THE GUARD, AS HOLES — four 2×2 blocks, not fourteen singles ═══
+   THE BUG THE PHONE FOUND. A few seconds into a run, most of the board turned
+   to void and the player was "flying blind". Traced: GUARD_WALLS is fourteen
+   SINGLE cells, and under the 2×2 rule each one was being THICKENED into a
+   block at the moment the slot's guard was stamped — fourteen blocks, then a
+   second sweep thickening the thin cells those blocks created, cascading
+   across a nine-row band. No passage repair ran afterwards, so the flood
+   stood. Sixty-odd cells of void where the start zone had been.
+
+   The fix is to stop making the shape the rule then has to mend. Under
+   WALLS_AS_HOLES the guard is four 2×2 blocks at the corners of the slot's
+   own 2×2, sides left open: already the minimum size, so nothing is thickened,
+   and it still makes reaching the slot cost a route rather than a straight
+   line. Runtime writes now only ever ERASE thin voids, never thicken, and the
+   passage guarantee is re-checked after them. ═══════════════════════════════ */
+const GUARD_BLOCKS = [[-2,-2],[-1,-2],[-2,-1],[-1,-1],  [2,-2],[3,-2],[2,-1],[3,-1],
+                      [-2,2],[-1,2],[-2,3],[-1,3],      [2,2],[3,2],[2,3],[3,3]];
 const GUARD_REDS  = [[-1,2],[1,4]];
 const GUARD_PATH  = [[1,0],[1,1],[0,2],[1,2],[0,3],[0,4],[0,5]];
 // [150826a] Finish a maze that could not be completed at stamp time because the
@@ -10575,15 +10860,17 @@ function stampGuardMaze(slot) {
     // variable, so a search for the literal 'wall' misses it entirely. This is
     // where "walls everywhere" was coming from after every other site had been
     // converted.
-    putTracked(GUARD_WALLS, WALLS_AS_HOLES ? 'void' : 'wall');
+    putTracked(WALLS_AS_HOLES ? GUARD_BLOCKS : GUARD_WALLS, WALLS_AS_HOLES ? 'void' : 'wall');   // [090926j]
     if (!NO_REDS) putTracked(GUARD_REDS, 'hazard');   // [090926g]
-    put(GUARD_PATH, null);
-    /* [080926i] The maze is a lattice of single cells; the 2×2 rule thickens it
-       into a moat here, and anything it voids is tracked so the rollback below
-       can undo the whole thing together. */
+    if (!WALLS_AS_HOLES) put(GUARD_PATH, null);
+    /* [090926j] Erase-only tidy and a passage check — the blocks are already
+       2×2, so nothing here can grow; this only clears a block that landed
+       against an existing hole and left a thin edge, and re-opens a row the
+       blocks would have sealed. Never thicken at runtime. */
     if (WALLS_AS_HOLES) {
         const ys = slot.cells.map(c => c.y);
-        enforceMinHoleSize(Math.max(...ys) + 3, Math.min(...ys) - 5, written);
+        for (let i = 0; i < 4 && enforceMinHoleSize(Math.max(...ys) + 6, Math.min(...ys) - 6, null, true) > 0; i++) {}
+        ensureRowsPassable(Math.max(...ys) + 6, Math.min(...ys) - 6);
     }
     // [030826u] THE MAZE MUST NOT SEAL WHAT IT GUARDS. put() skips any cell
     // outside 0..VIEW_W-1 — and that clipping applies to GUARD_PATH as well as
@@ -10747,14 +11034,30 @@ function diagnoseMissingTool(force = false) {
     if (!r) return null;
     if (r.reachable && !force) return null;
     const t = r.slot;
-    if (!t) return null;
+    if (!t) {
+        /* [100926h] NO SLOT FOR THIS BODY AT ALL — the solver's `noBody`. The
+           size branch below could never run here (it needs a slot to compare
+           against), so a body too big for everything the set still wants was
+           never diagnosed. Judge by the set itself: if every requirement left
+           is smaller than the body, the body has to shrink, and with the slot
+           refusing now the only lathe is a hole — carve one if none is in
+           view. Anything the body's size or bigger is a spawn or a green
+           problem, and those have their own suppliers. */
+        if (!r.noBody || !setNeeded.length) return null;
+        const mine = SHAPES[game.shapeType] ? SHAPES[game.shapeType].mult : 1;
+        const allSmaller = setNeeded.every(id => ((SHAPES[parseRequirement(id).type] || {}).mult || 1) < mine);
+        if (!allSmaller) return null;
+        return NO_REDS ? (voidInView() ? null : { kind: 'hole' }) : { kind: 'hazard' };
+    }
     const myMult   = SHAPES[game.shapeType] ? SHAPES[game.shapeType].mult : 1;
     const needMult = SHAPES[t.type] ? SHAPES[t.type].mult : 1;
     // Wrong SIZE is the simplest diagnosis: grow or trim.
     if (needMult > myMult) return { kind: 'green' };
-    // [090926g] Too big for the set: with reds gone the slot itself trims you
-    // (MACHINED TO FIT), so the fitter plants nothing — approach the slot.
-    if (needMult < myMult) return NO_REDS ? null : { kind: 'hazard' };
+    // [090926g] Too big for the set: with reds gone the slot itself trimmed you.
+    // [100926h] The slot REFUSES now (SLOT_REFUSES), so the only way down is a
+    // hole — a cube for a cell of ground. Usually there is one in view; when
+    // there is not, the fitter carves a 2x2 ahead. With reds on, a red.
+    if (needMult < myMult) return NO_REDS ? (voidInView() ? null : { kind: 'hole' }) : { kind: 'hazard' };
     // Right size, no route: it is a POSITION or a FORM problem.
     // Parity first, because it is the one a player cannot solve by trying
     // harder — diagonal, J and square are locked to one board colour, and only
@@ -10764,12 +11067,35 @@ function diagnoseMissingTool(force = false) {
     const myPar   = (((game.playerX + game.playerY) % 2) + 2) % 2;
     const slotPar = (((t.cells[0].x + t.cells[0].y) % 2) + 2) % 2;
     if (locked && myPar !== slotPar) {
-        return { kind: 'slip', dir: CARDINAL_SLIPS[(Math.random() * 4) | 0] };
+        return { kind: 'slip', dir: slipDirToward(t) };   // [100926f] was a random cardinal
     }
     // Otherwise the form is wrong and a turn is what changes it. (A single has
     // nothing to turn, so it gets a step instead.)
-    if (game.shapeType === 'single') return { kind: 'slip' };
-    return { kind: ONE_SHIFTER ? 'slip' : 'pivot' };   // [090926g]
+    if (game.shapeType === 'single') return { kind: 'slip', dir: slipDirToward(t) };
+    return ONE_SHIFTER ? { kind: 'slip', dir: slipDirToward(t) } : { kind: 'pivot' };   // [090926g]
+}
+/* ── [100926f] THE SHIFTER FORMULA — which step, where ────────────────────────
+   Field note: "work out a formula for which shifters are needed where
+   (vertical / horizontal)."
+   WHEN one is needed at all: only a parity-locked body (diagonal, J, square)
+   with the slot on the other pole — (sx − x) + (sy − y) odd. Flips move a
+   locked body two poles at a time, so no number of them ever crosses; a
+   single cardinal step does, and the four diagonals never do (they keep
+   x + y even). Pairs and singles cross by flipping and need no shifter.
+   WHICH AXIS: the one with the further to go. A step is one cell of travel as
+   well as a change of pole, so it should be spent along the axis the body
+   still has to cover — horizontal when the slot is more columns away than
+   rows, vertical when it is more rows. The direction points AT the slot.
+   NEVER NORTH by preference: the board scrolls, so a step upward is travel
+   into ground the scroll is about to take back. North is planted only when
+   the slot is level or above and there is no sideways distance to spend. */
+function slipDirToward(t) {
+    const c = t && t.cells && t.cells[0]; if (!c) return 4;
+    const dx = c.x - game.playerX, dy = c.y - game.playerY;
+    if (dx !== 0 && Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 2 : 6;   // E / W
+    if (dy > 0) return 4;                                                   // S
+    if (dx !== 0) return dx > 0 ? 2 : 6;
+    return dy < 0 ? 0 : 4;                                                  // N only when level-or-above and in column
 }
 // ── [050826n] THE LAST RESORT — a reprieve when the board is spent ──────────
 // A distinct dead end from the one the mercy injector covers. That one fires
@@ -10782,7 +11108,82 @@ function diagnoseMissingTool(force = false) {
 //   · only when NO uncovered free floor remains in view;
 //   · placed near the CENTRE, so it is reachable from anywhere on the board;
 //   · ONCE per level, and never while another is already out.
+/* ══ [110926c] A HAND UP — the single that cannot go anywhere ════════════════
+   The companion to SINGLE_BUYS_GROUND. Refusing the single's bridge is only
+   fair while there is another way round; a single with holes on every side has
+   no move at all, and would simply stand there until the scroll took it. That
+   is not a hard failure the player can learn from, it is a dead end the board
+   built.
+   So: when a single has no legal move in any of the eight directions, a GREEN
+   is planted in one of the holes beside it. The rescue uses machinery the game
+   already has and says two things at once — the body grows to a pair, and
+   because a consumed green's cell becomes ground, the hole it was sitting in
+   becomes the first plank of the bridge. The single is given exactly what it
+   was short of: a cube to spend.
+   Deliberately narrow. It fires only for a single, only when EVERY direction is
+   refused, only when a hole is adjacent to put it in (boxed in by slots or the
+   frame is a different and older situation), and at most once every
+   SINGLE_RESCUE_GAP_MS so it can never become a supply line. Preferring a
+   sideways or upward hole keeps the rescue from dragging the player toward the
+   bottom edge. */
+const SINGLE_RESCUE_GAP_MS = 4000;
+// The eight neighbours, in this file's own N/NE/E/… order. Declared here rather
+// than borrowed from HINT_DIR_VEC so the rescue does not depend on a constant
+// that lives a thousand lines further down, in the drawing layer.
+const NBR8 = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
+function singleHasNoMove() {
+    if (game.shapeType !== 'single') return false;
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    for (const [dx, dy] of NBR8) {
+        const nx = game.playerX + dx, ny = game.playerY + dy;
+        if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;   // the frame refuses
+        const w = world[`${nx},${ny}`];
+        if (w === 'void' || w === 'wall' || w === 'hazard') continue;   // hole, wall, red: refused or fatal
+        if (slotMisfitAt([{ x: nx, y: ny }])) continue;                 // a slot this body does not fit
+        return false;                                                   // one legal move is enough
+    }
+    return true;
+}
+function runSingleRescue() {
+    if (SINGLE_BUYS_GROUND || game.testDrive || !game.running || game.paused) return;
+    if (game.introHold || game.celebrating || game.inputLocked) return;
+    if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return;
+    if (game.shapeType !== 'single') return;
+    const now = performance.now();
+    if (now - (game._singleRescueAt || 0) < SINGLE_RESCUE_GAP_MS) return;
+    // A green already beside you is the rescue — magneticFuseCheck will take it.
+    for (const [dx, dy] of NBR8)
+        if (world[`${game.playerX + dx},${game.playerY + dy}`] === 'pickup') return;
+    if (!singleHasNoMove()) return;
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    const holes = [];
+    for (const [dx, dy] of NBR8) {
+        const nx = game.playerX + dx, ny = game.playerY + dy;
+        if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+        if (world[`${nx},${ny}`] !== 'void') continue;
+        if (slots.some(s => !s.claimed && s.keys.has(`${nx},${ny}`))) continue;
+        holes.push({ x: nx, y: ny, dy });
+    }
+    if (!holes.length) return;   // boxed in by something other than holes — not this rule's business
+    holes.sort((a, b) => a.dy - b.dy);          // north first, then level, then south
+    const h = holes[0];
+    const k = `${h.x},${h.y}`;
+    delete world[k];
+    world[k] = 'pickup';
+    addBurst(h.x * CELL + CELL / 2, (h.y - game.cameraY) * CELL + CELL / 2, '#a3e635');
+    triggerEdgeGlow('#a3e635', 700);
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30, 'A HAND UP', '#a3e635', false, { life: 1500, hold: 700 });
+    game._singleRescueAt = now;
+    rec('rescue', { k: 'single', x: h.x, y: h.y, r: advancedRound, m: Math.round(momentumRemaining()) });
+}
 const REPRIEVE_WINDOW_SEC = 20;
+// [100926h] Is there a hole anywhere in view — somewhere a cube can become ground?
+function voidInView() {
+    const camI = Math.floor(game.cameraY);
+    for (let y = camI; y < camI + VIEW_H; y++)
+        for (let x = 0; x < VIEW_W; x++) if (world[`${x},${y}`] === 'void') return true;
+    return false;
+}
 function uncoveredFloorInView() {
     const camI = Math.floor(game.cameraY);
     for (let y = camI; y < camI + VIEW_H; y++)
@@ -10912,7 +11313,40 @@ function runFitter() {
     }
     if (!cands.length) return;
     const reach = reachableSpawnSet(camI, camI + VIEW_H);
-    const ok = cands.filter(c => reach.has(c.k));
+    let ok = cands.filter(c => reach.has(c.k));
+    // [090926k] a shifter goes down near the set it is for, or not at all
+    if (want.kind === 'slip' || want.kind === 'pivot') {
+        ok = ok.filter(c => nearSet(c.x, c.y));
+        if (!ok.length) return;
+    }
+    /* [100926h] CARVE A HOLE. A player too big for the set with no void in view
+       gets a 2x2 hole 2–5 rows ahead: the board's own minimum, never on
+       walked ground, a slot, an island or the body, and never sealing a row.
+       It is the lathe the slot used to be. */
+    if (want.kind === 'hole') {
+        const body = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
+        const blockOk = (x, y) => {
+            if (x < 0 || x + 1 >= VIEW_W || y < camI || y + 1 >= camI + VIEW_H) return false;
+            for (const [bx, by] of [[x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]]) {
+                const k = `${bx},${by}`;
+                if (!holeCellFree(bx, by) || visited.has(k) || body.has(k)) return false;
+                if (slots.some(sl => sl.keys.has(k))) return false;
+            }
+            return true;
+        };
+        const blocks = cands.filter(c => blockOk(c.x, c.y));
+        if (!blocks.length) return;
+        const b = blocks[(Math.random() * blocks.length) | 0];
+        const cellsToCarve = [[b.x, b.y], [b.x + 1, b.y], [b.x, b.y + 1], [b.x + 1, b.y + 1]];
+        for (const [bx, by] of cellsToCarve) world[`${bx},${by}`] = 'void';
+        ensureRowsPassable(b.y + 1, b.y - 1);   // (fromY, toY) walks downward in y; both carved rows checked
+        for (const [bx, by] of cellsToCarve) if (world[`${bx},${by}`] === 'void')
+            addBurst(bx * CELL + CELL / 2, (by - game.cameraY) * CELL + CELL / 2, `rgb(${UNDER_INK})`);
+        rec('carve', { x: b.x, y: b.y, s: game.shapeType, r: advancedRound });
+        game._fitterAt = now;
+        game._stuckFor = 0;
+        return;
+    }
     const pick = (ok.length ? ok : cands)[(Math.random() * (ok.length ? ok.length : cands.length)) | 0];
     world[pick.k] = want.kind;
     if (want.kind === 'pivot' || want.kind === 'slip') {
@@ -11258,6 +11692,11 @@ function nowPlay() {
 }
 
 function togglePause() {
+    // [100926f] a tap during the replay skips it
+    if (game && game._replay) { replaySkip(); return; }
+    // [090926l] a tap during the death hold skips it — the card, now
+    // ([100926f] and the replay with it: a tap here means "get on with it")
+    if (game && game._deathHold) { game._deathHold.until = 0; game._deathHold.replayed = true; return; }
     if (!game.running) return;
     // [220826b] Space/K used to reach this during a level transition and during
     // the finale celebration — both of which hold game.paused true WITHOUT
@@ -11981,7 +12420,32 @@ const WALLS_AS_HOLES = true;
 
    Both are flags, both default on, both one keystroke from the old board. */
 const NO_REDS = true;
-const ONE_SHIFTER = true;
+/* ══ [SWEEP] THE SWEEP, UNDER TEST — see the brief above nearSet ═════════════
+   SWEEP brings the turn shifter back so the sweep can be played: holes the
+   turning cubes pass over become ground, free; a cube that LANDS in a hole
+   still pays. SWEEP_HALF_TURNS adds the 180° tile (the paver) alongside the
+   90°. Set SWEEP = false for the one-shifter board as it was (the two fixes
+   the sweep needed — the solver's phantom fills, pushes buying nothing —
+   stay either way; they are fixes, not the experiment).
+
+   MEASURED BEFORE BUILDING (the game's own turn function and arc; checks 1–2
+   of sweep_suite.js): the rule is "a cell counts when the cube's CENTRE passes over
+   it" — what the eye sees. Free cells laid, 90° / 180°:
+       pair 1 / 3 · diagonal 1 / 3 · J 0–2 / 2–3 · square 0 / 1
+   A turning cube passes over one cell on its way; if the body already sits
+   on that cell, before or after, there is nothing to lay. Compact shapes sit
+   on their own path, so the sweep is a SMALL-shape tool — the brief's "a
+   square lays three to five" came from counting cells the cube only brushes.
+   Every shape fits a 2x2, so no arm is longer than ~1.4 cells.
+
+   Designer's steer for placement: the sweep is most useful for building
+   bridges — to islands, or to cells with holes between them and the player —
+   so turns are placed at hole edges where a sweep lays ground toward a set,
+   and the stream leans toward turns when holes stand between the player and
+   a live slot. ══════════════════════════════════════════════════════════════ */
+const SWEEP = true;
+const SWEEP_HALF_TURNS = SWEEP && true;   // the 180° tile; false = 90° only
+const ONE_SHIFTER = !SWEEP;   // [090926g] one shifter — off while the sweep is under test
 function blockCell(key) {
     /* [060926] AN ISLAND PLATFORM IS NEVER BLOCKED. This is the single choke
        point for every structural writer — tunnel sides, funnel edges, tunnel
@@ -12177,7 +12641,49 @@ const UNDER_A_VY    = -2.94, UNDER_B_VY    = -1.12;  // px/sec, straight up
    40% through a lid, never a glyph, so it must read as ground-under-ground
    and not as an object. The pools of light take the same ink, so the depths
    are lit warm under a cold board — which is also how depth looks. */
-const UNDER_INK = '214, 196, 168';
+/* [100926f] SAND -> COOL PERIWINKLE. Field note: "make the underworld a cooler
+   colour for contrast." 070926h's warm sand bought temperature contrast; this
+   trades it for a cool ink that is still not the player's family. Measured
+   (CIE76 ΔE, higher = further apart; in-hole contrast vs the base):
+
+                     vs player   vs single   vs square   vs trail   in-hole
+       warm sand        49          54          45          79      10.9:1
+       periwinkle       40          40          54          41       8.2:1
+       steel blue       35          36          48          46       7.8:1
+       ice blue         30          33          42          55       9.9:1
+
+   Periwinkle (hue ~230, low saturation) keeps ~40 from everything the player
+   can be and 54 from the square's teal — the cyan family is hue 190, and the
+   distance is in hue and saturation, not temperature. Steel and ice sit too
+   near the single. */
+const UNDER_INK = '160, 170, 220';
+/* ── [100926f] HOLES IN THE SPACE BELOW, AND THE SOFTEST BLUR ─────────────────
+   Field note: "add in holes and voids to the underground layer below, and the
+   softest, barely noticeable blur on the lower layer."
+   The lattice is no longer one tile repeated: it is a UNDER_SUPER_W x
+   UNDER_SUPER_H field of tiles with a few blocks missing, and the missing
+   blocks obey the board's own rule — never smaller than 2x2 — so the depths
+   have holes the way the board has holes. Placed by hand, clear of the wrap
+   seams so no two ever merge across a repeat; the field is 6 x 7 board cells,
+   so a repeat is longer than the view is wide and the drift carries it.
+   The blur is baked into the tile: each tile is drawn three times, once in
+   place and twice nudged by UNDER_BLUR_PX, at split alphas. Three taps of a
+   one-pixel box — the least blur that is still a blur — costing nothing per
+   frame, and safe on every browser (no ctx.filter). */
+const UNDER_SUPER_W = 11, UNDER_SUPER_H = 13;
+const UNDER_HOLES = [[1,1,2,2], [6,2,3,2], [2,6,2,2], [7,7,2,3], [3,10,2,2], [8,11,2,2]];   // x, y, w, h in tiles
+/* [110926b] 0.8 -> 1.5, and a fourth tap on the diagonal. Field note: "the
+   underworld lower layer needs to be blurred a touch more, it's just a bit too
+   clear at present." Three taps at 0.8px is barely a softening; four at 1.5
+   spreads the edge across two pixels and drops the centre tap's weight, so the
+   lattice reads as something seen THROUGH depth rather than a second grid
+   drawn behind the first. Still a baked box blur — no ctx.filter, so nothing
+   about it can cost a frame or break on Safari. */
+const UNDER_BLUR_PX = 1.5;
+function underHoleAt(i, j) {
+    for (const [x, y, w, h] of UNDER_HOLES) if (i >= x && i < x + w && j >= y && j < y + h) return true;
+    return false;
+}
 /* ── [080926d] DAY HAS ITS OWN DEPTHS, AND THEY ARE NOT BLACK ───────────────
    Field note, with a screenshot of day mode: "reconsider the use of black,
    it's oppressive and jars to the eye." It did. The day board is white tiles
@@ -12203,7 +12709,7 @@ function underPattern(P, alpha, width, fillA) {
     const key = `${currentTheme}|${P}|${alpha}|${width}|${fillA}`;   // [080926d] theme in the key
     if (underPatterns[key] !== undefined) return underPatterns[key];
     const c = document.createElement('canvas');
-    c.width = P; c.height = P;
+    c.width = P * UNDER_SUPER_W; c.height = P * UNDER_SUPER_H;   // [100926f] a field of tiles, not one
     const g = c.getContext('2d');
     const size = P * 0.72, off = (P - size) / 2, r = Math.min(size * CORNER_K, CORNER_MAX);
     /* [090926c] DAY: the tiles below are WHITE, the way night's are dark. The
@@ -12212,22 +12718,74 @@ function underPattern(P, alpha, width, fillA) {
        lilac. The recess shows only in the gutters between them, so a hole in
        day reads as a patch of paler tiling under the board's white ones. */
     const dayTiles = currentTheme === 'day';
-    g.fillStyle   = dayTiles ? 'rgba(255,255,255,0.92)' : `rgba(${underInk()},${fillA})`;   // [060926] body, not just line
-    g.strokeStyle = `rgba(${underInk()},${dayTiles ? 0.55 : alpha})`;
+    const tile = (ox, oy) => {
+        g.beginPath();
+        g.moveTo(ox + r, oy);
+        g.lineTo(ox + size - r, oy);
+        g.quadraticCurveTo(ox + size, oy, ox + size, oy + r);
+        g.lineTo(ox + size, oy + size - r);
+        g.quadraticCurveTo(ox + size, oy + size, ox + size - r, oy + size);
+        g.lineTo(ox + r, oy + size);
+        g.quadraticCurveTo(ox, oy + size, ox, oy + size - r);
+        g.lineTo(ox, oy + r);
+        g.quadraticCurveTo(ox, oy, ox + r, oy);
+        g.closePath();
+        g.fill();     // [060926] the body goes down first, then the edge over it
+        g.stroke();
+    };
     g.lineWidth = width;
-    g.beginPath();
-    g.moveTo(off + r, off);
-    g.lineTo(off + size - r, off);
-    g.quadraticCurveTo(off + size, off, off + size, off + r);
-    g.lineTo(off + size, off + size - r);
-    g.quadraticCurveTo(off + size, off + size, off + size - r, off + size);
-    g.lineTo(off + r, off + size);
-    g.quadraticCurveTo(off, off + size, off, off + size - r);
-    g.lineTo(off, off + r);
-    g.quadraticCurveTo(off, off, off + r, off);
-    g.closePath();
-    g.fill();     // [060926] the body goes down first, then the edge over it
-    g.stroke();
+    // [100926f] three taps: in place, then nudged right and down — the blur.
+    const B = UNDER_BLUR_PX;
+    const TAPS = [[0, 0, 0.52], [B, 0, 0.26], [0, B, 0.26], [B, B, 0.18]];   // [110926b] four taps, softer centre
+    for (let j = 0; j < UNDER_SUPER_H; j++) for (let i = 0; i < UNDER_SUPER_W; i++) {
+        if (underHoleAt(i, j)) continue;   // a hole in the depths: the base shows through
+        for (const [dx, dy, k] of TAPS) {
+            g.fillStyle   = dayTiles ? `rgba(255,255,255,${0.92 * k})` : `rgba(${underInk()},${fillA * k})`;
+            g.strokeStyle = `rgba(${underInk()},${(dayTiles ? 0.55 : alpha) * k})`;
+            tile(i * P + off + dx, j * P + off + dy);
+        }
+    }
+    /* ── [110926f] AND THE SOCKETS BELOW ────────────────────────────────────
+       Designer's call: the space below gets the top layer's sockets too.
+       Same anatomy, same grammar, one scale down: a mark at every intersection
+       of the lower lattice, HOLLOW where a tile touches the point and SOLID
+       where all four are missing — exactly the swap drawJoints makes overhead
+       (a ring on land, a dot in a void). So the depths read as a board of the
+       same kind as the one above rather than as texture that happens to be
+       square, and the holes cut into it at [100926f] now have the same tell
+       the board's own holes have.
+       Radius scales with the tile (SOCKET_R x UNDER_A_SCALE), and the ink,
+       alpha and blur taps are the layer's own — these are a detail OF the
+       depths, not a second lattice competing with the one the player uses, so
+       they sit a little under the tile edges rather than over them.
+       Drawn at every intersection from 0 to W and 0 to H inclusive: the marks
+       on the far edges are the other halves of the ones on the near edges, so
+       the field still repeats without a seam. */
+    {
+        const sr = Math.max(1.0, SOCKET_R * UNDER_A_SCALE);
+        const W = UNDER_SUPER_W, H = UNDER_SUPER_H;
+        const solidAt = (i, j) => !underHoleAt(((i % W) + W) % W, ((j % H) + H) % H);
+        const ringA = (dayTiles ? 0.55 : alpha) * 0.62;
+        for (let j = 0; j <= H; j++) for (let i = 0; i <= W; i++) {
+            const land = solidAt(i - 1, j - 1) || solidAt(i, j - 1) ||
+                         solidAt(i - 1, j)     || solidAt(i, j);
+            const px = i * P, py = j * P;
+            for (const [dx, dy, k] of TAPS) {
+                g.beginPath();
+                if (land) {
+                    g.strokeStyle = `rgba(${underInk()},${ringA * k})`;
+                    g.lineWidth = Math.max(0.7, width * 0.85);
+                    g.arc(px + dx, py + dy, sr, 0, Math.PI * 2);
+                    g.stroke();
+                } else {
+                    g.fillStyle = `rgba(${underInk()},${ringA * 1.1 * k})`;
+                    g.arc(px + dx, py + dy, sr + 0.7, 0, Math.PI * 2);
+                    g.fill();
+                }
+            }
+        }
+        g.lineWidth = width;   // the tile pass borrowed this — hand it back
+    }
     const p = ctx.createPattern(c, 'repeat') || null;
     underPatterns[key] = p;
     return p;
@@ -12319,11 +12877,12 @@ function drawUnderworld(camInt, camFrac) {
         const P = Math.max(3, Math.round(S));
         const pat = underPattern(P, alpha, width, fillA);
         if (!pat) return;
-        const oy = wrap(t * vy, P);
+        const PH = P * UNDER_SUPER_H;   // [100926f] the field repeats every PH, so the drift wraps there
+        const oy = wrap(t * vy, PH);
         ctx.save();
         ctx.translate(0, oy);
         ctx.fillStyle = pat;
-        ctx.fillRect(-P, -oy - P, LOGICAL_W + 2 * P, LOGICAL_H + 2 * P);
+        ctx.fillRect(-P, -oy - PH, LOGICAL_W + 2 * P, LOGICAL_H + 2 * PH);
         ctx.restore();
     };
     /* [070926g] ONE GRID BELOW, NOT TWO. Field note, from a zoomed screenshot
@@ -13369,7 +13928,9 @@ function carveIslandSet(y, safeZoneEnd) {
     if (!NO_REDS && plat.length >= 4) { const r = take(); if (r) world[r] = 'hazard'; }   // devolve [090926g]
     if (plat.length >= 5 && Math.random() < 0.6) {
         const s = take();
-        if (s) world[s] = (ONE_SHIFTER || Math.random() < 0.5) ? 'slip' : 'pivot';       // a shifter to work with [090926g]
+        // [090926k] only if this island carries a slot — a shifter lives near a set
+        if (s && slots.some(sl => sl.onIsland && !sl.claimed && [...sl.keys].some(k => plat.includes(k))))
+            world[s] = (ONE_SHIFTER || Math.random() < 0.5) ? 'slip' : 'pivot';       // a shifter to work with [090926g]
     }
     islandCooldown = 12;   // [060926] was 40, then 20 — see ISLAND_CHANCE [070926f]
 }
@@ -14433,6 +14994,154 @@ function shifterFloorBreached() {
     return countShiftersInView() < SHIFTERS_IN_VIEW_FLOOR;
 }
 
+/* [110926b] 8 -> 4. Field note: "there should only be shape shifters within a
+   radius of 4 cells around the sets to collect." The last two exports agree
+   with the eye: 27 and 74 step-shifters spawned in single runs, because a
+   radius of 8 around any unclaimed slot covers most of a ten-wide board — the
+   rule was nominally a leash and practically none. At 4 a shifter sits in the
+   slot's own neighbourhood, which is the only place it is a tool rather than
+   scenery. */
+const SHIFTER_NEAR_SET = 4;   // [090926k] a shifter may exist only within this many cells of an unclaimed slot
+/* ══ [110926g] THE SWEEP — A BUILD BRIEF, NOT YET BUILT ══════════════════════
+   [SWEEP] NOW BUILT FOR TESTING, behind the SWEEP flag (beside ONE_SHIFTER),
+   90° and 180° tiles both in. Read the measured correction there before
+   trusting two claims below: swept area does NOT scale with body size (a
+   square lays 0 at 90°, 1 at 180°; a pair 1 and 3), so "grow to build" does
+   not follow — the sweep is a pair's tool. Checks: sweep_suite.js.
+
+   Designer's idea, and the best one in a long conversation: when a shape turns
+   about a pinned cube, the moving cubes SWEEP AN ARC over the board. Any void
+   under that arc becomes ground — because the player passed over it rather
+   than landing on it.
+
+   THE RULE, in one line, which is why it works:
+       WHAT YOU LAND ON COSTS A CUBE.  WHAT YOU SWEEP OVER IS FREE.
+   It matches the physical intuition exactly, and it does not collide with
+   "a cube only ever leaves the body to become ground" ([100926h]) — the sweep
+   is not free, it costs a SHIFTER, which is scarce and placed by the board
+   rather than chosen by the player. One object, one rule.
+
+   WHY IT EARNS ITS PLACE. It gives the turn shifter a job that is not the rare
+   parity stranding that killed it (one 'stuck' event in a 741s run). Swept
+   area scales with radius, so it scales with body size: a pair lays one span,
+   a J two or three, a square three to five in one action. That INVERTS the
+   incentive on big shapes, which are currently a liability — 18 seconds of
+   square across 51 minutes of recorded play. "Grow to build" is a strategy
+   the game does not presently have. It also changes what an island IS: a moat
+   cannot be crossed inside one life today, so an island is a monument to
+   earlier deaths; a square turning at the moat edge makes it something you can
+   aim at THIS run, while still usually needing more than one turn's worth.
+   And it separates the two turns cleanly at last — the 90° crosses the pole
+   (see the measured table at SLIP_VECTORS), the 180° sweeps twice the arc and
+   PAVES.
+
+   THREE WAYS IT GOES WRONG:
+   1. NO PREVIEW, NO MECHANIC. Free ground appearing in cells the player did
+      not predict reads as arbitrary. drawShifterPreview must outline the swept
+      cells in the span blue BEFORE the commit. Build this first, not last.
+   2. VOIDS ONLY. Not greens, not hourglasses, not other shifters — you passed
+      over them, you did not collect them.
+   3. THE MUG'S GAME. If sweeping is free and landing costs, the optimal line
+      is always "go find a shifter". Held by scarcity (radius 4) and by the
+      fact that the arc cannot be aimed. If the exports show cube-bought fills
+      collapsing while shifter use climbs, charge the sweep ONE cube however
+      many cells it lays.
+
+   THE ANIMATION. The pinned cube is a HUB, the movers an ARM: a pair of
+   dividers scribing across the board.
+     · wind-up 80ms — pinned cube brightens, its socket ring flares, movers
+       compress a few per cent toward it.
+     · sweep 380ms (90°) / 520ms (180°) — startPivotAnim already arcs each cube
+       on a constant radius. Add a thin scribe line behind each cube in its
+       family colour at low alpha, plus a short comet wake on the cube.
+     · THE STITCH, which carries the whole idea — as a cube's leading edge
+       crosses a void cell's centre, THAT cell closes: radial wipe from the
+       contact point, socket ring in, white outline drawn LAST (the outline is
+       what says "a real cell now"), one small burst. One at a time, in order
+       along the arc. A hole zips shut behind the arm. Never all at once at the
+       end — that destroys the causal story.
+     · landing 120ms — existing squash. Any cube that LANDED in a void pays,
+       with the uncouple fling it always gets, so free and paid are visible in
+       the same instant with no text.
+     · settle 200ms — new sockets pop, one float `+N GROUND` at the arc's
+       midpoint, 60-80ms hitstop first (like the shear) so the ground registers.
+     · frozenTimer covers the whole sweep: the clock must not drain through an
+       animation whose length the player did not choose.
+     · SOUND: one exchange chime per cell laid, spaced along the arc and RISING
+       up the scale. A five-cell square sweep is then audibly bigger than a
+       two-cell pair sweep, with no new sound design.
+     · Do NOT draw the swept area as a filled sector — it buries the board. The
+       scribe plus the stitch says everything it would.
+
+   BUILD ORDER: 90° turn back on with sweep-fill; swept cells in the preview;
+   rec('fill', {src:'sweep', n}) so the next export shows free ground against
+   paid. If the ratio holds, the 180° follows as the paver. ═════════════════ */
+/* ── [SWEEP] PLACEMENT HELPERS ──────────────────────────────────────────────
+   The sweep is translation-invariant, so every way a shape can stand on a
+   turn tile — config x pinned cube, per spin and size — is worked out once
+   from the same turnAroundTrigger/sweptCells the real turn uses, as offsets
+   from the tile. Scoring a candidate cell is then a handful of lookups. */
+let _sweepPoseCache = {};
+function sweepPoses(type, turns, ccw) {
+    const key = type + '|' + turns + '|' + (ccw ? 1 : 0);
+    if (_sweepPoseCache[key]) return _sweepPoseCache[key];
+    const out = [];
+    for (const cfg of Object.keys(SHAPES[type].cells)) {
+        const cells = SHAPES[type].cells[cfg].map(([dx, dy]) => ({ x: dx, y: -dy }));
+        for (let ti = 0; ti < cells.length; ti++) {
+            const t = cells[ti];
+            const pv = turnAroundTrigger(cells, t.x, t.y, ccw, type, cfg, turns);
+            if (!pv) continue;
+            out.push({
+                body:  cells.map(c => ({ dx: c.x - t.x, dy: c.y - t.y })),
+                swept: sweptCells(cells, pv.rotated, t.x, t.y, ccw, turns)
+                           .map(c => ({ dx: c.x - t.x, dy: c.y - t.y }))
+            });
+        }
+    }
+    return (_sweepPoseCache[key] = out);
+}
+// The most useful holes a turn from (cx,cy) could lay, over every pose the
+// shape can stand in with a cube on the tile (the body itself on solid cells).
+function sweepPlanScore(cx, cy, type, turns, ccw, useful) {
+    let best = 0;
+    for (const p of sweepPoses(type, turns, ccw)) {
+        if (!p.swept.length) continue;
+        let ok = true;
+        for (const b of p.body) {
+            const x = cx + b.dx, y = cy + b.dy, w = world[`${x},${y}`];
+            if (x < 0 || x >= VIEW_W || w === 'void' || w === 'wall') { ok = false; break; }
+        }
+        if (!ok) continue;
+        let n = 0;
+        for (const s of p.swept) {
+            const x = cx + s.dx, y = cy + s.dy;
+            if (x >= 0 && x < VIEW_W && world[`${x},${y}`] === 'void' && useful(x, y)) n++;
+        }
+        if (n > best) best = n;
+    }
+    return best;
+}
+// Holes standing between the player and a live set — or a set out on an
+// island — is when a turn is worth more than its usual share of the stream.
+function sweepBridgeDemand() {
+    const pc = routeCentroid(getPlayerCells());
+    for (const s of slots) {
+        if (s.claimed || s.retiring) continue;
+        if (s.onIsland) return true;
+        const t = routeCentroid(s.cells);
+        const steps = Math.ceil(Math.max(Math.abs(t.x - pc.x), Math.abs(t.y - pc.y)));
+        for (let i = 1; i < steps; i++) {
+            const x = Math.round(pc.x + (t.x - pc.x) * i / steps);
+            const y = Math.round(pc.y + (t.y - pc.y) * i / steps);
+            if (world[`${x},${y}`] === 'void') return true;
+        }
+    }
+    return false;
+}
+function nearSet(x, y, r = SHIFTER_NEAR_SET) {
+    return slots.some(s => !s.claimed && s.cells.some(c => Math.abs(c.x - x) <= r && Math.abs(c.y - y) <= r));
+}
 function spawnShifter() {
     // ── [160826r] THE CEILING ───────────────────────────────────────────────
     // Measured (rotor-playdata): 299 spawns in an 832s run — one every 2.8
@@ -14498,6 +15207,9 @@ function spawnShifter() {
     //          when nothing outstanding needs turning
     //   green  near the player's lane +10 (growth is wanted everywhere)
     let plannedDir = null;
+    // [SWEEP] a turn's size is rolled first (both sizes turn up, so the two
+    // can be compared), then the cell and spin are chosen FOR that size
+    let plannedTurns = SWEEP_HALF_TURNS ? (Math.random() < 0.5 ? 2 : 1) : 1;
     let k = pool[(Math.random() * pool.length) | 0];   // fallback: old behaviour
     {
         const liveSlots = slots.filter(s => !s.claimed && !s.retiring);
@@ -14512,8 +15224,20 @@ function spawnShifter() {
         if (typeof setNeeded !== 'undefined')
             for (const id of setNeeded) turnNeed += TURN_VALUE[parseRequirement(id).type] || 0;
         let sample = pool;
-        if (pool.length > 36) {   // shuffleInPlace mutates and returns nothing
-            sample = pool.slice();
+        /* [SWEEP] A turn is only a bridge-builder at a hole's edge, and the
+           sample below is 36 cells drawn at random — on a wide pool the edges
+           were mostly never looked at (a third of turn tiles could lay nothing
+           at all in the soak). So when edges exist, the turn's sample is drawn
+           from them; the scoring then picks the edge that faces the set. */
+        if (SWEEP && kind === 'pivot' && game.shapeType !== 'single') {
+            const edge = pool.filter(key => {
+                const q = key.split(','), x = +q[0], y = +q[1];
+                return NBR8.some(([a, b]) => world[`${x + a},${y + b}`] === 'void');
+            });
+            if (edge.length) sample = edge;
+        }
+        if (sample.length > 36) {   // shuffleInPlace mutates and returns nothing
+            sample = sample.slice();
             shuffleInPlace(sample);
             sample = sample.slice(0, 36);
         }
@@ -14541,7 +15265,32 @@ function spawnShifter() {
                 s += Math.min(30, turnNeed * 10);
                 if (game.shapeType === 'square') s += 15;
                 if (turnNeed === 0 && game.shapeType !== 'square') s -= 25;
-                if (!best || s > best.s) best = { s, key, dir: Math.random() < 0.5 ? 'cw' : 'ccw' };
+                let dir = Math.random() < 0.5 ? 'cw' : 'ccw';
+                /* [SWEEP] A TURN BELONGS AT A HOLE'S EDGE. Designer's steer:
+                   the sweep is most useful building bridges — to islands, or
+                   to cells with holes between them and the player. So a cell
+                   scores by what a turn from it would LAY: every way the
+                   player's current shape can stand with a cube on the tile,
+                   both spins, counting only swept holes that are a step toward
+                   a live set (closer to it than the tile) or on an island's
+                   moat. The spin that lays more is the one the tile gets, so a
+                   turn is placed already facing the gap. A plan that lays
+                   ground also cancels the "nothing needs turning" penalty:
+                   bridging is a job of its own. */
+                if (SWEEP && game.shapeType !== 'single') {
+                    const dHere = distTo(cx, cy);
+                    const useful = (x, y) => distTo(x, y) < dHere ||
+                        NBR8.some(([a, b]) => islandCells.has(`${x + a},${y + b}`));
+                    const nCw  = sweepPlanScore(cx, cy, game.shapeType, plannedTurns, false, useful);
+                    const nCcw = sweepPlanScore(cx, cy, game.shapeType, plannedTurns, true, useful);
+                    const n = Math.max(nCw, nCcw);
+                    if (n > 0) {
+                        if (nCw !== nCcw) dir = nCw > nCcw ? 'cw' : 'ccw';
+                        s += 28 * Math.min(3, n);   // outweighs "near a destination": laying ground IS the job
+                        if (turnNeed === 0 && game.shapeType !== 'square') s += 25;
+                    }
+                }
+                if (!best || s > best.s) best = { s, key, dir };
             } else {
                 let s = Math.random() * 12;
                 if (Math.abs(cx - px) <= 3) s += 10;
@@ -14601,6 +15350,14 @@ function spawnShifter() {
     if (kind === 'green' && countVisibleGreens() >= MAX_VISIBLE_GREENS)
         kind = Math.random() < 0.4 ? 'pivot' : 'slip';
     if (ONE_SHIFTER && kind === 'pivot') kind = 'slip';   // [090926g] one shifter
+    /* [090926k] A SHIFTER ONLY NEAR A SET. Designer's rule: no shape shifters
+       on the grid unless within 8 cells of a set to collect. A shifter is a
+       tool for fitting a slot; away from one it is clutter. If the chosen cell
+       is not within reach of an unclaimed slot the spawn becomes a green
+       instead, or nothing if greens are capped. */
+    if ((kind === 'slip' || kind === 'pivot') && !nearSet(gx, gy)) {
+        if (countVisibleGreens() < MAX_VISIBLE_GREENS) kind = 'green'; else return false;
+    }
 
     // [300726n] MERCY INJECTOR — the +45 rescue. Trim-supply pattern: if the
     // player's clock is under threshold, NO time is visible anywhere, and
@@ -14633,7 +15390,7 @@ function spawnShifter() {
         const dir = plannedDir !== null ? plannedDir : (Math.random() < 0.5 ? 'cw' : 'ccw');
         world[k] = 'pivot';
         showTip('shifter');
-        shifterMeta[k] = { spawnTime: performance.now(), dir };
+        shifterMeta[k] = { spawnTime: performance.now(), dir, turns: plannedTurns };   // [SWEEP] 1 = 90°, 2 = 180°
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
     } else {
         const dir = plannedDir !== null ? plannedDir : ((Math.random() * 8) | 0);   // [170826c]
@@ -14642,7 +15399,8 @@ function spawnShifter() {
         shifterMeta[k] = { spawnTime: performance.now(), dir };
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
     }
-    rec('spawn', { k: kind, v: countShiftersInView(), d: shifterDrought() ? 1 : 0 });   // [160826p][160826w]
+    rec('spawn', Object.assign({ k: kind, v: countShiftersInView(), d: shifterDrought() ? 1 : 0 },   // [160826p][160826w]
+                               kind === 'pivot' ? { tn: plannedTurns } : {}));                  // [SWEEP] which turn
     return { kind, key: k };
 }
 
@@ -14926,6 +15684,8 @@ function checkSlotClaims() {
         // player is hot, and in the slot's own family colour when they are not.
         const payColor = comboTint(slot.color);
         const payCells = slot.cells.slice();
+        tapeNote(setDone ? 'SET COMPLETE' : 'CLAIMED', payColor);   // [100926f] the replay's caption
+        if (setDone) bookmark('set', 'THE SET');                    // [100926g]
         seatFX = { cells: payCells, color: payColor,
                    t0: performance.now() + animQueueDelay() };   // [180826t][190826a] the fit shows at touch-down
         setTimeout(() => {
@@ -15184,12 +15944,11 @@ function showLevelCard(opts) {
 }
 function hideLevelCard() { const el = document.getElementById('levelCard'); if (el) el.classList.add('hidden'); }
 
-/* ══ [080926j] RETIRED. Designer's call after seeing it on the scorecard: a
-   third-scale miniature in approximate colours on a card read for about four
-   seconds. Nothing below is called any more — tapeMove's one call site and
-   startReplay's were removed with the canvas — and it is kept only so the
-   idea can be revived on the REAL board (ghosting the last moves full-size
-   before the card) if wanted. ════════════════════════════════════════════════
+/* ══ [080926j] RETIRED — and [100926f] REVIVED ON THE REAL BOARD, below.
+   Designer's call after seeing it on the scorecard: a third-scale miniature
+   in approximate colours on a card read for about four seconds. The
+   miniature is gone; the idea came back the way this note hoped it would —
+   full-size, on the board, before the card. ══════════════════════════════════
    [070926h] ACTION REPLAY — the last four moves that closed the level
    Designer's note: "explore action replay for when you get to the next level,
    perhaps the last 4 moves resulting in clearance." Kept tiny on purpose: a
@@ -15200,90 +15959,364 @@ function hideLevelCard() { const el = document.getElementById('levelCard'); if (
    language: a faint footprint where the shape was, a solid one where it went,
    the cyan of the player for the shape itself. No sound: the card has its own.
    Recorded at startFlip, which is the one place every real move passes. ═════ */
+/* ══ [100926f] THE REPLAY, ON THE BOARD ══════════════════════════════════════
+   Field note: "a full screen replay in slo-mo shown in the same grid space as
+   the game should be a feature — between levels and at game end — with an
+   explanation of what happened." And before that: "when a life ends, it would
+   be good to get a better sense of what happened."
+
+   080926j retired the miniature on the scorecard. This is the idea revived
+   where it was always meant to live: the last five moves, played back on the
+   REAL board, by the REAL renderer, at a quarter of live speed. Nothing is
+   approximated. The tape keeps each flip's own geometry — hinge, axis,
+   direction, both parities — and the replay hands it back to draw() through
+   the same `flip` object a live move uses, so a replayed flip IS the live
+   flip, slowed. The camera goes back to where it was for each move; the trail
+   is shown only as far as it had been walked at that moment (visitedAt is the
+   clock); the family colour is the shape's at the time.
+
+   The captions are the board's own words. Every label the player saw float
+   during a move — +1 CUBE, −1 CUBE → +1 GROUND, ROW +9s, HOURGLASS +10s,
+   CLAIMED, SHIFTER ROTATED, FELL −20s — is noted on the tape as it fires and
+   read back under the move that earned it. Nothing is written twice: the
+   replay narrates with the vocabulary the game already teaches. At a game end
+   the last caption is the cause.
+
+   Plays after the level card (before the door) and after the death hold
+   (before the scorecard). A tap skips it. ═══════════════════════════════════ */
+const REPLAY_ON = true;
+const REPLAY_MOVES = 4;   // [110926a] 5 -> 4, designer's call
+const REPLAY_FLIP_MS = 640, REPLAY_HOLD_MS = 560, REPLAY_LEAD_MS = 520, REPLAY_TAIL_MS = 950;   // ~7s for five moves; a tap skips
+const CHAIN_HITSTOP_MS = 220;   // [100926g] the third row in a chain holds the world this long
+const REPLAY_END_LEAD_MS = 1250;   // [110926a] the death replay waits for the end-of-play jingle
 let moveTape = [];
-/* [080926a] 520ms -> 1000ms a step. Field note: "needs to be a minimum of 4
-   seconds long." Four moves plus a beat of rest is five seconds a loop now,
-   and it lives on the SCORECARD (tallyReplay), not the level card — the card
-   the player actually reads between levels. The encouragement line is chosen
-   by what the tape shows: a chain, a crossing, or just the finish. */
-const REPLAY_MOVES = 4, REPLAY_STEP_MS = 1000;
-let _replayRaf = 0;
-function replayLine() {
-    const chain = (game._bandChainNow || 0) >= 2;
-    const crossed = moveTape.some(m => m.to.some(c => islandCells.has(`${c.x},${c.y}`)));
-    const filled = moveTape.some(m => m.filled);
-    const POOL = crossed ? ['YOU MADE IT ACROSS', 'THAT WAS THE ISLAND']
-               : chain   ? ['ROWS IN A CHAIN — THAT IS THE WAY', 'CHAINED. KEEP THAT UP']
-               : filled  ? ['A BRIDGE BUILT BY HAND', 'YOU PAID FOR THAT GROUND']
-               :           ['THE LAST FOUR MOVES', 'HOW IT CLOSED'];
-    return POOL[(Math.random() * POOL.length) | 0];
+/* ── [110926a] THE BOARD AS IT WAS ───────────────────────────────────────────
+   Field note: "the replay does not show the sets or the other game objects,
+   just the movement of the player."
+
+   It was drawing the board as it is NOW, which by the time a replay runs is
+   not the board any of those moves happened on. The slot you claimed does not
+   draw (claimed slots are skipped, and at a level end `setNeeded` is empty, so
+   the rest are skipped too); the green you ate has been deleted from `world`;
+   the hole you bridged is already ground. Everything the moves were ABOUT had
+   been cleaned up, and only the body was left — the one thing that explains
+   nothing on its own.
+
+   So each move now carries a STAGE: the objects in view and the unclaimed
+   slots, as they stood when the move began. The replay puts them back before
+   it plays and takes them out again afterwards, so the REAL renderer draws the
+   real board of that moment — the green still sitting there, the hourglass, the
+   shifter, the slot outlined in its family colour, the hole about to be
+   bridged. Nothing is redrawn in miniature or approximated: it is the same
+   pass, on the same data, one moment older.
+
+   Safe because a replay only ever runs while the loop is drawing and nothing
+   else: the death branch and the paused/celebrating branch both return straight
+   after draw(), so no game logic reads `world` while it is staged. The swap is
+   additive — a recorded object is only written where the cell is empty now, so
+   live terrain is never clobbered — and every key written is remembered and
+   removed on the way out. */
+/* [110926b] EVERY ASSET, NOT MOST OF THEM. Field note: "make sure that all
+   replays feature the contents that were on the grid when played — at present
+   not every asset is included and the player can't appreciate what actually
+   happened because of the missing visuals."
+   Three gaps, all of them state the first pass did not think of as scenery:
+     WALLS      — none are generated under WALLS_AS_HOLES, but a claimed slot
+                  or a pending wall is written as one, and the pass skipped it.
+     THE TRAIL  — `visited` is CLEARED at every level boundary, so any replay of
+                  a moment from an earlier level (the run's best, at game end)
+                  played out over bare board: no trail, and therefore no way to
+                  see which cells the player had already earned. The walked
+                  cells in the band now travel with the move, timestamps and
+                  all, so the trail is not just present but the right AGE.
+     THE WASH   — the board's per-level tint is read from advancedRound, so a
+                  level-1 moment replayed on level 4 wore level 4's colour.
+   With these the replay is the board, not a diagram of the body on it. */
+const STAGE_KINDS = { void: 1, pickup: 1, hazard: 1, pivot: 1, slip: 1, t10: 1, t30: 1, wall: 1 };
+function tapeStage() {
+    const camI = Math.floor(game.cameraY), lo = camI - 1, hi = camI + VIEW_H + 1;
+    const objs = [], vis = [];
+    for (let y = lo; y < hi; y++)
+        for (let x = 0; x < VIEW_W; x++) {
+            const k = `${x},${y}`, w = world[k];
+            if (w && STAGE_KINDS[w])
+                objs.push({ k, w, meta: shifterMeta[k] ? Object.assign({}, shifterMeta[k]) : null });
+            else if (visited.has(k)) vis.push([k, visitedAt.get(k) || 0]);
+        }
+    const sl = [];
+    for (const s of slots) {
+        if (s.claimed || s.retiring) continue;
+        if (!s.cells.some(c => c.y >= lo && c.y < hi)) continue;
+        // A shallow copy freezes `claimed` at false for this moment; `traced`
+        // is copied because it grows as the slot fills.
+        const copy = Object.assign({}, s);
+        copy.traced = new Set(s.traced || []);
+        sl.push(copy);
+    }
+    return { objs, vis, slots: sl, needed: setNeeded.slice(), lvl: advancedRound };
 }
-function tapeMove(fromCells, toCells) {
-    const filled = toCells.some(c => world[`${c.x},${c.y}`] === 'void');   // landing on a void = a fill
-    /* [080926e] THE SLOT THE MOVE LANDS IN. Field note: the replay did not show
-       the slot the player landed in — the whole point of the last move on most
-       levels. Any unclaimed slot the destination touches is recorded with the
-       move, footprint and colour, and the replay draws it under the shape. */
-    const toKeys = new Set(toCells.map(c => `${c.x},${c.y}`));
-    const landed = slots.filter(s => !s.claimed && [...s.keys].some(k => toKeys.has(k)))
-                        .map(s => ({ cells: s.cells.map(c => ({ x: c.x, y: c.y })), color: s.color }));
-    moveTape.push({ from: fromCells.map(c => ({ x: c.x, y: c.y })), to: toCells.map(c => ({ x: c.x, y: c.y })), filled, slots: landed });
+function tapeRecord(fromCells, fromParity, f) {
+    const prev = moveTape[moveTape.length - 1];
+    // the previous move's settled body — after any grow or shed that its landing caused
+    if (prev && !prev.after) prev.after = { cells: fromCells.map(c => ({ x: c.x, y: c.y })), type: game.shapeType, parity: fromParity };
+    moveTape.push({
+        t: performance.now(), cam: game.cameraY, type: game.shapeType,
+        from: fromCells.map(c => ({ x: c.x, y: c.y })), to: f.toCells.map(c => ({ x: c.x, y: c.y })),
+        fromParity, toParity: f.toParity, hx: f.hx, hy: f.hy, axisX: !!f.axisX, axisY: !!f.axisY,
+        dirX: f.dirX || 0, dirY: f.dirY || 0, diag: !!f.diag, grow: !!f.grow, notes: [],
+        clock: momentumRemaining(),   // [110926d] the clock as it stood — see the replay's bar
+        stage: tapeStage() });        // [110926a] the board this move was made on
     if (moveTape.length > REPLAY_MOVES) moveTape.shift();
 }
-function startReplay() {
-    stopReplay();
-    const cv = document.getElementById('tallyReplay');
-    const wrap = document.getElementById('tallyReplayWrap');
-    if (!cv || !moveTape.length) { if (wrap) wrap.style.display = 'none'; return; }
-    if (wrap) wrap.style.display = '';
-    const lineEl = document.getElementById('tallyReplayLine');
-    if (lineEl) lineEl.textContent = replayLine();
-    const g = cv.getContext('2d');
-    const tape = moveTape.slice();
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const m of tape) for (const c of m.from.concat(m.to, ...(m.slots || []).map(s => s.cells))) {
-        minX = Math.min(minX, c.x); maxX = Math.max(maxX, c.x); minY = Math.min(minY, c.y); maxY = Math.max(maxY, c.y);
-    }
-    minX -= 1; maxX += 1; minY -= 1; maxY += 1;
-    const cols = maxX - minX + 1, rows = maxY - minY + 1;
-    const S = Math.floor(Math.min(cv.width / cols, cv.height / rows));
-    const ox = (cv.width - cols * S) / 2, oy = (cv.height - rows * S) / 2;
-    const t0 = performance.now();
-    const sq = (c, fill, stroke, w) => {
-        const x = ox + (c.x - minX) * S + 2, y = oy + (c.y - minY) * S + 2, s = S - 4, r = Math.min(s * CORNER_K, CORNER_MAX);
-        g.beginPath();
-        g.moveTo(x + r, y); g.lineTo(x + s - r, y); g.quadraticCurveTo(x + s, y, x + s, y + r);
-        g.lineTo(x + s, y + s - r); g.quadraticCurveTo(x + s, y + s, x + s - r, y + s);
-        g.lineTo(x + r, y + s); g.quadraticCurveTo(x, y + s, x, y + s - r);
-        g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath();
-        if (fill) { g.fillStyle = fill; g.fill(); }
-        if (stroke) { g.strokeStyle = stroke; g.lineWidth = w || 1; g.stroke(); }
-    };
-    const frame = () => {
-        if (!document.body.classList.contains('tally-open')) { _replayRaf = 0; return; }
-        const t = ((performance.now() - t0) / REPLAY_STEP_MS) % (tape.length + 1);
-        const step = Math.floor(t), k = t - step;
-        g.clearRect(0, 0, cv.width, cv.height);
-        const dayMode = currentTheme === 'day';
-        const line = dayMode ? 'rgba(196,181,253,0.9)' : 'rgba(226,232,240,0.45)';
-        for (let y = minY; y <= maxY; y++) for (let x = minX; x <= maxX; x++) sq({ x, y }, null, line, 1);
-        // everything already landed in earlier steps stays as trail
-        const trail = dayMode ? '#ffc2d4' : 'rgba(124,96,196,0.88)';
-        // [080926e] the slots these moves landed in, in their own colour, under everything
-        for (const m of tape) for (const s of (m.slots || [])) for (const c of s.cells) sq(c, null, s.color, 2.2);
-        for (let i = 0; i < Math.min(step, tape.length); i++) for (const c of tape[i].to) sq(c, trail, line, 1);
-        if (step < tape.length) {
-            const m = tape[step];
-            const ease = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-            const cyan = palette().playerCyan;
-            g.save(); g.globalAlpha = 1 - ease; for (const c of m.from) sq(c, cyan, null); g.restore();
-            g.save(); g.globalAlpha = ease;     for (const c of m.to)   sq(c, cyan, '#ffffff', 1.2); g.restore();
-        }
-        _replayRaf = requestAnimationFrame(frame);
-    };
-    _replayRaf = requestAnimationFrame(frame);
+/* [110926d] A SHIFTER MOVE IS A MOVE. The pivot and the slip do not go through
+   startFlip — they have their own animations — so neither was written down,
+   and the replay jumped: one entry ended where the body was, the next began
+   where the shifter had put it, with nothing in between to account for the
+   distance. Recorded as a GROW-shaped entry (a change of place with no fold,
+   which is what a shifter is) so the replay holds the body at the new cells
+   rather than folding it there. Called BEFORE its tapeNote, so 'SHIFTER
+   ROTATED' lands on the move that did it and not on the one before. */
+function tapeShift(fromCells, toCells) {
+    tapeRecord(fromCells, game.faceParity,
+               { toCells, toParity: game.faceParity, grow: true });
+    const e = moveTape[moveTape.length - 1];
+    if (e) { e.type = game.shapeType; e.shift = true; }
 }
-function stopReplay() { if (_replayRaf) { cancelAnimationFrame(_replayRaf); _replayRaf = 0; } }
+function tapeNote(text, color) {
+    const e = moveTape[moveTape.length - 1];
+    if (!e || e.notes.length >= 3) return;
+    text = String(text).replace(/\s*\n\s*/g, '  ');
+    if (e.notes.some(n => n.text === text)) return;
+    e.notes.push({ text, color: color || '#e2e8f0' });
+}
+/* [110926d] NOT PLAYED BACK ANY MORE — see the note at _skipCard. A replay is
+   always the last four moves now, so nothing calls bestHighlight. The bookmarks
+   are kept because they cost a reference each and they mark the moments a
+   highlight reel would want if one ever earns its place; they are also the
+   cheapest record of what a run's good moments were.
+   ── [100926g] HIGHLIGHTS — bookmarked as they happen ─────────────────────────
+   A notable moment (the escape, three rows in a chain, a shifter used, a
+   bridge built with cubes, the set) bookmarks the moves around it: references
+   to the tape entries, not copies, so a caption that arrives a beat later
+   still lands on them. Nothing interrupts play. Between levels the level's
+   best highlight replaces the closing moves; at game end the run's best plays
+   after the death replay, so the run ends on its best moment. */
+const HIGHLIGHT_SCORE = { escape: 3, chain: 3, shifter: 2, set: 2, bridge: 1 };
+let highlights = [];
+function bookmark(kind, title) {
+    if (game.testDrive || !moveTape.length) return;
+    const tape = moveTape.slice(-REPLAY_MOVES);
+    const last = tape[tape.length - 1];
+    if (highlights.length && highlights[highlights.length - 1].tape[highlights[highlights.length - 1].tape.length - 1] === last
+        && highlights[highlights.length - 1].kind === kind) return;   // the same move, twice
+    highlights.push({ kind, title, score: HIGHLIGHT_SCORE[kind] || 1, tape, t: performance.now(), level: advancedRound });
+    if (highlights.length > 24) highlights.shift();
+}
+function bestHighlight(minScore, level = null, exclude = null) {
+    let best = null;
+    for (const h of highlights) {
+        if (level !== null && h.level !== level) continue;
+        if (h.score < minScore) continue;
+        if (exclude && h.tape.some(e => exclude.includes(e))) continue;
+        if (!best || h.score > best.score || (h.score === best.score && h.t > best.t)) best = h;
+    }
+    return best;
+}
+function startBoardReplay(kind, reason, onDone, opts = {}) {
+    if (!REPLAY_ON || game._replay || game.testDrive) return false;
+    const src = opts.tape || moveTape.slice(-REPLAY_MOVES);
+    const tape = src.filter(e => e.to && e.to.length && e.from && e.from.length);
+    if (tape.length < 2) return false;   // one move is not a story
+    const last = tape[tape.length - 1];
+    if (!last.after) last.after = last === moveTape[moveTape.length - 1]
+        ? { cells: getPlayerCells().map(c => ({ x: c.x, y: c.y })), type: game.shapeType, parity: game.faceParity }   // the live body
+        : { cells: last.to, type: last.type, parity: last.toParity };                                                  // an old highlight: the landing itself
+    const now = performance.now();
+    game._replay = {
+        kind, reason, tape, i: -1, phase: 'lead', t0: now, onDone, done: false,
+        title: opts.title ? `REPLAY  ·  ${opts.title}` : null,
+        lead: opts.lead || REPLAY_LEAD_MS,
+        // [110926a] the staged board — see tapeStage
+        _wrote: [], _wroteMeta: [], _wroteVis: [], slotsSave: slots, neededSave: setNeeded, lvl: null,
+        camRestore: game.cameraY, typeRestore: game.shapeType, parityRestore: game.faceParity,
+        cells: tape[0].from, type: tape[0].type, parity: tape[0].fromParity, now: tape[0].t - 1,
+        caption: null, captionT0: 0, showDeath: false,
+        deathCells: kind === 'death' && game._deathHold ? game._deathHold.cells : null
+    };
+    floats = [];            // the board is the replay's; the labels come back as captions
+    deniedFlashT0 = 0;
+    flip = { active: false };
+    replayStageApply(game._replay, tape[0]);   // [110926a] the lead-in already shows the right board
+    return true;
+}
+/* [110926a] Put the recorded board on, or take it off. Additive and reversible:
+   only empty cells are written, every write is remembered, and the live `slots`
+   and `setNeeded` are held aside rather than edited. */
+function replayStageApply(R, e) {
+    for (const k of R._wrote) delete world[k];
+    for (const k of R._wroteMeta) delete shifterMeta[k];
+    for (const k of R._wroteVis) { visited.delete(k); visitedAt.delete(k); }
+    R._wrote = []; R._wroteMeta = []; R._wroteVis = [];
+    const st = e && e.stage;
+    if (!st) { slots = R.slotsSave; setNeeded = R.neededSave; R.lvl = null; return; }
+    for (const o of st.objs) {
+        if (world[o.k] !== undefined) continue;   // still there, or something else is — leave it
+        world[o.k] = o.w;
+        R._wrote.push(o.k);
+        if (o.meta && !shifterMeta[o.k]) { shifterMeta[o.k] = o.meta; R._wroteMeta.push(o.k); }
+    }
+    // [110926b] the trail as it stood — only cells the board has since forgotten
+    for (const [k, t] of (st.vis || [])) {
+        if (visited.has(k)) continue;
+        visited.add(k); visitedAt.set(k, t);
+        R._wroteVis.push(k);
+    }
+    slots = st.slots;
+    setNeeded = st.needed;
+    R.lvl = st.lvl;   // and the level's own wash
+}
+function replayStageClear(R) {
+    for (const k of R._wrote) delete world[k];
+    for (const k of R._wroteMeta) delete shifterMeta[k];
+    for (const k of R._wroteVis) { visited.delete(k); visitedAt.delete(k); }
+    R._wrote = []; R._wroteMeta = []; R._wroteVis = [];
+    slots = R.slotsSave; setNeeded = R.neededSave;
+}
+function replayArm(R, i) {
+    const e = R.tape[i];
+    replayStageApply(R, e);   // [110926a] the board this move was made on
+    R.i = i; R.t0 = performance.now(); R.phase = e.grow ? 'hold' : 'flip';
+    R.cells = e.to; R.type = e.type; R.parity = e.toParity; R.caption = null;
+    if (e.grow) { replayLand(R); return; }
+    flip = { active: true, repel: false, t0: R.t0, dur: REPLAY_FLIP_MS,
+             fromCells: e.from, fromParity: e.fromParity, toCells: e.to, toParity: e.toParity,
+             wasVisited: new Set(e.to.filter(c => (visitedAt.get(`${c.x},${c.y}`) || 0) < e.t).map(c => `${c.x},${c.y}`)),
+             hx: e.hx, hy: e.hy, axisX: e.axisX, axisY: e.axisY, dirX: e.dirX, dirY: e.dirY, diag: e.diag };
+    R.now = e.t - 1;
+    if (typeof sfx !== 'undefined' && sfx.move) sfx.move(0, e.diag);
+}
+function replayLand(R) {
+    const e = R.tape[R.i], next = R.tape[R.i + 1];
+    flip = { active: false };
+    R.phase = 'hold'; R.t0 = performance.now();
+    R.cells = e.after ? e.after.cells : e.to; R.type = e.after ? e.after.type : e.type; R.parity = e.after ? e.after.parity : e.toParity;
+    R.now = next ? next.t - 1 : Infinity;
+    game._landAt = R.t0; game._landCells = R.cells;
+    R.caption = e.notes.slice();
+    if (!next && R.kind === 'death') {
+        R.caption.push({ text: DEATH_LINE[R.reason] || DEATH_LINE.death, color: '#f87171' });
+        R.showDeath = true;
+    }
+    R.captionT0 = R.t0;
+}
+function replayTick() {
+    const R = game._replay;
+    if (!R || R.done) return;
+    const now = performance.now(), el = now - R.t0;
+    if (R.phase === 'lead') {
+        game.cameraY = R.tape[0].cam;
+        if (el >= R.lead) replayArm(R, 0);
+    } else if (R.phase === 'flip') {
+        const e = R.tape[R.i], from = R.i > 0 ? R.tape[R.i - 1].cam : e.cam;
+        const k = Math.min(1, el / REPLAY_FLIP_MS), ease = k * k * (3 - 2 * k);
+        game.cameraY = from + (e.cam - from) * ease;
+        if (el >= REPLAY_FLIP_MS) replayLand(R);
+    } else if (R.phase === 'hold') {
+        const e = R.tape[R.i];
+        game.cameraY = e.cam;
+        const hold = REPLAY_HOLD_MS + (R.caption && R.caption.length ? 340 * R.caption.length : 0);
+        if (el >= hold) { if (R.i + 1 < R.tape.length) replayArm(R, R.i + 1); else { R.phase = 'tail'; R.t0 = now; } }
+    } else if (R.phase === 'tail' && el >= REPLAY_TAIL_MS) { replayFinish(); return; }
+    syncReplayBars();
+}
+function replayFinish() {
+    const R = game._replay;
+    if (!R || R.done) return;
+    R.done = true;
+    replayStageClear(R);   // [110926a] the board goes back to now, before anything reads it
+    game.cameraY = R.camRestore;
+    flip = { active: false };
+    game._landAt = 0;
+    game._replay = null;
+    syncReplayBars();
+    if (typeof R.onDone === 'function') R.onDone();
+}
+function replaySkip() { replayFinish(); }
+/* The caption strip and the REPLAY tag — drawn last, over everything. */
+/* [100926g] On the board itself: only a thin frame. Every word lives in the
+   bars (syncReplayBars) — nothing is written on the grid. */
+function drawReplayOverlay() {
+    const R = game._replay;
+    if (!R) return;
+    ctx.save();
+    ctx.globalAlpha = 0.55 + 0.25 * Math.abs(Math.sin(performance.now() / 700));
+    ctx.strokeStyle = currentTheme === 'day' ? '#3b4f66' : '#e2e8f0';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1.5, 1.5, LOGICAL_W - 3, LOGICAL_H - 3);
+    ctx.restore();
+}
+/* The bars: the HUD strip becomes the top bar (tag + move count), and the
+   joystick pad, when there is one, becomes the bottom bar for the captions.
+   With no pad (desktop) the captions go in the top bar. Positioned over the
+   live elements each frame so every layout variant is covered. */
+function syncReplayBars() {
+    const R = game._replay;
+    const top = document.getElementById('replayTop'), bot = document.getElementById('replayBottom');
+    if (!top || !bot) return;
+    if (!R || R.done) { if (!top.hidden) top.hidden = true; if (!bot.hidden) bot.hidden = true; return; }
+    const rect = el => (el && el.getBoundingClientRect) ? el.getBoundingClientRect() : null;
+    /* [110926b] BOTH BARS ARE THE WIDTH OF THE BOARD. Field note, on the TAP TO
+       SKIP box: "these should be the same width as the width of the grid for
+       symmetry." They were taking the width of whatever they sat over — the HUD
+       strip above, the joystick pad below — and those are two different widths,
+       neither of them the board's, so a replay framed the grid in a pair of
+       mismatched slabs. The board is the only measure on this screen worth
+       matching, so each bar takes the canvas's left edge and width, and keeps
+       only its HEIGHT from the element whose space it is borrowing. */
+    const cvr = rect(document.getElementById('canvas'));
+    const place = (bar, r) => {
+        bar.hidden = false;
+        const L = (cvr && cvr.width > 40) ? cvr.left : r.left;
+        const W = (cvr && cvr.width > 40) ? cvr.width : r.width;
+        bar.style.left = L + 'px'; bar.style.top = r.top + 'px';
+        bar.style.width = W + 'px'; bar.style.height = r.height + 'px';
+    };
+    const hr = rect(document.querySelector('.set-only-hud'));
+    if (hr && hr.width > 0) place(top, hr); else if (!top.hidden) top.hidden = true;
+    const pad = document.getElementById('stickPad');
+    const pr = rect(pad);
+    const usePad = !!(pr && pr.width > 80 && pr.height > 56 && pad.style.display !== 'none');
+    if (usePad) place(bot, pr); else if (!bot.hidden) bot.hidden = true;
+    const tag = document.getElementById('replayTag'), cnt = document.getElementById('replayCount');
+    const title = R.title || 'REPLAY';
+    const tagText = R.phase === 'lead' ? '◀◀  ' + title : title + '  ·  ¼ SPEED';
+    if (R._tagText !== tagText && tag) { R._tagText = tagText; tag.innerHTML = (R.phase === 'lead' ? '' : '<i class="replay-dot"></i>') + tagText; }
+    const cntText = R.i >= 0 ? `MOVE ${R.i + 1} OF ${R.tape.length}` : `THE LAST ${R.tape.length} MOVES`;
+    if (R._cntText !== cntText && cnt) { R._cntText = cntText; cnt.textContent = cntText; }
+    /* [110926d] THE CLOCK, AS IT WAS ON THIS MOVE. The lead-in shows the clock
+       the first move was made on, so the bar is never blank. */
+    {
+        const clk = document.getElementById('replayClock');
+        const e = R.tape[Math.max(0, R.i)];
+        const sec = e && typeof e.clock === 'number' ? Math.max(0, e.clock) : null;
+        const txt = sec === null ? '' : `${Math.floor(sec / 60)}:${String(Math.floor(sec % 60)).padStart(2, '0')}`;
+        if (clk && R._clkText !== txt) {
+            R._clkText = txt;
+            clk.textContent = txt;
+            clk.classList.toggle('warn', sec !== null && sec <= TICK_WARN_SEC);
+        }
+    }
+    const capEl = usePad ? document.getElementById('replayCapBottom') : document.getElementById('replayCapTop');
+    const other = usePad ? document.getElementById('replayCapTop') : document.getElementById('replayCapBottom');
+    const lines = (R.phase === 'flip' || R.phase === 'lead') ? [] : (R.caption || []);
+    const key = R.i + '|' + R.phase + '|' + (usePad ? 'b' : 't') + '|' + lines.map(c => c.text).join('|');
+    if (R._capKey !== key) {
+        R._capKey = key;
+        if (other) other.innerHTML = '';
+        if (capEl) capEl.innerHTML = lines.map((c, j) =>
+            `<span style="color:${c.color || 'inherit'};animation-delay:${(j * 0.34).toFixed(2)}s">${String(c.text).replace(/[<>&]/g, '')}</span>`).join('');
+    }
+}
 
 function updateOverlayMission() {
     const el = document.getElementById('roundOverlaySet');
@@ -16932,6 +17965,7 @@ function completeSet() {
             // empties `slots`.)
             visited.clear(); visitedAt.clear();   // [090926e]
             game.trail = [];
+            moveTape = [];   // [100926f] a new level's replay must not open on the old one's moves
             slotBurns = [];
             coverHeat.clear();
             game._covPopped = 0;
@@ -16998,7 +18032,18 @@ function completeSet() {
                 // stays in the export if it is ever wanted again.
                 game._lastLevelLine = `ROWS ${game.roundRows || 0}`;
             }
-            const _skipCard = (cb) => setTimeout(cb, 350);   // a beat, so the celebration finishes
+            // [100926f] the card yields to the replay of the closing moves; the
+            // door follows. Without a tape (or if skipped) it is the old beat.
+            /* [110926d] ALWAYS THE LAST FOUR MOVES. [100926g] put the level's
+               best bookmarked highlight here instead — an escape or a chain
+               from earlier in the level — and that is the other half of "the
+               replays don't coincide with what happened on the board": the
+               player had just claimed the set, and was shown a moment from two
+               minutes earlier with no way to tell it was not the one they had
+               just played. A replay's whole claim is that it is what just
+               happened. Designer's call: the last four moves, at the end of a
+               level and at the end of a run, and nothing else. */
+            const _skipCard = (cb) => { if (!startBoardReplay('level', null, cb)) setTimeout(cb, 350); };
             _skipCard(() => {
                 _advanceNow();
                 setTimeout(() => {
@@ -17238,6 +18283,20 @@ function magneticFuseCheck() {
 }
 
 function applyFusionMove(cells, fuse) {
+    /* ── [110926d] EVERY GROW IS A MOVE ON THE TAPE ─────────────────────────
+       The record used to live in commitFusion, which is only ONE of the three
+       ways a green is eaten: magneticFuseCheck bonds by adjacency with no move
+       at all, and checkCollisions bonds on a landing. Both of those grew the
+       body without writing anything down, so the replay's next entry began
+       with a body a cube bigger than the one the previous entry ended on — the
+       shape changed size between frames with no move to explain it. That is
+       most of "the replays don't coincide with what happened".
+       Recorded HERE, at the one place all three paths pass through, so a bond
+       is a move like any other: recorded BEFORE the fusion (so the world still
+       holds the green, and the "+1 CUBE" note lands on this entry), patched
+       with the settled body at the end. */
+    { const f = getPlayerCells();
+      tapeRecord(f, game.faceParity, { toCells: f, toParity: game.faceParity, grow: true }); }
     // [210826r] Growing into a shape is a NEW occupancy of it, so the square's
     // one free knock resets here. Without this, a player who shed a square and
     // rebuilt it would inherit the spent grace of the old one — and the rebuilt
@@ -17288,6 +18347,13 @@ function applyFusionMove(cells, fuse) {
     // [210826al] Shake removed — growing is the best thing that happens to you
     // and it was announcing itself with the damage channel.
     triggerEdgeGlow('#a3e635', 500);
+    /* [100926f] ONE LEDGER FOR THE BODY. Every change to the number of cubes
+       now says the same short thing at the place it happened: "+1 CUBE" here,
+       "−N CUBE(S)" wherever a cube is shed, "−N CUBES → +N GROUND" where the
+       shed built a bridge. Same words, same size, same place; a player who
+       reads one has read them all. */
+    addFloat(screenX, screenY - 6, '+1 CUBE', '#a3e635');
+    tapeNote('+1 CUBE', '#a3e635');
 
     // Couple fusion effect at the seam (midpoint between contact cell and green)
     const cellSX = contactCell.x * CELL + CELL/2;
@@ -17298,6 +18364,13 @@ function applyFusionMove(cells, fuse) {
     const FACE_RGB = { 0: [87, 221, 242], 1: [95, 224, 208] }; // cyan / teal (mid tones)
     const resultingParity = fuseFlipsParity ? (game.faceParity ^ 1) : game.faceParity;
     addFusion((cellSX + screenX) / 2, (cellSY + screenY) / 2, screenX, screenY, 'couple', FACE_RGB[resultingParity]);
+    // [100926d] the new body lands as one: squash and socket flare when the morph completes
+    game._landAt = performance.now() + FUSION_COUPLE_DUR; game._landCells = getPlayerCells();
+    // [110926d] and the tape gets the settled body. resultingParity is already
+    // worked out above for the fusion's colour — the same answer serves here.
+    { const e = moveTape[moveTape.length - 1];
+      if (e && e.grow) { e.to = getPlayerCells().map(c => ({ x: c.x, y: c.y }));
+                         e.type = game.shapeType; e.toParity = resultingParity; } }
 }
 
 // Set by the caller: true when this fusion is part of a flip move (parity will
@@ -17324,6 +18397,8 @@ function landsOnHazard(x, y, shapeType, config) {
 function commitFusion(cellsHere, fuse, dir) {
     game.trail.push(...getPlayerCells());
     if (game.trail.length > 25) game.trail = game.trail.slice(-25);
+    // [110926d] The tape record moved INSIDE applyFusionMove — it is the one
+    // place all three bond paths pass through. See the note there.
     fuseFlipsParity = true;        // a flip move; parity flips just after
     applyFusionMove(cellsHere, fuse);
     fuseFlipsParity = false;
@@ -17493,6 +18568,8 @@ function getTransformProgress() {
     // (waiting for touch-down), and a negative t fed to the ease would
     // overshoot behind the old pose.
     const t = Math.max(0, Math.min(1, elapsed / transformAnim.duration));
+    if (transformAnim.ease === 'inout')   // [SWEEP] see startPivotAnim
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     return 1 - Math.pow(1 - t, 3);
 }
 
@@ -17522,7 +18599,7 @@ function consumeTool(triggerCell, triggerKey) {
     const until = performance.now() + animQueueDelay() + 40;
     if (kind === 'pivot' || kind === 'slip')
         lingerFX.push({ x: triggerCell.x, y: triggerCell.y, kind,
-                        meta: meta ? { dir: meta.dir } : null, until });
+                        meta: meta ? { dir: meta.dir, turns: meta.turns } : null, until });   // [SWEEP] the half turn lingers as itself
     delete world[triggerKey];
     markCovered(triggerKey);
     delete shifterMeta[triggerKey];
@@ -17533,20 +18610,94 @@ function flightRemaining() {
     return Math.max(0, flip.t0 + flip.dur - performance.now());
 }
 
-function startPivotAnim(oldCells, newCells, anchorX, anchorY) {
+function startPivotAnim(oldCells, newCells, anchorX, anchorY, turn) {
     // [180826q] A single consuming a pivot rotates in place — every cell maps
     // to itself. Animating that would lock input for 460ms of visible
     // stillness; the burst and sound carry the moment instead.
     if (oldCells.length === newCells.length &&
         oldCells.every((c, i) => c.x === newCells[i].x && c.y === newCells[i].y)) return;
+    /* [SWEEP] `turn` = { ccw, turns }. A half turn cannot use the shortest-
+       path wrap below (180° is ambiguous — it could swing either way), so
+       the signed angle is carried explicitly, and the half turn gets a longer
+       beat. Under SWEEP a turn also eases IN and OUT — the arm scribes across
+       the board at its steadiest through the middle, which is where the holes
+       are crossed. The old ease-out spent half the arc in the first fifth of
+       the time, so a stitch landed almost before the swing had begun. */
+    const turns = (turn && turn.turns) || 1;
     transformAnim = {
         type: 'pivot',
         startTime: performance.now() + animQueueDelay(),   // [180826ae][190826a] waits for flight AND any prior swing
-        duration: 460,
+        duration: turns === 2 ? 640 : 460,
         oldCells: oldCells.map(c => ({ x: c.x, y: c.y })),
         newCells: newCells.map(c => ({ x: c.x, y: c.y })),
-        anchorX, anchorY
+        anchorX, anchorY,
+        sweep: turn ? (turn.ccw ? -1 : 1) * turns * Math.PI / 2 : undefined,
+        ease: SWEEP ? 'inout' : undefined
     };
+}
+// [SWEEP] The inverse of the turn's easing: WHEN (0..1 of the duration) the
+// arm reaches arc-fraction k. The stitch is scheduled from this, so a hole
+// closes as the cube is seen to cross it, not on a clock of its own.
+function turnTimeForArc(k) {
+    if (!(transformAnim && transformAnim.ease === 'inout'))
+        return 1 - Math.cbrt(1 - k);                         // inverse of 1-(1-t)^3
+    return k < 0.5 ? Math.cbrt(k / 4) : 1 - Math.cbrt(2 * (1 - k)) / 2;   // inverse of in-out cubic
+}
+
+/* ── [SWEEP] THE STITCH ──────────────────────────────────────────────────────
+   Called once the turn's animation is queued. Works out which holes the arm
+   will pass over, and queues each to close at the moment the cube is SEEN to
+   cross it — one at a time, in order along the arc, never all at once (that
+   destroys the causal story). Each close is an ordinary fillVoid, so a swept
+   cell is exactly a bought cell: plug, join, persistent across deaths,
+   covered. What differs is the price (nothing) and the sound (a chime that
+   RISES with each cell, so a three-cell pave is audibly bigger than one).
+   The clock is frozen for the whole swing when anything is laid: the player
+   did not choose the length of this animation. */
+let sweepQueue = [];
+const SWEEP_CHIME = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
+function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
+    if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
+    const cellsNow = sweptVoids(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns);
+    if (!cellsNow.length) return 0;
+    const t0 = transformAnim.startTime, dur = transformAnim.duration;
+    let mx = 0, my = 0;
+    cellsNow.forEach((c, i) => {
+        mx += c.x; my += c.y;
+        sweepQueue.push({ x: c.x, y: c.y, at: t0 + dur * turnTimeForArc(c.k), i,
+                          last: i === cellsNow.length - 1 ? { n: cellsNow.length } : null });
+    });
+    sweepQueue[sweepQueue.length - 1].last.mx = mx / cellsNow.length;
+    sweepQueue[sweepQueue.length - 1].last.my = my / cellsNow.length;
+    const ry = cellsNow[0].y;
+    let owed = 0;
+    for (let x = 0; x < VIEW_W; x++) if (rowCellOwed(`${x},${ry}`)) owed++;
+    rec('fill', { n: cellsNow.length, s: game.shapeType, row: ry, owed, src: 'sweep', tn: turns });
+    game.roundSwept = (game.roundSwept || 0) + cellsNow.length;
+    game.frozenTimer = Math.max(game.frozenTimer || 0, (t0 - performance.now()) + dur + 60);
+    tapeNote(`SWEPT  +${cellsNow.length} GROUND`, '#7dd3fc');
+    return cellsNow.length;
+}
+// Run from the loop every frame, frozen or not, so the stitches keep time with
+// the swing. Held while a replay has the board staged: the fills land on the
+// real board the moment it is back.
+function tickSweepQueue() {
+    if (!sweepQueue.length || game._replay) return;
+    const now = performance.now();
+    const due = sweepQueue.filter(q => q.at <= now);
+    if (!due.length) return;
+    sweepQueue = sweepQueue.filter(q => q.at > now);
+    for (const q of due) {
+        game._fillSfxAt = now;   // the chime below speaks for this cell, not the bought-ground cue
+        if (!fillVoid(q.x, q.y)) continue;
+        const sx = q.x * CELL + CELL / 2, sy = (q.y - game.cameraY) * CELL + CELL / 2;
+        addBurst(sx, sy, '#7dd3fc');
+        if (typeof playTone === 'function')
+            playTone(660 * SWEEP_CHIME[Math.min(q.i, SWEEP_CHIME.length - 1)], 0.11, 'triangle', 0.15);
+        if (q.last)
+            addFloat(q.last.mx * CELL + CELL / 2, (q.last.my - game.cameraY) * CELL,
+                     `+${q.last.n} GROUND`, '#7dd3fc', q.last.n > 1);
+    }
 }
 
 function startSlipAnim(oldCells, newCells) {
@@ -17605,6 +18756,8 @@ function animatedCellsAt(k) {
             // Shortest-path wrap, biased toward CW (positive in screen Y-down)
             if (dAngle > Math.PI) dAngle -= Math.PI * 2;
             if (dAngle < -Math.PI) dAngle += Math.PI * 2;
+            // [SWEEP] a carried angle wins — the half turn has no shortest path
+            if (transformAnim.sweep !== undefined) dAngle = transformAnim.sweep;
             const a = oAngle + dAngle * k;
             result.push({ x: ax + Math.cos(a) * r, y: ay + Math.sin(a) * r });
         }
@@ -17683,6 +18836,7 @@ function startFlip(dir, fromCells, fromParity, repel = false) {
         dirY: hasS ? 1 : (hasN ? -1 : 0),
         diag: (hasE || hasW) && (hasN || hasS)
     };
+    if (!repel) tapeRecord(fromCells, fromParity, flip);   // [100926f] the replay's tape — the flip's own geometry
 }
 
 // A player can never legally occupy a slot cell in normal play, so the spawn
@@ -18137,7 +19291,7 @@ function denialRecoil(dirVec) {
     const topRow = Math.floor(game.cameraY), botRow = topRow + VIEW_H - 1;
     const cleanAt = (ox, oy) => prev.every(c => {
         const nx = c.x + ox, ny = c.y + oy;
-        if (nx < 0 || nx >= VIEW_W || ny < topLawfulRow() || ny > botRow) return false;   // [270726zo] half-square grace
+        if (nx < 0 || nx >= VIEW_W || ny < topLawfulRow() || ny > botRow) return false;   // [110926b] fully-visible rows only
         const k = `${nx},${ny}`;
         if (world[k]) return false;
         if (slots.some(s => !s.claimed && s.keys.has(k))) return false;
@@ -18228,7 +19382,19 @@ function redBump(dir, probeCells, redIdx) {
 // [270726zo] The top boundary, with half a square of grace: a row is
 // lawful if no more than HALF of it is clipped by the screen edge. The
 // wall-barrier behaviour was too strict when it kicked in a full row down.
-function topLawfulRow() { return Math.ceil(game.cameraY - 0.5); }
+/* ── [110926b] ADMISSION TO THE NORTH: IT HAS TO FIT ────────────────────────
+   Field note: "the player's cube should not be able to flip into the frame's
+   north side unless it actually fits — check the rule on admission."
+   It could, and this was the rule that let it. [270726zc] set the highest
+   lawful row as the first FULLY visible one, which is the rule the note is
+   asking for; [270726zo] then subtracted half a cell as a "grace", which put
+   the boundary at the first HALF-visible row. So a flip north was admitted
+   into a row up to half of which was above the frame, and the shape came to
+   rest sliced by the top edge — visible, landed, and partly not there. Half a
+   cell of grace is worth having on a scroll that moves continuously, but it
+   belongs to the cell you are LEAVING, not the one you are entering.
+   Back to the stated rule: a row is lawful when all of it is on the board. */
+function topLawfulRow() { return Math.ceil(game.cameraY); }
 
 // Fallback when no clean square exists next door: wall on the refused
 // ghost instead (no shove).
@@ -18248,6 +19414,33 @@ function topLawfulRow() { return Math.ceil(game.cameraY - 0.5); }
 // now bleeds a couple of seconds instead: reversible, and it feeds the
 // resource the game is actually about.
 const BUMP_COST_SEC = 2;
+/* ── [100926g] THE CLOCK PAYS FIRST ─────────────────────────────────────────
+   Field note: time should be a currency in both directions, and "everything
+   should happen automatically rather than an extra option for the player to
+   think about."
+   One rule: a cube lost for nothing — wall, edge, ceiling, misfit slot — is
+   paid for by the clock while the clock can afford it: CLOCK_SHIELD_SEC a
+   cube, never taking the clock under CLOCK_SHIELD_FLOOR. Only when the clock
+   cannot pay does the body pay. No button. The decision moves upstream: a
+   healthy clock is armour; let it run low and mistakes start costing cubes —
+   so the value of five seconds is set by how many you have, which is what a
+   currency is. The void is excluded: a cube into a hole is the bridge trade
+   and keeps its own rule. Shifter pushes are excluded: the step's arrow was
+   on the cell. See applyImpactDevolve. */
+/* [100926h] OFF. The frame and the slot now REFUSE instead of shedding
+   (FRAME_REFUSES, SLOT_REFUSES), so there is no shed-for-nothing left for the
+   clock to pay for. The rule stays here, one number from returning. */
+const CLOCK_SHIELD_SEC = 0, CLOCK_SHIELD_FLOOR = 10;
+/* ── [100926h] THE FRAME AND THE SLOT SAY NO ────────────────────────────────
+   Designer's call. The left, right and top edges refuse a move — no shed, no
+   seconds, just the recoil, the ghost and the bonk — and a slot refuses a
+   wrong shape the same way. Together with reds gone, one rule is left about
+   the body: a cube only ever leaves it to become ground. The last nine
+   recorded runs put holes at ~40% of all sheds (2–14 a run) against greens
+   adding 12–36, so holes now carry all of it; runFitter carves one when a
+   player is too big for the set with none in view. Reds are the fallback
+   if shrinking proves scarce — the export's 'stuck' records will say. */
+const FRAME_REFUSES = true, SLOT_REFUSES = true;
 // ── [210826as] A REFUSAL COSTS TWO SECONDS. ONCE. ───────────────────────────
 // bumpCost() charged 2s on EVERY refused move, and a refused move is not a rare
 // event — a held direction against a wall re-fires many times a second, and the
@@ -18315,6 +19508,10 @@ const RED_BURN_COST_SEC = TRIM_COST_SEC;
    had its own value, set by feel rather than by any argument, which is how the
    drift starts. */
 const VOID_BURN_COST_SEC = TRIM_COST_SEC;
+/* [110926c] OFF — a single no longer buys ground with seconds; the move is
+   refused instead. See the long note at the burn site in move(). One line back
+   to the old rule if the exports say so. */
+const SINGLE_BUYS_GROUND = false;
 
 /* ── [HOLES] WHY THERE IS NO INTERVAL GREEN INCOME HERE ─────────────────────
    The prototype grew one: greens every N rows of open ground, because a soak
@@ -18335,7 +19532,7 @@ const VOID_BURN_COST_SEC = TRIM_COST_SEC;
 // [300726bj] RED_BUMP_COST_SEC deleted — every red contact now charges
 // RED_BURN_COST_SEC. A second constant for the same event is a second number to
 // forget to update, which is exactly what happened when the tiers changed.
-function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
+function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty') {
     if (game.testDrive) return;
     // [030826g] SPIN-UP NO LONGER WAIVES TIME PENALTIES. This used to open with
     // `if (game.spinUp) return`, so every cost — the 20s red, the 10s push, the
@@ -18357,11 +19554,13 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
        through this line, so every charge is recorded here, and the source is
        read off the amount because the callers do not all know why they were
        called. Next export: start + income − costs should equal the clock. */
-    rec('cost', { sec, src: sec === FALL_COST_SEC ? 'fall'
-                            : sec === TRIM_COST_SEC ? 'trim'
-                            : (typeof SHIFT_OOB_COST_SEC !== 'undefined' && sec === SHIFT_OOB_COST_SEC) ? 'push'
-                            : sec === BUMP_COST_SEC ? 'bump' : 'other',
-                  m: Math.round(momentumRemaining()) });
+    const costSrc = sec === FALL_COST_SEC ? 'fall'
+                  : sec === TRIM_COST_SEC ? 'trim'
+                  : (typeof SHIFT_OOB_COST_SEC !== 'undefined' && sec === SHIFT_OOB_COST_SEC) ? 'push'
+                  : sec === BUMP_COST_SEC ? 'bump' : 'other';
+    rec('cost', { sec, src: costSrc, m: Math.round(momentumRemaining()) });
+    // [100926f] the replay's caption for this move — a trade states its own line at the caller
+    if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'FELL  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : ''}−${sec}s`, '#f87171');
     // [300726s] Announce a heavy loss the same way a gain is announced, but
     // inverted: hazard red instead of mint, FALLING instead of rising. No new
     // glyph to learn — it reads as the visible opposite of "+ 20 SECONDS".
@@ -18378,7 +19577,9 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
         // where it is hardest to read.
         const sy = atY !== null ? atY
                  : (c ? (c.y - game.cameraY) * CELL + CELL * 1.2 : LOGICAL_H/2);
-        addFloat(sx, sy, `\u2212 ${sec} SECONDS`, '#f87171', false, { fall: true });
+        // [100926f] a TRADE says nothing here \u2014 its caller states both sides of
+        // the exchange in one line; a PENALTY still falls in red
+        if (kind !== 'trade') addFloat(sx, sy, `\u2212 ${sec} SECONDS`, '#f87171', false, { fall: true });
         const clockEl = document.getElementById('rotorSecs');
         if (clockEl) {
             clockEl.classList.remove('clock-lurch');
@@ -18407,7 +19608,15 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null) {
            EXACTLY 10 \u2014 a penalty that took you from 25 to 8 stepped over it and
            it never showed. It fires on the crossing now. */
         const left = momentumRemaining();
-        if (sec >= 10) {
+        /* [100926f] The heavy-loss treatment is for PENALTIES. Field note: paying
+           the clock to bridge a void "sounds like a wrong move". A trade gets
+           the exchange chime — the same one a cube-bought bridge gets — and
+           none of the red. If the trade leaves the clock under the warning line
+           the countdown still re-arms below, because that part is true. */
+        if (kind === 'trade') {
+            if (sfx.ground) sfx.ground();
+            if (left <= TICK_WARN_SEC) { lastTickSecond = 999; game._tickMuteUntil = 0; }
+        } else if (sec >= 10) {
             triggerEdgeGlow('#f87171', 700);
             triggerShake(4 + Math.min(6, sec / 4), 260);
             if (sfx.hit) sfx.hit();
@@ -18495,11 +19704,32 @@ function flashPlayerDenied(why) {
     } catch (e) {}
 }
 
+/* ══ [100926e] THE INPUT BUFFER — every flip is seen whole ═══════════════════
+   A flip is FLIP_DUR (180ms); a held direction repeated every 160ms, boosted
+   to ~107ms; every tap mid-flip restarted the animation. At speed the game was
+   a series of half-flips — the sound went missing because of it last week, and
+   the eye was losing the same thing.
+
+   Now a flip runs to completion, always. A press that arrives while one is in
+   the air is QUEUED — one deep, the latest press wins — and executed on the
+   frame the flip lands. The finger never waits (the press is never dropped);
+   the eye always sees a whole fold. The held direction obeys the same rule:
+   its repeat waits for the landing rather than cutting it short.
+
+   The flip's length is unchanged. Whether it wants to be longer is a decision
+   to make after playing this, not with it. ════════════════════════════════ */
+function flipInAir() { return !!(flip && flip.active && (performance.now() - flip.t0) < flip.dur); }
+function drainQueuedMove() {
+    if (!game._queuedMove || flipInAir()) return;
+    const d = game._queuedMove; game._queuedMove = null;
+    move(d);
+}
 function move(dir) {
     if (game.inputLocked) return;   // set/advance condition met — moves are locked
     if (!game.running) return;
     if (game.paused) return;
     if (game.frozenTimer > 0) return; // blocked during freeze-frame
+    if (flipInAir()) { game._queuedMove = dir; return; }   // [100926e] finish the fold first
     // Block input during a pivot/slip animation so the player doesn't start
     // a new move while the previous transformation is still playing out.
     // The animation is brief (~200ms) so this rarely interrupts intent.
@@ -18578,6 +19808,27 @@ function move(dir) {
                 // mis-orienting should cost, not merely be undone. Slots were
                 // also the only object in the game with a special case: walls
                 // cost cubes, reds cost cubes, slots quietly cost nothing.
+                /* ── [100926h] THE SLOT SAYS NO ──────────────────────────────
+                   Designer's call: the slot refuses a wrong shape the way the
+                   frame does, instead of shedding the cube that touched. With
+                   that, one rule is left about the body: A CUBE ONLY EVER
+                   LEAVES IT TO BECOME GROUND. Greens add cubes, holes take
+                   them as bridges, and nothing else can touch the body. Too
+                   big for the set? Spend cubes on a hole on the way (and the
+                   fitter carves one if none is in view — see runFitter). The
+                   refusal is the repel the game already had for a needed slot:
+                   the bounce, the amber ghost on the slot, the wrong-shape
+                   sound. Nothing is charged. */
+                if (SLOT_REFUSES) {
+                    startFlip(dir, getPlayerCells(), game.faceParity, true);   // the bounce — never on the tape
+                    showMoveGhost(newX, newY, newConfig, 'wrong', dir);
+                    if (sfx.wrongShape) sfx.wrongShape();
+                    showTip('wrong');
+                    if (keys.length > sl.keys.size) showTip('trim');
+                    triggerShake(3, 110);
+                    rec('refuse', { ch: 'slot', s: game.shapeType, r: advancedRound });
+                    return;
+                }
                 if (applyImpactDevolve(touch, 'slot')) return;   // [060926d] was 'socket' — a set piece, not a joint; the export was ambiguous
                 refuse = true;   // a single has no cube to give — refused instead
                 break;
@@ -18630,7 +19881,7 @@ function move(dir) {
                 const wv = world[`${c.x},${c.y}`];
                 if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) { impactIdx.push(i); _wall++; }
             });
-            if (applyImpactDevolve(impactIdx,
+            if (!FRAME_REFUSES && applyImpactDevolve(impactIdx,
                 _edge && _wall ? 'mixed' : _wall ? 'wall' : 'edge')) return;
             showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
             // [300726r] The BOARD EDGE simply refuses — no lateral shove.
@@ -18643,7 +19894,7 @@ function move(dir) {
             // charge per refusal the player can perceive. The edge branch is the
             // worst offender: it bills unconditionally, so holding a direction
             // into the side of the board was the fastest way to lose a run.
-            if (edgeOnly) { flagOutOfBounds(newX < game.playerX ? 'left' : 'right'); refusalCost(); }
+            if (edgeOnly) { flagOutOfBounds(newX < game.playerX ? 'left' : 'right'); if (!FRAME_REFUSES) refusalCost(); }   // [100926h] the frame is free
             else { const v = HINT_DIR_VEC[dir];
               if (!denialRecoil(v ? { dx: v[0], dy: v[1] } : null) && !game.testDrive) refusalCost(); }
             triggerShake(3, 90);
@@ -18694,18 +19945,67 @@ function move(dir) {
            It is also the only thing left on the board that CAN kill you, now
            that walls are holes and reds bounce. Make holes match reds and the
            three lives become nearly unspendable. */
+        /* ══ [110926c] ONE PRICE FOR GROUND ═══════════════════════════════════
+           Designer's call, after weighing it: "I like having one less rule in
+           the quest for simplicity."
+
+           The mechanism above is single; the BILL was not. A hole cost a cube —
+           unless you were a single, in which case it cost twelve seconds. That
+           is the thing a player had to carry in their head, and it arrived as a
+           surprise charge at the moment they were smallest and least able to
+           absorb it. Two exports running: 5 and 3 single-fills, 60s and 36s,
+           the whole of the trim line and a large slice of the drain; an older
+           pair put 11 of 13 deaths on a single within two seconds of a fill.
+           A penalty wearing a trade's clothes.
+
+           So the rule finishes its own sentence: A HOLE TAKES A CUBE, and if
+           you have not got one to spare you cannot go. The move is refused, and
+           refusal is already the grammar — the frame does it, the slot does it,
+           and none of the three charges you for it.
+
+           WHAT THIS COSTS. A single is the body every level starts on and the
+           one every shed leaves behind, so the commonest body can no longer
+           cross the commonest terrain. Two things already cover most of that:
+           ensureRowsPassable keeps three solid cells in every row, so no hole
+           can wall a row off, and persistentFills mean ground bought once stays
+           bought. What it does NOT cover is a single boxed in by holes, which
+           would trade an expensive failure for an impossible one — so
+           runSingleRescue below plants a green in one of the holes beside it.
+
+           And it is a flag. If the export shows refuse:hole climbing and runs
+           getting shorter, this line puts it back. */
         if (game.shapeType === 'single') {
             const vIdx = [];
             probeCells.forEach((c, i) => { if (world[`${c.x},${c.y}`] === 'void') vIdx.push(i); });
+            if (vIdx.length && !SINGLE_BUYS_GROUND) {
+                const vc = probeCells[vIdx[0]];
+                showMoveGhost(newX, newY, newConfig, 'wrong', dir);
+                triggerShake(3, 100);
+                HAPTICS.fire(HAPTIC.bump);
+                if (sfx.bonk) sfx.bonk();
+                flashPlayerDenied();
+                showTip('onecube');
+                addFloat(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL,
+                         'NO CUBE TO SPARE', '#94a3b8', false, { life: 1100, hold: 400 });
+                rec('refuse', { ch: 'hole', s: 'single', r: advancedRound });
+                return;
+            }
             if (vIdx.length) {
                 for (const i of vIdx) {
                     const vc = probeCells[i];
                     fillVoid(vc.x, vc.y);
                     addBurst(vc.x * CELL + CELL/2, (vc.y - game.cameraY) * CELL + CELL/2, '#7dd3fc');
                 }
+                /* [100926f] A single buying ground pays seconds — and that is a
+                   TRADE, not a penalty. bumpCost is told so: no red hit, no heavy
+                   loss sound; the exchange chime and one line saying what was
+                   paid and what came back. */
                 bumpCost(VOID_BURN_COST_SEC,
                          probeCells[vIdx[0]].x * CELL + CELL/2,
-                         (probeCells[vIdx[0]].y - game.cameraY) * CELL);
+                         (probeCells[vIdx[0]].y - game.cameraY) * CELL, 'trade');
+                addFloat(probeCells[vIdx[0]].x * CELL + CELL/2, (probeCells[vIdx[0]].y - game.cameraY) * CELL - 14,
+                         `−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
+                tapeNote(`−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
                 rec('fill', { n: vIdx.length, s: 'single', paid: 'sec' });
                 HAPTICS.fire(HAPTIC.red, 90);
             }
@@ -18756,7 +20056,7 @@ function move(dir) {
         // lawful row is now the first FULLY visible one; pushing higher
         // refuses -> recoil -> a denial wall forms, building the natural
         // barrier that keeps players from getting caught off screen.
-        const topRowWorld = topLawfulRow();   // [270726zo] half-a-square grace
+        const topRowWorld = topLawfulRow();   // [110926b] the first FULLY visible row — no grace
         const bottomRowWorld = Math.floor(game.cameraY) + VIEW_H - 1;   // last fully visible row
         // [270726zk] The two vertical borders now behave differently:
         //   TOP — protective: refused, recoil, wall barrier (as before).
@@ -18766,7 +20066,7 @@ function move(dir) {
         //   recoil and NO wall — a barrier would shield the player from
         //   the one hazard that is meant to catch them. The Move Guide
         //   marks these moves with the red ✕.
-        {
+        if (!FRAME_REFUSES) {
             // [290726g] Ceiling contact costs cubes too, on the same rule.
             const ceilIdx = [];
             proposedCells.forEach((c, i) => { if (c.y < topRowWorld) ceilIdx.push(i); });
@@ -18787,8 +20087,22 @@ function move(dir) {
                 // and every other boundary was overcharging, so it now charges
                 // like them at the corrected rate.
                 { const v = HINT_DIR_VEC[dir];
-                  denialRecoil(v ? { dx: v[0], dy: v[1] } : null);
-                  if (!game.testDrive) refusalCost(); }
+                  /* [110926a] AND IT NO LONGER SHOVES YOU SIDEWAYS. Field note:
+                     "the red lines on all edges of the frame work, but for the
+                     top one the player moves a cell over — they should stay in
+                     the same position." Correct, and it was the last survivor
+                     of the old regime: the side edges were made to refuse
+                     outright at [300726r], but the ceiling still called
+                     denialRecoil, which MOVES the player to the nearest free
+                     cell. A refusal that relocates you is not a refusal — and
+                     it is worse at the ceiling than anywhere, because the cell
+                     it nudges you into is usually DOWNWARD, spending the runway
+                     you pressed up to protect. Under FRAME_REFUSES the frame
+                     does exactly one thing: nothing. The recoil animation, the
+                     shake, the bonk and the red edge all still fire — the
+                     contact is felt, the position is kept. */
+                  if (!FRAME_REFUSES) denialRecoil(v ? { dx: v[0], dy: v[1] } : null);
+                  if (!game.testDrive && !FRAME_REFUSES) refusalCost(); }   // [100926h] the frame is free
                 // Announce it ABOVE the shape, where there is board to draw on —
                 // the float defaults to the player's own cell, which at the
                 // ceiling is the one place with nothing above it. The clamp
@@ -18913,6 +20227,7 @@ function applyDrag(dt) {
     if (!game.dragDir || !game.isTouching) return;
 
     game.dragTimer -= dt;
+    if (game.dragTimer <= 0 && flipInAir()) { game.dragTimer = 0; return; }   // [100926e] the repeat waits for the landing
     if (game.dragTimer <= 0) {
         // [230826c] The held-swipe repeat produces real moves without going
         // through move(), so it mints its own token — otherwise every move made
@@ -19071,6 +20386,7 @@ function checkCollisions() {
                 game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
                 addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
                     `+ ${sec} SECONDS`, sec === 45 ? '#ffd60a' : '#86efac');
+                tapeNote(`HOURGLASS  +${sec}s`, '#86efac');
                 delete world[key];
                 markCovered(key);
             } else if (w === 'wall' || w === 'hazard' || w === 'pickup' ||
@@ -19215,11 +20531,18 @@ function checkCollisions() {
            lost you a cube and told you nothing about what you got for it. A
            mixed landing (a red and a hole in one move) still reports as a
            devolve, because the red is the part that cost you nothing back. */
+        /* [100926f] THE EXCHANGE, STATED. Field note: "when the player has built
+           a bridge we need to see what payment has been made." One line, both
+           sides of the trade: what went, what came. */
         if (_nV && !_nR)
             addFloat(screenX, screenY,
-                     _nV > 1 ? `+${_nV} GROUND` : '+1 GROUND', '#7dd3fc');
+                     `−${_nV} CUBE${_nV > 1 ? 'S' : ''}  →  +${_nV} GROUND`, '#7dd3fc', _nV > 1);
         else
-            addFloat(screenX, screenY, hazardHits.length > 1 ? `DEVOLVE x${hazardHits.length}!` : 'DEVOLVE!', '#ef4444');
+            addFloat(screenX, screenY, hazardHits.length > 1 ? `−${hazardHits.length} CUBES` : '−1 CUBE', '#ef4444');
+        tapeNote(_nV && !_nR ? `−${_nV} CUBE${_nV > 1 ? 'S' : ''}  →  +${_nV} GROUND`
+                             : (hazardHits.length > 1 ? `−${hazardHits.length} CUBES` : '−1 CUBE'),
+                 _nV && !_nR ? '#7dd3fc' : '#ef4444');   // [100926f] the replay's caption
+        if (_nV && !_nR) bookmark('bridge', 'THE BRIDGE');   // [100926g]
         showTip('devolve');
         game.roundTrims = (game.roundTrims || 0) + 1;
 
@@ -19311,12 +20634,13 @@ function checkCollisions() {
         if (triggerItem === 'pivot') {
             const pmeta = shifterMeta[triggerKey];
             const ccw = pmeta && pmeta.dir === 'ccw';
-            const rotTable = ccw ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
-            const newConfig = rotTable[game.shapeType][game.shapeConfig];
+            const turns = turnsOf(pmeta);   // [SWEEP] 1 = 90°, 2 = 180°
             // [270726] Build the post-rotation cell set — the TRIGGER CUBE
             // stays put and the body sweeps around it; the anchor moves.
-            const pv = pivotAroundTrigger(cells, triggerCell.x, triggerCell.y,
-                ccw, game.shapeType, newConfig);
+            // [SWEEP] one or two quarter turns, by the same measured function.
+            const pv = turnAroundTrigger(cells, triggerCell.x, triggerCell.y,
+                ccw, game.shapeType, game.shapeConfig, turns);
+            const newConfig = pv.newConfig;
             const newCells = pv.newCells;
             // Socket gate: an imprecise rotation into slot territory is refused —
             // the pivot fires and is spent, but the world resists; no movement.
@@ -19343,7 +20667,8 @@ function checkCollisions() {
                 scoreGain(2, false);   // engaged a mechanism
                 rec('use', { k: 'pivot', s: game.shapeType,
                     p: (typeof shiftPreviews !== 'undefined' && shiftPreviews.some(sp => sp.shifterKey === triggerKey)) ? 1 : 0,
-                    sd: (pmeta && pmeta.seeded) ? 1 : 0, bt: game._landingBeat });   // [160826v][170826d] ghost? seeded? beat?
+                    sd: (pmeta && pmeta.seeded) ? 1 : 0, bt: game._landingBeat,   // [160826v][170826d] ghost? seeded? beat?
+                    tn: turns });                                                 // [SWEEP] 1 = 90°, 2 = 180°
                 // [180826t] A single consuming a pivot gets the spin flourish —
                 // the arrow turns once and fades: used, not vanished.
                 if (game.shapeType === 'single')
@@ -19365,8 +20690,12 @@ function checkCollisions() {
                 triggerShake(3, 150);
                 // [270726] Animate around the trigger cube; pv.rotated keeps
                 // old-order correspondence so every cube arcs on a fixed radius.
-                startPivotAnim(oldCellsForAnim, pv.rotated, triggerCell.x, triggerCell.y);
+                startPivotAnim(oldCellsForAnim, pv.rotated, triggerCell.x, triggerCell.y, { ccw, turns });
+                tapeShift(oldCellsForAnim, cells);                     // [110926d] the turn is a move too
+                tapeNote('SHIFTER  ROTATED', SHIFTER_FAMILY_COLOR);   // [100926f] the replay's caption
+                bookmark('shifter', 'THE SHIFTER');                    // [100926g]
                 if (sfx.evolve) sfx.evolve();
+                if (SWEEP) sweepLay(oldCellsForAnim, pv.rotated, triggerCell, ccw, turns);   // [SWEEP] what the arm passed over
             } else if (push.trim && !push.trim.held) {
                 // MINUS/WALL TRIM — the turn sweeps cube(s) onto red
                 // minus cell(s): trimmed exactly like a flip through a red,
@@ -19384,7 +20713,13 @@ function checkCollisions() {
                 }
                 applyShiftTrim(push.trim, newCells, triggerCell, triggerKey);
                 cells = getPlayerCells();
-                startPivotAnim(oldSurv, newSurv, triggerCell.x, triggerCell.y);
+                startPivotAnim(oldSurv, newSurv, triggerCell.x, triggerCell.y, { ccw, turns });
+                // [SWEEP] Free and paid in the same instant: the cube that
+                // landed in a hole has just paid for it (applyShiftTrim), and
+                // what the SURVIVORS swept over is laid free. Only survivors —
+                // a casualty is drawn flinging from its seam, not arcing, so a
+                // cell it "passed over" would close with nothing seen to cross it.
+                if (SWEEP) sweepLay(oldSurv, newSurv, triggerCell, ccw, turns);
             } else {
                 // [270726p] ABSORBED — every destination blocked (practically
                 // unreachable for turns: the trigger cube never moves). The
@@ -19430,7 +20765,7 @@ function checkCollisions() {
             }
         } else if (triggerItem === 'slip') {
             const meta = shifterMeta[triggerKey];
-            const v = SLIP_VECTORS[meta ? meta.dir : 0];
+            const v = slipVectorOf(meta);
             const newX = game.playerX + v.dx;
             const newY = game.playerY + v.dy;
             // Build translated cells at the new anchor
@@ -19498,6 +20833,9 @@ function checkCollisions() {
                 triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
                 triggerShake(3, 150);
                 startSlipAnim(oldCellsForAnim, cells);
+                tapeShift(oldCellsForAnim, cells);                     // [110926d] the step is a move too
+                tapeNote('SHIFTER  STEPPED', SHIFTER_FAMILY_COLOR);   // [100926f] the replay's caption
+                bookmark('shifter', 'THE SHIFTER');                    // [100926g]
                 if (sfx.evolve) sfx.evolve();
             } else if (push.trim && !push.trim.held) {
                 // MINUS/WALL TRIM — the step drags cube(s) onto red minus
@@ -19616,6 +20954,7 @@ function checkCollisions() {
             else if (sfx.time10) sfx.time10();
             addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
                 `+ ${sec} SECONDS`, sec >= 20 ? '#fb8b1e' : '#86efac');
+            tapeNote(`HOURGLASS  +${sec}s`, sec >= 20 ? '#fb8b1e' : '#86efac');
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2,
                 sec === 45 ? '#ffd60a' : '#86efac');
             // Trigger the clock-boost animation
@@ -20135,9 +21474,16 @@ function chainWindowLeft(now = performance.now()) {
    drains over BAND_WINDOW_MS; its label says the chain you are in and what the
    NEXT adjacent row would pay. "I happened to do two rows" becomes "I am going
    for a third", because the player can see the window and see it closing. */
+/* [100926f] HUD_COMBO_BAR = false. Asked whether the HUD needs the combo status
+   at all: no. The window is already visible on the board — the next row's gap
+   glows amber while it would extend a combo — and audible in the music layer.
+   A bar under the clock said the same thing a third time, in the one place
+   the eye is not. Kept behind a flag; the function is unchanged beneath it. */
+const HUD_COMBO_BAR = false;
 function paintChainBar() {
     const bar = document.getElementById('chainBar');
     if (!bar) return;
+    if (!HUD_COMBO_BAR) { if (!bar.hidden) bar.hidden = true; return; }
     const left = (game.running && !game.paused) ? chainWindowLeft() : 0;
     if (left <= 0) { if (!bar.hidden) bar.hidden = true; return; }
     if (bar.hidden) bar.hidden = false;
@@ -20358,6 +21704,18 @@ function celebrateLineBand(newRows) {
         const secs = q.secs;
         game._lastRowSecs = secs;   // [080926b] read by the row label and the chain label
         momentumAddSeconds(secs);
+        tapeNote(`${newRows.length > 1 ? newRows.length + ' ROWS' : 'ROW'}${nAfter >= 2 ? '  ×' + nAfter : ''}  +${secs}s`, '#86efac');   // [100926f] the replay's caption
+        /* [100926g] THE CHAIN, MARKED. The third row inside the window holds
+           the world for CHAIN_HITSTOP_MS — scroll and clock stop with it, so it
+           costs nothing — with the rows lit white. A watcher who knows none of
+           the rules still sees that something big just happened. And it is
+           bookmarked for the replay. */
+        if (nAfter >= 3) {
+            const nowH = performance.now();
+            game._hitstopUntil = Math.max(game._hitstopUntil || 0, nowH + CHAIN_HITSTOP_MS);
+            game._chainMark = { t0: nowH, rows: game._rowChain.rows.slice() };
+            bookmark('chain', `${nAfter} ROWS`);
+        }
         /* [080926b] PAID AT THE CLOCK. The row's "+4s" floated at the row and the
            digits ticked up in the HUD — two places, and the player was looking
            at the first. The clock now takes the same green boost an hourglass
@@ -20858,6 +22216,26 @@ function applyImpactDevolve(hitIndices, label) {
         rec('grace', { s: 'square', ch: label, r: advancedRound });
         return false;   // caller falls back to a plain refusal — no cube lost
     }
+    // [100926g] THE CLOCK PAYS FIRST — see CLOCK_SHIELD_SEC. While the clock can
+    // afford it, the cube stays and the clock pays; the caller falls back to a
+    // refusal exactly as it does for the square's grace.
+    if (label !== 'void' && CLOCK_SHIELD_SEC > 0) {
+        const pc = getPlayerCells();
+        const n = Math.max(1, Math.min(hitIndices.length, pc.length - 1));
+        const cost = CLOCK_SHIELD_SEC * n;
+        if (momentumRemaining() - cost >= CLOCK_SHIELD_FLOOR) {
+            const c0 = pc[hitIndices[0]] || pc[0];
+            const sx = c0.x * CELL + CELL / 2, sy = (c0.y - game.cameraY) * CELL;
+            bumpCost(cost, sx, sy, 'trade');                 // the exchange chime; no red fall, no shake
+            game._refusalChargedT = performance.now();       // the shield IS the charge — no 2s bump on top
+            addFloat(sx, sy - 6, `−${cost}s`, '#f87171');
+            game._keptFlash = { cells: hitIndices.map(i => pc[i]).filter(Boolean), t0: performance.now() };
+            flashPlayerDenied('grace');
+            tapeNote(`KEPT ${n > 1 ? n + ' CUBES' : 'THE CUBE'}  −${cost}s`, '#f87171');
+            rec('shield', { n, sec: cost, ch: label, r: advancedRound, m: Math.round(momentumRemaining()) });
+            return false;
+        }
+    }
     const cells = getPlayerCells();
     // [300726bd] SHED BEFORE YOU DIE. A horizontal pair flipped east at the
     // right edge puts BOTH cubes out of bounds, so this branch used to hand
@@ -20938,8 +22316,10 @@ function applyImpactDevolve(hitIndices, label) {
     // already say), so SHED replaces both.
     {
         const first = cells[idx[0]];
+        // [100926f] "SHED!" → the body ledger's own words (see applyFusionMove).
         addFloat(first.x * CELL + CELL / 2, (first.y - game.cameraY) * CELL,
-            idx.length > 1 ? `SHED x${idx.length}!` : 'SHED!', '#94a3b8');
+            idx.length > 1 ? `−${idx.length} CUBES` : '−1 CUBE', '#94a3b8');
+        tapeNote(idx.length > 1 ? `−${idx.length} CUBES` : '−1 CUBE', '#94a3b8');
         showTip('shed');
         rec('hurt', { from: prevType, to: result.shapeType, ch: label });
     }
@@ -21076,10 +22456,17 @@ function detectCasualties(newCells) {
         const c = newCells[i];
         if (c.x < 0 || c.x >= VIEW_W) { indices.push(i); continue; }
         const k = `${c.x},${c.y}`;
-        // [HOLES] Pushed onto a void, a cube is a casualty like any other — and
-        // the cell it falls into becomes ground. A shove can buy you terrain
-        // you never chose to buy.
-        if (world[k] === 'void') { fillVoid(c.x, c.y); indices.push(i); continue; }
+        // [HOLES] Pushed onto a void, a cube is a casualty like any other.
+        /* [SWEEP] AND NOTHING MORE — THIS IS A QUESTION, NOT A MOVE. This
+           used to call fillVoid here, and its only callers are routeStep —
+           the route SOLVER, which runs during ordinary play (runFitter, the
+           diagnoser, the guide). So every time the BFS so much as considered
+           a step or turn that would shove a cube into a hole, the hole
+           closed: ground from nowhere, no cube paid, no record, no animation.
+           Measured in the harness at roughly one phantom cell every few
+           minutes of play. The purchase belongs where the push is really
+           applied — applyShiftTrim — and nowhere a solver can reach. */
+        if (world[k] === 'void') { indices.push(i); continue; }
         if (world[k] === 'wall' || world[k] === 'hazard') { indices.push(i); continue; }
         // NOTE: slot cells are NOT casualties. Ground never becomes solid just
         // because you arrived by push — a cube shoved onto a slot simply lands
@@ -21139,6 +22526,32 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
     const { redIndices, result } = trim;
     game._lastTrimT = performance.now();   // trim->claim in one gesture = THE SHAVE
     const topB2 = topLawfulRow(), botB2 = Math.floor(game.cameraY) + VIEW_H - 1;
+    /* [SWEEP] A PUSH INTO A HOLE BUYS THE HOLE. classifyShiftPush has always
+       said so ("a shove into a hole trims the cube and buys the cell ... the
+       fill happens where the push is applied") and this is where the push is
+       applied — but the loop below only ever consumed REDS, so a step or a
+       turn that put a cube into a hole took the cube and left the hole open.
+       The one path in the game where a cube left the body and bought nothing,
+       against [100926h]'s "a cube only ever leaves the body to become ground".
+       In the 100926-0921 export, 6 of 10 damage events were machine pushes
+       and not one of them left a fill behind. Now they buy the cell, record
+       it (src:'push'), and say so in the exchange's own words. */
+    const _bought = [];
+    for (const i of redIndices) {
+        const c = newCells[i];
+        if (c.x < 0 || c.x >= VIEW_W || c.y < topB2 || c.y > botB2) continue;
+        if (world[`${c.x},${c.y}`] === 'void') _bought.push(c);
+    }
+    if (_bought.length) {
+        const ry = _bought[0].y;
+        let owed = 0;
+        for (let x = 0; x < VIEW_W; x++) if (rowCellOwed(`${x},${ry}`)) owed++;
+        rec('fill', { n: _bought.length, s: game.shapeType, row: ry, owed, src: 'push' });
+        for (const c of _bought) {
+            fillVoid(c.x, c.y);
+            addBurst(c.x * CELL + CELL/2, (c.y - game.cameraY) * CELL + CELL/2, '#7dd3fc');
+        }
+    }
     for (const i of redIndices) {
         const c = newCells[i];
         if (c.x < 0 || c.x >= VIEW_W || c.y < topB2 || c.y > botB2) continue;   // edge casualty — no cell to consume
@@ -21180,11 +22593,17 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
     devolveStage = { cas: redIndices.map(i => ({ x: newCells[i].x, y: newCells[i].y })),
                      t0: performance.now(), dur: 340 };
     game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
-    rec('hurt', { from: prevType, to: result.shapeType, ch: 'push' });   // [180826d] machine-push trims were unrecorded
+    rec('hurt', { from: prevType, to: result.shapeType, ch: 'push', nv: _bought.length });   // [180826d][SWEEP] nv = cubes that bought ground
     signalSizeChange(prevType, result.shapeType, true);
     triggerShake(4, 200);
-    addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL,
-        redIndices.length > 1 ? `DEVOLVE x${redIndices.length}!` : 'DEVOLVE!', '#ef4444');
+    // [100926f] "DEVOLVE!" → the body ledger's own words (see applyFusionMove).
+    // [SWEEP] and when the push bought ground, the exchange line (see checkCollisions).
+    const _lost = redIndices.length > 1 ? `−${redIndices.length} CUBES` : '−1 CUBE';
+    const _line = _bought.length ? `${_lost}  →  +${_bought.length} GROUND` : _lost;
+    const _col = _bought.length ? '#7dd3fc' : '#94a3b8';
+    addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL, _line, _col, _bought.length > 1);
+    tapeNote(_line, _col);
+    if (_bought.length) bookmark('bridge', 'THE BRIDGE');
     showTip('devolve');
 }
 
@@ -21472,12 +22891,13 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
         if (item === 'pivot') {
             const meta = shifterMeta[k];
             const ccwRot = meta && meta.dir === 'ccw';
-            const table = ccwRot ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
-            const rConfig = table[type][nConfig];
             // [270726] Trigger-cube rotation: the anchor moves too, so the
             // solver must track the new anchor or its reachability answers
             // would disagree with the real handler.
-            const pv = pivotAroundTrigger(cells, cells[i].x, cells[i].y, ccwRot, type, rConfig);
+            // [SWEEP] and a half turn is two quarters, as in the real handler.
+            const pv = turnAroundTrigger(cells, cells[i].x, cells[i].y, ccwRot, type, nConfig, turnsOf(meta));
+            if (!pv) break;
+            const rConfig = pv.newConfig;
             if (slotMisfitAt(pv.newCells)) break;                     // fizzle → keep post-flip node
             if (detectCasualties(pv.newCells).length) break;          // [270726c] wall refusal OR trim (shape change) → stop at post-flip node
             // [170826c] Remember the machine that did the work, so the drawn
@@ -21487,7 +22907,7 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
         }
         if (item === 'slip') {
             const meta = shifterMeta[k];
-            const v = SLIP_VECTORS[meta ? meta.dir : 0];
+            const v = slipVectorOf(meta);
             const sx = nx + v.dx, sy = ny + v.dy;
             const sCells = SHAPES[type].cells[nConfig].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; });
             if (slotMisfitAt(sCells)) break;
@@ -21528,7 +22948,7 @@ function solveRoute() {
         for (let d = 0; d < DIRS_ORDER.length; d++) {
             const step = routeStep(type, node.config, node.x, node.y, DIRS_ORDER[d]);
             if (!step) continue;
-            if (step.y > maxRow || step.y < topLawfulRow()) continue;   // [270726zo] stay in the band, half-square grace
+            if (step.y > maxRow || step.y < topLawfulRow()) continue;   // [110926b] stay in the band, fully-visible rows only
             // [050826q] Belt and braces on the columns: every cell of the
             // landed shape must be on the board, not merely its anchor.
             if (step.cells.some(function (c) { return c.x < 0 || c.x >= VIEW_W; })) continue;
@@ -21733,6 +23153,24 @@ function computeShifterPreviews() {
     // The whole preview machinery below is kept intact behind this gate; the
     // recorder's p-flag will simply read 0, which is itself the measurement
     // that the layer is off.
+    /* [SWEEP] ONE EXCEPTION, AND IT IS NOT A GHOST. The brief's first rule —
+       no preview, no mechanic: free ground appearing where the player did
+       not predict it reads as arbitrary. That does not bring the outcome
+       ghosts back. What is shown is only the HOLES a turn tile one flip away
+       would lay: dashed outlines of cells-to-be, no body, no pose, no
+       grey. Everything [180826z] retired stays retired. */
+    if (SWEEP) {
+        if (!game.running || game.paused || game.testDrive ||
+            game.inputLocked || isTransformAnimActive()) return [];
+        const found = [], seen = new Set();
+        for (const aim of DIRS_ORDER) {
+            const p = computeShifterPreviewFor(aim);
+            if (p && p.swept && p.swept.length && !seen.has(p.shifterKey)) {
+                seen.add(p.shifterKey); p.sweepOnly = true; found.push(p);
+            }
+        }
+        return found.slice(0, 2);
+    }
     return [];
     if (!game.running || game.paused || game.testDrive ||
         game.inputLocked || isTransformAnimActive()) return [];
@@ -21787,7 +23225,8 @@ function computeShifterPreviewFor(aim) {
     // actually leaves you — intermediate poses render faint, the final pose
     // full, so a three-link ride reads as a path and not a teleport. The walk
     // stops exactly where the real resolution would: denial, trim, or five.
-    const poses = [];
+    const poses = [], swept = [];   // [SWEEP] holes the turn links will lay
+    const spent = new Set();        // [SWEEP] machines this walk has fired
     let lost = [], denial = false, oob = false;
     let bodyCells = landed, cfg = landedConfig, trg = trigger;
     for (let link = 0; link < 5 && trg; link++) {
@@ -21797,10 +23236,10 @@ function computeShifterPreviewFor(aim) {
         let next = null;
         if (it === 'pivot') {
             const ccw = meta && meta.dir === 'ccw';
-            const rotTable = ccw ? PIVOT_ROTATION_CCW : PIVOT_ROTATION;
-            const rotConfig = rotTable[game.shapeType] && rotTable[game.shapeType][cfg];
-            if (rotConfig === undefined) break;
-            const pv = pivotAroundTrigger(bodyCells, trg.x, trg.y, ccw, game.shapeType, rotConfig);
+            const tn = turnsOf(meta);   // [SWEEP]
+            const pv = turnAroundTrigger(bodyCells, trg.x, trg.y, ccw, game.shapeType, cfg, tn);
+            if (!pv) break;
+            const rotConfig = pv.newConfig;
             if (slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }
             const push = classifyShiftPush(pv.newCells);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
@@ -21808,12 +23247,22 @@ function computeShifterPreviewFor(aim) {
                 const redSet = new Set(push.trim.redIndices);
                 next = pv.newCells.filter((c, i) => !redSet.has(i));
                 lost = pv.newCells.filter((c, i) => redSet.has(i));
+                // [SWEEP] survivors' arcs only, as in the real handler; a cell
+                // a casualty lands in is paid for, so it shows as paid, not swept
+                if (SWEEP) {
+                    const redKeys = new Set(lost.map(c => `${c.x},${c.y}`));
+                    const oS = [], nS = [];
+                    pv.rotated.forEach((r, j) => { if (!redKeys.has(`${r.x},${r.y}`)) { oS.push(bodyCells[j]); nS.push(r); } });
+                    for (const c of sweptVoids(oS, nS, trg.x, trg.y, ccw, tn))
+                        if (!redKeys.has(`${c.x},${c.y}`)) swept.push(c);
+                }
                 poses.push(next);
                 break;   // a trim ends the train, as in the real handler
             }
+            if (SWEEP) swept.push(...sweptVoids(bodyCells, pv.rotated, trg.x, trg.y, ccw, tn));
             next = pv.newCells; cfg = rotConfig;
         } else if (it === 'slip') {
-            const v = SLIP_VECTORS[meta ? meta.dir : 0];
+            const v = slipVectorOf(meta);
             const pushed = bodyCells.map(c => ({ x: c.x + v.dx, y: c.y + v.dy }));
             if (slotMisfitAt(pushed)) { if (!poses.length) denial = true; break; }
             const push = classifyShiftPush(pushed);
@@ -21831,9 +23280,16 @@ function computeShifterPreviewFor(aim) {
         poses.push(next);
         bodyCells = next;
         // Does the resolved body rest on ANOTHER machine? (Same skip rules.)
+        /* [SWEEP] ...and not the one it just used. The real handler consumes
+           a machine as it fires; this walk never did, and a TURN pins the
+           trigger cube on its own tile — so the walk re-fired the same turn
+           five times over (harmless while the ghosts were retired; it tripled
+           the swept outlines the moment anything drew them). */
+        spent.add(`${trg.x},${trg.y}`);
         trg = null;
         for (const c of next) {
             const w2 = world[`${c.x},${c.y}`];
+            if (spent.has(`${c.x},${c.y}`)) continue;
             if (w2 === 'pivot' && game.shapeType === 'single') continue;
             if (w2 === 'pivot' || w2 === 'slip') { trg = c; break; }
         }
@@ -21847,10 +23303,27 @@ function computeShifterPreviewFor(aim) {
         gold = slots.some(sl => !sl.claimed && !sl.retiring &&
             sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
     }
-    return { poses, lost, denial, oob, shifterKey: tKey, shifterCell: trigger, gold,
+    return { poses, lost, swept, denial, oob, shifterKey: tKey, shifterCell: trigger, gold,
              firstKind: item };   // [180826u] what the first machine was — the tricky-move filter needs it
 }
 
+/* [SWEEP] NO PREVIEW, NO MECHANIC. The holes a turn will lay, as cells-to-be:
+   a dashed outline in the span blue (the bridge's own join colour), no fill —
+   the hole still shows through, and the swept area is never drawn as a
+   sector. The dash is what separates "will be" from the solid outline a real
+   cell wears. */
+function drawSweptPreview(cells, pulse) {
+    const blue = currentTheme === 'day' ? '#2f86c9' : '#4ba3e3';
+    const ins = currentTheme === 'day' ? 2 : 3;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, 0.95 * pulse + 0.1);
+    if (ctx.setLineDash) ctx.setLineDash([5, 4]);
+    for (const c of cells)
+        roundedSq(c.x * CELL + ins, (c.y - game.cameraY) * CELL + ins, CELL - ins * 2,
+                  null, blue, currentTheme === 'day' ? 3.2 : 2.6);
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    ctx.restore();
+}
 function drawShifterPreview() {
     const now = performance.now();
     if (now - _spvLastCompute > 90) {   // ~11Hz recompute; drawing stays per-frame
@@ -21860,6 +23333,7 @@ function drawShifterPreview() {
     if (!shiftPreviews.length) return;
     const pulse = 0.62 + 0.18 * Math.sin(now / 260);
     for (const p of shiftPreviews) {
+        if (p.sweepOnly) { drawSweptPreview(p.swept, pulse); continue; }   // [SWEEP]
         if (p.denial) {
             // The socket gate would refuse: the tool is spent, nothing moves. A
             // red ring on the shifter itself — same refusal language as bad flips.
@@ -21876,6 +23350,7 @@ function drawShifterPreview() {
         }
         if (p.lost.length)
             drawRouteGhost(p.lost, '#ef4444', 0.5 * pulse, false);
+        if (p.swept && p.swept.length) drawSweptPreview(p.swept, pulse);   // [SWEEP]
         if (p.oob) {
             ctx.save();
             ctx.globalAlpha = pulse;
@@ -21910,7 +23385,7 @@ function drawMoveGuideRoute() {
         const d = diagnoseMissingTool();
         if (d && d.dir !== undefined && r.slot) drawParityMark(r.slot);
         if (d) showTip(d.kind === 'green'  ? 'diagBigger'
-                     : d.kind === 'hazard' ? 'diagSmaller'
+                     : (d.kind === 'hazard' || d.kind === 'hole') ? 'diagSmaller'   // [100926h]
                      : d.dir !== undefined ? 'diagParity'
                      : d.kind === 'pivot'  ? 'diagForm' : 'noroute');
     }
@@ -22855,8 +24330,10 @@ const TIPS = {
     rose:      'Ringed single: the hard one.',
     shave:     'Blocked? Come at it THROUGH the red.',
     shifter:   'Gear shifters rotate or nudge you.',
-    wrong:     'Wrong shape. Evolve to match.',
-    devolve:   'A minus trims a cube. Sometimes that\u2019s the plan.',
+    // [100926h] The slot refuses now and reds are gone, so the cures are the
+    // green and the hole \u2014 say so.
+    wrong:     'Wrong shape for that slot. Grow on a green, or shrink on a hole.',
+    devolve:   'A hole takes a cube and becomes ground. Sometimes that\u2019s the plan.',
     // [210826p] The shed path used to borrow the 'devolve' tip, so hitting a
     // wall taught the player about the minus square \u2014 an explanation for a
     // thing they had not done. Now that the two events have separate words they
@@ -22876,7 +24353,9 @@ const TIPS = {
     // a completed row tops up the tank the player can see on the HUD. That is a
     // reward they can watch arrive, where points disappear into a total.
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
-    trim:      'Too big? Trim down on a minus.',
+    trim:      'Too big? Bridge a hole — a cube for a cell.',   // [100926h]
+    // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
+    onecube:   'One cube can’t bridge — it has none to spare. Go round, or grow.',
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -22897,8 +24376,8 @@ const TIPS = {
     // is exactly the problem "right size, wrong form" describes.
     diagForm:    'Right size, wrong form. Revolve — find a TURN shifter.',
     diagBigger:  'Too small for that slot. Find a green.',
-    diagSmaller: 'Too big for that slot. A red will trim you down.',
-    nofit:     'No slot fits you now. Evolve or devolve to match.'
+    diagSmaller: 'Too big for that slot. Bridge a hole — a cube for a cell.',   // [100926h]
+    nofit:     'No slot fits you now. Grow on a green, or shrink on a hole.'     // [100926h]
 };
 const TIP_MS = 4000;        // each tip's time on screen
 const TIP_GAP_MS = 6000;    // quiet gap between tips
@@ -22908,7 +24387,9 @@ try { tipsSeen = new Set(JSON.parse(localStorage.getItem('rotor_tips_seen') || '
 // in an earlier one. The rarely-met diagnostics stay remembered — they only
 // fire in situations that teach themselves — but the basics should greet a
 // player starting again, which is the moment they are most likely to want them.
-const TIPS_REPEAT_EACH_RUN = ['start', 'green', 'slot', 'fresh',
+// [110926c] 'onecube' joins the per-run list: it is a core rule now, not a
+// diagnostic, and it only ever fires when the player has actually tried it.
+const TIPS_REPEAT_EACH_RUN = ['start', 'green', 'slot', 'fresh', 'onecube',
                               'diagParity', 'diagForm', 'diagBigger', 'diagSmaller'];
 function forgiveRunTips() {
     for (const k of TIPS_REPEAT_EACH_RUN) tipsSeen.delete(k);
@@ -23120,6 +24601,17 @@ let _beatAt = 0;
    never twice for the same state. Speed announces at fixed multiples of the
    base rate so it reads as steps rather than a slope. ═══════════════════════ */
 const RATCHET_SPEED_STEPS = [1.3, 1.6, 1.9, 2.2, 2.6, 3.0];
+/* [110926b] THE WARNING ZONE IS THE ZONE. Field note: "when the warning sound
+   of the last 30 seconds starts playing, and the player then clears rows and
+   collects hourglasses to get out of the danger time zone, they should be
+   complimented on their efforts to evade danger."
+   The praise was armed at ten seconds — well past the point the game starts
+   warning — so most escapes from the countdown went unremarked: the pips would
+   start, the player would fight out of it, and nothing would say so. Armed now
+   by the SAME threshold that arms the countdown, so the sound and the
+   compliment describe one event, and cleared at a margin above it so a clock
+   hovering on the line cannot rattle the praise out. */
+const ESCAPE_ARM_SEC = TICK_WARN_SEC, ESCAPE_CLEAR_SEC = TICK_WARN_SEC + 18;
 function ratchetWatch() {
     if (game.testDrive || game.introHold) return;
     const r = game._ratchet || (game._ratchet = { shape: game.shapeType, speedStep: 0, round: advancedRound });
@@ -23131,6 +24623,45 @@ function ratchetWatch() {
        IS a crisis — a trim or a fall that leaves the clock short — is now
        signalled where it happens, in bumpCost, by the size of the loss. */
     r.shape = game.shapeType;
+    /* ── [100926f] THE ESCAPE, ACKNOWLEDGED ─────────────────────────────────
+       Field note: a player who drops under ten seconds, fights, collects what
+       there is and gets out again should be congratulated. Armed when the
+       clock is at or below ESCAPE_ARM_SEC; fires once when it climbs back past
+       ESCAPE_CLEAR_SEC. The line is chosen by how the escape was made — a row,
+       an hourglass, or just play — in the game's own motor register. */
+    {
+        const m = momentumRemaining();
+        if (m <= ESCAPE_ARM_SEC && !r.escapeArmed) {
+            r.escapeArmed = true; r.escapeRows = game.runRows || 0;
+            r.escapeGlass = game.roundWarps || 0;   // [110926b] hourglasses count too
+            r.escapeT = performance.now();
+        }
+        if (r.escapeArmed && m >= ESCAPE_CLEAR_SEC) {
+            r.escapeArmed = false;
+            const rowsSince = Math.max(0, (game.runRows || 0) - (r.escapeRows || 0));
+            // max(0): roundWarps resets at a level boundary, so an escape that
+            // spans one must not read the reset as a negative count.
+            const glassSince = Math.max(0, (game.roundWarps || 0) - (r.escapeGlass || 0));
+            /* [110926b] The line names WHAT GOT YOU OUT, because that is the
+               lesson: rows if you earned them, the hourglass if you went and
+               got it, both if you did both. */
+            const POOL = (rowsSince >= 1 && glassSince >= 1)
+                           ? ['ROWS AND SAND — TEXTBOOK', 'YOU TOOK BOTH WAYS OUT']
+                       : glassSince >= 2 ? ['SAND IN HAND', 'YOU WENT AND GOT THE TIME']
+                       : glassSince === 1 && rowsSince === 0 ? ['THE HOURGLASS SAVED YOU', 'STRAIGHT TO THE SAND']
+                       : rowsSince >= 2 ? ['ROWS TO THE RESCUE', 'FLIPPED YOUR WAY OUT']
+                       : rowsSince === 1 ? ['SAVED BY THE ROW', 'ONE ROW FROM THE EDGE']
+                       :                   ['OUT OF THE RED', 'CLOSE CALL — KEEP TURNING', 'BACK FROM THE BRINK'];
+            let pick = (Math.random() * POOL.length) | 0;
+            if (POOL[pick] === r.lastEscapeLine) pick = (pick + 1) % POOL.length;
+            r.lastEscapeLine = POOL[pick];
+            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.26, POOL[pick], '#86efac', true, { life: 1800, hold: 900 });
+            triggerEdgeGlow('#86efac', 900);
+            if (sfx.gold) sfx.gold();
+            bookmark('escape', 'THE ESCAPE');   // [100926g]
+            rec('ratchet', { k: 'escape', rows: rowsSince, glass: glassSince, r: advancedRound });
+        }
+    }
     // FASTER — the scroll crossing a step.
     const base = 1.0;
     let step = 0;
@@ -23326,6 +24857,7 @@ function drawEdgeProximity() {
 
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
+    replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
 
     ctx.save();
     
@@ -23348,7 +24880,8 @@ function draw() {
         // #db2777 at 0.25 — the deep pink of the ramp's summit — which is what
         // read as "unoccupied squares turning red" in the field notes. Kept as
         // designed; flagged in case the hue wants softening.)
-        const wash = LEVEL_WASH[Math.min(advancedRound, 10)];
+        // [110926b] a replay wears the wash of the level the moment happened on
+        const wash = LEVEL_WASH[Math.min((game._replay && game._replay.lvl) || advancedRound, 10)];
         if (wash) {
             ctx.save();
             ctx.globalAlpha = currentTheme === 'day' ? wash[1] * 0.5 : wash[1];
@@ -23375,7 +24908,9 @@ function draw() {
     // Cells currently under the player — skipped in the floor pass below so
     // the visited/empty tile never renders (or bleeds its edge) beneath the
     // player. A cell takes its visited colour only once the player moves off.
-    const playerNow = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
+    const playerNow = new Set((game._replay ? game._replay.cells : getPlayerCells()).map(c => `${c.x},${c.y}`));
+    // [100926f] the replay's clock: the trail is drawn only as far as it had been walked
+    const trailNow = game._replay ? game._replay.now : Infinity;
     for (let row = -1; row <= VIEW_H + 1; row++) {
         const worldY = camInt + row;
         for (let col = 0; col < VIEW_W; col++) {
@@ -23611,7 +25146,8 @@ function draw() {
                     const dayPulse = 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);
                     roundedSq(sx - 1.5 * dayPulse, sy - 1.5 * dayPulse, CELL_SIZE + 3 * dayPulse, DAY_SHIFTER_FILL, '#8fa3b8', 1);
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
-                    drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
+                    try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta); }   // [100926a] one bad tile never takes the board with it
+                catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                     if (pvInert) ctx.restore();   // [170826b] matched exit
                     continue;
                 }
@@ -23633,10 +25169,12 @@ function draw() {
                 ctx.restore();
                 // Glyph — stroked vector, uniform 2.4px ([270726l]): matches
                 // the white "+" on greens, "−" on reds, and the hourglass.
-                drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta);
+                try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta); }   // [100926a] one bad tile never takes the board with it
+                catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                 if (pvInert) ctx.restore();   // [170826b] matched exit
-            } else if (visited.has(key) && !(flip.active && playerNow.has(key) &&
-                                             !(flip.wasVisited && flip.wasVisited.has(key)))) {
+            } else if (visited.has(key) && (visitedAt.get(key) || 0) <= trailNow &&
+                       !(flip.active && playerNow.has(key) &&
+                         !(flip.wasVisited && flip.wasVisited.has(key)))) {
                 // [060926d] a cell the flip is landing on is drawn unwalked until
                 // the sprite arrives — UNLESS it was already walked before this
                 // move [070926g], in which case it stays purple throughout
@@ -23667,7 +25205,7 @@ function draw() {
                        ceiling for pink-on-white before it stops being pink —
                        going further means leaving the hue, not deepening it. */
                     {   // [090926e] day trail cools too: hot pink fresh -> the pale pink base
-                        const age = performance.now() - (visitedAt.get(key) || 0);
+                        const age = (isFinite(trailNow) ? trailNow : performance.now()) - (visitedAt.get(key) || 0);
                         const f = Math.max(0, Math.min(1, 1 - age / TRAIL_COOL_MS));
                         const fill = f > 0.01 ? `rgb(255, ${Math.round(194 - 40 * f)}, ${Math.round(212 - 30 * f)})` : '#ffc2d4';
                         roundedSq(sx, sy, CELL_SIZE, fill, '#ff8fa6', 1);
@@ -23684,7 +25222,7 @@ function draw() {
                        still unmistakably walked, it is just not RECENTLY walked.
                        Nothing about what a cell IS changes; only its age shows. */
                     {
-                        const age = performance.now() - (visitedAt.get(key) || 0);
+                        const age = (isFinite(trailNow) ? trailNow : performance.now()) - (visitedAt.get(key) || 0);
                         const f = Math.max(0, Math.min(1, 1 - age / TRAIL_COOL_MS));   // 1 fresh -> 0 cooled
                         const fill = f > 0.01
                             ? `rgba(${Math.round(124 + 36 * f)}, ${Math.round(96 + 30 * f)}, ${Math.round(196 + 30 * f)}, ${(0.88 + 0.06 * f).toFixed(3)})`
@@ -23812,7 +25350,7 @@ function draw() {
         }
     }
     // Special items + glow hints for adjacent evolution pickups
-    const playerCellsForHint = getPlayerCells();
+    const playerCellsForHint = game._replay ? game._replay.cells : getPlayerCells();   // [100926f] the replayed body
     const playerCellSet = new Set(playerCellsForHint.map(c => `${c.x},${c.y}`));
     
     // Classify adjacent greens (Model A): a green that completes a valid larger
@@ -24048,7 +25586,7 @@ function draw() {
     // toward the move's hinge to edge-on at the midpoint — where the config + face
     // swap — then the new pose expands on the far side. Logic already committed.
     let renderCells = playerCellsForHint;
-    let renderParity = game.faceParity;
+    let renderParity = game._replay ? game._replay.parity : game.faceParity;   // [100926f]
     let flipping = false, flipAX = 0, flipAY = 0, flipSX = 1, flipSY = 1, flipBShear = 0, flipLift = 0;
     let flipDiag = false, flipAng = 0, flipS = 1;
     // If a pivot or slip is currently animating, use the interpolated cell
@@ -24159,7 +25697,8 @@ function draw() {
     // diagonal violet, J blue, square mint. You literally match the slot
     // you can claim. Parity keeps its two-brightness alternation, derived
     // from the family base per theme.
-    const famBase = (SLOT_DEFS[game.shapeType] && SLOT_DEFS[game.shapeType].color) || '#22d3ee';
+    const famType = game._replay ? game._replay.type : game.shapeType;   // [100926f] the shape's colour at the time
+    const famBase = (SLOT_DEFS[famType] && SLOT_DEFS[famType].color) || '#22d3ee';
     // [200826b] Day player was lightened 38–50% toward white, which left the
     // single's cyan reading as the same pastel weight as mint walls and the
     // (already pale) pink trail — three light sweets, no hero. The day board
@@ -24318,11 +25857,52 @@ function draw() {
     // close you are, in the same language: safe green at three cells, amber
     // at two, red on the last one. The garage has no pressure, so it shows
     // nothing.
-    if (!game.testDrive) drawEdgeProximity();
+    if (!game.testDrive && !game._replay) drawEdgeProximity();
     
     // [270726s] DENIED FLASH — red glow over the shape, fading out over
     // ~300ms. Refusals never move the shape, so its resting cells are the
     // right place to draw.
+    // [090926l] The death hold: the cells you died on, lit red and breathing,
+    // for the two seconds the board stays up.
+    // [100926f] ...and again at the end of the replay, on the replayed body.
+    if (game._deathHold && game._deathHold.cells && (!game._replay || game._replay.showDeath)) {
+        const k = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() / 260));
+        ctx.save();
+        ctx.globalAlpha = 0.75 * k;
+        ctx.shadowColor = '#f87171'; ctx.shadowBlur = 18;
+        for (const c of (game._replay ? game._replay.cells : game._deathHold.cells))
+            roundedSq(c.x * CELL + 4, (c.y - game.cameraY) * CELL + 4, CELL - 8, '#f87171', '#ffffff', 2);
+        ctx.restore();
+    }
+    // [100926g] THE CHAIN, MARKED — the chained rows lit white for the hitstop.
+    if (game._chainMark) {
+        const ca = performance.now() - game._chainMark.t0;
+        if (ca >= CHAIN_HITSTOP_MS + 160) game._chainMark = null;
+        else {
+            const k = 1 - ca / (CHAIN_HITSTOP_MS + 160);
+            ctx.save();
+            ctx.globalAlpha = 0.42 * k;
+            ctx.fillStyle = '#ffffff';
+            for (const ry of game._chainMark.rows) {
+                const sy = (ry - game.cameraY) * CELL;
+                if (sy > -CELL && sy < LOGICAL_H + CELL) ctx.fillRect(0, sy + 2, LOGICAL_W, CELL - 4);
+            }
+            ctx.restore();
+        }
+    }
+    // [100926g] THE CUBE THE CLOCK KEPT — a white ring on it for 450ms.
+    if (game._keptFlash) {
+        const ka = performance.now() - game._keptFlash.t0;
+        if (ka >= 450) game._keptFlash = null;
+        else {
+            ctx.save();
+            ctx.globalAlpha = 0.9 * (1 - ka / 450);
+            ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 14;
+            for (const c of game._keptFlash.cells)
+                roundedSq(c.x * CELL + 3, (c.y - game.cameraY) * CELL + 3, CELL - 6, null, '#ffffff', 2.4);
+            ctx.restore();
+        }
+    }
     if (deniedFlashT0) {
         const dAge = performance.now() - deniedFlashT0;
         if (dAge >= DENIED_FLASH_MS) {
@@ -24349,7 +25929,7 @@ function draw() {
     drawShifterPreview();   // [160826u] shifter outcome ghost, above the route
     drawAnimFX();           // [180826t] devolve flash, seat, spin, chain thread
     drawNoteMarks();        // [160826y] dev-note cell rings, topmost
-    if (game.testDrive || stickOn) drawJoystickGuide();
+    if ((game.testDrive || stickOn) && !game._replay) drawJoystickGuide();
 
     // Burst rings
     drawJoints();           // [HOLES] where the shape is anchored, while it moves
@@ -24452,7 +26032,8 @@ function draw() {
         ctx.restore();
         return true;
     });
-    
+    drawReplayOverlay();   // [100926f] the replay's tag and captions, over the board
+
     // Grid coordinate labels (toggle with G) — world (x,y) on every cell
     if (window.SHOW_GRID_COORDS) {
         ctx.save();
@@ -25002,6 +26583,8 @@ function loop(time, gen) {
     // and freeze the game. On error, log and reschedule so the next frame
     // recovers. (Each early-return branch inside schedules its own next frame.)
     try {
+    // [SWEEP] stitches keep time with the swing — frozen, celebrating or not
+    if (!game.paused || game.celebrating) tickSweepQueue();
     // Paused — keep frame alive, redraw, but skip all updates
     if (game.paused) {
         if (scrubbing) {
@@ -25382,6 +26965,35 @@ function loop(time, gen) {
     // twice a second; the function's own guards make repeat calls cheap.
     // [060826c] The heartbeat runs from the LOOP, which is the only place it can
     // — it is a state, and the scroll closes on you with no input at all.
+    /* [090926l] The death hold: the world is frozen (hitstop), the cause is on
+       screen; when the hold expires, the card. Nothing else in this frame may
+       end the game a second time while it is held. */
+    if (game._deathHold) {
+        // [100926f] the hold, then the replay of how it happened, then the card
+        if (game._replay) { draw(); scheduleLoop(); return; }
+        if (performance.now() >= game._deathHold.until) {
+            const r = game._deathHold.reason;
+            if (!game._deathHold.replayed) {
+                game._deathHold.replayed = true;
+                /* [110926a] THE JINGLE, AND THE AIR TO PLAY IT IN. The run's
+                   music is faded out first — a jingle over the loop it is
+                   supposed to end reads as neither — and the death replay's
+                   lead-in is lengthened to REPLAY_END_LEAD_MS so the fanfare
+                   finishes before the first flip rewinds. */
+                if (typeof stopMusic === 'function') stopMusic();
+                if (sfx.endOfPlay) sfx.endOfPlay();
+                // [110926d] How it ended, then the card. The run's-best replay
+                // that used to follow is gone with the level one — see the note
+                // at _skipCard: a replay is the last four moves or it is not a
+                // replay of anything the player just did.
+                if (startBoardReplay('death', r, () => endGameNow(r), { lead: REPLAY_END_LEAD_MS })) { draw(); scheduleLoop(); return; }
+            }
+            endGameNow(r); return;
+        }
+        draw();
+        scheduleLoop();
+        return;
+    }
     if (game.running && !game.paused) runHeartbeat();
     if (game.running && !game.paused) ratchetWatch();   // [070926h] the significant changes, announced
     paintChainBar();                                       // [080926b] the chain window, visible
@@ -25391,6 +27003,9 @@ function loop(time, gen) {
             game._reprieveAt = nowRp;
             runReprieve();
         }
+    }
+    if (game.running && !game.paused) {
+        runSingleRescue();   // [110926c] a single with nowhere to go gets a green in the hole beside it
     }
     if (game.speedTimer >= LEVEL_TIME_LIMIT) {
         // [210826aq] THE RESERVE TANK PAYOUT IS GONE with the tank itself.
@@ -25408,10 +27023,18 @@ function loop(time, gen) {
         // to spend, no refill. This is the line that makes the clock the life —
         // without it the timer is just a slower way of spending hearts, which
         // is what it has always been.
-        if (CLOCK_ONLY) { endGame('stall'); return; }
+        /* [100926c] THE FREEZE AT 0:00. This `return` left the loop without
+           scheduling the next frame. That was fine when endGame ended the game
+           on the spot — nothing left to run. Since the death hold [090926l],
+           endGame STARTS a two-second hold and comes back, so the return here
+           killed the animation chain with the game still marked running: the
+           board froze, the stick stuck, the card never came. The [200826j]
+           note eleven lines below says exactly this — "every early return in
+           loop() must schedule its own next frame" — and I walked past it. */
+        if (CLOCK_ONLY) { endGame('stall'); scheduleLoop(); return; }
         lives = Math.max(0, lives - 1);
         updateLivesHUD();
-        if (lives <= 0) { endGame('stall'); return; }
+        if (lives <= 0) { endGame('stall'); scheduleLoop(); return; }   // [100926c] same
         game.speedTimer = LEVEL_TIME_LIMIT - TIMEOUT_RESTART_SEC;
         // [300726ay] Eight seconds of quiet before the countdown resumes, and
         // reset lastTickSecond so the first tick after it lands cleanly.
@@ -25496,6 +27119,7 @@ function loop(time, gen) {
     const scroll = (game.testDrive || game.introHold || _hitstop) ? 0 : game.speed * dt * 0.000126 * scrollMul;
     game.cameraY -= scroll;
     
+    drainQueuedMove();   // [100926e] a press that arrived mid-flip goes now, on the landing
     applyDrag(dt);
     if (!game.testDrive) {
         ensureWorldGenerated(game.cameraY);
@@ -26487,7 +28111,8 @@ function startGame(testDrive = false, daily = false) {
     rowsCelebrated = new Set(); lineFlashes = [];
     game._rowChain = null; game._bandChainNow = 0;   // [060926c] a chain belongs to one run
     game._drained = 0;                               // [070926d] the ledger's drain, per run
-    moveTape = []; joins = []; game._ratchet = null;  // [070926h] replay tape, join fx, ratchet state — per run
+    moveTape = []; highlights = []; joins = []; game._ratchet = null; game._replay = null; game._chainMark = null; game._keptFlash = null;  // [070926h] replay tape, join fx, ratchet state — per run
+    game._queuedMove = null;                           // [100926e] no press carries across runs
     game.runRows = 0; game.runBestChain = 0; game.runFalls = 0; game._lastLevelLine = '';   // [080926k] game-over ledger, per run
     game._startBest = bests.score || 0;
     { const sEl = document.getElementById('scoreDisplay');
@@ -26563,6 +28188,7 @@ function startGame(testDrive = false, daily = false) {
        world is not rebuilt on death, so ground you bought is still there when
        you respawn, and three lives can be spent bridging one chasm. */
     persistentFills.clear(); bridgeRemainders.clear();   // [090926b]
+    sweepQueue.length = 0;   // [SWEEP] a stitch never crosses into the next run
     visitedAt.clear();   // [090926e]
     islandCells.clear(); islandCooldown = 0;   // [ISLANDS] platforms belong to one run
 
@@ -26773,7 +28399,42 @@ function copyDailyResult(btn) {
     const done = () => { if (btn) btn.textContent = 'COPIED'; };
     try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, done); else done(); } catch (e) { done(); }
 }
+/* ══ [090926l] THE DEATH HOLD — see what happened before you see the score ═══
+   Designer's note: when a life ends it cuts straight to the final score; you
+   want a sense of what happened. So the board stays for DEATH_HOLD_MS with
+   the world frozen, the cells you died on lit red, one line naming the cause
+   over them, and the HUD's clock where it stopped. THEN the card. Two
+   seconds is enough to read the board and not enough to be a wait; a tap
+   skips it. A win goes straight to its celebration as before. ═════════════ */
+const DEATH_HOLD_MS = 2200;
+const DEATH_LINE = {
+    stall:     'OUT OF TIME',
+    void:      'FELL OFF THE BOTTOM',
+    dissolved: 'LAST CUBE LOST TO A HOLE',
+    death:     'THE RUN ENDED'
+};
 function endGame(reason = 'death') {
+    if (reason !== 'win' && !game._deathHold) {
+        const now = performance.now();
+        game._deathHold = { reason, until: now + DEATH_HOLD_MS, cells: getPlayerCells() };
+        game._hitstopUntil = now + DEATH_HOLD_MS;   // the world holds: scroll and clock stop
+        game.inputLocked = true;
+        game._deathSkip = () => { if (game._deathHold) game._deathHold.until = 0; };
+        const line = DEATH_LINE[reason] || DEATH_LINE.death;
+        const owe = (() => {   // the fact that explains a stall: how close the nearest row was
+            if (reason !== 'stall') return '';
+            let best = null; const ci = Math.floor(game.cameraY);
+            for (let y = ci; y < ci + VIEW_H; y++) { const o = rowOwedCount(y); if (o > 0 && (best === null || o < best)) best = o; }
+            return best ? `  ·  NEAREST ROW ${best} SHORT` : '';
+        })();
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30, line + owe, '#f87171', true, { life: DEATH_HOLD_MS, hold: DEATH_HOLD_MS - 300 });
+        triggerEdgeGlow('#f87171', DEATH_HOLD_MS);
+        return;   // the loop calls endGameNow when the hold expires
+    }
+    endGameNow(reason);
+}
+function endGameNow(reason = 'death') {
+    game._deathHold = null;
     breakCombo('run-end');   // [230826c] or the chip keeps a gold x4.0 over the results screen
     // [220826b] Drop focus. The game-over screen is keyboard-activated with
     // Space/Enter, and that handler now defers to whatever is focused so it can't
@@ -27031,7 +28692,17 @@ function endGame(reason = 'death') {
     tauntEl.style.letterSpacing = '';
     tauntEl.style.fontWeight = '';
     tauntEl.style.color = '';
-    
+    /* [110926a] THE CARD TAKES THE BOARD'S WIDTH. Measured from the canvas as
+       it is actually drawn — the container may be scaled to fit the viewport,
+       and the rect reports the scaled width, which is the one the eye compares
+       against. See the .taunt-box rule. */
+    {
+        const cvEl = document.getElementById('canvas');
+        const w = cvEl && cvEl.getBoundingClientRect ? cvEl.getBoundingClientRect().width : 0;
+        const rootStyle = document.documentElement && document.documentElement.style;
+        if (w > 80 && rootStyle && rootStyle.setProperty) rootStyle.setProperty('--board-w', Math.round(w) + 'px');
+    }
+
     document.getElementById('gameOverScreen').classList.remove('hidden');
 }
 

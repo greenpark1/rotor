@@ -7141,7 +7141,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '160926-0728 ROTOЯ · LANDFALL';
+const BUILD_VERSION = '170926-1935 ROTOЯ · THE ROW PAYS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8079,6 +8079,8 @@ const TIME_PICKUP_MUL = 1;
 const FACTORY_PTS = 400;          // points per forged shifter
 let overflowPts = 0;              // surplus accumulated while the ring is full
 let factoryQueue = 0;             // gears waiting to be stamped out
+let rowForge = 0;                 // [170926c] assets owed for rows cleared
+let rowPay = [];                  // [170926e] and where each was earned: the cell that finished the row
 function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedTimer); }
 // [270726e] Direct time credit (hourglass +20s) poured through the SAME
 // funnel as points: full-ring clamp, surplus to the overflow factory,
@@ -11428,6 +11430,52 @@ function singleHasNoMove() {
     }
     return true;
 }
+/* ══ [170926b] THE ROCK YOU CANNOT LEAVE ═════════════════════════════════════
+   Field note: "on a couple of occasions I have got onto an island with a single
+   cube and found that there's no possible route off, no shape shifter, no green
+   cube to increase size."
+   A HAND UP could not see this. It asks "has this single no legal move?" — and
+   on an island the answer is no: the single can shuffle about the platform all
+   day. It has moves; what it has not got is a way OFF, and the scroll takes it
+   anyway. That is the dead end the board built, one step removed.
+   So a single is stranded when every legal flip keeps it on the same platform,
+   and the platform holds nothing to change that — no green to grow on, no step
+   or turn on it or its rim. A pair cannot be stranded: a bigger body may flip
+   into a hole, trimming a cube to buy the ground, and that is the bridge. A
+   single spending its only cube is a death, which is why this rule exists.
+   The remedy is the hand up's own: a green in a moat hole beside the body. It
+   grows the single to a pair AND the consumed green's cell becomes ground — the
+   first plank of the way home. It is given at most once per island. */
+function singleStrandedOnIsland() {
+    if (game.shapeType !== 'single') return null;
+    if (typeof islandCells === 'undefined' || !islandCells.size) return null;
+    const px = game.playerX, py = game.playerY;
+    if (!islandCells.has(`${px},${py}`)) return null;
+    const plat = islandsInView().find(p => p.keys.includes(`${px},${py}`));
+    if (!plat) return null;
+    const on = new Set(plat.keys);
+    /* anything on the rock or its rim that changes the situation */
+    for (const k of plat.keys) {
+        const w = world[k];
+        if (w === 'pickup' || w === 'slip' || w === 'pivot') return null;
+        const q = k.split(','), x = +q[0], y = +q[1];
+        for (const [dx, dy] of NBR8) {
+            const nw = world[`${x + dx},${y + dy}`];
+            if (nw === 'slip' || nw === 'pivot' || nw === 'pickup') return null;
+        }
+    }
+    /* is there a legal flip that leaves the platform? */
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    for (const [dx, dy] of NBR8) {
+        const nx = px + dx, ny = py + dy, nk = `${nx},${ny}`;
+        if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+        const w = world[nk];
+        if (w === 'void' || w === 'wall' || w === 'hazard') continue;
+        if (slotMisfitAt([{ x: nx, y: ny }])) continue;
+        if (!on.has(nk)) return null;                  // a way off exists
+    }
+    return plat;
+}
 function runSingleRescue() {
     if (SINGLE_BUYS_GROUND || game.testDrive || !game.running || game.paused) return;
     if (game.introHold || game.celebrating || game.inputLocked) return;
@@ -11438,7 +11486,12 @@ function runSingleRescue() {
     // A green already beside you is the rescue — magneticFuseCheck will take it.
     for (const [dx, dy] of NBR8)
         if (world[`${game.playerX + dx},${game.playerY + dy}`] === 'pickup') return;
-    if (!singleHasNoMove()) return;
+    /* [170926b] Either fault qualifies: no move at all, or no move OFF the rock. */
+    const isle = singleStrandedOnIsland();
+    if (isle) {
+        game._isleFreed = game._isleFreed || new Set();
+        if (game._isleFreed.has(isle.key)) return;      // one hand up per island
+    } else if (!singleHasNoMove()) return;
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
     const holes = [];
     for (const [dx, dy] of NBR8) {
@@ -11459,7 +11512,8 @@ function runSingleRescue() {
     // [120926m] A HAND UP chucked in the ledger — the green arriving beside a
     // stuck single is the message; it needed no caption.
     game._singleRescueAt = now;
-    rec('rescue', { k: 'single', x: h.x, y: h.y, r: advancedRound, m: Math.round(momentumRemaining()) });
+    if (isle) game._isleFreed.add(isle.key);            // [170926b]
+    rec('rescue', { k: isle ? 'island' : 'single', x: h.x, y: h.y, r: advancedRound, m: Math.round(momentumRemaining()) });
 }
 const REPRIEVE_WINDOW_SEC = 20;
 // [100926h] Is there a hole anywhere in view — somewhere a cube can become ground?
@@ -16187,7 +16241,30 @@ function bridgeCubeForSingle(holeX, holeY) {   // a single refused at a hole: a 
     return true;
 }
 
-function spawnShifter(src) {
+/* ══ [170926a] THE PLAYER'S BREATHING ROOM ═══════════════════════════════════
+   Designer's note: "never allow a spawn to occur right next door to the
+   player's active / moving position where the player has no time to decide to
+   leave or pick up." So the ambient stream — greens, steps, turns, hourglasses,
+   everything that comes through spawnShifter — keeps three clear cells from
+   every cube of the body. A thing that appears four cells out is a thing you
+   chose to go and get; a thing that appears beside you is a thing that happened
+   to you.
+   THE RESCUES ARE EXEMPT, and deliberately so: they exist to arrive within
+   reach. A HAND UP plants its green in a hole beside a stuck single, the BRIDGE
+   OFFER is written to land at exactly Chebyshev 2 ("two cells out, never one"),
+   and the island answer lays its turn on the far rim. None of those come
+   through this pool.
+   When the filter empties the pool the spawn is REFUSED rather than moved — and
+   a refusal keeps its credit (the factory's `if (spawnShifter()) queue--`), so
+   the asset is deferred by a second or two, never destroyed. */
+const PLAYER_CLEAR_R = 3;
+function clearOfPlayer(x, y, r = PLAYER_CLEAR_R) {
+    if (typeof getPlayerCells !== 'function') return true;
+    for (const c of getPlayerCells())
+        if (Math.max(Math.abs(c.x - x), Math.abs(c.y - y)) <= r) return false;
+    return true;
+}
+function spawnShifter(src, atKey) {
     // ── [160826r] THE CEILING ───────────────────────────────────────────────
     // Measured (rotor-playdata): 299 spawns in an 832s run — one every 2.8
     // seconds — with only 43% ever used and up to SEVENTEEN in view at once.
@@ -16304,6 +16381,10 @@ function spawnShifter(src) {
         });
         if (inReach.length) { pool = inReach; reachMap = rm; }
     }
+    /* [170926a] three clear cells from the body — see the note above spawnShifter */
+    pool = pool.filter(key => { const q = key.split(','); return clearOfPlayer(+q[0], +q[1]); });
+    if (!pool.length && !atKey) return null;
+    if (!pool.length) pool = [atKey];   // [170926e] a named cell stands on its own
     // ── [170826c] PLACEMENT IS INTENTIONAL NOW ──────────────────────────────
     // Random placement produced the field notes' "pointless shifter" gallery:
     // slips pointing off the board, pivots parked among singles, tools that
@@ -16433,6 +16514,16 @@ function spawnShifter(src) {
         }
         if (best) { k = best.key; plannedDir = (best.dir !== undefined) ? best.dir : null; }
     }
+    /* [170926e] THE CALLER MAY NAME THE CELL, and it has the last word — after
+       the scored placement above, or that would choose a different square.
+       Only the row payout names one, and only ever the cell where the player
+       finished the row. The KIND is still this function's own decision (what
+       the board is short of, what the set demands, every ceiling), so naming a
+       cell buys placement and not contents: some control, not all control.
+       A finished row's square is `visited` rather than empty, which is why it
+       is not in the pool — and putting an asset on it does not un-finish the
+       row, because rowCellOwed counts any world value as occupied. */
+    if (atKey && !world[atKey] && !slots.some(sl => !sl.claimed && sl.keys.has(atKey))) k = atKey;
     const [gx, gy] = k.split(',').map(Number);
 
     // TRIM SUPPLY (V9, generalises the old square rescue): reds are the only
@@ -16505,7 +16596,7 @@ function spawnShifter(src) {
         rec('spawn', { k: 't30', src: 'mercy' });   // [070926e] playdata(17) collected 5 t30s from 3 recorded — these were the other two
         mercyGivenThisLevel = true;
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ffd60a');
-        return;
+        return { kind: 't30', key: k };   // [170926c] a placement is a placement: it spends the credit that asked for it
     }
 
     if (kind === 'green') {
@@ -17194,7 +17285,7 @@ const SET_TO_REPLAY_MS = 1200;   // set collected -> the replay begins (the fire
 const RP_ENCOURAGE = {
     // [120926m] NEARLY! KEEP CLIMBING NEXT TIME and SO CLOSE! GROW BEFORE YOU
     // CROSS chucked in the ledger; the rest of the encouragement stands.
-    void:      ['SO CLOSE! STAY AHEAD OF THE EDGE', 'GREAT RUN — KEEP OFF THE BOTTOM ROW'],
+    void:      ['SO CLOSE! STAY AHEAD OF THE EDGE', 'GREAT RUN — KEEP OFF THE LAST ROW'],   // [170926d]
     dissolved: ['NEARLY! A PAIR CAN BRIDGE THAT', 'GREAT RUN — MIND THE HOLES'],
     stall:     ['SO CLOSE! ROWS BUY TIME', 'NEARLY! GRAB THE HOURGLASSES', 'GREAT RUN — CHASE THE ROWS'],
     death:     ['GREAT RUN — GO AGAIN', 'SO CLOSE — ONE MORE GO?']
@@ -22836,6 +22927,30 @@ function checkCollisions() {
             }
         }
         if (newRows.length) {
+            /* ══ [170926c][170926e] EVERY ROW PAYS AN ASSET, WHERE YOU FINISHED IT ══
+               "For every row completed generate any of the game assets, hour glass,
+               green cube, move shifter or turn shifter" — and then: "the spawning
+               should occur on the last completed square of the row so that the
+               player can have some control but not all control."
+               So the row's asset is laid on the very cell that completed the row —
+               the square the player chose to finish on. The player picks WHERE;
+               the board still picks WHAT (spawnShifter's own rules: what is short,
+               what the set demands, every ceiling), which is exactly some control
+               and not all of it.
+               The cell is under the body at that instant, so the debt waits until
+               the body has moved off it — one asset at a time, sparking as it
+               lands. If the cell is built on or scrolls out of view before then,
+               the credit falls back to the ordinary pool rather than being lost.
+               Measured supply before this: greens 2.6/min, machines 4.1,
+               hourglasses 0.7, against 4.2 rows a minute. */
+            for (const ry of newRows) {
+                const onRow = cells.filter(c => c.y === ry);
+                if (onRow.length) {
+                    rowPay.push({ x: onRow[onRow.length - 1].x, y: ry, at: performance.now() });
+                    rowFinishCol[ry] = onRow[onRow.length - 1].x;   // [170926f] the ripple's destination
+                }
+                else rowForge++;   // finished by a trim rather than a landing: the pool decides
+            }
             // A landing's completions are adjacent (shapes span ≤2 rows), so one
             // band event; the guard handles any exotic future case per-row.
             newRows.sort((a, b) => a - b);
@@ -22952,7 +23067,8 @@ function rowOwedCount(row) {
 // LINE! — completed rows celebrate once ever: +20, a left-to-right light-up
 // sweep across the row, and a rising jingle.
 let rowsCelebrated = new Set();
-let lineFlashes = [];   // { y, t0 }
+let lineFlashes = [];   // { y, t0, fx }
+let rowFinishCol = {};  // [170926f] which column finished each row — the ripple runs toward it
 // ── LINE BANDS ──────────────────────────────────────────────────────────────
 // Completed rows are territory. Completing a row that touches other completed
 // rows forms a BAND, and the whole band pays its tier — so contiguity is the
@@ -23422,7 +23538,7 @@ function celebrateLineBand(newRows) {
         : `hsl(${Math.round(270 - (Math.min(size, 10) - 2) * (270 / 8))}, 85%, 65%)`;
     // The ENTIRE band glows together — one shared exhale across all its rows
     const t0 = performance.now();
-    for (let r = lo; r <= hi; r++) lineFlashes.push({ y: r, t0, col, strong: size >= 2 });
+    for (let r = lo; r <= hi; r++) lineFlashes.push({ y: r, t0, col, strong: size >= 2, fx: rowFinishCol[r] });   // [170926f]
     /* [080926b] THE LABEL SAYS TIME, NOT POINTS. "DOUBLE LINE +50" named the
        one reward that no longer decides anything. A single row now reads
        "LINE +4s"; a chain is announced by registerCombo as "CHAIN ×n +Ns" and
@@ -23467,25 +23583,59 @@ function celebrateLineBand(newRows) {
         maybeEdgePraise();
     }
 }
+/* [170926f] THE ROW ARRIVES SOMEWHERE. The flash used to light the whole row at
+   once — an even exhale that said "a row" and nothing about how it happened.
+   Designer's steer: "can the completion of the row be reflected in the
+   animation, perhaps a ripple towards the final occupied cell."
+   So it travels. Each square's light is delayed by how far it is from the cell
+   that finished the row, far end first, so the wave runs inward and lands last
+   on the square the player chose — which is also where that row's asset will
+   appear (see [170926e]). The arrival gets a brighter beat of its own, so the
+   eye is already on the cell before the spark fires there.
+   THE TIMINGS MATTER MORE THAN THE IDEA. The first pass had the wave crossing
+   in 208ms while each square stayed lit for 420 — so by the time the crest
+   arrived the whole row was up, and it read as a fill, not a travel (four posed
+   frames, 90ms apart, were indistinguishable). Each square's light is now
+   shorter than the crossing, so what moves is a crest of three or four squares:
+   34ms a cell, 200ms of light, and the arrival square holds half again as long
+   at nearly twice the brightness — the eye ends up exactly where the asset will
+   appear. A row finished by a trim rather than a landing has no finishing cell,
+   and keeps the old even exhale. */
+const RIPPLE_CELL_MS = 34;
+const RIPPLE_LIFE = 200;
 function drawLineFlashes() {
     if (!lineFlashes.length) return;
     const now = performance.now();
-    lineFlashes = lineFlashes.filter(f => now - f.t0 < 700);
+    lineFlashes = lineFlashes.filter(f => now - f.t0 < 1000);
     for (const f of lineFlashes) {
-        const t = (now - f.t0) / 700;
         const sy = (f.y - game.cameraY) * CELL;
         if (sy < -CELL || sy > LOGICAL_H + CELL) continue;
         // Single line: pale exhale at 30%. Coloured bands (×2+): the rainbow
         // has to actually READ, so they run at 55% peak with a soft glow in
         // the tier colour — at 30% over dark navy every hue collapses to grey.
         const peak = f.strong ? 0.55 : 0.30;
-        const a = (t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / 0.85) * peak;
-        if (a <= 0.02) continue;
+        const rip = typeof f.fx === 'number';
+        const maxD = rip ? Math.max(f.fx, VIEW_W - 1 - f.fx) : 0;
         ctx.save();
-        ctx.globalAlpha = a;
         if (f.strong) { ctx.shadowColor = f.col; ctx.shadowBlur = 12; }
         for (let x = 0; x < VIEW_W; x++) {
             if (world[`${x},${f.y}`] === 'wall') continue;   // squares only — walls stay dark
+            let a;
+            if (rip) {
+                const d = Math.abs(x - f.fx);
+                const lead = (maxD - d) * RIPPLE_CELL_MS;     // the far end lights first
+                const life = d === 0 ? RIPPLE_LIFE * 1.5 : RIPPLE_LIFE;   // the arrival holds
+                const t = (now - f.t0 - lead) / life;
+                if (t < 0 || t > 1) continue;
+                a = (t < 0.18 ? t / 0.18 : 1 - (t - 0.18) / 0.82) * peak;
+                if (d === 0) a *= 1.9;                        // and it arrives HERE
+            } else {
+                const t = (now - f.t0) / 700;
+                if (t > 1) continue;
+                a = (t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / 0.85) * peak;
+            }
+            if (a <= 0.02) continue;
+            ctx.globalAlpha = Math.min(1, a);
             roundedSq(x * CELL + 2, sy + 2, CELL - 4, f.col || '#e2e8f0', null);
         }
         ctx.restore();
@@ -28863,6 +29013,56 @@ function loop(time, gen) {
           game._nextForge = nowT + 900;
           if (spawnShifter()) factoryQueue--;
       }
+      /* [170926c] THE ROW'S OWN ASSET. A row cleared owes one asset; it is paid
+         on its own cadence so a quad does not land four things in one frame,
+         and through spawnShifter so every ceiling, cooldown and "what is this
+         board short of" rule still applies. A paid one SPARKS — brief, just
+         enough to say "that is new, and it is yours". */
+      if (!game.testDrive && (rowPay.length || rowForge > 0) && (!game._nextRowForge || nowT >= game._nextRowForge)) {
+          /* [170926e] The earned cell is paid first, and only once it is free:
+             the body has to step off the square it finished on. A cell that has
+             been built on, or has left the view, hands its credit to the pool. */
+          let made = null, owedCell = null, owedIdx = -1;
+          if (rowPay.length) {
+              const body = getPlayerCells();
+              const cam = Math.floor(game.cameraY);
+              for (let i = 0; i < rowPay.length; i++) {
+                  const e = rowPay[i], key = `${e.x},${e.y}`;
+                  /* the square is lost if it has left the view or been built on,
+                     and given up on after six seconds of trying — then the credit
+                     goes to the ordinary pool rather than nowhere */
+                  if (e.y < cam || e.y >= cam + VIEW_H || world[key] || nowT - e.at > 6000) {
+                      rowPay.splice(i, 1); rowForge++; i--; continue;
+                  }
+                  /* [170926e] and not right behind you as you leave: the cell is
+                     paid once the body is two clear cells from it, which keeps the
+                     breathing-room rule honest even though the square was earned. */
+                  let near = false;
+                  for (const c of body)
+                      if (Math.max(Math.abs(c.x - e.x), Math.abs(c.y - e.y)) <= 1) { near = true; break; }
+                  if (near) continue;
+                  owedCell = key; owedIdx = i; break;      // not spliced until it is PAID
+              }
+          }
+          if (owedCell) made = spawnShifter('row', owedCell);
+          else if (rowForge > 0) { made = spawnShifter('row'); if (made) rowForge--; }
+          if (made) {
+              if (owedIdx >= 0) rowPay.splice(owedIdx, 1);
+              game._nextRowForge = nowT + 700;
+              const mk = made.key;
+              if (mk) {
+                  /* the spark: brief, and only on an asset a row paid for */
+                  const q = mk.split(','), fx = +q[0] * CELL + CELL / 2, fy = (+q[1] - game.cameraY) * CELL + CELL / 2;
+                  addSparks(fx, fy, 8, '#fde68a');
+                  addBurst(fx, fy, '#fef3c7');
+              }
+              rec('spawn', { k: 'rowpay', src: 'row', at: owedCell ? 'earned' : 'pool', owed: rowPay.length + rowForge });
+          } else if (owedCell) {
+              /* refused by a ceiling or the cooldown: the SQUARE keeps its claim
+                 and tries again next window — a refusal is a wait, not a demotion */
+              game._nextRowForge = nowT + 700;
+          }
+      }
       // Row-milestone decay: as complete rows scroll out of view the tier
       // re-arms, so the ladder can be climbed again later in the level.
       if ((game._rowTier || 0) > 0) {
@@ -30236,7 +30436,7 @@ function startGame(testDrive = false, daily = false) {
         const b = document.getElementById(id);
         if (b) { b._tier = undefined; b.className = 'score-badge' + (id === 'scoreBadgeR' ? ' score-badge-r' : ''); b.textContent = ''; }
     }
-    rowsCelebrated = new Set(); lineFlashes = [];
+    rowsCelebrated = new Set(); lineFlashes = []; rowFinishCol = {};
     game._rowChain = null; game._bandChainNow = 0;   // [060926c] a chain belongs to one run
     game._drained = 0;                               // [070926d] the ledger's drain, per run
     moveTape = []; highlights = []; joins = []; game._ratchet = null; game._replay = null; game._chainMark = null; game._keptFlash = null;  // [070926h] replay tape, join fx, ratchet state — per run
@@ -30249,7 +30449,7 @@ function startGame(testDrive = false, daily = false) {
 
     // Campaign starts at Round 1 with a COLD wheel (see reset literal below —
     // SPIN-UP: cover the open floor to build your 3 bands / full health).
-    overflowPts = 0; factoryQueue = 0;
+    overflowPts = 0; factoryQueue = 0; rowForge = 0; rowPay = [];
     advancedRound = 1;
     syntheticRun = false;   // [220826d] every run is honest until proven otherwise
     // [220826d] DEBUG LEVEL ENTRY — `?debug=1&level=10`. Reaching level 10 by
@@ -30537,7 +30737,8 @@ function copyDailyResult(btn) {
 const DEATH_HOLD_MS = 2200;
 const DEATH_LINE = {
     stall:     'OUT OF TIME',
-    void:      'FELL OFF THE BOTTOM',
+    /* [170926d] There is no falling in ROTOЯ — the grid runs out beneath you. */
+    void:      'YOU RAN OUT OF GRID',
     dissolved: 'LAST CUBE LOST TO A HOLE',
     death:     'THE RUN ENDED'
 };

@@ -7141,7 +7141,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '170926-1935 ROTOЯ · THE ROW PAYS';
+const BUILD_VERSION = '170926-2222 ROTOЯ · THE EARNED SQUARE';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8081,6 +8081,22 @@ let overflowPts = 0;              // surplus accumulated while the ring is full
 let factoryQueue = 0;             // gears waiting to be stamped out
 let rowForge = 0;                 // [170926c] assets owed for rows cleared
 let rowPay = [];                  // [170926e] and where each was earned: the cell that finished the row
+/* ══ [170926g] ROWS ARE THE SOURCE ══════════════════════════════════════════
+   Designer's call: "all game assets should solely be created by completing
+   rows." So the three writers that hand assets out for anything else are off:
+     1. THE LANDING CADENCE and its floor bypass — a machine every N landings,
+        plus a top-up whenever the board looked bare. This was the main stream:
+        5.5 of the 6.5 assets a minute a bot saw.
+     2. THE SCORE FACTORY — 400 points forged a machine, which coupled supply to
+        SUCCESS (the better the run, the harder it rained).
+     3. THE FAVOUR OFFER — a diagonal or a J being handed a machine within reach.
+   What is NOT supply and stays: the board's own furniture (the island's prize,
+   the tunnel's payoff, the authored opening), and the four rescues (mercy's
+   hourglass, the reprieve, A HAND UP's green, the bridge offer) — those exist to
+   stop dead ends, and with the stream gone they matter more, not less.
+   The consequence, said plainly: a player who clears no rows gets nothing new.
+   That is the intent — rows are the engine — and it is why the rescues stay. */
+const ROWS_ARE_THE_SOURCE = true;
 function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedTimer); }
 // [270726e] Direct time credit (hourglass +20s) poured through the SAME
 // funnel as points: full-ring clamp, surplus to the overflow factory,
@@ -13043,6 +13059,7 @@ const UNDER_HOLES = [[1,1,2,2], [6,2,3,2], [2,6,2,2], [7,7,2,3], [3,10,2,2], [8,
    drawn behind the first. Still a baked box blur — no ctx.filter, so nothing
    about it can cost a frame or break on Safari. */
 const UNDER_BLUR_PX = 1.5;
+const UNDER_PARALLAX = 0.40;   // [180926a] the depths move at 40% of the board's scroll
 function underHoleAt(i, j) {
     for (const [x, y, w, h] of UNDER_HOLES) if (i >= x && i < x + w && j >= y && j < y + h) return true;
     return false;
@@ -13153,6 +13170,118 @@ function underPattern(P, alpha, width, fillA) {
     underPatterns[key] = p;
     return p;
 }
+/* ══ [180926a] A HOLE SHOULD LOOK LIKE A HOLE ════════════════════════════════
+   Field note: "it's not obvious enough to players that there are holes in the
+   grid with an underworld beneath. Perhaps make the lower layer darker by 10%."
+   Measured on a posed board first, because the reason matters: a hole and a
+   square of unwalked ground were separated by TONE ALONE. Both show the same
+   lattice, at the same size, drifting at the same rate; the only difference was
+   the dark lid a tile wears (GROUND_LID) and the tile's own rings. Nothing said
+   the board had THICKNESS, so an opening read as darker floor.
+   Three things now say it, in the order the eye reads them:
+     1. THE LIP. Every opening gets an inner shadow along the edges where it
+        meets the board — deep on the TOP edge, less at the sides, least at the
+        bottom, which is the universal "pressed in" cue (the same arrangement as
+        an inset shadow). Only edges that border the board are drawn, so a 3x3
+        chasm gets one lip around the whole opening, not nine.
+     2. THE RIM. The board's broken edge catches a little light on the far side
+        of the opening — one pale line, outside the clip, opposite the shadow.
+     3. HIS TEN PER CENT. A wash over the depths seen through an opening, so the
+        floor of the pit sits below the tone of the lattice seen through a tile.
+   Plus parallax on the layer itself (see UNDER_PARALLAX) — the depths now slide
+   at 40% of the board's scroll, which is what makes them read as far away. */
+/* The first pass of this was too polite to work, and the posed comparison said
+   so: over WALKED ground (bright lilac) the opening read, and over unwalked
+   ground — which is nearly black, like the pit itself — it vanished. A shadow
+   inside a dark thing cannot be seen. What carries it is the CUT EDGE: a pale
+   line is the most visible mark there is against a dark board, so the rim now
+   runs the whole way round the opening, brighter on the lit sides, and the
+   interior gets a vignette so the middle of a pit is deeper than its edges —
+   which no flat tile ever is. */
+const HOLE_DEEPEN = 'rgba(2, 10, 16, 0.10)';   // the 10%
+const HOLE_LIP_IN = 0.30;                      // how far the shadow reaches in, in cells
+const HOLE_LIP = { top: 0.75, side: 0.45, bottom: 0.16 };
+const HOLE_RIM_LIT = 'rgba(222, 234, 248, 0.34)';   // the near, lit edge of the break
+const HOLE_RIM_FAR = 'rgba(222, 234, 248, 0.15)';   // and the far one, in its own shade
+const HOLE_PIT = 0.30;                              // the vignette at the middle of an opening
+function drawHoleDepth(camInt, camFrac) {
+    if (currentTheme === 'day') return;        // [080926d] day is a recess, not a pit
+    const isV = (x, y) => world[`${x},${y}`] === 'void';
+    const holes = [];
+    for (let row = -1; row <= VIEW_H + 1; row++) {
+        const wy = camInt + row;
+        for (let col = 0; col < VIEW_W; col++)
+            if (isV(col, wy)) holes.push([col, wy, col * CELL, (row - camFrac) * CELL]);
+    }
+    if (!holes.length) return;
+    ctx.save();
+    ctx.beginPath();
+    for (const h of holes) ctx.rect(h[2], h[3], CELL, CELL);
+    ctx.clip();
+    /* the 10%: the whole opening a shade deeper than the depths behind a tile */
+    ctx.fillStyle = HOLE_DEEPEN;
+    ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
+    /* the lip, edge by edge, only where the opening meets the board */
+    const D = CELL * HOLE_LIP_IN;
+    for (const [cx, cy, sx, sy] of holes) {
+        const band = (x0, y0, x1, y1, w, hgt, a) => {
+            const g = ctx.createLinearGradient(x0, y0, x1, y1);
+            g.addColorStop(0, `rgba(0,0,0,${a})`);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(Math.min(x0, x1) - (w < 0 ? 0 : 0), Math.min(y0, y1), Math.abs(w), Math.abs(hgt));
+        };
+        if (!isV(cx, cy - 1)) band(sx, sy, sx, sy + D, CELL, D, HOLE_LIP.top);
+        if (!isV(cx, cy + 1)) band(sx, sy + CELL, sx, sy + CELL - D, CELL, D, HOLE_LIP.bottom);
+        if (!isV(cx - 1, cy)) band(sx, sy, sx + D, sy, D, CELL, HOLE_LIP.side);
+        if (!isV(cx + 1, cy)) band(sx + CELL, sy, sx + CELL - D, sy, D, CELL, HOLE_LIP.side);
+    }
+    /* the pit: deeper in the middle than at the edges, which is the one thing a
+       flat tile can never be. Drawn per opening, not per cell, so a chasm has
+       one floor — the extent is taken from the cells that make it up. */
+    const seen = new Set(), key = (x, y) => `${x},${y}`;
+    for (const [cx, cy, sx, sy] of holes) {
+        if (seen.has(key(cx, cy))) continue;
+        const q = [[cx, cy]], cells = [];
+        seen.add(key(cx, cy));
+        while (q.length) {
+            const [x, y] = q.pop(); cells.push([x, y]);
+            for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+                const nx = x + dx, ny = y + dy;
+                if (isV(nx, ny) && !seen.has(key(nx, ny)) && nx >= 0 && nx < VIEW_W) { seen.add(key(nx, ny)); q.push([nx, ny]); }
+            }
+        }
+        const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
+        const x0 = Math.min(...xs) * CELL, x1 = (Math.max(...xs) + 1) * CELL;
+        const y0 = (Math.min(...ys) - camInt - camFrac) * CELL, y1 = (Math.max(...ys) + 1 - camInt - camFrac) * CELL;
+        const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+        const r = Math.max(x1 - x0, y1 - y0) * 0.62;
+        const g = ctx.createRadialGradient(mx, my, 0, mx, my, r);
+        g.addColorStop(0, `rgba(0,0,0,${HOLE_PIT})`);
+        g.addColorStop(0.65, `rgba(0,0,0,${HOLE_PIT * 0.45})`);
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(x0 - CELL, y0 - CELL, (x1 - x0) + CELL * 2, (y1 - y0) + CELL * 2);
+    }
+    ctx.restore();
+    /* THE CUT EDGE, all the way round: the board has thickness, and this is the
+       only mark that survives a dark tile beside a dark pit. Brighter on the
+       near sides (bottom and right, where the light falls), dimmer on the far. */
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (const [cx, cy, sx, sy] of holes) {
+        const edge = (x0, y0, x1, y1, lit) => {
+            ctx.strokeStyle = lit ? HOLE_RIM_LIT : HOLE_RIM_FAR;
+            ctx.lineWidth = lit ? 1.7 : 1.2;
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        };
+        if (!isV(cx, cy - 1)) edge(sx + 1.2, sy + 0.8, sx + CELL - 1.2, sy + 0.8, false);
+        if (!isV(cx - 1, cy)) edge(sx + 0.8, sy + 1.2, sx + 0.8, sy + CELL - 1.2, false);
+        if (!isV(cx, cy + 1)) edge(sx + 1.2, sy + CELL - 0.9, sx + CELL - 1.2, sy + CELL - 0.9, true);
+        if (!isV(cx + 1, cy)) edge(sx + CELL - 0.9, sy + 1.2, sx + CELL - 0.9, sy + CELL - 1.2, true);
+    }
+    ctx.restore();
+}
 function drawUnderworld(camInt, camFrac) {
     /* Clipped to the void cells' FULL GRID SQUARES, gutter included. Because
        the squares of neighbouring voids share their edges they merge into one
@@ -13241,7 +13370,14 @@ function drawUnderworld(camInt, camFrac) {
         const pat = underPattern(P, alpha, width, fillA);
         if (!pat) return;
         const PH = P * UNDER_SUPER_H;   // [100926f] the field repeats every PH, so the drift wraps there
-        const oy = wrap(t * vy, PH);
+        /* [180926a] PARALLAX — the one depth cue the brain never argues with.
+           The field had its own constant drift and no relationship to the
+           board's scroll, which is why the depths read as a second surface at
+           the same distance rather than as a place below. It now also moves
+           with the camera, at UNDER_PARALLAX of the board's rate: climb ten
+           rows and the lattice below slides four, so the board above is plainly
+           nearer. Wrapped on the field's own period, so there is still no seam. */
+        const oy = wrap(t * vy + (camInt + camFrac) * CELL * UNDER_PARALLAX, PH);
         ctx.save();
         ctx.translate(0, oy);
         ctx.fillStyle = pat;
@@ -15917,7 +16053,7 @@ function machineInBodyReach(depth = FAVOUR_REACH_MOVES) {
 // THE OFFER — called every frame of live play
 let _favourShape = null, _favourUntil = 0, _favourTryAt = 0;
 function favourOfferTick() {
-    if (!SHAPE_FAVOUR_ON || game.testDrive || game._replay || game._deathHold || game.introHold) return;
+    if (!SHAPE_FAVOUR_ON || ROWS_ARE_THE_SOURCE || game.testDrive || game._replay || game._deathHold || game.introHold) return;   // [170926g]
     const now = performance.now();
     if (game.shapeType !== _favourShape) {
         _favourShape = game.shapeType;
@@ -16301,7 +16437,16 @@ function spawnShifter(src, atKey) {
        worse than one machine over the ceiling, so the island question gets a
        single place of headroom and a shorter cadence of its own. Still asked
        once per island, and only while the island holds something. */
-    const _isleRoom = countMachinesInView() < SHIFTERS_IN_VIEW_CEILING + 1
+    /* [180926b] AN EARNED SQUARE IS NOT THE AMBIENT STREAM. When the caller
+       names a cell it is a row's payout, and it must land THERE, now. Measured
+       on the build before this (rowpay_t.js, 48 min): only 70% of finished rows
+       ever paid on their own square, the median wait was 1.2s and the ninetieth
+       4.8s, and 28% were given up on and paid somewhere random instead — six
+       separate gates were eating a reward the player had already earned. Every
+       one of them is skipped for a named cell below; the KIND is still this
+       function's decision, so naming a cell still buys placement, not contents. */
+    const _named = !!atKey;
+    const _isleRoom = !_named && countMachinesInView() < SHIFTERS_IN_VIEW_CEILING + 1
                    && _nowSp - (game._lastShifterAt || -1e9) >= ISLAND_MIN_GAP_MS;
     if (_isleRoom) {
         const iqTurns = rollTurnSize();
@@ -16318,11 +16463,13 @@ function spawnShifter(src, atKey) {
         }
     }
     if (src === 'island') return null;   // [120926d] that call asks the island question and nothing else
-    if (countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING) return null;
-    if (_nowSp - (game._lastShifterAt || -1e9) < SHIFTER_MIN_GAP_MS) return null;
+    /* [180926b] the earned square gets two places of headroom and pays on its
+       own cadence (700ms, set by the drain) rather than the stream's 2.5s */
+    if (countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING + (_named ? 2 : 0)) return null;
+    if (!_named && _nowSp - (game._lastShifterAt || -1e9) < SHIFTER_MIN_GAP_MS) return null;
     // [110926q] Q4, THE BRIDGE — a turn tile your body can reach in a flip or two
     // whose sweep lays ground across a hole toward the set
-    if (BRIDGE_OFFER && _nowSp - _bridgeAt >= BRIDGE_OFFER_GAP_MS) {
+    if (BRIDGE_OFFER && !_named && _nowSp - _bridgeAt >= BRIDGE_OFFER_GAP_MS) {   // [180926b] not with a row's asset
         const bp = bridgePlan();
         if (bp) {
             world[bp.k] = 'pivot';
@@ -16525,6 +16672,10 @@ function spawnShifter(src, atKey) {
        row, because rowCellOwed counts any world value as occupied. */
     if (atKey && !world[atKey] && !slots.some(sl => !sl.claimed && sl.keys.has(atKey))) k = atKey;
     const [gx, gy] = k.split(',').map(Number);
+    /* [180926b] a named cell may sit on the frame columns, where a step or a
+       turn may not be laid — the square keeps its asset, the asset becomes a
+       green. (The pool never offers such a cell; only a row can name one.) */
+    if (_named && (kind === 'slip' || kind === 'pivot') && !machineCellOk(gx, gy)) kind = 'green';
 
     // TRIM SUPPLY (V9, generalises the old square rescue): reds are the only
     // way DOWN the evolution chain, and the mission dictates when you need
@@ -16538,7 +16689,9 @@ function spawnShifter(src, atKey) {
             ? Math.min(...setNeeded.map(id => SHAPE_SIZE[parseRequirement(id).type] || 1))
             : 1;
         const needTrim = SHAPES[game.shapeType].mult > minNeed;
-        if (!NO_REDS && ((needTrim && vis < 2) || (SHAPES[game.shapeType].mult === 4 && vis === 0))) {   // [090926g] the slot trims you now
+        /* [180926b] never on an earned square: a finished row is a reward, and a
+           reward is not paid in reds. Trim supply still rides the other paths. */
+        if (!NO_REDS && !_named && ((needTrim && vis < 2) || (SHAPES[game.shapeType].mult === 4 && vis === 0))) {   // [090926g] the slot trims you now
             world[k] = 'hazard';
             hazardBorn[k] = 'supply@' + replayMoveCount;
             addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ef4444');
@@ -16572,9 +16725,11 @@ function spawnShifter(src, atKey) {
             kind = 'green';
     }
     // [270726zn] Green budget: at the cap, the spawn becomes a shift instead.
-    if (kind === 'green' && countVisibleGreens() >= MAX_VISIBLE_GREENS) {
-        if (!machineCellOk(gx, gy)) return false;   // [120926a] a green's cell may be on the frame; a machine's may not
-        kind = Math.random() < 0.4 ? 'pivot' : 'slip';
+    /* [180926b] an earned square gets one green over the cap before it converts,
+       and if its cell cannot hold a machine it stays a green rather than failing */
+    if (kind === 'green' && countVisibleGreens() >= MAX_VISIBLE_GREENS + (_named ? 1 : 0)) {
+        if (!machineCellOk(gx, gy)) { if (!_named) return false; }
+        else kind = Math.random() < 0.4 ? 'pivot' : 'slip';
     }
     if (ONE_SHIFTER && kind === 'pivot') kind = 'slip';   // [090926g] one shifter
     /* [090926k] A SHIFTER ONLY NEAR A SET. Designer's rule: no shape shifters
@@ -16583,7 +16738,13 @@ function spawnShifter(src, atKey) {
        is not within reach of an unclaimed slot the spawn becomes a green
        instead, or nothing if greens are capped. */
     if ((kind === 'slip' || kind === 'pivot') && !nearSet(gx, gy)) {
-        if (countVisibleGreens() < MAX_VISIBLE_GREENS) kind = 'green'; else return false;
+        /* [180926b] and an earned square is never refused for being far from a
+           set: the row chose the cell, so the KIND gives way — a green if there
+           is room for one, an hourglass if no time is already in that window,
+           and only then does the square keep its claim and wait one more beat. */
+        if (countVisibleGreens() < MAX_VISIBLE_GREENS + (_named ? 1 : 0)) kind = 'green';
+        else if (_named && countTimeWindow(gy) === 0) kind = 'warp';
+        else return false;
     }
 
     // [300726n] MERCY INJECTOR — the +45 rescue. Trim-supply pattern: if the
@@ -16633,7 +16794,7 @@ function spawnShifter(src, atKey) {
     rec('spawn', Object.assign({ k: kind, v: countShiftersInView(), d: shifterDrought() ? 1 : 0 },   // [160826p][160826w]
                                kind === 'pivot' ? { tn: plannedTurns } : {},                    // [SWEEP] which turn
                                reachMap ? { fav: game.shapeType, reach: reachMap.get(k) || 0 } : {},   // [110926l]
-                               src === 'offer' ? { src: 'offer' } : {}));
+                               src ? { src } : {}));   // [170926g] every asset now says where it came from
     return { kind, key: k };
 }
 
@@ -22725,7 +22886,8 @@ function checkCollisions() {
             // see shifterFloorBreached. The cadence is otherwise untouched, so
             // this cannot make shifters more frequent in general, only stop the
             // screen being empty of them while the set is still outstanding.
-            if (!game.testDrive && (shifterProgress >= effectiveThreshold || shifterFloorBreached())) {
+            if (!game.testDrive && !ROWS_ARE_THE_SOURCE &&
+                (shifterProgress >= effectiveThreshold || shifterFloorBreached())) {   // [170926g]
                 shifterProgress = 0;
                 spawnShifter();
             }
@@ -27115,6 +27277,7 @@ function draw() {
     const camFrac = game.cameraY - camInt;
 
     drawUnderworld(camInt, camFrac);   // [HOLES] the space seen through the holes
+    drawHoleDepth(camInt, camFrac);    // [180926a] and the openings' own depth: lip, rim, the 10%
 
     // Draw all cells in viewport. New visual language: every cell is a
     // discrete rounded shape. Empty walkable cells are faint outlines,
@@ -29009,7 +29172,7 @@ function loop(time, gen) {
           }
       }
       // OVERFLOW FACTORY (Momentum): surplus momentum stamps out new gears.
-      if (!game.testDrive && factoryQueue > 0 && (!game._nextForge || nowT >= game._nextForge)) {
+      if (!game.testDrive && !ROWS_ARE_THE_SOURCE && factoryQueue > 0 && (!game._nextForge || nowT >= game._nextForge)) {   // [170926g]
           game._nextForge = nowT + 900;
           if (spawnShifter()) factoryQueue--;
       }
@@ -29028,18 +29191,21 @@ function loop(time, gen) {
               const cam = Math.floor(game.cameraY);
               for (let i = 0; i < rowPay.length; i++) {
                   const e = rowPay[i], key = `${e.x},${e.y}`;
-                  /* the square is lost if it has left the view or been built on,
-                     and given up on after six seconds of trying — then the credit
-                     goes to the ordinary pool rather than nowhere */
-                  if (e.y < cam || e.y >= cam + VIEW_H || world[key] || nowT - e.at > 6000) {
+                  /* [180926b] the square keeps its claim for as long as it is on
+                     screen and unbuilt. The old six-second deadline handed 28% of
+                     all earned assets to the ordinary pool, which is how a reward
+                     for finishing a row turned into a spawn somewhere else. */
+                  if (e.y < cam || e.y >= cam + VIEW_H || world[key]) {
                       rowPay.splice(i, 1); rowForge++; i--; continue;
                   }
-                  /* [170926e] and not right behind you as you leave: the cell is
-                     paid once the body is two clear cells from it, which keeps the
-                     breathing-room rule honest even though the square was earned. */
+                  /* [180926b] AND IT PAYS THE MOMENT YOU STEP OFF. The square that
+                     finished the row is by definition under the body, so the asset
+                     cannot appear until the body leaves — but it waited for two
+                     clear cells before, which cost a second or more and read as a
+                     random spawn later. Now: covered, wait; clear, pay. */
                   let near = false;
                   for (const c of body)
-                      if (Math.max(Math.abs(c.x - e.x), Math.abs(c.y - e.y)) <= 1) { near = true; break; }
+                      if (c.x === e.x && c.y === e.y) { near = true; break; }
                   if (near) continue;
                   owedCell = key; owedIdx = i; break;      // not spliced until it is PAID
               }
@@ -29047,6 +29213,7 @@ function loop(time, gen) {
           if (owedCell) made = spawnShifter('row', owedCell);
           else if (rowForge > 0) { made = spawnShifter('row'); if (made) rowForge--; }
           if (made) {
+              const waited = owedIdx >= 0 ? Math.round(nowT - rowPay[owedIdx].at) : null;
               if (owedIdx >= 0) rowPay.splice(owedIdx, 1);
               game._nextRowForge = nowT + 700;
               const mk = made.key;
@@ -29056,7 +29223,11 @@ function loop(time, gen) {
                   addSparks(fx, fy, 8, '#fde68a');
                   addBurst(fx, fy, '#fef3c7');
               }
-              rec('spawn', { k: 'rowpay', src: 'row', at: owedCell ? 'earned' : 'pool', owed: rowPay.length + rowForge });
+              /* [180926b] `land`, not `at` — rec() stamps its own `at`, so the
+                 old field never reached the playdata and the one question the
+                 record existed to answer could not be asked of it. */
+              rec('spawn', { k: 'rowpay', src: 'row', land: owedCell ? 'earned' : 'pool',
+                             on: made.kind || '', ms: waited, owed: rowPay.length + rowForge });
           } else if (owedCell) {
               /* refused by a ceiling or the cooldown: the SQUARE keeps its claim
                  and tries again next window — a refusal is a wait, not a demotion */

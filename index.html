@@ -286,6 +286,28 @@ body.layout-beside #stickPad { position: absolute; margin: 0; }
 body.layout-beside .game-canvas { max-width: none; max-height: none; }
 body.layout-beside.in-play #stickPad { width: auto; }
 
+/* ── [190926b] THE LANDSCAPE FRAME ──────────────────────────────────────────
+   Launch item: CrazyGames serves a game into a responsive 16:9 iframe, and the
+   frame above is portrait-first — measured in a 1280x720 viewport the board
+   came out 361px (half the height), with the HUD strip and the frame's own
+   60/68 margins spending the rest; in a phone held sideways (812x375) the
+   stacked column squeezed the board to 44px. Whenever the viewport is wider
+   than it is tall by a fifth and a run is on, layoutPlay() lays the play
+   screen out sideways instead: the HUD becomes a COLUMN beside the board with
+   the joystick under it, and the board takes the frame's full height. The
+   frame's margins drop to the corner buttons' own inset, since a frame that is
+   narrower than the screen no longer needs to duck under them.
+   Same discipline as [160826j]: the stacked and beside paths are untouched,
+   layoutPlay() writes every size in pixels and clears them all when the
+   arrangement goes, and these rules only lift the maxima that would fight it. */
+body.layout-land .game-container { display: block; max-width: none; max-height: none;
+    margin: var(--land-gap) auto var(--land-gap); }
+body.layout-land .game-canvas, body.layout-land #stickPad, body.layout-land .set-only-hud {
+    position: absolute; margin: 0; }
+body.layout-land .game-canvas { max-width: none; max-height: none; }
+body.layout-land.in-play #stickPad { width: auto; }
+body.layout-land .td-bar { position: absolute; left: 10px; top: 10px; }
+
 /* [160826i] A SIDE-BY-SIDE GRID WAS TRIED HERE AND REVERTED — the second
    failure in this area, recorded so the next attempt starts from evidence
    rather than from the same reasoning twice.
@@ -1743,7 +1765,11 @@ body.theme-day .objective-text {
    visible area and eats the clearance at that end.
    Rather than trusting a unit that is lying, the bottom simply gets the 8px back.
    The frame's max-height subtracts both, so the box still fits. */
-:root { --frame-gap: 60px; --frame-gap-bottom: 68px; }
+:root { --frame-gap: 60px; --frame-gap-bottom: 68px;
+        /* [190926b] the landscape frame's margins: the corner buttons' own inset
+           above and below, and clear of the buttons (and any notch) either side */
+        --land-gap: calc(12px + env(safe-area-inset-top, 0px));
+        --land-edge: calc(64px + max(env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px))); }
 /* [160826c] The ink for an unearned rung on the scores ladder. Day needs it
    DARKER, not lighter: the locked cog is drawn in outline on a white ground, so
    the night value would have vanished into the page. */
@@ -3703,7 +3729,11 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
              audio engine, the fullscreen toggle, and the Settings panel read
              and write. -->
         <input type="checkbox" id="soundCheck" checked style="display:none">
-        <input type="checkbox" id="musicCheck" onchange="toggleMusic()" style="display:none">
+        <!-- [180926bz] MUSIC SHIPS ON. It had no `checked` and nothing set it, so
+             nine tracks had never played for anyone who did not go looking in the
+             cog. Jake's call, 18 Sep. Autoplay policy is already handled: nothing
+             sounds until the first gesture, and welcomeAudioKick() starts it then. -->
+        <input type="checkbox" id="musicCheck" checked onchange="toggleMusic()" style="display:none">
         <input type="checkbox" id="fullscreenCheck" onchange="toggleFullscreen()" style="display:none">
     </div>
 </div>
@@ -3770,7 +3800,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
     <!-- [160826p] Downloads the run's event log as JSON for balance analysis.
          Visible (not debug-only): the data is collected on the phone and the
          laptop alike, and this is the only way it leaves the device. -->
-    <button class="details-toggle" onclick="recExport()">⇓ Export play data</button>
+    <button class="details-toggle" id="exportPlaydataBtn" onclick="recExport()">⇓ Export play data</button>
     <!-- [220826a] The end of a run is where a player is most likely to want the
          project — they have just been beaten by it or just finished it. -->
     <!-- [090926j] SOURCE & UPDATES link removed per the designer. -->
@@ -7254,7 +7284,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '180926-1153 ROTOЯ · THE TOOL STAYS';
+const BUILD_VERSION = '190926-0001 ROTOЯ · SIDEWAYS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8174,7 +8204,37 @@ function levelTimeGrant() {
     // and a bad one costs nearly all of it — so the penalty scales with how the
     // level actually went rather than being fixed. It also finally makes the
     // 45s fall cost bite: a fall can no longer be wiped by the next checkpoint.
-    if (CLOCK_ONLY) return Math.max(18, 30 - 2 * advancedRound);
+    // ── [180926j] THE CHECKPOINT PAYS FOR THE LADDER ───────────────────────
+    // 30-2r becomes 22-2r (floor 18 -> 12) because the set now pays 9-20s of
+    // its own on the way here (SET_LADDER). The taper above is kept exactly —
+    // later stages still grant less — but the TOTAL now rises with the set's
+    // size instead of falling:
+    // ⚠ READ advancedRound CAREFULLY. _advanceNow() does advancedRound++ BEFORE
+    // it calls this, so at the clear of level L the argument is L+1. The first
+    // version of this table (and the suite check that tested it) read the
+    // function at L and was therefore one level early in BOTH columns — two
+    // seconds high per row. Playdata 46 caught it: the live game paid 18/16/14
+    // at the first three clears where the table promised 20/18/16. The table
+    // below is what the build actually pays, confirmed against a real run.
+    //        level    1    2    3    4    5    6
+    //        pieces   3    3    4    4    5    5
+    //        ladder   9    9   14   14   20   20   seconds paid on the way
+    //        cp      18   16   14   12   12   12   paid on arrival
+    //        now     27   25   28   26   32   32   (ladder + checkpoint)
+    //        was     26   24   22   20   18   16
+    //        delta   +1   +1   +6   +6  +14  +16
+    // The early game is within a second of where it was; the loosening lands at
+    // level 3 and below the waterline, which is where the runs are dying (seven
+    // of eighteen on a dead clock, four of them on level 4). The deep end gains
+    // MORE than the first table claimed, not less: the old grant was still
+    // falling at level 6 while the new one has bottomed out at its floor.
+    // AND THE PRESSURE CURVE SURVIVES, because it was never really the number —
+    // it was the SHORTFALL, and the shortfall is set by the level's length.
+    // Against the median clear (66s, 74s, 97s, 131s, 139s — playdata 46, 20/15/
+    // 12/4/1 clears) the grant covers 41%, 34%, 29%, 20%, 23%: still tightening,
+    // level on level, exactly as [210826av] intended. What has gone is a payment
+    // that fell while the job it paid for doubled.
+    if (CLOCK_ONLY) return Math.max(12, 22 - 2 * advancedRound);
     return Math.max(25, 48 - 3 * advancedRound);
 }
 // [210826ar] Banking a single requirement pays a little, so the road to the
@@ -8187,6 +8247,40 @@ function levelTimeGrant() {
 // — so at 6s it was quietly paying 60s, a third of the whole run's drain, for
 // doing the thing you were going to do anyway.
 const BANK_TIME_SEC = 0;   // [070926c] was 3 — see the note at the claim site
+/* ══ [180926j] THE LADDER — EVERY PIECE OF THE SET PAYS, AND EACH ONE MORE ═══
+   Field note: "i'd like a reward for collecting one item in the set each time."
+
+   [070926c] turned BANK_TIME_SEC off and left the switch in place "so the
+   decision can be reversed by one number if the arrival economy proves too thin
+   without it." Two things have happened since, and playdata 6 (25 runs) has
+   both of them:
+     · THE ARRIVAL ECONOMY IS THIN. Seven of eighteen real runs end on a dead
+       clock, four of those on level 4. The checkpoint is 49% of all time income
+       (1168s of 2378s), so when it falls short there is nothing behind it.
+     · THE REWARD SHRINKS AS THE SET GROWS. Sets are 3/3/4/4/5/5 pieces at
+       levels 1-6 and the grant is 28/26/24/22/20/18 seconds — so a FIVE-piece
+       set pays eight seconds less than a three-piece one, while the median
+       clear time goes 75s, 74s, 100s, 130s, 139s. The thing you are being paid
+       for doubles in size and the payment falls by a third.
+
+   WHY A LADDER AND NOT A FLAT RATE. The objection at [070926c] still stands and
+   it was the right objection: a flat 3s thirteen times a run is a fourth income
+   channel for doing the thing you were going to do anyway. An ASCENDING ladder
+   is a different instrument. It pays every piece — which is what was asked —
+   but it makes the LAST piece the prize, so the reward is for finishing a set
+   rather than for banking in general, and a bigger set is worth more than a
+   small one without a word of new UI. It also already has its sound:
+   sfx.claimStep walks a major scale up as the sockets fill, so the payout now
+   rises with the tone that was always rising.
+
+   2 + 3 + 4 = 9s for a three-piece set, 14s for four, 20s for five.
+   The checkpoint comes down to pay for it (see levelTimeGrant), so the early
+   game is unchanged and the loosening lands where the runs are dying. */
+const SET_LADDER = [2, 3, 4, 5, 6];   // seconds for the 1st, 2nd, 3rd ... piece
+function setPieceSeconds(nth) {       // nth is 1-based
+    const i = Math.max(1, Math.min(SET_LADDER.length, nth | 0));
+    return SET_LADDER[i - 1];
+}
 // [210826ax] Hourglasses are halved in clock mode. They are the single largest
 // income in every recorded run (70-340s) and they were tuned for a game with
 // three heart-funded clock refills per level, none of which now exist. They are
@@ -8213,6 +8307,17 @@ let overflowPts = 0;              // surplus accumulated while the ring is full
 let factoryQueue = 0;             // gears waiting to be stamped out
 let rowForge = 0;                 // [170926c] assets owed for rows cleared
 let rowPay = [];                  // [170926e] and where each was earned: the cell that finished the row
+/* [180926cf] A CLAIM OUTLIVES THE CHECKPOINT. The open call was whether a row
+   finished on the last move of a level should be paid on the next level or
+   not at all. Playdata 47 answered it before it was ruled: seven such rows,
+   and every one paid ON its own square, 4.4 seconds after the level line —
+   the moment the fade lifted. The world does not change at a checkpoint, the
+   square is still there, and the player finished a row: it pays. Nothing
+   clears rowPay or rowForge at _advanceNow(), and nothing should.
+   What the record showed as an 11.3-second wait was the level card, the
+   replay offer and the fade — wall time in which the player was not playing.
+   The stamp and the wait are now in play time (game._playMs), so the number
+   in `rowpay.ms` is the wait the player felt. */
 /* ══ [170926g] ROWS ARE THE SOURCE ══════════════════════════════════════════
    Designer's call: "all game assets should solely be created by completing
    rows." So the three writers that hand assets out for anything else are off:
@@ -8234,17 +8339,35 @@ function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedT
 // funnel as points: full-ring clamp, surplus to the overflow factory,
 // bands/lives refreshed, wheel kicked. Bypassing this (the old raw
 // speedTimer -= 20) could push the ring past its 3:00 maximum.
+/* [180926ce] THE CLOCK HAS A TOP AGAIN — 90 SECONDS — AND THIS TIME IT TELLS
+   THE TRUTH. [070826i] took the cap off because it lied: the player saw
+   "+30 SECONDS" and got some or none of it. The fix then was to keep every
+   second. The result, three builds on, is a clock that peaked at 66s, then
+   110s, then 124s (playdata 45 → 46 → 47), and a level 3 that ran four minutes
+   without the clock once dipping to twenty. Time carries across levels, so a
+   cushion built in the onboarding levels — where the game is meant to be
+   gentle — walks straight into level 4, where it is not.
+   The ceiling is the fix; the lie was never the ceiling, it was announcing a
+   number the clock did not pay. So every source now asks clockCredit() how
+   much the clock can take BEFORE it prints, records or sounds anything: the
+   float, the tape, the quote on the gap and the telemetry all say the number
+   that was paid, and say FULL when that number is zero. The funnel below
+   clamps as well, so the ceiling holds even for a caller that forgot to ask.
+   90 is not a new number: it has been "full charge" — the end of spin-up —
+   since [120926m]. The ceiling gives that word its meaning.
+   Measured against playdata 47 before it shipped: 3.1% of clock samples sat
+   at or above 90; of 819 time credits 40 would have been trimmed and 18 paid
+   nothing, 216s of 5,432s earned. It touches the top of the clock and nothing
+   else. Set it to Infinity and [070826i] is back exactly. */
+const CLOCK_CEILING = 90;
+function momentumRoom()   { return Math.max(0, CLOCK_CEILING - momentumRemaining()); }
+function clockCredit(sec) { return Math.max(0, Math.min(sec, Math.ceil(momentumRoom()))); }
+function secsLabel(sec)   { return sec > 0 ? `+${sec}s` : 'FULL'; }   // what the clock was paid, in one word when it was nothing
 function momentumAddSeconds(sec) {
-    // [070826i] THE CAP IS GONE. Time above the full ring used to be silently
-    // discarded, so an hourglass collected near the top paid nothing — the
-    // player took a risk, saw "+30 SECONDS", and received some or none of it.
-    // Feedback that lies about a reward is worse than no reward: it teaches
-    // that pickups are unreliable rather than that the ring was full.
-    // Every second collected now counts, and the ring simply reads full while
-    // there is surplus behind it. What made the cap necessary in the first
-    // place — surplus converting back into factory points — was retired long
-    // ago, so nothing depends on this any more.
-    game.speedTimer -= sec;
+    // The clamp: never above the ceiling, never raising speedTimer (which
+    // would CUT the clock) if the ceiling were ever lowered under a live run.
+    const floor = LEVEL_TIME_LIMIT - CLOCK_CEILING;
+    game.speedTimer = Math.max(Math.min(game.speedTimer, floor), game.speedTimer - sec);
     // [300726aa] Lives are their OWN quantity now — gaining time no longer
     // hands back a life, so a mistake is permanent for the run.
     game._rotorKick = performance.now();
@@ -9650,6 +9773,7 @@ function saveSettings() {
             sound: sc ? sc.checked : true,
             hints: hintsPref,   // [220826a] the preference, not the live overlay state
             hintsDefault2: true,   // [060926] written since the default flipped to OFF
+            musicDefault2: true,   // [180926bz] written since MUSIC flipped to ON
             musicVol: musicVolume,
             sfxVol: sfxVolume
         }));
@@ -9662,7 +9786,23 @@ function loadSettings() {
     if (s.theme) setTheme(s.theme);
     if (typeof s.musicVol === 'number') musicVolume = Math.max(0, Math.min(1, s.musicVol));
     if (typeof s.sfxVol === 'number')   sfxVolume   = Math.max(0, Math.min(1, s.sfxVol));
-    const mc = document.getElementById('musicCheck'); if (mc && typeof s.music === 'boolean') mc.checked = s.music;
+    /* [180926bz] THE SAME RETIREMENT, FOR MUSIC. Music shipped OFF and nothing
+       ever set it, so every save written before today carries `music: false` —
+       and left alone, that stale value would keep the nine tracks silent for
+       every returning player no matter what the new default says. The flip
+       would land only for people who had never played, which is the opposite of
+       who it is for.
+       `musicDefault2` marks a save as having been written since the change.
+       A save with it is a real preference and is honoured either way; a save
+       without it predates the choice existing and is ignored, so the new
+       default applies once and is then saved as the player's own.
+       The cost, stated plainly: someone who found the cog, turned music on and
+       then off again looks identical to someone who never touched it, and gets
+       it back on once. That is the same trade [060926] made for the Move Guide,
+       and it is the right way round — nobody can have formed a preference about
+       nine tracks they have never heard. */
+    const mc = document.getElementById('musicCheck');
+    if (mc && typeof s.music === 'boolean' && s.musicDefault2) mc.checked = s.music;
     const sc = document.getElementById('soundCheck'); if (sc && typeof s.sound === 'boolean') sc.checked = s.sound;
     /* [060926] ONE-TIME RETIREMENT OF THE OLD DEFAULT. The Move Guide used to
        ship ON, so anyone who played before this build has `hints: true` saved
@@ -14849,7 +14989,18 @@ const OPENING_ROWS = [
     '..........',   // -1
     '..........',
     '..........',
-    '..........',
+    /* [180926ca] A GREEN IN THE FIRST BREATH. Under ROWS_ARE_THE_SOURCE nothing
+       is handed out until a row is cleared, which left the opening board BARE
+       for 10-12 seconds — one measured run went 32 — because the first authored
+       green sat ten rows down at -10. A new player's first impression of ROTOЯ
+       was an empty grid and nothing to want.
+       This is TERRAIN, not a row payment, so the rule is untouched: the authored
+       opening has always placed its own furniture (the green at -10, the island
+       prize, the tunnel's hourglass) and those were never assets the player
+       earned. It is four rows in and two columns off the spawn line — on screen
+       from the first frame, a couple of moves away, and slightly off the centre
+       so reaching it is a small decision rather than a straight walk. */
+    '...g......',   // -4   the first thing worth wanting
     '..........',   // -5
     '....##....',   // -6   one hole, 2x2
     '....##....',   // -7
@@ -16657,7 +16808,23 @@ function spawnShifter(src, atKey) {
     if (src === 'island') return null;   // [120926d] that call asks the island question and nothing else
     /* [180926b] the earned square gets two places of headroom and pays on its
        own cadence (700ms, set by the drain) rather than the stream's 2.5s */
-    if (countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING + (_named ? 2 : 0)) return null;
+    /* ── [190926a] AT THE CEILING, THE EARNED SQUARE PAYS A GREEN ────────────
+       playdata48, the first run on THE CLOCK HAS A TOP: every row paid on its
+       own square and the median wait was ~0.6s — except one, at level 3, which
+       waited 12.9s. Five steps and turns were in view (both places of headroom
+       spent), so this line refused the named square outright, BEFORE the kind
+       was chosen, though the board had room for a green and a green is what
+       that set wanted. The ceiling counts MACHINES; it should not hold a
+       reward that would not be one. So at the ceiling a named square is paid
+       in a green when the green cap has room, and waits only when both are
+       full. The ambient stream is unchanged: it still stops at the ceiling. */
+    const _atMachineCeiling = countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING + (_named ? 2 : 0);
+    let _ceilGreen = false;
+    if (_atMachineCeiling) {
+        if (!_named) return null;
+        if (countVisibleGreens() >= MAX_VISIBLE_GREENS + 1) return null;   // both full: the square keeps its claim and waits a beat
+        _ceilGreen = true;
+    }
     if (!_named && _nowSp - (game._lastShifterAt || -1e9) < SHIFTER_MIN_GAP_MS) return null;
     // [110926q] Q4, THE BRIDGE — a turn tile your body can reach in a flip or two
     // whose sweep lays ground across a hole toward the set
@@ -16676,6 +16843,7 @@ function spawnShifter(src, atKey) {
     }
     if (src === 'bridge') return null;
     let kind = chooseShifterKind();
+    if (_ceilGreen && (kind === 'slip' || kind === 'pivot')) kind = 'green';   // [190926a] no machine over the ceiling; an hourglass roll stands
     const playerKeys = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
     const slotKeys = new Set();
     for (const s of slots) for (const k of s.keys) slotKeys.add(k);
@@ -16709,7 +16877,7 @@ function spawnShifter(src, atKey) {
     const preferredR = preferred.filter(k => reach.has(k));
     const anyEmptyR = anyEmpty.filter(k => reach.has(k));
     let pool = preferredR.length ? preferredR : anyEmptyR;
-    if (!pool.length) return null;
+    if (!pool.length && !atKey) return null;   // [180926cf] a named cell stands on its own — this refused it two lines before [170926e] could say so
     // [110926l] THE LONG REACH — a diagonal or a J gets its machine where it can land on it
     let reachMap = null;
     if ((shapeFavoured() || BRIDGE_OFFER) && (kind === 'slip' || kind === 'pivot')) {   // [110926q] within reach, for every body
@@ -17182,13 +17350,23 @@ function checkSlotClaims() {
            closer. It did not need seconds on top. BANK_TIME_SEC is 0 and this
            block is skipped rather than deleted, so the decision can be reversed
            by one number if the arrival economy proves too thin without it. */
-        if (CLOCK_ONLY && BANK_TIME_SEC > 0) {
-            momentumAddSeconds(BANK_TIME_SEC);
-            rec('time', { sec: BANK_TIME_SEC, src: 'bank', m: Math.round(momentumRemaining()) });   // [070926b]
-            game.roundTimeSecs = (game.roundTimeSecs || 0) + BANK_TIME_SEC;
+        /* [180926j] AND NOW IT DOES AGAIN, AS A LADDER. See SET_LADDER for why
+           the flat rate stayed dead and this replaced it. game.roundClaims was
+           incremented a few lines above, so it is already 1-based on this piece:
+           the first piece of the set pays 2s, the last of a five pays 6s.
+           BANK_TIME_SEC is left at 0 and its block above it — the flat-rate
+           decision is not being reversed, it is being superseded. */
+        if (CLOCK_ONLY) {
+            const _raw = setPieceSeconds(game.roundClaims || 1);
+            const _sec = clockCredit(_raw);   // [180926ce] what the clock can take, before anything says a number
+            momentumAddSeconds(_sec);
+            rec('time', { sec: _sec, src: 'piece', n: game.roundClaims || 1,
+                          left: setNeeded.length, m: Math.round(momentumRemaining()),
+                          ...(_sec !== _raw ? { raw: _raw } : {}) });
+            game.roundTimeSecs = (game.roundTimeSecs || 0) + _sec;
             const _bc = (slot.cells && slot.cells[0]) || { x: game.playerX, y: game.playerY };
             addFloat(_bc.x * CELL + CELL / 2, (_bc.y - game.cameraY) * CELL - 22,
-                     `+${BANK_TIME_SEC}s`, '#86efac');
+                     secsLabel(_sec), '#86efac');
         }
 
         // ── [210826ak] THE COMBOS THAT END IN A CLAIM ───────────────────────
@@ -18101,7 +18279,15 @@ function syncReplayBars() {
         top: r.top, height: r.height,
     });
     const hr = rect(hudEl);
-    if (hr && hr.width > 0) place(top, asBoard(hr)); else if (!top.hidden) top.hidden = true;
+    /* [190926b] SIDEWAYS, THE TOP BAR IS THE COLUMN. In the landscape frame the
+       HUD stands beside the board, not above it, so a bar with the board's
+       width and the HUD's top would lie across the top rows of the very thing
+       being replayed. When the HUD is not above the board the bar takes the
+       HUD's own column instead — its left edge and width, and the board's full
+       height, since the joystick under it is dead for the length of a replay. */
+    const hudBeside = !!(hr && cvr && cvr.width > 40 && hr.bottom > cvr.top + 2 && hr.right <= cvr.left + 2);
+    if (hr && hr.width > 0) place(top, hudBeside ? { left: hr.left, width: hr.width, top: hr.top, height: Math.max(hr.height, cvr.bottom - hr.top) } : asBoard(hr));
+    else if (!top.hidden) top.hidden = true;
     /* [120926b] THE BOTTOM BAR NEVER COVERS THE BOARD. Field note, with a
        screen grab: "the comment / skip box covers up the replay on a laptop...
        the 'action replay' text is in the way of seeing the action replay."
@@ -18357,12 +18543,277 @@ const INTRO_SKIP_REST = ['pointerup', 'touchend', 'mouseup', 'click'];
 const INTRO_SKIP_ALL  = INTRO_SKIP_DOWN.concat(INTRO_SKIP_REST);
 let _introSwallow = false, _introSwallowTimer = null;
 
-function beginIntroHold(ms) {
+/* ══ [180926h] THE DOOR HAD NO SOUND ═════════════════════════════════════════
+   Field note: "at present the 1st sound we hear of a new game is the
+   'tink,tink,tink' of the player flipping across the grid. I need intro music,
+   welcome sfx to build the anticipation for the experience ahead."
+
+   He is right, and the window for it was already built. beginIntroHold(4400)
+   holds an opaque overlay for 4.4 seconds after PLAY with the clock frozen and
+   input locked — four and a half seconds the game reserved for itself and then
+   spent in silence. Nothing needs inventing; something needs putting there.
+
+   WHY IT CANNOT START EARLIER. Every browser blocks audio until the player has
+   touched the page, so a bed under the welcome screen would be silent on
+   arrival for everyone and would only begin once they touched something — which
+   is the opposite of a welcome. The PLAY press IS the unlocking gesture, so the
+   first reliable frame for sound is the one right after it. That is this one.
+
+   THE RULE FOR EVERY CANDIDATE: 4.4 seconds long, RESOLVING ON THE DOOR
+   OPENING, so the last sound and the first sight of the board are one event —
+   and written in the game's own scale (C D E G A, the NOTE table, no
+   semitones), so it is already in tune with every other sound in ROTOЯ.
+   Auditioned offline: intro_audition.js -> shots/intro-options.wav.
+
+   Four were here for the same reason five heartbeats were: it is the
+   designer's call. It has now been made — see THE BAG below.
+
+   A SKIP CUTS IT. Any tap opens the door early, and a theme still resolving
+   three seconds into live play would be worse than silence — so an early exit
+   fades it in 180ms while a door that ran its course is left to ring out. */
+const INTRO_THEME = true;
+
+/* ── [180926by] THE INTRO IS A BAG NOW, NOT A VOICE ──────────────────────────
+   Jake heard all four on 18 Sep and kept three: THE COUNT-IN, THE BREATH and
+   THE DROP. THE SPIN-UP is out. It stays defined in INTRO_VOICES below, because
+   deleting a thing that was auditioned costs nothing to keep and something to
+   rebuild — but it is not in the bag and nothing deals it. To put it back, add
+   'spinup' to INTRO_BAG. To go back to one fixed opening, cut INTRO_BAG to a
+   single entry; the dealer short-circuits and INTRO_VOICE is never consulted.
+
+   WHY A BAG AND NOT RANDOM, and not rotation either. This is the same argument
+   dealGameTrack() already settled for the nine music tracks, and the reasons
+   are identical here. Straight rotation means every player meets the same
+   opening on their first run, the same second one on their second, forever —
+   variety that is only variety the first time through. Pure random repeats, and
+   hearing the same 4.4 seconds twice running reads as the game being stuck, not
+   as chance. A bag deals each voice exactly once before any repeat, and the
+   reshuffle checks it did not deal the same one across the join — so you can
+   never hear the same opening twice in a row, and you hear all three before you
+   hear any of them again.
+
+   THE DOOR CONTRACT IS UNCHANGED and this is what makes the bag safe at all:
+   every candidate is 4.4s and resolves at ~4150ms, on the door. Because they
+   agree about that, swapping which one plays cannot desynchronise the sound
+   from the sight, and the skip fade works the same for all three. The voice is
+   decoration over a fixed frame; the frame is the design. */
+const INTRO_VOICE = 'countin';                          // fallback, and a one-voice build's pick
+const INTRO_BAG   = ['countin', 'breath', 'drop'];      // 'spinup' auditioned and declined [180926by]
+let _introCards = [], _introLast = null;
+function dealIntroVoice() {
+    if (INTRO_BAG.length < 2) return INTRO_BAG[0] || INTRO_VOICE;
+    if (!_introCards.length) {
+        _introCards = INTRO_BAG.slice();
+        for (let i = _introCards.length - 1; i > 0; i--) {
+            const j = (Math.random() * (i + 1)) | 0;
+            [_introCards[i], _introCards[j]] = [_introCards[j], _introCards[i]];
+        }
+        if (_introCards[0] === _introLast && _introCards.length > 1) {
+            [_introCards[0], _introCards[1]] = [_introCards[1], _introCards[0]];
+        }
+    }
+    _introLast = _introCards.shift();
+    return _introLast;
+}
+
+let _introGain = null, _introAt = 0;
+function _itOut() {
+    if (!_introGain) { _introGain = audioCtx.createGain(); _introGain.connect(audioCtx.destination); }
+    _introGain.gain.cancelScheduledValues(audioCtx.currentTime);
+    _introGain.gain.setValueAtTime(sfxVolume, audioCtx.currentTime);   // house convention: nominal * sfxVolume
+    return _introGain;
+}
+function _itMallet(at, f, dur, v) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), at + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(_introGain); o.start(at); o.stop(at + dur + 0.02);
+}
+function _itBell(at, f, dur, v, type) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), at + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(_introGain); o.start(at); o.stop(at + dur + 0.02);
+}
+function _itPad(at, f, dur, v, type, c0, c1) {
+    const o = audioCtx.createOscillator(), fl = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    o.type = type || 'triangle'; o.frequency.setValueAtTime(f, at);
+    fl.type = 'lowpass'; fl.Q.value = 1;
+    fl.frequency.setValueAtTime(c0 || f * 2, at);
+    fl.frequency.linearRampToValueAtTime(c1 || f * 8, at + dur * 0.8);
+    /* THE RISE IS LINEAR, THE FALL IS NOT, and that asymmetry is the whole
+       point of this node. An exponential swell spends almost all its length
+       inaudible — a bed rising to 0.15 over 2.75s is still at 0.002 a second
+       in — which left the count-in with near-silence between its strikes when
+       it was measured rather than assumed. Linear up gives a bed that is
+       actually there while it grows; exponential down is still right for the
+       fall, because that is how a real decay behaves. */
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(Math.max(0.0002, v), at + dur * 0.55);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(fl); fl.connect(g); g.connect(_introGain);
+    o.start(at); o.stop(at + dur + 0.02);
+}
+function _itAir(at, dur, v, c0, c1) {               // filtered noise: breath, not static
+    const s = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    s.buffer = _hbNoise(); s.loop = true;
+    f.type = 'bandpass'; f.Q.value = 1.6;
+    f.frequency.setValueAtTime(c0, at);
+    f.frequency.exponentialRampToValueAtTime(c1, at + dur);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(v, at + dur * 0.78);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    s.connect(f); f.connect(g); g.connect(_introGain);
+    s.start(at); s.stop(at + dur + 0.02);
+}
+function _itChord(at, freqs, dur, v, type) {
+    freqs.forEach((f, i) => _itBell(at + i * 0.012, f, dur * (1 - i * 0.12), v * (1 - i * 0.22), type));
+}
+
+const INTRO_VOICES = {
+    /* A · THE SPIN-UP — the rotor takes hold. A hum climbs a fifth while a
+       pulse train accelerates from 3/sec to 11/sec: the game's own quickening,
+       used here to promise rather than to threaten. Three bells rise out of it
+       and the last lands on the door. */
+    spinup: t0 => {
+        _itPad(t0 + 0.05, NOTE.D3, 3.9, 0.20, 'triangle', 180, 900);
+        const o = audioCtx.createOscillator(), fl = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(NOTE.D3 * 0.5, t0 + 0.05);
+        o.frequency.exponentialRampToValueAtTime(NOTE.A3 * 0.5, t0 + 3.5);
+        fl.type = 'lowpass'; fl.Q.value = 3;
+        fl.frequency.setValueAtTime(120, t0 + 0.05);
+        fl.frequency.exponentialRampToValueAtTime(1400, t0 + 3.6);
+        g.gain.setValueAtTime(0.0001, t0 + 0.05);
+        g.gain.linearRampToValueAtTime(0.17, t0 + 3.4);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 4.0);
+        o.connect(fl); fl.connect(g); g.connect(_introGain);
+        o.start(t0 + 0.05); o.stop(t0 + 4.1);
+        let t = t0 + 0.30;
+        while (t < t0 + 3.55) {
+            const k = (t - t0) / 3.55;
+            _itBell(t, NOTE.D4 * (1 + 0.02 * k), 0.09, 0.056 + 0.060 * k);
+            t += 1 / (3.0 + 8.0 * k);
+        }
+        _itBell(t0 + 3.60, NOTE.D5, 0.42, 0.23);
+        _itBell(t0 + 3.90, NOTE.G5, 0.42, 0.25);
+        _itChord(t0 + 4.18, [NOTE.A5, NOTE.E5, NOTE.A4, NOTE.A6], 1.5, 0.26);
+    },
+    /* B · THE COUNT-IN — four strikes at 100bpm, a beat of air, then the chord
+       on the door. A child knows what a count-in means before anyone explains
+       it, and it makes the wait feel measured rather than merely long. It also
+       shares its instrument with the wooden heartbeat, so the two new sounds
+       are one new voice rather than two. */
+    countin: t0 => {
+        /* The pad runs 5.0s, not the door's 4.4: its swell peaks at 2.85s and
+           it is still carrying at the chord. At 4.1s it had already decayed
+           away by 3s and left a second of near-silence in the middle of the
+           count — measured, not guessed. Its 0.6s tail hands over into play
+           rather than stopping dead on the board. */
+        _itPad(t0 + 0.1, NOTE.D3, 5.0, 0.150, 'triangle', 200, 700);
+        [NOTE.D4, NOTE.G4, NOTE.A4, NOTE.D5].forEach((f, i) => {
+            const at = t0 + 0.55 + i * 0.62;
+            /* 0.80s of decay against a 0.62s gap, so each strike is still
+               ringing when the next one lands — a count, not four taps. */
+            _itMallet(at, f, 0.80, 0.270 + i * 0.052);
+            _itMallet(at, f * 2, 0.26, 0.070 + i * 0.018);   // an octave of shine on top
+        });
+        _itAir(t0 + 3.05, 1.20, 0.130, 400, 2600);           // the in-breath before GO
+        _itChord(t0 + 4.15, [NOTE.D5, NOTE.A5, NOTE.D6, NOTE.G5], 1.6, 0.318, 'triangle');
+    },
+    /* C · THE BREATH — no pulse and no count, just a room opening: two pads a
+       fifth apart swelling from silence, a sparkle climbing the pentatonic,
+       opening out into a wide chord. The gentlest of the four. */
+    breath: t0 => {
+        _itPad(t0 + 0.05, NOTE.D3, 4.15, 0.170, 'triangle', 160, 1100);
+        _itPad(t0 + 0.35, NOTE.A3, 3.85, 0.120, 'triangle', 200, 1300);
+        _itPad(t0 + 0.90, NOTE.D4, 3.30, 0.090, 'sine',     300, 1600);
+        _itAir(t0 + 0.10, 4.05, 0.044, 300, 3400);
+        [NOTE.D4, NOTE.E4, NOTE.G4, NOTE.A4, NOTE.C5, NOTE.D5, NOTE.E5, NOTE.G5]
+            .forEach((f, i) => _itBell(t0 + 1.05 + i * 0.36, f, 0.55, 0.090 + i * 0.016));
+        _itChord(t0 + 4.12, [NOTE.D5, NOTE.G5, NOTE.A5, NOTE.D6], 1.8, 0.24, 'triangle');
+    },
+    /* D · THE DROP — for the void rather than the child: one low note held
+       while the air falls away beneath it, then a single deep strike and you
+       are standing on the board. The most ROTOЯ of the four and the one to rule
+       out deliberately rather than by default. It lives below 200Hz, so on a
+       phone speaker most of it will simply not exist. */
+    drop: t0 => {
+        _itPad(t0 + 0.05, NOTE.D3 * 0.5, 4.2, 0.46, 'sawtooth', 90, 420);
+        _itAir(t0 + 0.20, 3.70, 0.22, 3000, 180);            // falling, the opposite of C
+        _itBell(t0 + 2.10, NOTE.A3, 1.30, 0.22, 'triangle');
+        _itBell(t0 + 3.05, NOTE.D4, 1.10, 0.20, 'triangle');
+        _itMallet(t0 + 4.15, NOTE.D3, 1.90, 0.60);
+        _itMallet(t0 + 4.15, NOTE.D4, 1.10, 0.28);
+        _itMallet(t0 + 4.16, NOTE.A4, 0.80, 0.16);
+    }
+};
+
+function playIntroTheme() {
+    if (!INTRO_THEME || !audioCtx) return;
+    const on = document.getElementById('soundCheck');
+    if (on && !on.checked) return;
+    // [180926by] Dealt per run, not per build. One card off the bag, and the
+    // fallback is the fixed voice so a mistyped bag entry still opens the door
+    // with a sound rather than in silence.
+    const voice = INTRO_VOICES[dealIntroVoice()] || INTRO_VOICES[INTRO_VOICE];
+    if (!voice) return;
+    resumeAudio();
+    _itOut();                       // builds and re-arms the gain node
+    _introAt = performance.now();
+    voice(audioCtx.currentTime + 0.03);
+}
+/* The door's own length is 4400ms and every candidate resolves at ~4150ms, so
+   a door that ran its course is left alone to ring out. Anything shorter than
+   that is a SKIP, and the theme is faded rather than left playing over live
+   play. 180ms — long enough not to click, short enough not to trail. */
+function stopIntroTheme() {
+    if (!_introGain || !audioCtx) return;
+    if (performance.now() - _introAt >= 4100) return;    // it finished; let it ring
+    const now = audioCtx.currentTime;
+    _introGain.gain.cancelScheduledValues(now);
+    _introGain.gain.setValueAtTime(_introGain.gain.value, now);
+    _introGain.gain.linearRampToValueAtTime(0.0001, now + 0.18);
+}
+
+/* [180926ch] THE DOOR, ONCE PER VISIT. Launch gate 2: "intro skippable — long
+   intros are the top killer of first-session retention on portals; the
+   session-storage skip moves from near essential to required." The door has
+   been tap-skippable since [220826b]; what it was not was AUTOMATIC. Every
+   PLAY AGAIN after a death re-ran the whole 4.4 seconds — the level number,
+   the brief, COLLECT THE SET and the theme — for a player who had read it
+   thirty seconds earlier and wants to be back on the board.
+   So the full door plays once per visit: the first run after the page loads
+   gets 4.4s and a voice from the intro bag, and it is remembered in
+   sessionStorage, which a tab keeps and a new visit does not. Every later run
+   in that visit gets the same black card with the same brief for 1.4s, silent,
+   and out through the skip's own 220ms fade — enough to see which level it is,
+   not long enough to make anyone wait. The bag still deals each visit its own
+   voice: the [180926by] alternation lives where it can be heard, at the start
+   of a visit, rather than being played to someone who already skipped it.
+   A tap still cuts either door. A browser that refuses sessionStorage (some
+   private modes) simply gets the full door every time — the old behaviour,
+   never a crash. Nothing else about the run is different behind a short door:
+   the clock, the guidance and the hint all wait for the door to open, not for
+   4400ms to pass ([220826a][220826b]). */
+const INTRO_DOOR_MS = 4400, INTRO_DOOR_REPEAT_MS = 1400;
+const DOOR_SEEN_KEY = 'rotorDoorSeen';
+function doorSeenThisVisit() { try { return sessionStorage.getItem(DOOR_SEEN_KEY) === '1'; } catch (e) { return false; } }
+function markDoorSeen()      { try { sessionStorage.setItem(DOOR_SEEN_KEY, '1'); } catch (e) {} }
+function beginIntroHold(ms, repeat) {
     game.introHold = true;
     game.inputLocked = true;
     if (_introTimer) clearTimeout(_introTimer);
     _introTimer = setTimeout(() => endIntroHold(), ms);
     _introAttach();
+    game._doorRepeat = !!repeat;
+    if (repeat) return;             // [180926ch] the short door is silent: the theme is written to resolve at 4.4s, not to be cut at 1.4
+    markDoorSeen();
+    playIntroTheme();               // [180926h] the door gets a sound
 }
 // { capture: true, passive: false } — the third argument being a bare `true` set
 // capture but left passive at the browser default, which for touch events on
@@ -18449,6 +18900,7 @@ function endIntroHold(keepSwallowing) {
     // life of the page, preventDefaulting every key and tap in the game.
     if (_introTimer) { clearTimeout(_introTimer); _introTimer = null; }
     if (!keepSwallowing) _introDetach();
+    stopIntroTheme();               // [180926h] a skip cuts the theme; a full door does not
     if (!game || !game.introHold) return;
     game.introHold = false;
     if (dailyMode && game._dailyStartPlay == null) game._dailyStartPlay = nowPlay();   // [090926h] the daily clock starts when play does
@@ -18804,7 +19256,7 @@ function registerCombo(kind, x, y, extra) {
     // [080926n] "CHAIN" -> "COMBO". Chain was chosen to stay clear of the old
     // streak multiplier, which was also called combo; that system is retired,
     // so the word every arcade player already knows is free again.
-    if (kind === 'band') label = `COMBO ×${extra}  +${game._lastRowSecs || 0}s`;
+    if (kind === 'band') label = `COMBO ×${extra}  ${secsLabel(game._lastRowSecs || 0)}`;
     // Positioned at the event where one is given, centre-board otherwise. A
     // combo is a thing that happened somewhere; naming it over the spot is what
     // connects the word to the move that earned it.
@@ -19099,7 +19551,7 @@ function drawRowGapPulses() {
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = q.continues ? '#fbbf24' : '#86efac';   // amber when it extends a chain
         ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 4;
-        ctx.fillText(`+${q.secs}s`, sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
+        ctx.fillText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
         ctx.restore();
     }
 }
@@ -19712,6 +20164,32 @@ function finishLevelTally() {
     if (cb) cb();
 }
 
+/* ── [180926cc] THE COVERAGE GRADE, BY LEVEL ────────────────────────────────
+   The thresholds S80 · A60 · B38 were set at [030826y] against a cleaner
+   denominator, and they are right for levels 2 and up: in playdata 47 the
+   fifteen level-2 clears ran 56–81% and the twelve level-3 clears 53–69%, so
+   an A is earned by a good level and a B by an ordinary one.
+   LEVEL 1 IS A DIFFERENT SHAPE OF LEVEL AND THE SAME BAR WAS UNREACHABLE.
+   It is the authored opening — forty hand-laid rows with a chasm, a moat and
+   holes — and it is short (median clear 67s). Twenty recorded level-1 clears
+   ran 13–32%: twenty Cs, zero points, and the best level-1 run anyone has
+   played sat six points under a B. A grade nobody can earn is not a grade, it
+   is a line on a card that says the game is judging you by a rule it will not
+   explain.
+   So level 1 has its own bar, set from what level-1 clears actually look like:
+   S at 30, A at 26, B at 20. Against the twenty on record that is S×2, A×5,
+   B×12, C×1 — rare at the top, earned in the middle, and a poor run still
+   reads as one. The bonus scale (60/30/10 × level) is unchanged, so level 1
+   pays 60/30/10 at most and cannot outweigh a deep clear.
+   Every level from 2 up keeps the [030826y] bar exactly. One table, one
+   function, and the two card sites that used to carry the same ternary twice
+   now ask it. */
+const COVERAGE_BARS = { 1: [30, 26, 20], default: [80, 60, 38] };   // [S, A, B]
+function coverageGrade(cov, level) {
+    const b = COVERAGE_BARS[level] || COVERAGE_BARS.default;
+    return cov >= b[0] ? 'S' : cov >= b[1] ? 'A' : cov >= b[2] ? 'B' : 'C';
+}
+
 function completeSet() {
     // Hard input lock the instant the advance condition is met — no further
     // player move can occur before the transition takes hold (independent of the
@@ -19730,11 +20208,30 @@ function completeSet() {
     // pattern (unused resource becomes reward). Paying MORE time for speed
     // would hand the fastest player the very safety that makes speed
     // unnecessary. So a fast clear pays points instead: full bonus under 45s,
-    // tapering to nothing at 120s.
+    // tapering to nothing at 120s — FOR A THREE-PIECE SET.
+    /* [180926cd] THE WINDOW GROWS WITH THE SET. It was a flat 45→120s at every
+       level, and the levels got longer while it did not: median clears in
+       playdata 47 run 67 · 74 · 100 · 158 · 139 seconds, so by level 3 an
+       ordinary clear was already past the full-bonus mark and by level 4 the
+       median clear earned nothing at all. It paid zero on 18% of all clears and
+       on two of the three level-4 ones. A speed bonus that a fast level-4 clear
+       cannot reach is not measuring speed, it is measuring which level you are
+       on.
+       The scale is the SET SIZE — the game's own measure of how much a level
+       asks (3·3·4·4·5·5), and the same number the ladder is built on. So a
+       four-piece level is judged over 60→160s and a five-piece one over
+       75→200s, while levels 1 and 2 are exactly as they were. game.roundClaims
+       is the count of pieces banked this level and the set is complete when
+       this runs, so it IS the set size; the floor of 3 guards a replay or a
+       test that arrives here with the counter unset. */
     {
         const t = game._elapsedLevel || 0;
-        const frac = Math.max(0, Math.min(1, (120 - t) / 75));
+        const pieces = Math.max(3, game.roundClaims || 3);
+        const scale  = pieces / 3;
+        const full = 45 * scale, zero = 120 * scale;
+        const frac = Math.max(0, Math.min(1, (zero - t) / (zero - full)));
         game._lastSwiftSec = Math.round(t);
+        game._lastSwiftWindow = Math.round(zero);        // for the card, if it ever wants it
         game._lastSwiftBonus = Math.round(120 * advancedRound * frac);
     }
     // [220826c] SNAPSHOT BEFORE THE BONUSES, NOT AFTER THE FIRST ONE. This line
@@ -19760,7 +20257,7 @@ function completeSet() {
         // calibrated against a percentage inflated by cells the player could
         // never reach; now that 100%% means "every open cell", the old 70 for an
         // S would be too easy.
-        const covGrade = cov >= 80 ? 'S' : cov >= 60 ? 'A' : cov >= 38 ? 'B' : 'C';
+        const covGrade = coverageGrade(cov, advancedRound);   // [180926cc] level-aware bar
         const covBonus = covGrade === 'S' ? 60 * advancedRound
                        : covGrade === 'A' ? 30 * advancedRound
                        : covGrade === 'B' ? 10 * advancedRound : 0;
@@ -19865,7 +20362,8 @@ function completeSet() {
             // does not notice arriving at is not a checkpoint, it is a number
             // that went up while they were reading something else.
             {
-                const _grant = levelTimeGrant();
+                const _gRaw = levelTimeGrant();
+                const _grant = clockCredit(_gRaw);   // [180926ce] the checkpoint pays what the clock can hold
                 momentumAddSeconds(_grant);
                 /* [070926b] RECORDED. Reading playdata(16) I put clock income at
                    56% of the drain from rows and hourglasses, and could not
@@ -19874,10 +20372,11 @@ function completeSet() {
                    the true figure was 78%. Every second the clock is paid now
                    carries a `src`, so income can be added up rather than
                    guessed at. */
-                rec('time', { sec: _grant, src: 'checkpoint', m: Math.round(momentumRemaining()) });
-                if (CLOCK_ONLY && _grant > 0) {
+                rec('time', { sec: _grant, src: 'checkpoint', m: Math.round(momentumRemaining()),
+                              ...(_grant !== _gRaw ? { raw: _gRaw } : {}) });
+                if (CLOCK_ONLY && _gRaw > 0) {   // [180926ce] announced even when it pays FULL — the checkpoint still happened
                     addFloat(LOGICAL_W / 2, LOGICAL_H * 0.30,
-                             `CHECKPOINT\n+${_grant}s`, '#86efac', true,
+                             `CHECKPOINT\n${secsLabel(_grant)}`, '#86efac', true,
                              { life: 1900, hold: 900 });
                     if (sfx.time30) sfx.time30();
                 }
@@ -19996,7 +20495,7 @@ function completeSet() {
                ending, not an interval. */
             {
                 const cov = Math.min(100, game.coverage || 0);
-                const grade = cov >= 80 ? 'S' : cov >= 60 ? 'A' : cov >= 38 ? 'B' : 'C';
+                const grade = coverageGrade(cov, advancedRound);   // [180926cc]
                 // [090926a] TIGHT / STEADY / LOOSE tried for one build and removed
                 // on the designer's call. The ratio (roundRevolves / roundRows)
                 // stays in the export if it is ever wanted again.
@@ -22524,18 +23023,20 @@ function checkCollisions() {
                 // clock all report the same number. Applying it deeper would
                 // have printed "+30 SECONDS" while paying 15, which is the one
                 // thing a time economy must never do.
-                const sec = Math.round((w === 't30' ? 30 : w === 't10' ? 10
+                const raw = Math.round((w === 't30' ? 30 : w === 't10' ? 10
                           : w === 't45' ? 45 : 15) * (CLOCK_ONLY ? TIME_PICKUP_MUL : 1));
+                const sec = clockCredit(raw);   // [180926ce] the ceiling, applied where sec is born
                 scoreGain(3, false);
                 momentumAddSeconds(sec);
-                rec('time', { sec, src: 'hourglass', isle: islandCells.has(key) ? 1 : 0, m: Math.round(momentumRemaining()) });   // [070926b][070926e] isle = taken from an island platform
+                rec('time', { sec, src: 'hourglass', isle: islandCells.has(key) ? 1 : 0, m: Math.round(momentumRemaining()),
+                              ...(sec !== raw ? { raw } : {}) });   // [070926b][070926e] isle = taken from an island platform
                 if (sec >= 20) { if (sfx.time30) sfx.time30(); }   // [030826af]
                 else if (sfx.time10) sfx.time10();
                 game.roundWarps = (game.roundWarps || 0) + 1;
                 game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
                 addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
-                    `+${sec}s`, sec === 45 ? '#ffd60a' : '#86efac');
-                tapeNote(`HOURGLASS  +${sec}s`, '#86efac');
+                    secsLabel(sec), sec === 45 ? '#ffd60a' : '#86efac');
+                tapeNote(`HOURGLASS  ${secsLabel(sec)}`, '#86efac');
                 delete world[key];
                 markCovered(key);
             } else if (w === 'wall' || w === 'hazard' || w === 'pickup' ||
@@ -23112,9 +23613,10 @@ function checkCollisions() {
             const v = world[key];
             // [210826ax] Halved in clock mode at the point of computation, so
             // the float, the `time` telemetry and the clock cannot disagree.
-            const sec = Math.round((v === 't30' ? 30 : v === 't10' ? 10
+            const raw = Math.round((v === 't30' ? 30 : v === 't10' ? 10
                       : v === 't45' ? 45 : 15)   // legacy cells keep their old value
                       * (CLOCK_ONLY ? TIME_PICKUP_MUL : 1));
+            const sec = clockCredit(raw);   // [180926ce] the ceiling, applied where sec is born
             delete world[key];
             game.roundWarps = (game.roundWarps || 0) + 1;
             game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
@@ -23126,14 +23628,15 @@ function checkCollisions() {
                from one is proof. Two island t30s were laid in playdata(17) and
                five were collected in total; whether those two were among them
                could not be told. Now it can. */
-            rec('time', { sec, src: 'hourglass', isle: islandCells.has(key) ? 1 : 0, m: Math.round(momentumRemaining()) });   // [160826q]
+            rec('time', { sec, src: 'hourglass', isle: islandCells.has(key) ? 1 : 0, m: Math.round(momentumRemaining()),
+                          ...(sec !== raw ? { raw } : {}) });   // [160826q]
             // [030826af] The BIG one gets the big sound. Threshold at 20 so the
             // legacy t30/t45 cells still trigger it too.
             if (sec >= 20) { if (sfx.time30) sfx.time30(); }
             else if (sfx.time10) sfx.time10();
             addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
-                `+${sec}s`, sec >= 20 ? '#fb8b1e' : '#86efac');
-            tapeNote(`HOURGLASS  +${sec}s`, sec >= 20 ? '#fb8b1e' : '#86efac');
+                secsLabel(sec), sec >= 20 ? '#fb8b1e' : '#86efac');
+            tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= 20 ? '#fb8b1e' : '#86efac');
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2,
                 sec === 45 ? '#ffd60a' : '#86efac');
             // Trigger the clock-boost animation
@@ -23450,7 +23953,7 @@ function checkCollisions() {
             for (const ry of newRows) {
                 const onRow = cells.filter(c => c.y === ry);
                 if (onRow.length) {
-                    rowPay.push({ x: onRow[onRow.length - 1].x, y: ry, at: performance.now() });
+                    rowPay.push({ x: onRow[onRow.length - 1].x, y: ry, at: game._playMs || 0 });   // [180926cf] play time, not wall time
                     rowFinishCol[ry] = onRow[onRow.length - 1].x;   // [170926f] the ripple's destination
                 }
                 else rowForge++;   // finished by a trim rather than a landing: the pool decides
@@ -23670,7 +24173,10 @@ function rowPayQuote(rows, groundShare, now = performance.now()) {
     const nBefore = continues ? chain.rows.length : 0;
     const nAfter = nBefore + rows.length;
     const tierGain = bandSeconds(nAfter) - (nBefore > 0 ? bandSeconds(nBefore) : 0);
-    return { continues, nBefore, nAfter, secs: Math.max(1, Math.round(tierGain * groundShare)) };
+    const secsRaw = Math.max(1, Math.round(tierGain * groundShare));
+    // [180926ce] The quote on the gap and the payout share this line, so the
+    // ceiling is applied here and both read the same number — or the same FULL.
+    return { continues, nBefore, nAfter, secs: clockCredit(secsRaw), secsRaw };
 }
 function chainWindowLeft(now = performance.now()) {
     const chain = game._rowChain;
@@ -23913,7 +24419,7 @@ function celebrateLineBand(newRows) {
         const secs = q.secs;
         game._lastRowSecs = secs;   // [080926b] read by the row label and the chain label
         momentumAddSeconds(secs);
-        tapeNote(`${newRows.length > 1 ? newRows.length + ' ROWS' : 'ROW'}${nAfter >= 2 ? '  ×' + nAfter : ''}  +${secs}s`, '#86efac');   // [100926f] the replay's caption
+        tapeNote(`${newRows.length > 1 ? newRows.length + ' ROWS' : 'ROW'}${nAfter >= 2 ? '  ×' + nAfter : ''}  ${secsLabel(secs)}`, '#86efac');   // [100926f] the replay's caption
         /* [100926g] THE CHAIN, MARKED. The third row inside the window holds
            the world for CHAIN_HITSTOP_MS — scroll and clock stop with it, so it
            costs nothing — with the rows lit white. A watcher who knows none of
@@ -23963,7 +24469,7 @@ function celebrateLineBand(newRows) {
            that should not have had to be a guess. Now the denominator is in the
            data: `owed` is how many squares that row actually asked for, `full`
            what the tier would have paid on solid ground. */
-        rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound,
+        rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound, ...(q.secsRaw !== secs ? { raw: q.secsRaw } : {}),   // [180926ce]
                          owed: Math.round(owedAvg), full: bandSeconds(newRows.length),
                          chain: nAfter,   // [060926c] chain length after this landing
                          rows: newRows.slice(0, 8) });   // [210826aq]
@@ -24051,7 +24557,7 @@ function celebrateLineBand(newRows) {
        the card; they are just no longer what the board shouts. */
     if ((game._bandChainNow || 0) < 2)
         addFloat(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL,
-            `LINE  +${game._lastRowSecs || 0}s`, col);
+            `LINE  ${secsLabel(game._lastRowSecs || 0)}`, col);
     // [300726az] THE ONLY FLOAT THIS EVENT FIRES. A triple clear with a diagonal
     // on a tidy board used to stack FIVE overlapping messages in a 74px column:
     // band label, diagonal multiplier, row count, sweep, plus any milestone or
@@ -27387,33 +27893,212 @@ function heartLevel(dz) {
     const k = Math.max(0, Math.min(1, dz));
     return 0.05 + 0.80 * Math.pow(k, 2.2);
 }
+/* ══ [180926g] THE BEAT, MADE KINDER ═════════════════════════════════════════
+   Field note: "the heartbeat is a bit scarey can you make it more child
+   friendly?"
+
+   FIVE THINGS WERE MAKING IT FRIGHTENING, and only one of them is the rhythm:
+     · It is a BODY. A heartbeat is a physiological alarm — you do not learn to
+       read it, you are born reading it, and what it reports is your own danger.
+       Nothing else in ROTOЯ is a body: the fiction is a rotor, a current, a
+       thing that turns. The sound was borrowed from a different game.
+     · IT SITS IN THE CHEST. 96->46Hz and 84->40Hz is sub-bass. On headphones
+       you feel it rather than hear it, which is exactly the trick horror uses.
+     · THE PITCH FALLS on every thump. A descending pitch reads as giving out.
+     · IT IS THE LOUDEST THING IN THE GAME. heartLevel * 1.4 — a boost no other
+       sound gets — landing in a mix that updateDangerAudio has just ducked to
+       45%. Nothing competes with it by design.
+     · It bypasses the duck bus, so it cannot be turned down by the thing that
+       turns everything else down.
+
+   WHAT DOES NOT CHANGE: the rhythm and the level curve. runHeartbeat still
+   closes the gap from 1100ms to 340ms and heartLevel is still 0.05+0.80*dz^2.2.
+   THE QUICKENING IS THE INFORMATION — it is what tells a player how close they
+   are, it is what the HUD pips and the red aura breathe with, and it is not
+   what was frightening. Only the VOICE changes.
+
+   FIVE VOICES ARE HERE, not one, because this is the designer's call and the
+   honest way to put it is to let him hear them in place. They were auditioned
+   offline (heart_audition.js -> shots/heartbeat-options.wav), and each one's
+   gain constant is set by A-WEIGHTED measurement against 'chest' rather than by
+   eye — a mallet at 330Hz needs a third of the amplitude of a 90Hz sine to
+   arrive at the same loudness — so all five sit within 0.25dB of each other and
+   what is being compared is character, not volume. It has now been settled —
+   see THE BAG below. */
+
+/* ── [180926by] TWO HEARTS, DEALT PER SPELL ──────────────────────────────────
+   Jake heard all five on 18 Sep and kept two: THE ROTOR and THE TOY CLOCK.
+   'chest', 'wood' and 'lifted' stay defined and are never dealt.
+
+   ⚠ THE VOICE IS DEALT ONCE PER DANGER SPELL, NEVER PER BEAT. heartBeat() is
+   called on every beat — up to three a second at the brink — so dealing there
+   would change the voice mid-spell and the danger sound would come apart in
+   the player's hands exactly when they most need to trust it. The card is
+   drawn on the way INTO danger and held until danger clears; runHeartbeat()
+   drops it at the same line that decides you are safe (dz <= 0.05), so the
+   hold and the release can never disagree about which state you are in.
+
+   WHY ALTERNATING A WARNING SOUND IS SAFE AT ALL, which is the real question:
+   because the voice was never carrying the information. THE RHYTHM AND THE
+   LEVEL CURVE ARE IDENTICAL IN ALL FIVE — gap 1100ms -> 340ms, level
+   0.05 + 0.80*dz^2.2 — and it is the QUICKENING the player reads, not the
+   timbre. That was true when the five were auditioned against each other and
+   it is what makes two of them interchangeable now. If a future voice ever
+   changes the rhythm or the curve, it does NOT belong in this bag: it is a
+   different signal wearing the same name, and alternating it with these would
+   teach the player two different meanings for one moment. */
+const HEART_VOICE = 'rotor';                  // fallback, and a one-voice build's pick
+const HEART_BAG   = ['rotor', 'clock'];       // 'chest' | 'wood' | 'lifted' declined [180926by]
+let _heartCards = [], _heartLast = null, _heartHeld = null;
+function dealHeartVoice() {
+    if (HEART_BAG.length < 2) return HEART_BAG[0] || HEART_VOICE;
+    if (!_heartCards.length) {
+        _heartCards = HEART_BAG.slice();
+        for (let i = _heartCards.length - 1; i > 0; i--) {
+            const j = (Math.random() * (i + 1)) | 0;
+            [_heartCards[i], _heartCards[j]] = [_heartCards[j], _heartCards[i]];
+        }
+        if (_heartCards[0] === _heartLast && _heartCards.length > 1) {
+            [_heartCards[0], _heartCards[1]] = [_heartCards[1], _heartCards[0]];
+        }
+    }
+    _heartLast = _heartCards.shift();
+    return _heartLast;
+}
+
+/* voice parts, all routed direct to destination — see the duck-bus note above */
+function _hbOut() { return audioCtx.destination; }
+function _hbThump(at, f0, f1, dur, g0) {          // a body: pitch falls as it decays
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f0, at);
+    o.frequency.exponentialRampToValueAtTime(f1, at + dur * 0.7);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(_hbOut());
+    o.start(at); o.stop(at + dur + 0.02);
+}
+function _hbMallet(at, f, dur, g0) {              // struck wood: flat pitch, warm decay
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(_hbOut());
+    o.start(at); o.stop(at + dur + 0.02);
+    const s = audioCtx.createBufferSource(), fl = audioCtx.createBiquadFilter(), gg = audioCtx.createGain();
+    s.buffer = _hbNoise(); fl.type = 'bandpass'; fl.frequency.value = f * 3.2; fl.Q.value = 1.2;
+    gg.gain.setValueAtTime(Math.max(0.0002, g0 * 0.30), at);
+    gg.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
+    s.connect(fl); fl.connect(gg); gg.connect(_hbOut());
+    s.start(at); s.stop(at + 0.05);
+}
+function _hbWhum(at, f, dur, g0) {                // a swell that LIFTS: something turning
+    const o = audioCtx.createOscillator(), fl = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(f, at);
+    o.frequency.linearRampToValueAtTime(f * 1.06, at + dur);
+    fl.type = 'lowpass'; fl.Q.value = 1;
+    fl.frequency.setValueAtTime(f * 1.4, at);
+    fl.frequency.linearRampToValueAtTime(f * 6.0, at + dur * 0.30);
+    fl.frequency.linearRampToValueAtTime(f * 2.0, at + dur);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.045);   // swell, not punch
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(fl); fl.connect(g); g.connect(_hbOut());
+    o.start(at); o.stop(at + dur + 0.02);
+}
+function _hbTick(at, g0, cut) {
+    const s = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    s.buffer = _hbNoise(); f.type = 'bandpass'; f.frequency.value = cut || 2200; f.Q.value = 5;
+    g.gain.setValueAtTime(Math.max(0.0002, g0), at);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + 0.035);
+    s.connect(f); f.connect(g); g.connect(_hbOut());
+    s.start(at); s.stop(at + 0.06);
+}
+function _hbBell(at, f, dur, g0) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f, at);
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g); g.connect(_hbOut());
+    o.start(at); o.stop(at + dur + 0.02);
+}
+/* One short noise buffer, made once and reused. Built lazily because audioCtx
+   does not exist at parse time. */
+let _hbNoiseBuf = null;
+function _hbNoise() {
+    if (_hbNoiseBuf && _hbNoiseBuf.sampleRate === audioCtx.sampleRate) return _hbNoiseBuf;
+    const sr = audioCtx.sampleRate;
+    const b = audioCtx.createBuffer(1, Math.floor(sr * 0.4), sr), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    _hbNoiseBuf = b;
+    return b;
+}
+
+const HEART_VOICES = {
+    /* A · AS IT STANDS — kept so the change can be undone in one word, and so
+       the audition has its reference in the live build too. */
+    chest:  { gain: 1.40, play: (t, v) => {
+        _hbThump(t, 96, 46, 0.26, v);
+        _hbThump(t + 0.15, 84, 40, 0.30, v * 0.62);
+    } },
+    /* B · THE WOODEN HEART — a mallet on a bar. E4 then B3: the lub-dub SHAPE
+       survives (two taps, the second lower and softer), so the signal is
+       unchanged, but the thing making it is an instrument rather than an organ.
+       No sub, flat pitch, nothing to feel in the chest. */
+    wood:   { gain: 0.35, play: (t, v) => {
+        _hbMallet(t, 329.63, 0.20, v);                  // E4
+        _hbMallet(t + 0.15, 246.94, 0.24, v * 0.66);    // B3
+    } },
+    /* C · THE ROTOR — the game's own fiction given a voice. Two rounded swells
+       a fifth apart with the second ABOVE the first, so the figure rises: this
+       is something gathering speed, not something giving out. */
+    rotor:  { gain: 0.55, play: (t, v) => {
+        _hbWhum(t, 146.83, 0.24, v);                    // D3
+        _hbWhum(t + 0.16, 220.00, 0.26, v * 0.70);      // A3
+    } },
+    /* D · THE TOY CLOCK — an escapement tick and a small chime. The most
+       explicitly playful of the five: it says hurry up, not you are dying. */
+    clock:  { gain: 0.41, play: (t, v, dz) => {
+        _hbTick(t, v * 0.55, 1800 + 900 * dz);
+        _hbBell(t + 0.15, 880.00, 0.16, v * 0.42);      // A5
+        _hbBell(t + 0.15, 1318.51, 0.10, v * 0.16);     // E6 on top
+    } },
+    /* E · THE HEART, LIFTED — the current sound, an octave up, with the 1.4x
+       boost gone. Still a heartbeat; the smallest change that answers the note,
+       and the one to pick if the heartbeat itself is wanted after all. */
+    lifted: { gain: 0.54, play: (t, v) => {
+        _hbThump(t, 192, 92, 0.24, v);
+        _hbThump(t + 0.15, 168, 80, 0.28, v * 0.62);
+    } }
+};
+
 function heartBeat(dz) {
     if (!audioCtx) return;
     const on = document.getElementById('soundCheck');
     if (on && !on.checked) return;
     resumeAudio();
+    // [180926by] Held for the whole spell — see the bag note. Drawn here rather
+    // than in runHeartbeat so a beat sounded from anywhere else still holds one
+    // voice; runHeartbeat is what clears it.
+    if (!_heartHeld) _heartHeld = dealHeartVoice();
+    const voice = HEART_VOICES[_heartHeld] || HEART_VOICES[HEART_VOICE] || HEART_VOICES.wood;
     const t0 = audioCtx.currentTime + 0.01;
-    const v = heartLevel(dz) * 1.4 * sfxVolume;
-    const thump = (at, f0, f1, dur, g0) => {
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = 'sine';
-        o.frequency.setValueAtTime(f0, at);
-        o.frequency.exponentialRampToValueAtTime(f1, at + dur * 0.7);
-        g.gain.setValueAtTime(0.0001, at);
-        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.008);
-        g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-        o.connect(g); g.connect(audioCtx.destination);   // not the duck bus
-        o.start(at); o.stop(at + dur + 0.02);
-    };
-    thump(t0, 96, 46, 0.26, v);                 // lub
-    thump(t0 + 0.15, 84, 40, 0.30, v * 0.62);   // dub
+    voice.play(t0, heartLevel(dz) * voice.gain * sfxVolume, Math.max(0, Math.min(1, dz)));
 }
 function runHeartbeat() {
     const dz = dangerLevel();
     updateDangerAudio(dz);   // [060826e] duck the mix
     dangerWarning();         // [060826g] and the three-tier edge warning
     brinkWarning();          // [110926j] the brink: one sting as the glow arrives
-    if (dz <= 0.05) return;
+    // [180926by] OUT OF DANGER IS WHERE THE CARD IS DROPPED. This one line is
+    // the spell boundary for the whole heartbeat bag: the next time danger
+    // rises, heartBeat() finds no held voice and deals a fresh one. Holding and
+    // releasing at the same test means the two can never disagree.
+    if (dz <= 0.05) { _heartHeld = null; return; }
     // 1100ms between beats at the threshold, down to 340ms at the brink — the
     // quickening IS the information, so it must be felt before it is counted.
     const gap = 1100 - 760 * dz;
@@ -29563,7 +30248,7 @@ function loop(time, gen) {
           if (owedCell) made = spawnShifter('row', owedCell);
           else if (rowForge > 0) { made = spawnShifter('row'); if (made) rowForge--; }
           if (made) {
-              const waited = owedIdx >= 0 ? Math.round(nowT - rowPay[owedIdx].at) : null;
+              const waited = owedIdx >= 0 ? Math.round((game._playMs || 0) - rowPay[owedIdx].at) : null;   // [180926cf]
               if (owedIdx >= 0) rowPay.splice(owedIdx, 1);
               game._nextRowForge = nowT + 700;
               const mk = made.key;
@@ -29668,6 +30353,12 @@ function loop(time, gen) {
     // the urgency channel, and never during celebration.
     if (!game.introHold) game._elapsedLevel = (game._elapsedLevel || 0) + dt / 1000;
     else if (game._elapsedLevel === undefined) game._elapsedLevel = 0;   // [220826a] not NaN
+    /* [180926cf] THE PLAY CLOCK. Milliseconds the player has actually been
+       playing: it does not run during the intro hold, and this step does not
+       run at all during the level card, the replay offer or the fade. The row
+       ledger stamps its claims with it, so a wait is measured in the player's
+       time and not the wall's — see the ruling at rowPay. */
+    if (!game.introHold) game._playMs = (game._playMs || 0) + dt;
     {
         const mark = Math.floor(game._elapsedLevel / 30);
         // [060926] Was a hardcoded 30, which muted the encouragement lines for
@@ -31223,7 +31914,9 @@ function startGame(testDrive = false, daily = false) {
     // Both now wait for the board to be visible. See armRunGuidance().
     // [220826a] Hold the clock behind the LEVEL 1 door — see beginIntroHold().
     // TEST DRIVE has no door, so its guidance starts immediately.
-    if (!testDrive) beginIntroHold(4400); else armRunGuidance();
+    // [180926ch] once per visit in full; every run after that gets the short, silent door
+    if (!testDrive) { const _rep = doorSeenThisVisit(); beginIntroHold(_rep ? INTRO_DOOR_REPEAT_MS : INTRO_DOOR_MS, _rep); }
+    else armRunGuidance();
 
     lastTime = performance.now();
     scheduleLoop();
@@ -31704,6 +32397,7 @@ function fitHudToBoard() {
     const cv  = document.getElementById('canvas');
     const hud = document.querySelector('.hud');
     if (!cv || !hud) return;
+    if (document.body.classList.contains('layout-land')) return;   // [190926b] the column owns the HUD's width sideways
     const boardW = cv.getBoundingClientRect().width;
     if (!boardW) return;
     const k = Math.max(0.55, Math.min(1, boardW / 480));
@@ -31745,12 +32439,99 @@ function clearBesideLayout(wrap, cv, sp) {
     }
 }
 
+/* ── [190926b] THE LANDSCAPE FRAME — see the CSS note of the same tag ────────
+   Engages when the viewport is wider than tall by a fifth and a run is on
+   (test drive keeps its own bar). Three things are laid in pixels:
+     column   the HUD, at its 480px design width zoomed to the column, with the
+              joystick under it when there is one — as wide as the frame can
+              spare after the board, between 200 and 360
+     board    the frame's full height, less the column's minimum, capped at
+              LAND.maxBoard so a 4K frame does not serve a metre of grid
+     frame    exactly the pair, centred, with the corner buttons' inset for a
+              margin and clear of the buttons themselves on either side
+   fitHudToBoard() stands down while this is on: the HUD's width is the
+   column's, not the board's. */
+const LAND = { minRatio: 1.2, edge: 64, colMin: 264, colMax: 360, hudW: 480,   // colMin: the HUD's own zoom floor, 0.55 x 480
+               colFrac: 0.30, gapFrac: 0.035, gapMin: 24, gapMax: 40, maxBoard: 800, stackGap: 20 };
+function landscapeWanted() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    return vw >= 200 && vh >= 200 && vw >= vh * LAND.minRatio;
+}
+function clearLandLayout(wrap, cv, sp, hud) {
+    if (!document.body.classList.contains('layout-land')) return;
+    document.body.classList.remove('layout-land');
+    if (wrap) { wrap.style.width = wrap.style.height = ''; }
+    for (const el of [cv, sp, hud]) {
+        if (!el) continue;
+        el.style.left = el.style.top = el.style.width = el.style.height = '';
+    }
+    if (hud && 'zoom' in hud.style) hud.style.zoom = '';
+    if (hud) { hud.style.marginLeft = hud.style.marginRight = ''; }
+}
+function layoutLand(wrap, cv, sp, hud) {
+    document.body.classList.remove('layout-beside');
+    document.body.classList.add('layout-land');
+    const pad = 10;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const edge = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--land-gap')) || 12;
+    const bs = getComputedStyle(document.body);        // the page's own padding still frames the frame
+    const bodyPad = (parseFloat(bs.paddingTop) || 0) + (parseFloat(bs.paddingBottom) || 0);
+    const H = vh - edge * 2 - bodyPad - pad * 2;       // the frame's full inner height
+    const edgeX = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--land-edge')) || LAND.edge;
+    const maxW = vw - edgeX * 2 - pad * 2;             // clear of the corner buttons
+    const cl = (v, lo, hi) => Math.round(Math.max(lo, Math.min(hi, v)));
+    const gap = cl(LAND.gapFrac * maxW, LAND.gapMin, LAND.gapMax);
+    const colMin = cl(LAND.colFrac * maxW, LAND.colMin, LAND.colMax);
+    const side = Math.max(80, Math.min(H, LAND.maxBoard, maxW - colMin - gap));
+    const colW = cl(maxW - side - gap, LAND.colMin, LAND.colMax);
+    const hasStick = !!sp && !document.body.classList.contains('stick-off');
+    let stick = hasStick ? Math.min(colW, cl(LZ.stickFrac * vw, LZ.stickMin, LZ.stickMax)) : 0;
+    // the HUD at its design width, zoomed to the column
+    const k = Math.min(1, colW / LAND.hudW);
+    const zoomable = 'zoom' in hud.style;
+    if (zoomable) { const z = k >= 0.995 ? '' : String(Math.round(k * 1000) / 1000); if (hud.style.zoom !== z) hud.style.zoom = z; }
+    const hudCss = zoomable ? Math.round(colW / (k || 1)) : colW;   // zoomed elements lay out in their own units
+    if (hud.style.width !== hudCss + 'px') { hud.style.width = hudCss + 'px'; hud.style.boxSizing = 'border-box'; }
+    hud.style.marginLeft = hud.style.marginRight = '0';
+    const hudH = hud.getBoundingClientRect().height / (_fitScale || 1);
+    // the column must fit the frame's height: the stick gives way before the board does
+    if (stick) stick = Math.round(Math.min(stick, Math.max(LZ.stickMin * 0.8, H - hudH - LAND.stackGap)));
+    const colH = hudH + (stick ? LAND.stackGap + stick : 0);
+    const innerH = Math.max(side, colH);
+    const pairW = colW + gap + side;
+    wrap.style.width  = Math.round(pairW + pad * 2) + 'px';
+    wrap.style.height = Math.round(innerH + pad * 2) + 'px';
+    const colX = pad, boardX = pad + colW + gap;
+    const top = pad + Math.round((innerH - side) / 2);
+    cv.style.left = boardX + 'px'; cv.style.top = top + 'px';
+    cv.style.width = Math.round(side) + 'px'; cv.style.height = Math.round(side) + 'px';
+    const hudTop = pad;   // the HUD heads the column; the stick sits at its foot, under the thumb
+    const hudLeft = colX;
+    hud.style.left = (zoomable && k < 0.995 ? Math.round(hudLeft / k) : hudLeft) + 'px';
+    hud.style.top  = (zoomable && k < 0.995 ? Math.round(hudTop / k) : hudTop) + 'px';
+    if (sp) {
+        if (stick) {
+            sp.style.left = Math.round(colX + (colW - stick) / 2) + 'px';
+            sp.style.top  = Math.round(pad + innerH - stick) + 'px';
+            sp.style.width = stick + 'px'; sp.style.height = stick + 'px';
+        } else { sp.style.left = sp.style.top = sp.style.width = sp.style.height = ''; }
+    }
+}
+
 function layoutPlay() {
     const wrap = document.querySelector('.game-container');
     const cv   = document.getElementById('canvas');
     const sp   = document.getElementById('stickPad');
     if (!wrap || !cv) return;
     const hud  = wrap.querySelector('.hud');
+    /* [190926b] sideways first: a run in a landscape viewport, stick or no stick */
+    if (document.body.classList.contains('in-play') &&
+        !document.body.classList.contains('test-drive') && hud && landscapeWanted()) {
+        clearBesideLayout(wrap, cv, sp);
+        layoutLand(wrap, cv, sp, hud);
+        return;
+    }
+    clearLandLayout(wrap, cv, sp, hud);
     // Welcome screen, test drive, or stick switched off: the stacked flex layout
     // is correct and this must not interfere with it.
     if (!document.body.classList.contains('in-play') ||
@@ -32562,6 +33343,19 @@ function demoIsWall(x, y) {
 // Autopilot beats. move: 'start' | 'flip' | 'evolve' | 'claim' | 'set'.
 const DEMO_BEATS = [
     { move:'start',  type:'single', cfg:'A', x:4, y:18 },
+    /* [190926c] THE CLIP OPENS ON THE ONE THING THE JULY PLAYTEST MISSED. The
+       launch plan's first gate is "a short looping clip of how the piece moves,
+       shown before the first run" — and this welcome-screen reel is that clip
+       (it runs on every copy since [180926e]). It always contained diagonals,
+       but the first one was captioned "Claim the blue single" and the word
+       came up once, seven beats in. Now the piece's first act is a star: out
+       to the north-east and back, out to the north-west and back, under the
+       two captions that say what the game most needs understood. 1.4s more on
+       the loop; the run that follows is unchanged. */
+    { move:'flip',   type:'single', cfg:'A', x:5, y:17, label:'Eight ways to flip' },
+    { move:'flip',   type:'single', cfg:'A', x:4, y:18 },
+    { move:'flip',   type:'single', cfg:'A', x:3, y:17, label:'Diagonals too' },
+    { move:'flip',   type:'single', cfg:'A', x:4, y:18 },
     { move:'flip',   type:'single', cfg:'A', x:4, y:17, label:'Flip to move' },
     { move:'claim',  type:'single', cfg:'A', x:5, y:16, claim:0, label:'Claim the blue single' },
     { move:'flip',   type:'single', cfg:'A', x:5, y:15 },
@@ -33262,6 +34056,16 @@ document.addEventListener('visibilitychange', () => {
     if (musicPlaying && audioCtx) musicNextTime = audioCtx.currentTime + 0.1;
 });
 
+/* [180926cg] THE EXPORT, GATED FOR LAUNCH. "Export play data" on the end card
+   is how every playdata file in this project has left a phone — it stays
+   visible while the game is being tuned. It is not a player's control, and a
+   public build should not carry it on the screen that judges a run. One flag:
+   set PLAYDATA_EXPORT_PUBLIC to false for the launch build and the button
+   becomes debug-only (?debug=1), the same door the review scrubber uses.
+   The recording itself is untouched either way — a run can still be read
+   back from a debug build after the fact. */
+const PLAYDATA_EXPORT_PUBLIC = true;
+if (!PLAYDATA_EXPORT_PUBLIC) { const _x = document.getElementById('exportPlaydataBtn'); if (_x) _x.classList.add('debug-only'); }
 // Hide developer-only UI unless this is a debug build
 if (!DEBUG_MODE) {
     document.querySelectorAll('.debug-only').forEach(el => el.style.display = 'none');

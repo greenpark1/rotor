@@ -357,6 +357,42 @@ body.theme-day .level-card-cov { color: #334155; }
 body.theme-day .level-card-cov.gold { color: #b45309; text-shadow: none; }
 body.theme-day .level-card-praise { color: var(--day-ink); }
 body.theme-day .level-card-extra { color: var(--wm-c0); }
+/* ── [180926c] THE REPLAY IS AN OFFER NOW ────────────────────────────────────
+   Field call: "before we get 'action replay' at the end of each level, we need
+   to mark the completion of the level with words of encouragement on screen and
+   then display the action replay option which the player can decide to press
+   and then view or ignore and go onto next level."
+   So the praise comes off the replay's captions and back onto the card, alone
+   for LEVEL_WORDS_MS, and this row arrives under it with a countdown on it.
+   The card is pointer-events:none so taps reach the board; while the offer is
+   live the card catches them instead (.offering) — the button watches, a tap
+   anywhere else gets on with it. */
+.level-card.offering { pointer-events: auto; }
+/* [180926d] SMALLER, AND QUIETER. Field call: "can the 'action replay' button be
+   smaller and less prominent." It was a filled cyan pill 46px tall carrying
+   15px/2.5 type and a drop shadow — the loudest thing on a card whose subject is
+   the praise line above it, for a thing the player is meant to be free to
+   ignore. Now an outline: no fill, no shadow, 28px tall, and the type down to
+   10.5px. It reads as an option offered rather than an instruction given. */
+.level-card-offer { animation-delay: 0s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lc-replay-btn {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: 28px; padding: 5px 13px; border-radius: 999px; cursor: pointer;
+    font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
+    border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.08);
+    color: var(--wm-c0); box-shadow: none; opacity: 0.85;
+}
+.lc-replay-btn:active { transform: translateY(1px); opacity: 1; }
+.lc-ring { position: relative; width: 14px; height: 14px; flex: 0 0 auto; }
+.lc-ring svg { display: block; transform: rotate(-90deg); }
+.lc-ring-num {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 8.5px; font-weight: 800; letter-spacing: 0; font-variant-numeric: tabular-nums;
+}
+.lc-replay-hint { font-size: 8.5px; font-weight: 700; letter-spacing: 1.2px; color: #64748b; text-transform: uppercase; }
+body.theme-day .lc-replay-btn { background: rgba(8, 145, 178, 0.07); border-color: rgba(8, 145, 178, 0.4); color: var(--wm-c0); }
+body.theme-day .lc-replay-hint { color: #94a3b8; }
+@media (prefers-reduced-motion: reduce) { .lc-replay-btn:active { transform: none; } }
 /* [080926a] the replay sits on the scorecard, above CONTINUE */
 .tally-replay-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 8px 0 10px; }
 .tally-replay-line { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; }
@@ -2054,11 +2090,21 @@ body.theme-day .toggle-box {
 }
 
 /* FAIL impact: scale-in with rotation overshoot, settle on the screen */
-.screen-title.fail-impact { animation: failImpact 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
+/* ── [180926d] THE REASON RUNS WITH THE WHEEL SLOWING ────────────────────────
+   Was 0.55s: a snap, done long before the tone's first section was. The first
+   section is a sweep from E5 down to G3 and a low C under it — about a second
+   of the wheel winding down — so the title now takes that second and SETTLES
+   into it rather than punching and waiting. Same overshoot character, stretched
+   over the sweep, with the last movement a small drop at the bottom: GROUNDED
+   is a thing coming to rest, and now it reads as one.
+   The hinge that follows is --go-catch-ms; see DEATH_CATCH_MS. */
+.screen-title.fail-impact { animation: failImpact 0.95s cubic-bezier(0.22, 0.68, 0.24, 1) 1; }
 @keyframes failImpact {
     0%   { transform: scale(0.2) rotate(-8deg); opacity: 0; }
-    50%  { transform: scale(1.15) rotate(2deg); opacity: 1; }
-    75%  { transform: scale(0.95) rotate(-1deg); }
+    32%  { transform: scale(1.15) rotate(2deg); opacity: 1; }
+    58%  { transform: scale(0.97) rotate(-1.2deg); }
+    78%  { transform: scale(1.03) rotate(0.5deg); }
+    92%  { transform: scale(0.99) rotate(0deg); }
     100% { transform: scale(1) rotate(0deg); }
 }
 
@@ -2501,6 +2547,14 @@ body.theme-day .go-copy { color: #b45309; border-color: rgba(180,83,9,0.5); }
     color: #64748b;
 }
 body.theme-day .taunt-box .go-revolves { color: #94a3b8; }
+/* [180926c] The depth, riding the level's own line at half its size and in the
+   grey it carried when it stood alone. Tabular so the number does not jitter
+   against the fixed words beside it. */
+.taunt-box .go-val-sub {
+    font-size: 0.5em; font-weight: 700; letter-spacing: 2px;
+    color: #64748b; font-variant-numeric: tabular-nums;
+}
+body.theme-day .taunt-box .go-val-sub { color: #64748b; }
 /* The two prose lines, at ONE size. They are the same voice; only their colour
    distinguishes what happened from what to make of it. */
 .taunt-box .go-prose { margin-top: clamp(16px, 4cqw, 26px); }
@@ -2509,10 +2563,30 @@ body.theme-day .taunt-box .go-revolves { color: #94a3b8; }
     font-size: clamp(13px, 3.6cqw, 16px); font-weight: 600; letter-spacing: 1px;
     color: #94a3b8;
 }
+/* ── [180926d] THE CONSOLATION WAITS FOR THE CATCH ───────────────────────────
+   The tone's second section is the lift — two notes ringing up to a held C
+   major, the run stopped and the current didn't. That is the one moment on this
+   screen that means what the consolation line means, and the line used to
+   arrive a second before it, with everything else. Now it holds off until
+   --go-catch-ms (endGameNow sets it from DEATH_CATCH_MS) and rises into the
+   chord. Default in the var so a card built before the property is set — or a
+   WIN card, which has no death tone at all — still shows the line. */
 .taunt-box .go-consolation {
     display: block; margin-top: 6px;
     font-size: clamp(13px, 3.6cqw, 16px); font-style: normal;   /* [110926h] was italic */
     color: #7dd3fc;
+    opacity: 0;
+    animation: goCatch 0.5s ease-out var(--go-catch-ms, 1050ms) forwards;
+}
+@keyframes goCatch {
+    0%   { opacity: 0; transform: translateY(7px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    /* the beat is kept — it is the music's, not the motion's — but nothing moves */
+    .taunt-box .go-consolation { animation: goCatchStill 0.01s linear var(--go-catch-ms, 1050ms) forwards; }
+    @keyframes goCatchStill { to { opacity: 1; } }
+    .screen-title.fail-impact { animation: none; }
 }
 body.theme-day .taunt-box .go-score,
 body.theme-day .taunt-box .go-val { color: var(--day-ink); }
@@ -2578,6 +2652,19 @@ body.theme-day .taunt-box .go-revolves { color: #64748b; }
     transition: color 0.2s;
 }
 .details-toggle:hover { color: #94a3b8; }
+/* [180926c] Sized and weighted BETWEEN the play button and the two tool links:
+   it is a place to go, not the thing to do, and not a developer control either. */
+.go-scores-btn {
+    background: none; border: 1px solid rgba(34,211,238,0.5); border-radius: 15px;
+    color: var(--wm-c0); font-family: inherit;
+    font-size: 14px; font-weight: 700; letter-spacing: 1.5px;
+    padding: 10px 26px; margin: 2px 0 6px; cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+.go-scores-btn:hover { color: #67e8f9; border-color: rgba(34,211,238,0.85); }
+.go-scores-btn:active { transform: scale(0.97); }
+body.theme-day .go-scores-btn { color: #0e7490; border-color: rgba(14,116,144,0.5); }
+@media (prefers-reduced-motion: reduce) { .go-scores-btn:active { transform: none; } }
 
 .toggle-box {
     display: flex;
@@ -3663,14 +3750,22 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 
 <!-- Game Over Screen -->
 <div class="screen-overlay hidden" id="gameOverScreen">
-    <!-- [210826a] Placeholder matches what endGame() writes on a loss. Never
-         seen (the overlay is hidden until endGame sets the real word), but a
-         stale "Game Over" sitting in the markup is a trap for the next reader. -->
-    <div class="screen-title" id="gameOverTitle">GROUNDED</div>
+    <!-- [210826a] Placeholder for a screen that is hidden until endGame writes
+         the real title, but a stale "Game Over" sitting in the markup is a trap
+         for the next reader.
+         [180926c] The loss title is now DEALT from GO_TITLES — six lines, a
+         shuffled deck — so this placeholder names none of them. -->
+    <div class="screen-title" id="gameOverTitle"></div>
 
     <div class="taunt-box" id="tauntBox"></div>
 
     <button class="start-btn" onclick="startGame()">▶ PLAY AGAIN</button>
+    <!-- [180926c] THE LADDER, FROM THE SCREEN THAT JUDGES A RUN. The table was
+         reachable only from the welcome page, so NEW BEST could appear on a card
+         that shows no best and offers no route to the one it refers to: a player
+         who had just set one had to leave the screen to find it. One loud action
+         and one quiet destination — the hierarchy the card itself uses. -->
+    <button class="go-scores-btn" onclick="showScores('end')">TOP SCORES</button>
     <button class="details-toggle debug-only" onclick="startReview()">⏮ Review last moves</button>
     <!-- [160826p] Downloads the run's event log as JSON for balance analysis.
          Visible (not debug-only): the data is collected on the phone and the
@@ -3851,12 +3946,30 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
          CSS animations. Sits over the canvas (z-index 20). Triggered via
          showRoundOverlay(n). The .active class drives both the fade-to-
          black background and the big number scale-in / scale-out. -->
-    <div class="level-card hidden" id="levelCard">
+    <div class="level-card hidden" id="levelCard" onclick="replayOfferPass('tap')">
         <div class="level-card-box">
             <div class="level-card-title lc-row" id="lcTitle"></div>
             <div class="level-card-cov lc-row" id="lcCov"></div>
             <div class="level-card-praise lc-row" id="lcPraise"></div>
             <div class="level-card-extra lc-row" id="lcExtra"></div>
+            <!-- [180926c] The replay offer. Hidden until the words have had
+                 their beat; the ring counts the window down. -->
+            <div class="level-card-offer lc-row" id="lcOffer" hidden>
+                <button class="lc-replay-btn" id="lcReplayBtn" type="button"
+                        onclick="event.stopPropagation(); replayOfferTake();">
+                    <span aria-hidden="true">&#9654;</span><span>ACTION REPLAY</span>
+                    <span class="lc-ring">
+                        <svg width="14" height="14" viewBox="0 0 22 22" aria-hidden="true">
+                            <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(6,34,43,0.25)" stroke-width="2"></circle>
+                            <circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" id="lcOfferArc"
+                                    stroke-dasharray="56.5" stroke-dashoffset="0"></circle>
+                        </svg>
+                        <span class="lc-ring-num" id="lcOfferNum">4</span>
+                    </span>
+                </button>
+                <div class="lc-replay-hint" id="lcOfferHint">TAP TO WATCH</div>
+            </div>
         </div>
     </div>
     <div class="round-overlay" id="roundOverlay">
@@ -7141,7 +7254,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '170926-2222 ROTOЯ · THE EARNED SQUARE';
+const BUILD_VERSION = '180926-1153 ROTOЯ · THE TOOL STAYS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -7188,6 +7301,25 @@ const BUILD_VERSION = '170926-2222 ROTOЯ · THE EARNED SQUARE';
     }
 }
 
+/* [180926d] THE RECHARGE, DRAWN. A spent shifter is dimmed by the same rule a
+   dormant turn tile has used since [110926p] — 45%, no breath, no glow — and
+   carries a ring that fills as it comes back. The ring is the only new mark on
+   the board: it says the tool is not gone, it is coming, and roughly when.
+   Drawn in the shifters' own steel so it joins the family rather than adding a
+   colour to it. */
+function drawShifterCharge(sx, sy, chg, size) {
+    if (chg >= 1) return;
+    const s = size || CELL;   // the draw loop's CELL_SIZE is local to it, so it is handed in
+    const cx = sx + s / 2, cy = sy + s / 2, r = s * 0.42;
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(184,201,217,0.18)';
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(184,201,217,0.85)';
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * chg); ctx.stroke();
+    ctx.restore();
+}
 // ── HOURGLASS ICON ──────────────────────────────────────────────────────
 // [270726l] Step/turn shift glyphs as stroked vectors — ONE uniform 2.4px
 // line (measured off the green cube's "+"), replacing the font arrows whose
@@ -9901,6 +10033,18 @@ function snapScale(freq) {
     return best;
 }
 
+/* ══ [180926d] WHERE THE END TONE TURNS ═════════════════════════════════════
+   Field call: "the game over music tone when failed, has two sections to it,
+   can the 1st section have the reason text animate and when we hear the 2nd
+   section the consolation line at the end is revealed."
+   It does have two, by construction ([120926h]): THE WHEEL SLOWING — a sweep
+   from E5 down to G3 with a low C under it — and then IT CATCHES, two notes
+   ringing up to a held C major. This is the hinge between them, in one place
+   so the card and the sound cannot drift apart: sfx.death schedules the catch
+   at it, and endGameNow hands the same number to the CSS as --go-catch-ms.
+   Move this and the screen follows the music by itself. */
+const DEATH_CATCH_MS = 1050;
+
 const sfx = {
     move: (dangerLevel = 0, isDiagonal = false) => {
         // [Tier D · ambient] LIVE AGAIN [060926] — see the note at the flip
@@ -10296,7 +10440,7 @@ const sfx = {
                 playTone(NOTE.C5, 0.90, WAVE.ui, VOL.event * 0.6);
                 setTimeout(() => playTone(NOTE.E6, 0.70, WAVE.reward, VOL.event * 0.7), 50);
             }, 140);
-        }, 1050);
+        }, DEATH_CATCH_MS);   // [180926d] the hinge, shared with the card
     },
     // [ui] level speed-up — ascending A4-E5-A5 (neutral-positive info).
     speedUp: () => {
@@ -15701,13 +15845,60 @@ function shifterDrought() {
     if (typeof setNeeded === 'undefined' || !setNeeded.length) return false;
     return nowPlay() - (game._lastBankAt || 0) > BANK_DROUGHT_MS;   // [170826b] play clock
 }
+/* ══ [180926d] A SHIFTER IS A FIXTURE, NOT A CONSUMABLE ═════════════════════
+   Field call: "can the shape shifters remain and not disappear after one use."
+   They did disappear: consumeTool deleted the tile, so every move and turn
+   shifter was one shot. Measured against that request on the last export —
+   5¾ minutes of play, 25 rows finished — the board issued THREE move shifters
+   and SEVEN turn shifters all run, six of the seven from bridges rather than
+   rows. A tool that scarce and that brief is a tool the player never learns.
+
+   Now: a used shifter goes DARK and inert for SHIFTER_RECHARGE_MS, then lights
+   again where it stands. Two things hold the line the designer drew — "i dont
+   want you to change the dynamics of the shifters":
+     · the recharge, so a turn shifter cannot be parked on and spun, and
+     · `held`, so a tile that re-arms under a body that never left stays asleep
+       until the body steps off — a shifter fires on ARRIVAL, which is the rule
+       a dormant turn tile has followed since [110926p].
+   A spent tile is not a tool, so it counts toward no ceiling, no floor and no
+   offer: shifterArmed() is what the three counters below ask. It IS occupied
+   floor to rowCellOwed [080926f], so a shifter standing in a row never holds
+   that row open — used or not. ═══════════════════════════════════════════════ */
+const SHIFTER_RECHARGE_MS = 4000;
+/* Spent = still charging, OR charged but standing under the body that used it.
+   The second clause is asked of the BOARD rather than carried as a flag some
+   caller has to remember to clear: "is the body still on this square" is a fact,
+   and a fact has one true answer at any moment. The clock itself runs from the
+   moment of use, so a player who lingers does not pay twice — they still have to
+   step off and step back on, which is two moves, and two moves is the cost that
+   keeps a turn shifter from being a spin pad. */
+function shifterSpent(key) {
+    const m = shifterMeta[key];
+    if (!m || !m.spentUntil) return false;
+    if (performance.now() < m.spentUntil) return true;
+    if (!m.held) return false;
+    for (const c of getPlayerCells()) if (`${c.x},${c.y}` === key) return true;
+    m.held = false;                 // the body has gone; the tool is live again
+    return false;
+}
+function shifterArmed(key) { const v = world[key]; return (v === 'slip' || v === 'pivot') && !shifterSpent(key); }
+/* How far through the recharge, 0 → 1, for the renderer. 1 = ready — including a
+   charged tile still under its body, which should look ready, because it is. */
+function shifterCharge(key) {
+    const m = shifterMeta[key];
+    if (!m || !m.spentUntil) return 1;
+    const left = m.spentUntil - performance.now();
+    if (left <= 0) return 1;
+    return Math.max(0, Math.min(1, 1 - left / SHIFTER_RECHARGE_MS));
+}
 function countMachinesInView() {   // [110926] steps and turns — what the ceiling counts now
     const camI = Math.floor(game.cameraY);
     const dormantTurns = SINGLE_PASSES_TURNS && game.shapeType === 'single';   // [110926p] a single's turn tiles are asleep
     let n = 0;
     for (let y = camI; y < camI + VIEW_H; y++)
         for (let x = 0; x < VIEW_W; x++) {
-            const v = world[`${x},${y}`];
+            const k = `${x},${y}`, v = world[k];
+            if (shifterSpent(k)) continue;   // [180926d] a recharging tile is not supply
             if (v === 'slip' || (v === 'pivot' && !dormantTurns)) n++;
         }
     return n;
@@ -15718,6 +15909,7 @@ function countShiftersInView() {
     for (let y = camI; y < camI + VIEW_H; y++)
         for (let x = 0; x < VIEW_W; x++) {
             const v = world[`${x},${y}`];
+            if (shifterSpent(`${x},${y}`)) continue;   // [180926d]
             // [160826q] GREENS LIVE IN THE WORLD AS 'pickup', NOT 'green' — see
             // the spawn branch (world[k] = 'pickup') and countVisibleGreens,
             // which has always tested 'pickup'. The original 'green' here
@@ -16047,7 +16239,7 @@ function bodyLandSet(depth) {
     return out;
 }
 function machineInBodyReach(depth = FAVOUR_REACH_MOVES) {
-    for (const [k] of bodyLandSet(depth)) if (world[k] === 'slip' || world[k] === 'pivot') return true;
+    for (const [k] of bodyLandSet(depth)) if (shifterArmed(k)) return true;   // [180926d] a recharging tile is not a tool in reach
     return false;
 }
 // THE OFFER — called every frame of live play
@@ -16742,8 +16934,21 @@ function spawnShifter(src, atKey) {
            set: the row chose the cell, so the KIND gives way — a green if there
            is room for one, an hourglass if no time is already in that window,
            and only then does the square keep its claim and wait one more beat. */
-        if (countVisibleGreens() < MAX_VISIBLE_GREENS + (_named ? 1 : 0)) kind = 'green';
-        else if (_named && countTimeWindow(gy) === 0) kind = 'warp';
+        /* ── [180926d] ...EXCEPT THAT THE KIND IS WHAT THE ROW WAS PAYING ─────
+           Field call: "the respawned game objects do not appear to be appearing
+           after each row has been completed." Measured on the last export, they
+           all appeared — 25 rows, 25 assets, half a second apiece — but 22 of
+           the 25 were greens, because the square that finishes a row is almost
+           never within SHIFTER_NEAR_SET of an unclaimed slot, so this clause
+           converted nearly every earned shifter into a cube. The player was
+           told a row pays and then paid in one currency.
+           The leash was written for the ORDINARY spawner, which chooses its own
+           cell and could scatter tools anywhere; a row's cell is chosen by the
+           player's own last square, which is the opposite case. So an earned
+           square keeps the kind it rolled, wherever it is. The leash still
+           governs every other path. */
+        if (_named) { /* the row chose the cell; the roll chose the tool */ }
+        else if (countVisibleGreens() < MAX_VISIBLE_GREENS) kind = 'green';
         else return false;
     }
 
@@ -17342,7 +17547,122 @@ function showLevelCard(opts) {
     if (cv) cv.classList.toggle('gold', !!opts.gold);
     el.classList.remove('hidden');
 }
-function hideLevelCard() { const el = document.getElementById('levelCard'); if (el) el.classList.add('hidden'); }
+function hideLevelCard() { _lcOfferHide(); const el = document.getElementById('levelCard'); if (el) el.classList.add('hidden'); }
+
+/* ══ [180926c] WORDS FIRST, THEN THE OFFER ═══════════════════════════════════
+   Was: the replay started itself 1.2s after the set was claimed and carried the
+   level's message as its captions, so the praise and the replay were one event.
+   Now they are two. The card takes the words back and holds them ALONE for
+   LEVEL_WORDS_MS — a praise line that arrives under a running replay is a
+   caption, not a moment — and then the replay becomes a button with its own
+   window on it.
+   IGNORING IT IS THE FAST PATH, which is the point: 5.5s from the set to the
+   door against the replay's ~7.5s, and nothing to press to get there.
+   THE RESOLUTION IS ON A TIMEOUT, NOT AN INTERVAL, deliberately: the harness
+   honours setTimeout and stubs setInterval, so the level still advances under
+   test. The interval only paints the ring. ════════════════════════════════════ */
+const LEVEL_WORDS_MS  = 1500;    // the encouragement, alone on the board
+const REPLAY_OFFER_MS = 4000;    // the offer's window; when it closes the level rolls on
+const LC_RING_C = 56.549;        // 2πr for the r=9 ring in the markup
+let replayOffer = null;          // { id, at, taken, take(), pass() }
+let _replayOfferSeq = 0;
+let _lcTick = 0;
+
+/* Is there anything to offer? The same test startBoardReplay applies, asked
+   BEFORE the button is drawn — an offer that cannot be honoured is worse than
+   no offer, and [110926d]'s rule still stands: a replay is the last four moves
+   or it is not a replay. */
+function replayTapeReady() {
+    if (!REPLAY_ON || game._replay || game.testDrive) return false;
+    return moveTape.slice(-REPLAY_MOVES)
+                   .filter(e => e.to && e.to.length && e.from && e.from.length).length >= 2;
+}
+function replayOfferLive() { return !!(replayOffer && !replayOffer.taken); }
+function replayOfferTake() { if (replayOfferLive()) replayOffer.take(); }
+function replayOfferPass(why) { if (replayOfferLive()) replayOffer.pass(why || 'tap'); }
+
+function _lcOfferStopTick() { if (_lcTick) { clearInterval(_lcTick); _lcTick = 0; } }
+function _lcOfferHide() {
+    _lcOfferStopTick();
+    const row = document.getElementById('lcOffer');
+    if (row) row.hidden = true;
+    const card = document.getElementById('levelCard');
+    if (card) card.classList.remove('offering');
+}
+function _lcOfferShow(ms) {
+    const row = document.getElementById('lcOffer');
+    if (row) row.hidden = false;
+    const card = document.getElementById('levelCard');
+    if (card) card.classList.add('offering');
+    /* [180926d] the hint lost the second clause with the button's size — the
+       ring already says the window is closing, and "OR ON TO LEVEL n" was the
+       longest line in the offer for the path the player takes by doing nothing */
+    const hint = document.getElementById('lcOfferHint');
+    if (hint) hint.textContent = 'TAP TO WATCH';
+    const t0 = performance.now();
+    const paint = () => {
+        const left = Math.max(0, ms - (performance.now() - t0));
+        const arc = document.getElementById('lcOfferArc');
+        if (arc) arc.setAttribute('stroke-dashoffset', String(LC_RING_C * (1 - left / ms)));
+        const num = document.getElementById('lcOfferNum');
+        if (num) num.textContent = String(Math.max(1, Math.ceil(left / 1000)));
+        if (left <= 0) _lcOfferStopTick();
+    };
+    paint();
+    _lcOfferStopTick();
+    _lcTick = setInterval(paint, 100);
+}
+
+/* Show the level's words, then offer the replay. `onDone` runs exactly once:
+   after the replay the player asked for, or when the offer's window closes. */
+function levelCardThenReplay(lc, onDone) {
+    const id = ++_replayOfferSeq;
+    let settled = false;
+    const finish = () => {
+        if (settled) return;
+        settled = true;
+        replayOffer = null;
+        _lcOfferHide();
+        onDone();
+    };
+    showLevelCard(lc);
+    _lcOfferHide();                    // the words are alone to begin with
+    if (!replayTapeReady()) {
+        /* Nothing on tape worth playing, so the card simply holds for the beat
+           it used to hold and the door follows. */
+        setTimeout(() => { if (id === _replayOfferSeq && game.running) finish(); }, LEVEL_WORDS_MS + 900);
+        return;
+    }
+    setTimeout(() => {
+        if (id !== _replayOfferSeq || settled || !game.running) return;
+        replayOffer = {
+            id, at: performance.now(), taken: false,
+            take() {
+                if (this.taken) return;
+                this.taken = true;
+                _lcOfferStopTick();
+                rec('replay', { k: 'taken', r: advancedRound, ms: Math.round(performance.now() - this.at) });
+                hideLevelCard();
+                /* The captions revert to naming what you are watching. The
+                   level's own words have had their moment on the card, so
+                   repeating them here would be the caption problem again. */
+                if (!startBoardReplay('level', null, finish, { sub: 'HOW YOU FINISHED IT' })) finish();
+            },
+            pass(why) {
+                if (this.taken) return;
+                this.taken = true;
+                _lcOfferStopTick();
+                rec('replay', { k: 'passed', why: why || 'timeout', r: advancedRound });
+                finish();
+            }
+        };
+        rec('replay', { k: 'offered', r: advancedRound });
+        _lcOfferShow(REPLAY_OFFER_MS);
+        setTimeout(() => {
+            if (replayOffer && replayOffer.id === id && !replayOffer.taken) replayOffer.pass('timeout');
+        }, REPLAY_OFFER_MS);
+    }, LEVEL_WORDS_MS);
+}
 
 /* ══ [080926j] RETIRED — and [100926f] REVIVED ON THE REAL BOARD, below.
    Designer's call after seeing it on the scorecard: a third-scale miniature
@@ -19698,12 +20018,11 @@ function completeSet() {
                line as the phrase the last move pauses on. No tape, no replay —
                then the old card, for the time it used to hold. */
             const _lc = game._levelCardOpts || {};
-            const _skipCard = (cb) => {
-                if (startBoardReplay('level', null, cb, { sub: _lc.title, phrase: _lc.praise })) return;
-                showLevelCard(_lc);
-                setTimeout(() => { hideLevelCard(); cb(); }, 2200);
-            };
-            _skipCard(() => {
+            /* [180926c] The card takes the words back and the replay becomes a
+               button — see levelCardThenReplay. What used to happen here was
+               startBoardReplay() outright, with the title and praise riding it
+               as captions. */
+            levelCardThenReplay(_lc, () => {
                 _advanceNow();
                 setTimeout(() => {
                     // [300726an] Seed the new level's opening slots the moment
@@ -19760,7 +20079,13 @@ function completeSet() {
                 // for a level that earned it.
                 covText: '',
                 gold,
-                praise: celebration,
+                /* [180926c] WAS `praise: celebration` — the same string as the
+                   title above it, so the win's own card printed its line TWICE,
+                   stacked, at two sizes. [120926m] made this card one line and
+                   cut the two extra lines with it; the praise row was left
+                   pointing at the title it had been replaced by, and :empty
+                   cannot hide a row that is full. */
+                praise: '',
                 extra: ''
             });
         }
@@ -20317,9 +20642,22 @@ function consumeTool(triggerCell, triggerKey) {
     // earlier link's swing (called before this link's anim is queued, so the
     // queue delay is exactly when its resolution becomes visible).
     const until = performance.now() + animQueueDelay() + 40;
-    if (kind === 'pivot' || kind === 'slip')
-        lingerFX.push({ x: triggerCell.x, y: triggerCell.y, kind,
-                        meta: meta ? { dir: meta.dir, turns: meta.turns } : null, until });   // [SWEEP] the half turn lingers as itself
+    /* ── [180926d] SPENT, NOT GONE ───────────────────────────────────────────
+       A move or turn shifter stays where it is and recharges. The presentation
+       rule above is what decides WHEN it goes dark: `until` is this tool's own
+       moment — after the flight, after any earlier link's swing — so the tile
+       is still lit while the piece is airborne, which is the exact fault
+       [180826ae] was written to fix. `held` keeps it asleep until the body that
+       used it steps off, so it cannot re-fire under a stationary shape.
+       Anything else that reaches consumeTool (there is nothing else today) is
+       removed as before. */
+    if (kind === 'pivot' || kind === 'slip') {
+        shifterMeta[triggerKey] = Object.assign({}, meta, {
+            spentAt: until, spentUntil: until + SHIFTER_RECHARGE_MS, held: true
+        });
+        markCovered(triggerKey);
+        return;
+    }
     delete world[triggerKey];
     markCovered(triggerKey);
     delete shifterMeta[triggerKey];
@@ -22406,6 +22744,9 @@ function checkCollisions() {
         for (const c of cells) {
             const k = `${c.x},${c.y}`;
             const item = world[k];
+            // [180926d] a shifter still recharging is floor: it is not offered,
+            // it does not fire, and it raises no "not yet" cue of its own
+            if ((item === 'pivot' || item === 'slip') && shifterSpent(k)) continue;
             // [160826r] made pivots SURVIVE a single (a turn maps A→A, so the
             // consumption was a measured no-op — 10 of 18 uses wasted).
             // [180826q] REVERSED, designer's call: the silent survival read as
@@ -22708,7 +23049,8 @@ function checkCollisions() {
         // celebrates once, at its true length, not once per link.
         let trainLive = false;
         for (const c of cells) {
-            const w2 = world[`${c.x},${c.y}`];
+            const kk = `${c.x},${c.y}`, w2 = world[kk];
+            if ((w2 === 'pivot' || w2 === 'slip') && shifterSpent(kk)) continue;   // [180926d] nor is a recharging one
             if ((w2 === 'pivot' && !(SINGLE_PASSES_TURNS && game.shapeType === 'single')) || w2 === 'slip') { trainLive = true; break; }   // [110926p] a dormant turn tile is not a live link
         }
         if (!trainLive && chainLinks >= 2 && !game._chainCelebrated) {
@@ -24794,6 +25136,7 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
     for (let i = 0; i < cells.length; i++) {
         const k = cells[i].x + ',' + cells[i].y;
         const item = world[k];
+        if ((item === 'pivot' || item === 'slip') && shifterSpent(k)) continue;   // [180926d] a recharging tile does not fire, so the route must not route through one
         if (item === 'pivot' && SINGLE_PASSES_TURNS && type === 'single') continue;   // [110926p] a single passes over
         if (item === 'pivot') {
             const meta = shifterMeta[k];
@@ -25121,7 +25464,8 @@ function computeShifterPreviewFor(aim) {
     // [160826r] rule that a pivot ignores a single.
     let trigger = null, item = null;
     for (const c of landed) {
-        const w = world[`${c.x},${c.y}`];
+        const k2 = `${c.x},${c.y}`, w = world[k2];
+        if ((w === 'pivot' || w === 'slip') && shifterSpent(k2)) continue;   // [180926d] nothing to preview on a recharging tile
         if (w === 'pivot' && game.shapeType === 'single') continue;
         if (w === 'pivot' || w === 'slip') { trigger = c; item = w; break; }
     }
@@ -27515,8 +27859,12 @@ function draw() {
                 // to 40%, no glow: clearly present, clearly not for you yet.
                 // [180826q] Stand-down dim retired — singles consume pivots now.
                 // [110926p] ...and back: a single passes over turn tiles again.
-                const pvInert = SINGLE_PASSES_TURNS && item === 'pivot' &&
-                                (game._replay ? game._replay.type : game.shapeType) === 'single';
+                /* [180926d] a shifter recharging after a use stands down by the
+                   same rule, and wears the ring that says how far along it is */
+                const spentTile = shifterSpent(key);
+                const tileChg = spentTile ? shifterCharge(key) : 1;
+                const pvInert = spentTile || (SINGLE_PASSES_TURNS && item === 'pivot' &&
+                                (game._replay ? game._replay.type : game.shapeType) === 'single');
                 if (pvInert) { ctx.save(); ctx.globalAlpha *= 0.45; }
                 if (currentTheme === 'day') {
                     // [290726j] Day pivot/slip — PEWTER. The same metal, taken
@@ -27537,6 +27885,7 @@ function draw() {
                     try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY); }   // [100926a] one bad tile never takes the board with it
                 catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                     if (pvInert) ctx.restore();   // [170826b] matched exit
+                    if (spentTile) drawShifterCharge(sx, sy, tileChg, CELL_SIZE);   // [180926d] at full strength — the ring is the one thing not dimmed
                     continue;
                 }
                 // Night pivot/slip — filled electric-cyan rounded square; the
@@ -27560,6 +27909,7 @@ function draw() {
                 try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY); }   // [100926a] one bad tile never takes the board with it
                 catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                 if (pvInert) ctx.restore();   // [170826b] matched exit
+                if (spentTile) drawShifterCharge(sx, sy, tileChg, CELL_SIZE);   // [180926d]
             } else if (visited.has(key) && (visitedAt.get(key) || 0) <= trailNow &&
                        !(flip.active && playerNow.has(key) &&
                          !(flip.wasVisited && flip.wasVisited.has(key)))) {
@@ -30476,20 +30826,30 @@ function renderScores() {
     }
 }
 
-function showScores() {
+/* [180926c] The table is reachable from TWO screens now, so it has to know
+   which one to give back. Without this, opening it from the finish screen and
+   pressing back revealed the WELCOME page with the finish screen still sitting
+   underneath it. */
+let _scoresFrom = 'welcome';
+function showScores(from) {
     renderScores();
+    _scoresFrom = (from === 'end') ? 'end' : 'welcome';
     const s = document.getElementById('scoresScreen');
     const w = document.getElementById('startScreen');
+    const g = document.getElementById('gameOverScreen');
     if (s) s.classList.remove('hidden');
     if (w) w.classList.add('hidden');   // hidden, not layered: the welcome corner
                                         // controls are fixed-position and would
                                         // otherwise sit on top of this screen
+    if (_scoresFrom === 'end' && g) g.classList.add('hidden');
 }
 
 function hideScores() {
     const s = document.getElementById('scoresScreen');
     const w = document.getElementById('startScreen');
+    const g = document.getElementById('gameOverScreen');
     if (s) s.classList.add('hidden');
+    if (_scoresFrom === 'end' && g) { g.classList.remove('hidden'); return; }
     if (w) w.classList.remove('hidden');
 }
 
@@ -30906,6 +31266,40 @@ function copyDailyResult(btn) {
    seconds is enough to read the board and not enough to be a wait; a tap
    skips it. A win goes straight to its celebration as before. ═════════════ */
 const DEATH_HOLD_MS = 2200;
+/* ── [180926c] THE RUN'S LAST WORD IS A POOL NOW ────────────────────────────
+   Field call: "'you're grounded' is featured too much and we need some other
+   options to mix it up more." It is the same fault the end-of-level lines had
+   at [120926-2005] — one line standing where a pool was needed — and it bites
+   harder here, because a run ends far more often than a level is cleared: 38
+   recorded endings across three exports, of which only two got past level 5.
+   So the title deals from its own shuffled deck (dealLine): a line cannot come
+   round again until the rest have had their turn, and a fresh shuffle never
+   opens on the line the last deck closed with. The deck persists beside the
+   level decks, so reloading carries on through it.
+
+   THE SHAPE IS FIXED, and it is the shape that constrains the words: a small
+   possessive or article on the first line, the verdict large on the second.
+   The large part must hold ONE LINE inside the card — the 42px, eight-letter
+   sizing at [080926h] was measured against GROUNDED, so nothing here is
+   longer than it.
+
+   THE REGISTER IS THE ELECTRICAL ONE. GROUNDED was chosen because it pays the
+   magnetism fiction rather than decorating it, and because it closes the loop
+   with FIELD FAILING on the last life. THE FIELD / FAILED closes that loop one
+   turn tighter — the warning says FAILING, the result says FAILED. The
+   machine-shop register (COGS AT REST, FLYWHEEL'S STILL WARM) was offered and
+   declined at [120926n], so it stays out of here too, and none of these
+   reaches for a death vocabulary the game has never used: it says GROUNDED,
+   not GAME OVER, and there is no falling in ROTOЯ. No word doubles across the
+   pool, articles aside. */
+const GO_TITLES = [
+    'YOU’RE|GROUNDED',   // the original — and the loop with FIELD FAILING
+    'THE FIELD|FAILED',
+    'POWER|GONE',
+    'NO|CHARGE',
+    'THE ROTOR|RESTS',
+    'SPUN|OUT'
+];
 const DEATH_LINE = {
     stall:     'OUT OF TIME',
     /* [170926d] There is no falling in ROTOЯ — the grid runs out beneath you. */
@@ -31003,7 +31397,14 @@ function endGameNow(reason = 'death') {
             // YOU'RE GROUNDED addresses the player rather than describing a state,
             // so it stacks — the possessive small, the verdict large — and the type
             // drops so the longer word still fits a phone.
-            titleEl.innerHTML = '<span class="go-youre">YOU\u2019RE</span>GROUNDED';
+            /* [180926c] Dealt from GO_TITLES, not fixed. The first line stays
+               in .go-youre (small, quiet) and the second carries the weight —
+               the split is on '|' so a pool entry reads as the finished
+               sentence it is. */
+            {
+                const _t = String(dealLine('goTitle', GO_TITLES)).split('|');
+                titleEl.innerHTML = '<span class="go-youre">' + _t[0] + '</span>' + (_t[1] || '');
+            }
             if (currentTheme === 'day') {
                 // Deep blue reads on the white day game-over screen (the
                 // lighter dark-mode blue would wash out on white).
@@ -31061,16 +31462,10 @@ function endGameNow(reason = 'death') {
     };
     bankRevolves();
     
-    function setBestEl(id, val, bestVal, isBetter) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-        const bestEl = document.getElementById('best' + id.replace('final',''));
-        if (bestEl) {
-            bestEl.textContent = `🏆 Best: ${bestVal}`;
-            bestEl.className = 'stat-best' + (isBetter ? ' new-best' : '');
-        }
-    }
-    
+    /* [180926c] setBestEl() DELETED. It was the last of the old number stats:
+       defined here, never called, and writing into ids (finalScore, bestScore…)
+       that left the markup with them. The comment that replaced them is the only
+       part worth keeping. */
     // (All number stats removed from the end screen — taunt only.)
     
     if (!syntheticRun) { bests = newBests; saveBests(); }
@@ -31078,7 +31473,33 @@ function endGameNow(reason = 'death') {
     // End-screen taunt — clean win/lose copy
     const tauntEl = document.getElementById('tauntBox');
     if (won) {
-        tauntEl.innerHTML = `Congratulations! You've won<br><span class="go-cause">Score: ${game.score}${game.score > (game._startBest || 0) && (game._startBest || 0) > 0 ? ' — NEW BEST!' : ''}</span>`;
+        /* ── [180926c] THE WIN CARD SPEAKS THE GAME'S LANGUAGE NOW ───────────
+           It read "Congratulations! You've won" over "Score: 53937", and every
+           part of that was wrong for this screen: a sentence-case SENTENCE in a
+           game that speaks in upper-case shouts; the score UNFORMATTED, where
+           the losing card writes 53,946; the whole thing carried in .go-cause,
+           the class written to hold the cause of death; and no level line at
+           all. Ten levels cleared is the ending the campaign is built toward,
+           and it was the roughest card in the game.
+           It now takes the losing card's tiers exactly — the score alone and
+           largest, then one fact line — and stops there. No fourth line: FULL
+           ROTATION above it is the line in the game's own voice, and the level's
+           own celebration has already had the finale card to itself (see
+           completeSet). A third telling is what [120926c] cut the cause for. */
+        const isBestW = game.score > (game._startBest || 0) && (game._startBest || 0) > 0;
+        const _winCap = dailyMode ? DAILY_ROUNDS : 10;
+        tauntEl.innerHTML =
+            `<div class="go-scorewrap">` +
+                `<span class="go-lbl">SCORE</span>` +
+                `<span class="go-score">${game.score.toLocaleString()}</span>` +
+                (isBestW ? `<span class="go-newbest">NEW BEST</span>` : '') +
+            `</div>` +
+            `<div class="go-stats">` +
+                `<div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>` +
+                    `<span class="go-val" style="white-space:nowrap">${_winCap} of ${_winCap}` +
+                    `<span class="go-val-sub"> · ${Math.round(-(game.cameraY || 0))} ROWS DEEP</span>` +
+                    `</span></div>` +
+            `</div>`;
     } else {
         // Achievement · cause · consolation. The cause tells the truth about
         // this ending in the game's voice (and quietly re-teaches its lesson);
@@ -31164,9 +31585,22 @@ function endGameNow(reason = 'death') {
             // [080926l] RANK removed from the card per the field note; the rank is
             // still computed and still on the scores screen. LEVEL stands alone,
             // on one line ("4 of 10" was wrapping in a half-width cell).
+            /* ── [180926c] ONE FACT LINE, NOT TWO TIERS ──────────────────────
+               Measured across the 27 recorded runs that carry the depth figure:
+               depth and level reached correlate at r = 0.92, and the bands
+               barely overlap — level 1 is 6–16 rows down, level 2 10–23, level 3
+               29–51, level 4 39–73, level 5 88–101, level 6 119. So the card
+               stated where you got to, then stated it again in rows, on its own
+               tier, in the grey reserved for a fact you can take or leave.
+               Depth does carry a little LEVEL cannot: two runs that both ended
+               on level 4 went 39 and 73 rows. So it is not cut, it is
+               SUBORDINATED — same line, half the size, the grey it already had.
+               One reading instead of two, and the resolution kept. */
             `<div class="go-stats">` +
                 `<div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>` +
-                    `<span class="go-val" style="white-space:nowrap">${lvlTxt}</span></div>` +
+                    `<span class="go-val" style="white-space:nowrap">${lvlTxt}` +
+                    `<span class="go-val-sub"> · ${Math.round(-(game.cameraY || 0))} ROWS DEEP</span>` +
+                    `</span></div>` +
             `</div>` +
             // ── [210826x] THE RUN'S OWN REVOLVE COUNT ───────────────────────
             // [210826u] added the counter and put the personal BEST on the
@@ -31190,7 +31624,6 @@ function endGameNow(reason = 'death') {
                the Out Run distance, and it reads the same way on every run.
                Revolves keep their place as the lifetime odometer on the scores
                screen, which is where an effort total belongs. */
-            `<div class="go-revolves">${Math.round(-(game.cameraY || 0))} ROWS DEEP</div>` +
             /* [090926h] THE DAILY RESULT — the line you can say to someone, and a
                button that copies it. Level reached (or FINISHED), the play time,
                rows and best combo. Personal best for the day kept locally. */
@@ -31227,6 +31660,11 @@ function endGameNow(reason = 'death') {
         const w = cvEl && cvEl.getBoundingClientRect ? cvEl.getBoundingClientRect().width : 0;
         const rootStyle = document.documentElement && document.documentElement.style;
         if (w > 80 && rootStyle && rootStyle.setProperty) rootStyle.setProperty('--board-w', Math.round(w) + 'px');
+        /* [180926d] the card's second beat, handed to the CSS from the one
+           number the tone is built on. A win has no death tone to wait for, so
+           its card opens at once. */
+        if (rootStyle && rootStyle.setProperty)
+            rootStyle.setProperty('--go-catch-ms', (won ? 0 : DEATH_CATCH_MS) + 'ms');
     }
 
     document.getElementById('gameOverScreen').classList.remove('hidden');
@@ -31364,20 +31802,50 @@ function layoutPlay() {
     sp.style.height = stick + 'px';
 }
 
+/* ══ [180926f] THE ONE-WAY TRAPDOOR IN THE FIT ══════════════════════════════
+   Field report: "I still can't see it in the right-hand pane — all I can hear
+   is the impending danger sound. I see nothing of the welcome screen, nothing
+   of the game, just the very end."
+   Reproduced in a frame that is given its size AFTER the page loads, which is
+   what an embedded viewer does. The sequence:
+     · at load the frame is 0 x 0, so innerHeight is 0
+     · availH comes out NEGATIVE, so scale is 0 (or below it)
+     · the container is set to transform: scale(0) — invisible
+     · and from then on its own box measures 0 high, so `if (!rect.height)
+       return` fires on every tick of the 400ms interval, for ever.
+   It had scaled itself into a state it could no longer measure its way out of.
+   The welcome screen and the game-over card sit OUTSIDE .game-container, which
+   is exactly why those two were visible and nothing between them was: the game
+   ran, the clock ran down, the danger sting played, and the run ended, all on a
+   board scaled to nothing.
+   Three guards, in the order they matter:
+     1. a viewport with no size yet is not a measurement — don't act on it;
+     2. if the box measures zero while we are scaled, that IS the trapdoor:
+        unscale and let the next tick see the real box;
+     3. never accept a scale that is not a positive finite number, and never
+        shrink past a floor — whatever else goes wrong, the board stays on
+        screen where it can be reported. ═══════════════════════════════════════ */
+const FIT_SCALE_FLOOR = 0.2;
 function fitGameToViewport() {
     fitHudToBoard();
     layoutPlay();
     const wrap = document.querySelector('.game-container');
     if (!wrap) return;
+    if (window.innerWidth < 40 || window.innerHeight < 40) return;   // (1) not yet sized
     const rect = wrap.getBoundingClientRect();
-    if (!rect.height) return;
+    if (!rect.height) {                                              // (2) the trapdoor
+        if (_fitScale !== 1) { _fitScale = 1; wrap.style.transform = ''; wrap.style.marginBottom = ''; }
+        return;
+    }
     const naturalH = rect.height / _fitScale;
     const naturalW = rect.width / _fitScale;
     const h1el = document.querySelector('h1');
     const headerH = h1el ? h1el.getBoundingClientRect().height + 6 : 0;
     const availH = window.innerHeight - headerH - 14;
     const availW = window.innerWidth * 0.99;
-    const scale = Math.min(1, availH / naturalH, availW / naturalW);
+    let scale = Math.min(1, availH / naturalH, availW / naturalW);
+    if (!isFinite(scale) || scale <= 0) return;                      // (3) nothing usable: keep what we had
+    scale = Math.max(FIT_SCALE_FLOOR, scale);
     if (Math.abs(scale - _fitScale) < 0.01) return;
     _fitScale = scale;
     if (scale < 0.999) {
@@ -31405,6 +31873,15 @@ document.addEventListener('keydown', e => {
     if ((typeof noteMode !== 'undefined' && noteMode) ||
         (document.activeElement && (document.activeElement.tagName === 'INPUT' ||
                                     document.activeElement.tagName === 'TEXTAREA'))) return;
+    /* [180926c] THE OFFER OWNS THE KEYBOARD WHILE IT IS UP. R or Enter watches
+       the replay, Space or Escape gets on with the level, and everything else
+       is left alone on purpose: a direction still held from the last move — and
+       keydown REPEATS while a key is held — would otherwise dismiss a countdown
+       the player never meant to touch. */
+    if (typeof replayOfferLive === 'function' && replayOfferLive() && !e.repeat) {
+        if (e.key === 'r' || e.key === 'R' || e.key === 'Enter') { replayOfferTake(); e.preventDefault(); return; }
+        if (e.key === ' ' || e.code === 'Space' || e.key === 'Escape') { replayOfferPass('key'); e.preventDefault(); return; }
+    }
     // Move hints — H toggles the landing-preview overlay
     if (e.key === 'h' || e.key === 'H') {
         toggleHints();
@@ -32525,6 +33002,7 @@ function fbTick(now) {
     // the two appeared together. They were never related.
     if (typeof FB_FRAMES === 'undefined' || !FB_FRAMES || !FB_FRAMES.length) {
         fbRunning = false;   // stop the loop rather than throw on every frame
+        startScriptedDemo();   // [180926e] ...and hand over, rather than leaving the canvas blank
         return;
     }
     const idx = Math.floor((now - fbStart) / (1000 / FB_FPS)) % FB_FRAMES.length;
@@ -32541,6 +33019,39 @@ function fbTick(now) {
 }
 
 let DEMO_VIDEO = true;
+/* ══ [180926e] THE LAST RUNG OF THE CASCADE WAS NEVER WIRED ═════════════════
+   Field report: "the game window in claude is not showing the game, just a
+   black hole." The welcome screen's panel is a <video> with a fallback chain
+   behind it, and the comment below promises the end of it — "never a dead
+   rectangle". It was a dead rectangle, on every copy of index.html shipped on
+   its own, which is every copy that goes anywhere but the folder the captures
+   live in. The chain, as it actually ran:
+     · rotor-demo-night.mp4, then rotor-demo.mp4 — both absent, both error
+     · fallbackToCanvas() → startFlipbook()
+     · fbTick reads FB_FRAMES, which lives in frames.js, also absent, and
+       [090826f] quite rightly stops the loop rather than throw sixty times a
+       second — leaving the canvas blank
+     · and the scripted demo, which needs no files at all and was sitting right
+       there, never ran, because demoLoop is gated on DEMO_VIDEO and NOTHING IN
+       THE GAME EVER SET IT FALSE. One assignment missing, one black box.
+   So the chain now ends where it always said it did. The scripted demo is the
+   floor: it draws itself out of the game's own code and cannot go missing. */
+function startScriptedDemo() {
+    if (!DEMO_VIDEO) return;                 // already running
+    DEMO_VIDEO = false;
+    fbRunning = false;                       // the flipbook stands down
+    const dv = document.getElementById('demoVideo');
+    if (dv) dv.style.display = 'none';
+    const dc = document.getElementById('demoCanvas');
+    if (dc) {
+        dc.width = D_COLS * D_CELL; dc.height = D_ROWS * D_CELL;   // the flipbook may have resized it
+        dc.style.display = 'block'; dc.style.width = '100%'; dc.style.height = 'auto';
+        dc.style.aspectRatio = (D_COLS * D_CELL) + ' / ' + (D_ROWS * D_CELL);
+    }
+    lastDemoTime = performance.now();
+    if (typeof fitWelcome === 'function') { try { fitWelcome(); } catch (e) {} }
+    requestAnimationFrame(demoLoop);
+}
 (function initDemoVideo() {
     const dv = document.getElementById('demoVideo');
     if (!dv) return;
@@ -32553,7 +33064,10 @@ let DEMO_VIDEO = true;
         dv.style.display = 'none';
         const dc = document.getElementById('demoCanvas');
         if (dc) { dc.style.display = 'block'; dc.style.width = '100%'; dc.style.height = 'auto'; }
-        startFlipbook();   // frame-by-frame copy of the gameplay clip (20fps)
+        /* [180926e] the flipbook only if its frames actually shipped; otherwise
+           straight to the scripted demo, which needs no second file */
+        if (typeof FB_FRAMES !== 'undefined' && FB_FRAMES && FB_FRAMES.length) startFlipbook();
+        else startScriptedDemo();
     }
     // iOS quirk: the muted ATTRIBUTE alone doesn't satisfy autoplay policy on
     // some versions — the JS properties must be set too, before src.
@@ -32642,6 +33156,16 @@ let DEMO_VIDEO = true;
 
 function demoLoop(time) {
     if (DEMO_VIDEO) return;   // scripted demo dormant while the capture plays
+    /* [180926e] IT IDLES NOW INSTEAD OF STOPPING. The loop used to reschedule
+       itself only while the welcome screen was visible, so the first game
+       killed it for good and coming back from a run — or from TOP SCORES —
+       left the panel frozen on its last frame. The flipbook has idled cheaply
+       through the same situation since it was written; this does the same. */
+    requestAnimationFrame(demoLoop);
+    {
+        const ss = document.getElementById('startScreen');
+        if (ss && ss.classList.contains('hidden')) { lastDemoTime = time; return; }
+    }
     const dt = Math.min(48, time - lastDemoTime);
     lastDemoTime = time;
     demoPhaseT += dt;
@@ -32678,10 +33202,6 @@ function demoLoop(time) {
     demoCamTop += (camTarget - demoCamTop) * Math.min(1, dt * 0.007);
 
     renderDemo(prev, cur, frac, time);
-
-    if (!document.getElementById('startScreen').classList.contains('hidden')) {
-        requestAnimationFrame(demoLoop);
-    }
 }
 
 // Apply saved settings (theme, volumes, toggles) before the welcome shows

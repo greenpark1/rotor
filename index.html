@@ -4387,14 +4387,21 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 //    time from a trusted source — the sandbox clock is unreliable). Add one
 //    changelog comment line above it per build. It renders on the welcome
 //    screen under PLAY.
-//  · Source of truth is github.com/greenpark1/rotor — index.html (never
-//    rename it; GitHub Pages serves it). Compare BUILD_VERSION of what you
-//    fetched against what Jake says he's on; if GitHub is behind, STOP and
-//    ask him to push before editing.
-//  · Deliverable is always this single index.html (frames.js is separate,
-//    rarely touched). Jake drags it into ~/Projects/rotor/, tests over
-//    file://, then uploads to GitHub with the build stamp as the commit
-//    message.
+//  · SOURCE OF TRUTH is the Claude project ROTOЯ - V9 and its dated chats
+//    ("ROTOЯ September 18" and so on). The index.html Jake attaches at the
+//    top of the latest dated chat is the current build. A file further up a
+//    chat, or in an earlier dated chat, is older. Work ONLY from the file
+//    Jake attaches.
+//  · NEVER fetch the game from GitHub or GitHub Pages to work on it. GitHub
+//    is where Jake PUBLISHES, not where anyone reads from. It can lag the
+//    real build (on 19 Sep 2026 it was two builds behind), so a session that
+//    trusts it can quietly undo work. If unsure which build you have, ask.
+//  · Keep at most one index.html in the project's knowledge area. Copies
+//    under the same name cannot be told apart.
+//  · Deliverable is always this single index.html, never renamed (GitHub
+//    Pages serves it by that name). Jake drags it into ~/Projects/rotor/,
+//    tests over file://, then uploads to GitHub with the build stamp as the
+//    commit message.
 //  · Verify before shipping: at minimum node --check both inline scripts;
 //    for behaviour/render changes, run the game headlessly (jsdom + a real
 //    canvas) and exercise the changed path.
@@ -7284,7 +7291,10 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // from before and after a seven-change merge would hide the effect rather than
 // show it. Same date, later time — adjust if the convention differs; what
 // matters is that it is not still 0920.
-const BUILD_VERSION = '190926-0001 ROTOЯ · SIDEWAYS';
+// 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
+// any session to treat GitHub as the source of truth; the Claude project and
+// its dated chats are, and the game is never fetched from GitHub to edit.
+const BUILD_VERSION = '190926-1142 ROTOЯ · SIDEWAYS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a

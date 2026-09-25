@@ -3949,7 +3949,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
         <div class="replay-skip" id="replaySkipTop" hidden>TAP TO SKIP</div>
     </div>
     <!-- [120926k] ACTION REPLAY, on the board, big then normal then gone -->
-    <div class="replay-intro" id="replayIntro" hidden><span>ACTION REPLAY</span></div>
+    <div class="replay-intro" id="replayIntro" hidden><span>REPLAY</span></div>
     <div class="replay-bar" id="replayBottom" hidden>
         <div class="replay-cap" id="replayCapBottom"></div>
         <div class="replay-skip">TAP TO SKIP</div>
@@ -3987,7 +3987,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
             <div class="level-card-offer lc-row" id="lcOffer" hidden>
                 <button class="lc-replay-btn" id="lcReplayBtn" type="button"
                         onclick="event.stopPropagation(); replayOfferTake();">
-                    <span aria-hidden="true">&#9654;</span><span>ACTION REPLAY</span>
+                    <span aria-hidden="true">&#9654;</span><span>REPLAY</span>
                     <span class="lc-ring">
                         <svg width="14" height="14" viewBox="0 0 22 22" aria-hidden="true">
                             <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(6,34,43,0.25)" stroke-width="2"></circle>
@@ -7294,7 +7294,17 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
-const BUILD_VERSION = '190926-1142 ROTOЯ · SIDEWAYS';
+// 250926-1652: THE BRINK WARNS, AND FOUR FIELD CALLS. The brink's five lines
+// are warnings rather than descriptions; the coverage grade leaves the level
+// card; ACTION REPLAY is just REPLAY on the button and on the board; and the
+// single's hole refusal says what it costs and what to do about it.
+// 250926-1610: THE BRINK SPEAKS, THE ARM COVERS. Two field calls. (1) The
+// death-warning sting now carries one of five rotor-themed warnings, dealt
+// from a shuffled deck so all five are seen before any repeats. (2) A turn
+// shifter's sweep marks every ordinary floor cell it passes over as covered,
+// not only the holes it fills — so the arm's whole path reads as walked, and
+// can finish a row.
+const BUILD_VERSION = '250926-1652 ROTOЯ · THE ARM COVERS';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -17728,7 +17738,15 @@ function showLevelCard(opts) {
     if (!el) return;
     const set = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt || ''; };
     set('lcTitle', opts.title);
-    set('lcCov', opts.covText);
+    /* [250926c] THE COVERAGE GRADE IS OFF THE CARD — designer's call. It was
+       the second row of four, between the title and the praise, and it said in
+       a grade what the scorecard says in points a moment later: the card is for
+       the MOMENT, the scorecard is for the accounting. The row is passed an
+       empty string rather than unwired, so the grade keeps being computed
+       (coverageGrade, its bonus and the gold state all still run and still pay)
+       and one line puts it back. `.lc-row:empty` already hides an empty row, so
+       nothing leaves a gap. */
+    set('lcCov', '');
     set('lcPraise', opts.praise);
     set('lcExtra', opts.extra);
     const cv = document.getElementById('lcCov');
@@ -21225,6 +21243,30 @@ let sweepQueue = [];
 const SWEEP_CHIME = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
 function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
     if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
+    /* [250926b] THE ARM COVERS WHAT IT PASSES OVER. Field call: every cell the
+       sweep crosses should read as an occupied square, not just the holes it
+       fills. It already laid ground in the voids (fillVoid marks it covered);
+       plain unwalked floor under the arc was left untouched, so an arm could
+       swing over four squares, bridge one, and leave the other three looking
+       unvisited. The cube went over them — that is the walk.
+       Only ORDINARY floor is marked: a red keeps its own rules (it is consumed
+       by contact, not by being passed over), and anything else in `world` is
+       an object rather than ground. Marked as `addGenerated` so it joins both
+       sides of the coverage ratio, exactly as red-born and bridged cells do —
+       otherwise a long sweep would inflate coverage against a denominator that
+       never counted those cells.
+       It counts toward the ROW as well, since markCovered is what rowCellOwed
+       reads: a sweep across a row's last gaps can now finish it. That is the
+       same bargain a bridge already makes, and it is the point of the tool. */
+    const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
+    for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) {
+        if (c.x < 0 || c.x >= VIEW_W || c.y < topB || c.y > botB) continue;
+        const k = `${c.x},${c.y}`;
+        if (world[k] !== undefined) continue;          // void, red, wall, object — not plain floor
+        if (visited.has(k)) continue;
+        markCovered(k, true);
+        addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#c4b5fd');
+    }
     const cellsNow = sweptVoids(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns);
     if (!cellsNow.length) return 0;
     const t0 = transformAnim.startTime, dur = transformAnim.duration;
@@ -22565,8 +22607,18 @@ function move(dir) {
                 if (sfx.bonk) sfx.bonk();
                 flashPlayerDenied();
                 showTip('onecube');
+                /* [250926d] THE REFUSAL EXPLAINS ITSELF. 'NO CUBE TO SPARE'
+                   named the accounting and not the situation: it assumes the
+                   player already knows a hole is paid for with a cube, which is
+                   the very thing they have not been told at the moment they are
+                   stopped. Two lines now — what happened, then what to do — in
+                   the game's own words for the mechanic (a cube laid in a hole
+                   is a STEPPING STONE, which is what the bridge and the sweep
+                   both build). The float carries a newline, as OUT OF TIME's
+                   two-line card already does. Longer life to read two lines. */
                 addFloat(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL,
-                         'NO CUBE TO SPARE', '#94a3b8', false, { life: 1100, hold: 400 });
+                         'A HOLE COSTS A CUBE\nGROW FIRST, THEN CROSS', '#94a3b8', false,
+                         { life: 1900, hold: 900 });
                 rec('refuse', { ch: 'hole', s: 'single', r: advancedRound });
                 bridgeCubeForSingle(vc.x, vc.y);   // [110926q] a cube for the bridge
                 return;
@@ -27654,6 +27706,35 @@ function lethalMoveExists() {
     }
     return false;
 }
+/* ══ [250926a] THE BRINK SAYS SOMETHING ═════════════════════════════════════
+   Field call: five rotor-themed warnings on the death-warning sound, mixed up,
+   all seen before any repeats. The sting fired into silence — a sound that
+   says DANGER but never which danger, on the one edge in the game that kills.
+   Dealt from a shuffled deck (`dealLine`, the same one the level lines and the
+   end-of-run titles use): each of the five is shown once before any comes
+   round again, and a fresh shuffle never opens on the line the last deck
+   closed with. The deck persists in local storage beside the others.
+   THE POOL'S RULES, as the end-of-run titles set them at [180926b]: a shout,
+   upper case, at most four words, in the electrical register the game already
+   speaks (GROUNDED, FIELD FAILING, NO CHARGE), and no word doubled across the
+   pool — articles aside. The line arrives WITH the sting, not after it: the
+   sound is the alarm and the words are what it is about.
+   It rides the sting's own arming, so it can no more machine-gun than the
+   sound can — one per BRINK_REARM_MS, and only when a lethal move exists. */
+/* [250926e] A WARNING, NOT A WEATHER REPORT — designer's call on the first
+   set: "real danger needs to be communicated". FIELD FAILING and LOSING
+   TRACTION describe a state; at the brink the player has about one move, and
+   what they need is an instruction. Each line now opens on the alarm word and
+   then says what about it, so the first syllable does the work even if the
+   rest is never read. Still the pool's rules: upper case, four words at most,
+   no word doubled across the five (articles aside). */
+const BRINK_LINES = [
+    'LOOK OUT — EDGE!',
+    'CAREFUL — NOTHING BELOW',
+    'DANGER — LAST ROW',
+    'PULL BACK NOW!',
+    'ONE FLIP FROM GROUNDED'
+];
 function brinkWarning() {
     const lv = brinkLevel();
     const now = performance.now();
@@ -27661,7 +27742,11 @@ function brinkWarning() {
         if (_brinkArmed && now - _brinkAt > BRINK_REARM_MS) {
             _brinkArmed = false; _brinkAt = now;
             if (sfx.brink) sfx.brink();
-            rec('brink', { gap: +brinkGap().toFixed(2), s: game.shapeType });
+            const line = dealLine('brink', BRINK_LINES);
+            addFloat(game.playerX * CELL + CELL / 2,
+                     (game.playerY - game.cameraY) * CELL - 12,
+                     line, '#f87171', true, { life: 1500, hold: 600 });
+            rec('brink', { gap: +brinkGap().toFixed(2), s: game.shapeType, w: line });
         }
     } else if (!_brinkArmed && !(brinkGap() < BRINK_REARM_CELLS) && !lethalMoveExists()) {
         _brinkArmed = true;

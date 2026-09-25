@@ -356,8 +356,15 @@ body.theme-day .note-bar input { color: var(--day-ink); background: #f1f5f9; }
 }
 .level-card.hidden { display: none; }
 .level-card-box {
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
-    max-width: 86%; padding: 26px 36px; border-radius: 22px;
+    /* [250926i] SQUARER — designer's call. It was a wide, shallow letterbox:
+       a 86%-wide box with 36px of side padding around three short centred
+       lines. A min-height close to its own width, even padding and the content
+       centred in it make it read as a card rather than a banner. Both maxima
+       stay proportional so a phone shrinks it rather than cropping it. */
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px;
+    width: min(86%, 330px); min-height: min(76%, 300px);
+    max-width: 86%; padding: 28px; border-radius: 26px;
     background: rgba(15, 23, 42, 0.80);
     border: 1px solid rgba(148, 163, 184, 0.25);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -365,7 +372,12 @@ body.theme-day .note-bar input { color: var(--day-ink); background: #f1f5f9; }
 }
 .lc-row { opacity: 0; transform: translateY(10px); animation: lcRowIn 0.4s ease-out forwards; text-align: center; }
 .lc-row:empty { display: none; }
-.level-card-title  { animation-delay: 0.10s; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #a3e635; }
+.level-card-title  { animation-delay: 0.10s; font-size: 26px; font-weight: 800; letter-spacing: 2px; color: #a3e635;
+    /* [250926i] TWO LINES — the title carries its own break (LEVEL N \n COMPLETE!),
+       exactly as the scorecard's own title already does. pre-line rather than
+       <br> so it stays textContent and cannot inject markup; line-height eased
+       so the two lines sit as a block rather than a stack. */
+    white-space: pre-line; line-height: 1.15; }
 .level-card-cov    { animation-delay: 0.50s; font-size: 17px; font-weight: 700; letter-spacing: 1px; color: #cbd5e1; font-variant-numeric: tabular-nums; }
 .level-card-cov.gold { color: #ffd60a; text-shadow: 0 0 14px rgba(255, 214, 10, 0.5); }
 .level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: var(--wm-c0); text-transform: uppercase; }
@@ -399,7 +411,10 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
 .level-card-offer { animation-delay: 0s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .lc-replay-btn {
     display: flex; align-items: center; justify-content: center; gap: 7px;
-    min-height: 28px; padding: 5px 13px; border-radius: 999px; cursor: pointer;
+    /* [250926i] SQUARER, per the field call: a 999px pill reads as a tag, and
+       the button beneath a two-line title wants the same family of corners as
+       the card itself (26px on the box, 10px here — a small card, not a pill). */
+    min-height: 32px; padding: 7px 14px; border-radius: 10px; cursor: pointer;
     font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
     border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.08);
     color: var(--wm-c0); box-shadow: none; opacity: 0.85;
@@ -3998,7 +4013,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
                         <span class="lc-ring-num" id="lcOfferNum">4</span>
                     </span>
                 </button>
-                <div class="lc-replay-hint" id="lcOfferHint">TAP TO WATCH</div>
+                <div class="lc-replay-hint" id="lcOfferHint"></div>
             </div>
         </div>
     </div>
@@ -7294,6 +7309,56 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 250926-2345: ROWS OFF THE CARD, and two things playdata 54 showed. (1) The
+// end card's depth figure ("187 ROWS DEEP") is cut — designer's call; LEVEL
+// stands alone; depth stays in the data. (2) A respawned single cannot fall
+// into a hole while it is still ghosted (1.5s): the 21-minute run lost 20 seconds
+// in 1.4 (out of grid at the bottom, back as a single at the top, straight
+// into the hole beside the respawn point). Refused, tipped, recorded. (3) A
+// fall forgiven by spin-up grace now says so on screen — FREE WHILE SPINNING
+// UP — where before the level-1 door promised −10s and the fall cost
+// nothing, silently. DEATH_LINE gains 'trapped' and 'impact' so a survivable
+// fall of either kind no longer floats THE RUN ENDED.
+// 250926-2250: THE OFFER LANDS, AND IT IS A MACHINE. Measured on six boards
+// (grow_t D): after 2235 the square was still offered nothing, then only
+// greens. Two more faults. (1) The three-cell clearance ring, measured from
+// every cube of a square at the centre of the view, covered the whole playable
+// board, so no cell was ever left to place an offer on — the offer now takes
+// the bridge's rule, two cells out, still within three moves. (2) "A shifter
+// only near a set" converted every offer more than four cells from a set into
+// a green, and the grow-supply clause could do the same; both now stand aside
+// for the offer, as they already did for a row's asset. The suites assert the
+// offer is ON (formula 16, board 200); the square is offered a step or a turn
+// within three moves on every board, never a green.
+// 250926-2235: two placement faults found while testing the above — an offer
+// could only land beside a set, and a preferred pool emptied by the clearance
+// filter refused the spawn instead of widening to the rest of the board.
+// 250926-2215: THE SQUARE IS NEVER WITHOUT A TOOL. The offer that places a
+// machine within three moves of an awkward body now includes the square, runs
+// under rows-only (it is a rescue, not a stream), and reopens whenever such a
+// body has had no tool in reach for five seconds. A square is never offered a
+// green, which it cannot use.
+// 250926-2140: a trap could be left half-armed forever in a console without
+// .info (the exception fired before the lock, the message and the death).
+// 250926-2125: THE FALL IS TEN, AND IT SAYS SO. The fall drops 20 -> 10; a
+// survived death puts its cause and its price on the board in the OUT OF TIME
+// card's shape; the level-1 door states the rule; the hole tip names the price.
+// 250926-2105: THE LAST CUBE IS THE LAST. Six calls in one build: a single
+// flipping into a hole now dies (the cube becomes ground, the body is gone);
+// the mercy hourglass re-arms once the clock recovers past 60s; any body that
+// can grow gets a hand up when stuck; the last five seconds count on the
+// board; the hole tip is shown before the fact; level 3 asks three pieces.
+// 250926-2020: the arming refreshes every frame, not only when a green is in
+// reach — grow_t.js 8/8 boards: no bond without a move, bond once moved.
+// 250926-2005: the grow gate now covers BOTH per-frame bond paths
+// (checkCollisions had its own copy); verified in grow_t.js, 8 boards.
+// 250926-1940: A GROW IS A DECISION. Five field calls. (1) A row's asset now
+// waits until the body is two cells clear of the earned square, so a green
+// can no longer be paid into contact. (2) The magnetic bond arms on ARRIVAL:
+// only greens the body moved next to may fuse, so a single stops becoming a
+// pair on its own. (3) A turn's sweep also marks its LANDING cells covered.
+// (4) The level card is squarer, its title two lines, the replay button
+// squarer. (5) TAP TO WATCH removed.
 // 250926-1652: THE BRINK WARNS, AND FOUR FIELD CALLS. The brink's five lines
 // are warnings rather than descriptions; the coverage grade leaves the level
 // card; ACTION REPLAY is just REPLAY on the button and on the board; and the
@@ -7304,7 +7369,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '250926-1652 ROTOЯ · THE ARM COVERS';
+const BUILD_VERSION = '250926-2345 ROTOЯ · ROWS OFF THE CARD';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8182,7 +8247,16 @@ const CLOCK_ONLY = !/[?&]hearts=1(?:&|$)/.test(location.search || '');
    trim 12, THIS, and nothing above it. Still the heaviest single charge, still
    clearly worse than paying to cross, but survivable often enough that a run
    can absorb a mistake and continue. */
-const FALL_COST_SEC = 20;
+/* [250926s] 20 -> 10 — designer's call, after the numbers: the median clock in
+   the last two runs was 40-44s, so a fall took half of it; it cost more than any
+   checkpoint paid (18/16/14/12); and since [250926m] it is the price of the
+   commonest body meeting the commonest hazard, so falls will be more frequent,
+   not less. The trim rung it once sat above is gone (a cube pays a hole with
+   no seconds), so the ladder is now bump 2 · shove 10 · fall 10: a fall costs
+   the shove's price PLUS the body, the position and a respawn as a single,
+   which is where the rest of the punishment lives. bumpCost is told which of
+   the two tens it is charging ([250926t]) so the export still tells them apart. */
+const FALL_COST_SEC = 10;
 // [300726as] What a completed level GRANTS. It used to be the full ring
 // (MOMENTUM_MAX, now 600s) — so finishing level 1 handed over ten minutes
 // outright, whatever you had collected, which is why cutting hourglass
@@ -8943,6 +9017,9 @@ function chooseShifterKind() {
     }
     // [110926l] THE LONG REACH — machines over greens while a diagonal or a J
     if (shapeFavoured()) { w.green *= FAVOUR_KIND.green; w.pivot *= FAVOUR_KIND.pivot; w.slip *= FAVOUR_KIND.slip; }
+    // [250926w] a square cannot grow (EVO.square is empty): while it is the body, a
+    // favoured roll never wastes itself on a green — the tool is a step or a turn
+    if (shapeFavoured() && game && game.shapeType === 'square') w.green = 0;
     const r = Math.random() * (w.green + w.pivot + w.slip + w.warp);
     if (r < w.green) return 'green';
     if (r < w.green + w.pivot) return 'pivot';
@@ -11182,7 +11259,7 @@ function composeSetByBudget(budget, round) {
     // ── [180826y] THE SET TABLE IS AUTHORED — designer-locked ───────────────
     // The random composer is retired (kept below, renamed, for the archaeology).
     // Five constraints, argued and settled:
-    //   counts 3,3,4,4,5,5 then 6 from L7 · J debuts before the square · all
+    //   counts 3,3,3,4,5,5 then 6 from L7 ([250926r]) · J debuts before the square · all
     //   shapes in play by L7 · wherever two singles appear the SECOND is the
     //   tricky one (from L1 — the signature hardship taught at the gentlest
     //   moment) · one EVENT per level, debuts carrying the big steps.
@@ -11205,7 +11282,14 @@ function composeSetByBudget(budget, round) {
     switch (r) {
         case 1:  picks = [S(), St(), P()]; break;
         case 2:  picks = [St(), P('H'), P('V')]; break;
-        case 3:  picks = [S(), St(), P('H'), P('V')]; break;
+        /* [250926r] THREE AT LEVEL 3 — designer's call, from playdata 51/52:
+           runs die at the third level and after, where the set went 3 → 4 while
+           the clock grant fell. The fourth piece now arrives at level 4 with
+           the diagonal, so the count step and the parity lesson land together
+           one level later; level 3 asks what level 2 asked, under the tighter
+           clock — a consolidation level, not a repeat. Counts now run
+           3,3,3,4,5,5,6,6,6,6. One line to put it back. */
+        case 3:  picks = [St(), P('H'), P('V')]; break;
         case 4:  picks = [S(), St(), P(), D()]; break;
         case 5:  picks = [S(), St(), P('H'), P('V'), D()]; break;
         case 6:  picks = [S(), St(), P(), D(), J()]; break;
@@ -11827,6 +11911,7 @@ function runSingleRescue() {
     const k = `${h.x},${h.y}`;
     delete world[k];
     world[k] = 'pickup';
+    armFusion(k);   // [250926g] the rescue reaches a body that cannot move to it
     addBurst(h.x * CELL + CELL / 2, (h.y - game.cameraY) * CELL + CELL / 2, '#a3e635');
     triggerEdgeGlow('#a3e635', 700);
     // [120926m] A HAND UP chucked in the ledger — the green arriving beside a
@@ -11834,6 +11919,34 @@ function runSingleRescue() {
     game._singleRescueAt = now;
     if (isle) game._isleFreed.add(isle.key);            // [170926b]
     rec('rescue', { k: isle ? 'island' : 'single', x: h.x, y: h.y, r: advancedRound, m: Math.round(momentumRemaining()) });
+}
+/* [250926p] the hand up for a body that is not a single — see the trap check */
+function runStuckRescue() {
+    if (game.testDrive || !game.running || game.shapeType === 'single') return false;
+    if (!(EVO[game.shapeType] && EVO[game.shapeType].length)) return false;   // a square cannot grow
+    const cells = getPlayerCells();
+    const own = new Set(cells.map(c => `${c.x},${c.y}`));
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    let best = null;
+    for (const c of cells) for (const [dx, dy] of NBR8) {
+        const x = c.x + dx, y = c.y + dy, k = `${x},${y}`;
+        if (own.has(k) || x < 0 || x >= VIEW_W || y < top || y > bot) continue;
+        const w = world[k];
+        if (w !== undefined && w !== 'void') continue;                       // only a hole or bare floor
+        if (slots.some(s => !s.claimed && s.keys.has(k))) continue;
+        if (!tryEvolve(x, y, cells)) continue;                                // the bond must make a shape
+        if (slotMisfitAt(cells.concat([{ x, y }]))) continue;
+        const score = (w === 'void' ? 2 : 0) + (dy < 0 ? 1 : 0);              // a hole first, north first
+        if (!best || score > best.score) best = { x, y, k, score };
+    }
+    if (!best) return false;
+    delete world[best.k];
+    world[best.k] = 'pickup';
+    armFusion(best.k);
+    addBurst(best.x * CELL + CELL / 2, (best.y - game.cameraY) * CELL + CELL / 2, '#a3e635');
+    triggerEdgeGlow('#a3e635', 700);
+    rec('rescue', { k: 'stuck', s: game.shapeType, x: best.x, y: best.y, r: advancedRound, m: Math.round(momentumRemaining()) });
+    return true;
 }
 const REPRIEVE_WINDOW_SEC = 20;
 // [100926h] Is there a hole anywhere in view — somewhere a cube can become ground?
@@ -14171,6 +14284,14 @@ function reserveDrip() {
 }
 const MAX_VISIBLE_TIME = 6;
 const MERCY_THRESHOLD_SEC = 30;
+/* [250926o] ONCE PER CRISIS, NOT ONCE PER LEVEL — designer's call. Playdata 52:
+   the rescue fired 92 seconds before the end of the run, on the same level, so
+   when the clock ran down a second time nothing could come — the last eleven
+   seconds had no spawn of any kind, and "death felt inevitable" is exactly
+   what the once-per-level rule produced. It re-arms once the clock has climbed
+   back past MERCY_REARM_SEC: you cannot farm it, because you have to recover
+   first, but a long level can rescue you twice. */
+const MERCY_REARM_SEC = 60;
 let mercyGivenThisLevel = false;
 // 't15'/'t30'/'t45' still recognised so cells from older saves still collect.
 function isTimeCell(v) { return v === 't10' || v === 't30' ||
@@ -16370,7 +16491,16 @@ function islandQuestion(wantSpin) {
      · HOW OFTEN: the landing cadence runs at FAVOUR_CADENCE.
    Singles, pairs and squares are untouched. One flag, SHAPE_FAVOUR_ON. ═══ */
 const SHAPE_FAVOUR_ON = true;
-const FAVOURED_SHAPES = new Set(['diagonal', 'jshape']);
+/* [250926w] THE SQUARE JOINS THE AWKWARD BODIES. Playdata 53: 73 seconds as a
+   square, one row completed, no machine spawned, then the board went bare and
+   the clock stalled. A square flips two cells in every direction, so it lives
+   on a quarter of the board and only a step or a turn can move it off that
+   lattice — and with reds off (NO_REDS) a hole is its only way to shrink. It
+   is the body that most needs a tool, and it was the one body the offer
+   excluded. */
+const FAVOURED_SHAPES = new Set(['diagonal', 'jshape', 'square']);
+const FAVOUR_DROUGHT_MS = 5000;      // [250926w] favoured, and no machine within reach for this long -> offer again
+const FAVOUR_REOFFER_GAP_MS = 9000;  // ...but never more often than this
 const FAVOUR_KIND = { green: 0.5, pivot: 1.5, slip: 1.2 };
 const FAVOUR_HALF_TURN = 0.65;       // share of 180° turns while favoured (0.5 otherwise)
 const FAVOUR_CADENCE = 0.6;          // landing cadence multiplier while favoured
@@ -16415,18 +16545,38 @@ function machineInBodyReach(depth = FAVOUR_REACH_MOVES) {
 }
 // THE OFFER — called every frame of live play
 let _favourShape = null, _favourUntil = 0, _favourTryAt = 0;
+/* [250926w] THE OFFER IS A RESCUE, AND IT STAYS OPEN. Two things had switched
+   it off. [170926g] rows-only gated it out with the ambient stream, but the
+   offer is not a stream: it is the same kind of thing as the hand up, the
+   bridge and the island's answer — a tool placed within reach of a body that
+   cannot otherwise get one — and those are exempt by design. And it only ever
+   opened once, for four seconds, on BECOMING the shape: a square that lived
+   73 seconds got one chance at the start and nothing after its first tool was
+   spent. Now, while the body is an awkward one, a drought — no armed machine
+   within three moves for FAVOUR_DROUGHT_MS — reopens the window, at most once
+   every FAVOUR_REOFFER_GAP_MS. The placement is unchanged: within reach, off
+   the frame, scored for what it would do. */
+let _favourDroughtAt = 0, _favourOfferedAt = -1e9;
 function favourOfferTick() {
-    if (!SHAPE_FAVOUR_ON || ROWS_ARE_THE_SOURCE || game.testDrive || game._replay || game._deathHold || game.introHold) return;   // [170926g]
+    if (!SHAPE_FAVOUR_ON || game.testDrive || game._replay || game._deathHold || game.introHold) return;
     const now = performance.now();
     if (game.shapeType !== _favourShape) {
         _favourShape = game.shapeType;
         _favourUntil = shapeFavoured() ? now + FAVOUR_OFFER_MS : 0;
+        _favourDroughtAt = 0;
     }
-    if (!_favourUntil || now > _favourUntil || now < _favourTryAt) return;
+    if (now < _favourTryAt) return;
     _favourTryAt = now + 250;
-    if (machineInBodyReach()) { _favourUntil = 0; return; }
+    if (!shapeFavoured()) return;
+    const inReach = machineInBodyReach();
+    if (inReach) { _favourUntil = 0; _favourDroughtAt = 0; return; }
+    if (!_favourUntil || now > _favourUntil) {
+        if (!_favourDroughtAt) _favourDroughtAt = now;
+        if (now - _favourDroughtAt < FAVOUR_DROUGHT_MS || now - _favourOfferedAt < FAVOUR_REOFFER_GAP_MS) return;
+        _favourUntil = now + FAVOUR_OFFER_MS;   // the drought reopens the window
+    }
     const r = spawnShifter('offer');
-    if (r && (r.kind === 'slip' || r.kind === 'pivot')) _favourUntil = 0;
+    if (r && (r.kind === 'slip' || r.kind === 'pivot')) { _favourUntil = 0; _favourOfferedAt = now; _favourDroughtAt = 0; }
 }
 
 /* ══ [120926a] OFF THE FRAME, AND BESIDE SOMETHING ═════════════════════════
@@ -16902,14 +17052,36 @@ function spawnShifter(src, atKey) {
     let reachMap = null;
     if ((shapeFavoured() || BRIDGE_OFFER) && (kind === 'slip' || kind === 'pivot')) {   // [110926q] within reach, for every body
         const rm = bodyLandSet(FAVOUR_REACH_MOVES);
+        /* [250926x] AN OFFER NEED NOT BE BESIDE A SET. The reach pool also asked
+           for nearSet, so with no set in range no cell qualified and the offer
+           fell through to the ordinary pool — which is how a square sat 73s
+           with nothing (playdata 53). A rescue tool's job is to be REACHABLE;
+           the set leash stays for every other writer. */
+        const wantSet = src !== 'offer';
         const inReach = anyEmptyR.filter(key => {
             if (!rm.has(key)) return false;
+            if (!wantSet) return true;
             const q = key.split(','); return nearSet(+q[0], +q[1]);
         });
         if (inReach.length) { pool = inReach; reachMap = rm; }
     }
     /* [170926a] three clear cells from the body — see the note above spawnShifter */
-    pool = pool.filter(key => { const q = key.split(','); return clearOfPlayer(+q[0], +q[1]); });
+    /* [250926y] A RESCUE LANDS TWO CELLS OUT, LIKE THE BRIDGE. The three-cell ring
+       is for the ambient stream; measured on a square at the centre of the view,
+       three cells from every cube covered the whole playable board once the frame
+       was excluded, so no offer could ever be placed there. The offer takes the
+       bridge's rule — "two cells out, never one" — and is still filtered to cells
+       the body can land on within three moves. */
+    const _clearR = src === 'offer' ? 1 : PLAYER_CLEAR_R;
+    pool = pool.filter(key => { const q = key.split(','); return clearOfPlayer(+q[0], +q[1], _clearR); });
+    /* [250926x] WIDEN BEFORE GIVING UP. The preferred band (4-8 rows ahead, four
+       columns either side) minus the frame minus three cells of clearance can
+       be EMPTY for a body sitting mid-screen — measured: a square at row 4 of
+       the view left a preferred pool of eight cells, all exactly three away —
+       and this line then refused the spawn outright, with sixty reachable
+       cells on the board. A refusal here is a lost asset (the stream keeps its
+       credit, the offer does not). The whole reachable board is tried first. */
+    if (!pool.length && !atKey) pool = anyEmptyR.filter(key => { const q = key.split(','); return clearOfPlayer(+q[0], +q[1], _clearR); });
     if (!pool.length && !atKey) return null;
     if (!pool.length) pool = [atKey];   // [170926e] a named cell stands on its own
     // ── [170826c] PLACEMENT IS INTENTIONAL NOW ──────────────────────────────
@@ -17101,7 +17273,9 @@ function spawnShifter(src, atKey) {
         const maxNeed = setNeeded.length
             ? Math.max(...setNeeded.map(id => SHAPE_SIZE[parseRequirement(id).type] || 1))
             : 1;
-        if (SHAPES[game.shapeType].mult < maxNeed && countVisibleGreens() < 2)
+        /* [250926z] not on the offer: a favoured body asked for a machine it can
+           land on, and a green in its place is the one thing it did not ask for */
+        if (src !== 'offer' && SHAPES[game.shapeType].mult < maxNeed && countVisibleGreens() < 2)
             kind = 'green';
     }
     // [270726zn] Green budget: at the cap, the spawn becomes a shift instead.
@@ -17135,7 +17309,13 @@ function spawnShifter(src, atKey) {
            player's own last square, which is the opposite case. So an earned
            square keeps the kind it rolled, wherever it is. The leash still
            governs every other path. */
-        if (_named) { /* the row chose the cell; the roll chose the tool */ }
+        /* [250926z] ...AND NEITHER IS THE OFFER. Measured (grow_t D, six boards):
+           every offer to a square more than four cells from a set came out of this
+           clause as a GREEN — a cube a square cannot use — so the rescue was paid
+           in the wrong currency six times out of six. The offer exists because the
+           body cannot use the stream; it is for the BODY, and the body carries
+           its new orientation to the set. The leash still governs the stream. */
+        if (_named || src === 'offer') { /* the row (or the body) chose the cell; the roll chose the tool */ }
         else if (countVisibleGreens() < MAX_VISIBLE_GREENS) kind = 'green';
         else return false;
     }
@@ -17144,6 +17324,7 @@ function spawnShifter(src, atKey) {
     // player's clock is under threshold, NO time is visible anywhere, and
     // mercy hasn't fired this level, this spawn becomes a GOLD hourglass
     // instead. Once per level, so running low deliberately can't farm it.
+    if (mercyGivenThisLevel && momentumRemaining() >= MERCY_REARM_SEC) mercyGivenThisLevel = false;   // [250926o]
     if (!mercyGivenThisLevel && !game.testDrive &&
         momentumRemaining() < MERCY_THRESHOLD_SEC && countTimeWindow(gy) === 0) {
         world[k] = 't30';   // [300726ay] the rescue is the big one
@@ -17803,8 +17984,13 @@ function _lcOfferShow(ms) {
     /* [180926d] the hint lost the second clause with the button's size — the
        ring already says the window is closing, and "OR ON TO LEVEL n" was the
        longest line in the offer for the path the player takes by doing nothing */
+    /* [250926j] TAP TO WATCH is gone — designer's call: "the replay button
+       looks as though it can be pressed because it presents itself as a
+       button". A caption telling you a button is a button is an admission the
+       button is not one. The countdown ring still says the window is closing.
+       The element stays, empty, so nothing else has to move. */
     const hint = document.getElementById('lcOfferHint');
-    if (hint) hint.textContent = 'TAP TO WATCH';
+    if (hint) hint.textContent = '';
     const t0 = performance.now();
     const paint = () => {
         const left = Math.max(0, ms - (performance.now() - t0));
@@ -18970,7 +19156,13 @@ function showRoundOverlay(roundNum, instant = false) {
           lbl.style.color = currentTheme === 'day' ? base : lightenHex(base, 0.45);
       } }
     const nu = document.getElementById('roundOverlayNew');
-    if (nu) nu.textContent = endlessDepth > 0 ? ('ENDLESS ' + endlessDepth) : (ROUND_NEW[roundNum] || '');
+    /* [250926u] Level 1's line was blank on purpose — "everything is new on the
+       first level". A RULE is not a debut, and the one rule a new player cannot
+       infer from the board is what losing the body costs. Stated once, on the
+       door every run opens on, in the price's own variable so it cannot drift. */
+    if (nu) nu.textContent = endlessDepth > 0 ? ('ENDLESS ' + endlessDepth)
+                           : roundNum === 1 ? `LOSE YOUR LAST CUBE · −${FALL_COST_SEC}s`
+                           : (ROUND_NEW[roundNum] || '');
     // [220826c] THE LEVEL BONUS MOVED TO THE SCORECARD. It is now an itemised
     // row on the tally, which is where the rest of the level's earnings are
     // counted and which the player sees seconds before this door — announcing it
@@ -19939,7 +20131,7 @@ function showLevelTally(onDone, opts) {
         const ok = rowSum === levelDelta && grandShown === game.score;
         console.log(`%c[ROTOR] tally audit — level ${advancedRound}: ${ok ? 'BALANCED' : 'MISMATCH'}`,
                     `color:${ok ? '#22c55e' : '#ef4444'};font-weight:bold`);
-        console.table({
+        (console.table || console.log)({   // [250926v] same guard as the trap's log
             'column of +N':      rowSum,
             'level actually up': levelDelta,
             'grand total shown': grandShown,
@@ -20349,7 +20541,7 @@ function completeSet() {
                 // their exclamation mark.
                 // (campaignDone is now the finale condition, so this branch only
                 //  ever runs for levels 1-9 — see isFinale above.)
-                title: `LEVEL ${advancedRound} COMPLETE!`,
+                title: `LEVEL ${advancedRound}\nCOMPLETE!`,   // [250926i] two lines
                 // [290726k] No score figures on the card — numbers appear
                 // only in the tally, at the moment they are counted.
                 // [210826az] Off the card — it now fires in play, on the tenth
@@ -20789,12 +20981,73 @@ function findFusionAt(cells) {
 // fires — no approach move required. Runs once per frame outside
 // animations, so multiple adjacent greens chain naturally, one bond per
 // beat. Parity does NOT flip (this is growth, not a move).
+/* ══ [250926g] A GROW IS A DECISION ═════════════════════════════════════════
+   Designer's call: "the transition of single cube to pair/diagonal should only
+   happen when the player decides to connect with a green cube."
+   The magnetic rule had no such condition — it ran every frame and bonded
+   ANYTHING adjacent, so a green that APPEARED beside a resting body was eaten
+   before the player could even see it, and a single became a pair with no move
+   made. That is what "magically turning into a pair" is.
+   The rule now arms on ARRIVAL: whenever the body's cells change — which only
+   a move, a turn or a previous bond can do — the greens touching it at that
+   instant are the ones it came to, and only those may bond. A green that turns
+   up later is left on the board until the player moves again, which is the
+   decision the field call asks for.
+   Chaining survives: a bond changes the body, which re-arms against the new
+   footprint, so a cluster the player flipped into still resolves one bond per
+   beat. The two deliberate paths (tryFuseAlongPath at input time,
+   checkCollisions on a landing) are untouched — this gate is only on the
+   passive one. A rescue green is armed explicitly by armFusion(), because a
+   stuck single has no move to arm it with. */
+function fuseArmAt(cells) {
+    const armed = new Set();
+    const own = new Set(cells.map(c => `${c.x},${c.y}`));
+    for (const c of cells)
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+            if (!dx && !dy) continue;
+            const k = `${c.x + dx},${c.y + dy}`;
+            if (!own.has(k) && world[k] === 'pickup') armed.add(k);
+        }
+    return armed;
+}
+function armFusion(key) {   // the rescues reach the body without it moving
+    if (!game._fuseArmed) game._fuseArmed = new Set();
+    game._fuseArmed.add(key);
+}
+/* [250926k] ONE GATE, BOTH PASSIVE PATHS. The first cut of this gated
+   magneticFuseCheck alone — and grow_t.js showed a green beside a resting
+   body still eaten on every board, because checkCollisions runs every frame
+   too and ends with its own unconditional findFusionAt → applyFusionMove.
+   Two copies of the same per-frame bond; one was gated. Both now ask here.
+   The arming is keyed on the BODY, not the caller: whichever of the two runs
+   first after the body changes computes the armed set, the other reads it. */
+/* [250926l] ...AND THE ARMING IS REFRESHED EVERY FRAME, NOT ONLY WHEN A GREEN
+   IS IN REACH. The second cut still lost 8 boards of 8 in grow_t.js: the armed
+   set was only computed inside the gate, which is only asked when findFusionAt
+   has a candidate — so a body that had sat still for a second with no green
+   near it had NEVER been armed, and the first time the question was asked was
+   the frame the green appeared, at which point it was adjacent, armed, eaten.
+   refreshFuseArm runs from the per-frame check whether or not anything is
+   near, so "the greens the body arrived beside" is always the set from the
+   moment of arrival, never from the moment of asking. */
+function refreshFuseArm(cells) {
+    const bodyKey = cells.map(c => `${c.x},${c.y}`).sort().join('|');
+    if (bodyKey !== game._fuseBodyKey) {
+        game._fuseBodyKey = bodyKey;
+        game._fuseArmed = fuseArmAt(cells);
+    }
+}
+function fuseAllowed(cells, fuse) {
+    refreshFuseArm(cells);
+    return !!(game._fuseArmed && game._fuseArmed.has(`${fuse.adjX},${fuse.adjY}`));
+}
 function magneticFuseCheck() {
     if (!game.running || game.paused || game.celebrating || game.inputLocked) return;
+    refreshFuseArm(getPlayerCells());   // [250926l] arm on every body change, green or no green
     if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return;
     const cells = getPlayerCells();
     const fuse = findFusionAt(cells);
-    if (fuse) applyFusionMove(cells, fuse);
+    if (fuse && fuseAllowed(cells, fuse)) applyFusionMove(cells, fuse);
 }
 
 function applyFusionMove(cells, fuse) {
@@ -21110,6 +21363,16 @@ let flip = { active: false };
 // inevitable than earned. Three restores weight to each heart.
 const MAX_LIVES = 3;
 const INVULN_DURATION = 1500;       // ms of invulnerability after respawn
+/* [250926ac] A RESPAWN CANNOT FALL INTO A HOLE FOR ITS FIRST BREATH. Measured
+   (playdata 54, the 21-minute run): a diagonal ran out of grid at 820.2s, the
+   single it came back as flipped into a hole beside the respawn point at
+   821.6s — twenty seconds gone in 1.4 seconds, on one mistake. The respawn
+   point is swept of walls, hazards and machines but not of holes, and the
+   single is the one body a hole kills outright. So while the respawn's
+   invulnerability runs — the body is drawn ghosted for INVULN_DURATION, which
+   is the cue — a single's flip into a hole is refused: shaken, tipped,
+   recorded as refuse:hole with grace:1. One window, one look, and the rule
+   itself is untouched once the ghosting ends. */
 const RESPAWN_TIME_PENALTY = 10;    // seconds added to speedTimer on death
 let lives = MAX_LIVES;
 let invulnTimer = 0;                // ms remaining
@@ -21259,7 +21522,17 @@ function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
        reads: a sweep across a row's last gaps can now finish it. That is the
        same bargain a bridge already makes, and it is the point of the tool. */
     const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
-    for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) {
+    /* [250926h] ...AND WHERE IT ENDS. [250926b] marked the arc but not the
+       LANDING: sweptCells excludes the start and end footprints by design (they
+       are "the cells the body stands on", not cells it passed over), and while
+       the start is already walked, the cells the turn puts the body ON were
+       marked by nobody — a flip covers its landing through checkCollisions, a
+       turn had no equivalent. So a turn could finish on three fresh cells and
+       leave them reading unvisited, which is the half of this the field call
+       kept seeing. Both sets go through the same filter below. */
+    const arc = sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)
+                .concat(rotated.map(c => ({ x: c.x, y: c.y })));
+    for (const c of arc) {
         if (c.x < 0 || c.x >= VIEW_W || c.y < topB || c.y > botB) continue;
         const k = `${c.x},${c.y}`;
         if (world[k] !== undefined) continue;          // void, red, wall, object — not plain floor
@@ -21550,7 +21823,7 @@ function respawnPlayer() {
     // (Time penalty retired — the band dump in handleDeath IS the price.)
 
     // Brief invulnerability so the player can orient before re-entering the fray
-    invulnTimer = INVULN_DURATION;
+    invulnTimer = INVULN_DURATION;   // [250926ac] and no hole can take the single while it runs
 
     // Reset move-related transient state — drop any pending animation/flip
     flip = { active: false };
@@ -21822,6 +22095,15 @@ function handleDeath(reason = 'death') {
     });
     if (game.spinUp) {
         game._rotorStumble = performance.now();
+        /* [250926ad] THE FORGIVEN FALL SAYS SO. The level-1 door states the
+           price (−10s), and then a level-1 fall costs nothing, silently: four of
+           them in one run (playdata 54, run 1). Spin-up grace is the game's
+           kindness; unspoken it reads as the door lying. Same shape as the
+           charged fall's float — what happened, then what it cost. */
+        if (CLOCK_ONLY)
+            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34,
+                     `${DEATH_LINE[reason] || DEATH_LINE.death}\nFREE WHILE SPINNING UP`,
+                     '#f87171', true, { life: 2400, hold: 1400 });
         captureSnapshot('✧ grace');
         respawnPlayer();
         return;
@@ -21843,8 +22125,21 @@ function handleDeath(reason = 'death') {
     // that used to have its own.
     if (CLOCK_ONLY) {
         HAPTICS.fire(HAPTIC.heart, 200);
-        bumpCost(FALL_COST_SEC);
-        if (momentumRemaining() > 0) { respawnPlayer(); }
+        bumpCost(FALL_COST_SEC, null, null, 'penalty', 'fall');
+        if (momentumRemaining() > 0) {
+            /* [250926u] THE PRICE, SAID OUT LOUD — designer's call: "the player
+               needs to know this is the penalty". bumpCost floats a small
+               −Ns at the cell, under the death burst, and the clock lurches;
+               neither reads as a rule. This is the OUT OF TIME card's shape
+               ([030826ah]): what happened on the first line, what it cost on
+               the second, big, red, centred, held long enough to read twice.
+               Only on a death the run survives — the end card carries the
+               cause itself, and a float under it would say it twice. */
+            addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34,
+                     `${DEATH_LINE[reason] || DEATH_LINE.death}\n−${FALL_COST_SEC}s`   /* one grammar for seconds: −10s */,
+                     '#f87171', true, { life: 2400, hold: 1400 });
+            respawnPlayer();
+        }
         else { endGame(reason); }
         return;
     }
@@ -22148,7 +22443,7 @@ const SINGLE_BUYS_GROUND = false;
 // [300726bj] RED_BUMP_COST_SEC deleted — every red contact now charges
 // RED_BURN_COST_SEC. A second constant for the same event is a second number to
 // forget to update, which is exactly what happened when the tiers changed.
-function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty') {
+function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty', src = null) {
     if (game.testDrive) return;
     // [030826g] SPIN-UP NO LONGER WAIVES TIME PENALTIES. This used to open with
     // `if (game.spinUp) return`, so every cost — the 20s red, the 10s push, the
@@ -22170,9 +22465,13 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty')
        through this line, so every charge is recorded here, and the source is
        read off the amount because the callers do not all know why they were
        called. Next export: start + income − costs should equal the clock. */
-    const costSrc = sec === FALL_COST_SEC ? 'fall'
+    /* [250926t] The fall and the shove are both 10 now, so the amount can no
+       longer say which it was; the fall names itself (handleDeath passes 'fall')
+       and an unnamed ten is the shove. Every other price is still unique. */
+    const costSrc = src ? src
                   : sec === TRIM_COST_SEC ? 'trim'
                   : (typeof SHIFT_OOB_COST_SEC !== 'undefined' && sec === SHIFT_OOB_COST_SEC) ? 'push'
+                  : sec === FALL_COST_SEC ? 'fall'
                   : sec === BUMP_COST_SEC ? 'bump' : 'other';
     rec('cost', { sec, src: costSrc, m: Math.round(momentumRemaining()) });
     // [100926f] the replay's caption for this move — a trade states its own line at the caller
@@ -22600,27 +22899,42 @@ function move(dir) {
             const vIdx = [];
             probeCells.forEach((c, i) => { if (world[`${c.x},${c.y}`] === 'void') vIdx.push(i); });
             if (vIdx.length && !SINGLE_BUYS_GROUND) {
+                /* ══ [250926m] THE LAST CUBE IS THE LAST — designer's call ═══════
+                   "flipping into the void as a single cube should have a
+                   conclusive result compared to any cube with more than one cube
+                   (acts as a life)." Every bigger body pays a hole with a cube
+                   and carries on; the single was REFUSED — the one body that most
+                   needed an answer got none, and playdata 51 counted ten such
+                   refusals in one run. One rule now finishes its own sentence:
+                   a hole takes a cube, and your last cube is your last. The
+                   cube goes in and becomes ground, as every cube that meets a
+                   hole does (a cube only ever leaves the body to become ground —
+                   [100926h]), and the body is gone. In clock mode that is the
+                   20-second fall and a respawn, or the end if the clock is empty;
+                   the title is DEATH_LINE.dissolved, LAST CUBE LOST TO A HOLE.
+                   The refusal's float, tip and bridge offer go with it: the tip
+                   is now shown BEFORE the fact (see the loop, [250926n]), which
+                   is the only time a warning is worth anything. The brink still
+                   holds A HAND UP for a single boxed in by holes — that rescue
+                   exists so this rule never makes a level impossible. */
                 const vc = probeCells[vIdx[0]];
-                showMoveGhost(newX, newY, newConfig, 'wrong', dir);
-                triggerShake(3, 100);
-                HAPTICS.fire(HAPTIC.bump);
-                if (sfx.bonk) sfx.bonk();
-                flashPlayerDenied();
-                showTip('onecube');
-                /* [250926d] THE REFUSAL EXPLAINS ITSELF. 'NO CUBE TO SPARE'
-                   named the accounting and not the situation: it assumes the
-                   player already knows a hole is paid for with a cube, which is
-                   the very thing they have not been told at the moment they are
-                   stopped. Two lines now — what happened, then what to do — in
-                   the game's own words for the mechanic (a cube laid in a hole
-                   is a STEPPING STONE, which is what the bridge and the sweep
-                   both build). The float carries a newline, as OUT OF TIME's
-                   two-line card already does. Longer life to read two lines. */
-                addFloat(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL,
-                         'A HOLE COSTS A CUBE\nGROW FIRST, THEN CROSS', '#94a3b8', false,
-                         { life: 1900, hold: 900 });
-                rec('refuse', { ch: 'hole', s: 'single', r: advancedRound });
-                bridgeCubeForSingle(vc.x, vc.y);   // [110926q] a cube for the bridge
+                if (invulnTimer > 0) {   // [250926ac] the respawn's first breath — ghosted, and hole-proof
+                    triggerShake(3, 150);
+                    if (sfx.hit) sfx.hit();
+                    addFloat(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL - 6, 'HOLE!', '#f87171', false, { life: 900, hold: 300 });
+                    showTip('onecube');
+                    rec('refuse', { ch: 'hole', s: 'single', r: advancedRound, grace: 1 });
+                    return;
+                }
+                fillVoid(vc.x, vc.y);
+                addBurst(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL + CELL / 2, '#7dd3fc');
+                for (const c of getPlayerCells())
+                    addBurst(c.x * CELL + CELL/2, (c.y - game.cameraY) * CELL + CELL/2, '#ef4444');
+                triggerShake(6, 300);
+                if (sfx.hit) sfx.hit();
+                rec('fill', { n: 1, s: 'single', paid: 'life', r: advancedRound });
+                captureSnapshot('\u2193 last cube');
+                handleDeath('dissolved');
                 return;
             }
             if (vIdx.length) {
@@ -24030,8 +24344,10 @@ function checkCollisions() {
     }
     
     // Adjacent pickup check for evolution — uses shared fusion helpers
+    // [250926k] ...through the same gate as magneticFuseCheck: a landing bonds
+    // the greens it landed beside; a green that appears later waits for a move.
     const fuse = findFusionAt(cells);
-    if (fuse) {
+    if (fuse && fuseAllowed(cells, fuse)) {
         applyFusionMove(cells, fuse);
         return 'evolved';
     }
@@ -27176,7 +27492,7 @@ const TIPS = {
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
     trim:      'Too big? Bridge a hole — a cube for a cell.',   // [100926h]
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   'One cube can’t bridge — it has none to spare. Go round, or grow.',
+    onecube:   'One cube into a hole costs you the cube and 10 seconds. Grow first, or go round.',   // [250926m][250926s]
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -30328,15 +30644,21 @@ function loop(time, gen) {
                   if (e.y < cam || e.y >= cam + VIEW_H || world[key]) {
                       rowPay.splice(i, 1); rowForge++; i--; continue;
                   }
-                  /* [180926b] AND IT PAYS THE MOMENT YOU STEP OFF. The square that
-                     finished the row is by definition under the body, so the asset
-                     cannot appear until the body leaves — but it waited for two
-                     clear cells before, which cost a second or more and read as a
-                     random spawn later. Now: covered, wait; clear, pay. */
-                  let near = false;
-                  for (const c of body)
-                      if (c.x === e.x && c.y === e.y) { near = true; break; }
-                  if (near) continue;
+                  /* [250926f] TWO CELLS CLEAR, NOT ONE — designer's call: an
+                     asset should arrive "as soon as possible, but when the
+                     player is at least 2 squares away from the spawn location".
+                     [180926b] had relaxed this to "the moment you step off",
+                     which pays on a cell TOUCHING the body — and a green paid
+                     there is taken instantly by magneticFuseCheck, so the
+                     player is grown by the board rather than by their own
+                     decision. (Measured in playdata 51/52: greens paid on the
+                     earned square were consumed in the SAME MILLISECOND they
+                     appeared — 1595770 and 1634074 in the last run.)
+                     Chebyshev 2 is the same distance the bridge offer already
+                     uses for "within reach, never underfoot", and it is a WAIT,
+                     not a demotion: the square keeps its claim and pays on the
+                     next 700ms window, so the cost is a beat, not the reward. */
+                  if (!clearOfPlayer(e.x, e.y, 1)) continue;
                   owedCell = key; owedIdx = i; break;      // not spliced until it is PAID
               }
           }
@@ -30380,11 +30702,28 @@ function loop(time, gen) {
           game._trapNextCheck = nowT + 500;
           if (!hasAnyLegalMove()) {
               if (!game._trappedSince) game._trappedSince = nowT;
+              /* [250926p] A STUCK BODY GETS A HAND UP, NOT ONLY A STUCK SINGLE —
+                 designer's call. The single had A HAND UP; a pair with no move
+                 was left to the two-second trap. Same fault, different body.
+                 After 600ms stuck, any body that can still grow is handed a
+                 green on a cell where the bond makes a legal larger shape —
+                 growth changes the flip grammar, which is what a pinned body
+                 needs — and the green is armed, since a body that cannot move
+                 cannot arrive beside it. The trap still resolves if that does
+                 not free it. A square cannot grow and gets nothing new here. */
+              else if (nowT - game._trappedSince > 600 && !game._handUpAt && runStuckRescue()) game._handUpAt = nowT;
               else if (nowT - game._trappedSince > 2000 && !game._trapDying) {
                   game._trapDying = true;
                   game._trappedSince = 0;
                   game.trapCount = (game.trapCount || 0) + 1;
-                  console.info('[ROTOR] trap #' + game.trapCount + ' — ' + game.shapeType + ' at level ' + advancedRound);
+                  /* [250926v] console.log, not console.info. Field report: "frame
+                     error (recovered): console.info is not a function" — in a
+                     console without .info this threw HERE, before the input lock,
+                     the message and the death were scheduled, so _trapDying stayed
+                     true, the trap never re-fired, and the body sat pinned for
+                     good. Diagnostics must never be able to abort the mechanic
+                     they describe. */
+                  console.log('[ROTOR] trap #' + game.trapCount + ' — ' + game.shapeType + ' at level ' + advancedRound);
                   game.inputLocked = true;
                   triggerShake(6, 400);
                   if (sfx.hit) sfx.hit();
@@ -30416,7 +30755,7 @@ function loop(time, gen) {
                       handleDeath('trapped');
                   }, finalTrap ? 4800 : 700);
               }
-          } else { game._trappedSince = 0; }
+          } else { game._trappedSince = 0; game._handUpAt = 0; }
       }
       // Chain expiry. [230826b] This used to hide the chip as well — it was the
       // other half of the code that wrote "COMBO n" into it, and removing only the
@@ -30573,6 +30912,18 @@ function loop(time, gen) {
                          currentTheme === 'day' ? '#b45309' : '#fbbf24', true,
                          { life: 1400, hold: 600 });
             }
+            /* [250926q] THE LAST FIVE, COUNTED — designer's call: "the last ten
+               seconds should feel like an event". FIELD FAILING fires once at
+               ten and the ticks quicken, but nothing on the board said HOW many
+               were left while the number in the HUD was the smallest type on
+               the screen. The final five now land on the board itself, one big
+               red numeral a second, in the clock's own critical colour. Only
+               while descending, only in clock mode — the same gate as the pips,
+               so a rescue that lifts the clock stops the count at once. */
+            if (CLOCK_ONLY && remainingSec <= 5) {
+                addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20, String(remainingSec), '#ef4444', true,
+                         { life: 900, hold: 350 });
+            }
             lastTickSecond = remainingSec;
             // [300726bh] "PAUSE — THINKING IS FREE" removed. The pause is
             // discoverable (a tap on open board, or Space/K), and a line of copy
@@ -30639,6 +30990,16 @@ function loop(time, gen) {
     }
     if (game.running && !game.paused) {
         runSingleRescue();   // [110926c] a single with nowhere to go gets a green in the hole beside it
+        /* [250926n] THE WARNING COMES FIRST. A single's hole is lethal now, so
+           the tip that used to arrive on the refusal would arrive on the death.
+           It is shown the first time a single stands beside a hole in a run —
+           showTip's own seen-list caps it beyond that. */
+        if (game.shapeType === 'single' && !game._holeTipShown && !game.testDrive) {
+            for (const [dx, dy] of NBR8)
+                if (world[`${game.playerX + dx},${game.playerY + dy}`] === 'void') {
+                    game._holeTipShown = true; showTip('onecube'); break;
+                }
+        }
     }
     if (game.speedTimer >= LEVEL_TIME_LIMIT) {
         // [210826aq] THE RESERVE TANK PAYOUT IS GONE with the tank itself.
@@ -32093,6 +32454,8 @@ const DEATH_LINE = {
     /* [170926d] There is no falling in ROTOЯ — the grid runs out beneath you. */
     void:      'YOU RAN OUT OF GRID',
     dissolved: 'LAST CUBE LOST TO A HOLE',
+    trapped:   'TRAPPED — NO MOVE LEFT',      // [250926ad] was falling through to THE RUN ENDED on a fall the run survives
+    impact:    'THE LAST CUBE WAS HIT',
     death:     'THE RUN ENDED'
 };
 function endGame(reason = 'death') {
@@ -32284,9 +32647,7 @@ function endGameNow(reason = 'death') {
             `</div>` +
             `<div class="go-stats">` +
                 `<div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>` +
-                    `<span class="go-val" style="white-space:nowrap">${_winCap} of ${_winCap}` +
-                    `<span class="go-val-sub"> · ${Math.round(-(game.cameraY || 0))} ROWS DEEP</span>` +
-                    `</span></div>` +
+                    `<span class="go-val" style="white-space:nowrap">${_winCap} of ${_winCap}</span></div>` +   /* [250926ab] no depth line */
             `</div>`;
     } else {
         // Achievement · cause · consolation. The cause tells the truth about
@@ -32384,11 +32745,13 @@ function endGameNow(reason = 'death') {
                on level 4 went 39 and 73 rows. So it is not cut, it is
                SUBORDINATED — same line, half the size, the grey it already had.
                One reading instead of two, and the resolution kept. */
+            /* [250926ab] THE ROWS COME OFF THE CARD — designer's call. The depth
+               figure ("187 ROWS DEEP") was the one number on the card the player
+               never acted on; it stays in the play data (`depth` on the end
+               event), where the analysis reads it. LEVEL stands alone. */
             `<div class="go-stats">` +
                 `<div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>` +
-                    `<span class="go-val" style="white-space:nowrap">${lvlTxt}` +
-                    `<span class="go-val-sub"> · ${Math.round(-(game.cameraY || 0))} ROWS DEEP</span>` +
-                    `</span></div>` +
+                    `<span class="go-val" style="white-space:nowrap">${lvlTxt}</span></div>` +
             `</div>` +
             // ── [210826x] THE RUN'S OWN REVOLVE COUNT ───────────────────────
             // [210826u] added the counter and put the personal BEST on the

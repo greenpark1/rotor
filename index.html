@@ -380,7 +380,14 @@ body.theme-day .note-bar input { color: var(--day-ink); background: #f1f5f9; }
     white-space: pre-line; line-height: 1.15; }
 .level-card-cov    { animation-delay: 0.50s; font-size: 17px; font-weight: 700; letter-spacing: 1px; color: #cbd5e1; font-variant-numeric: tabular-nums; }
 .level-card-cov.gold { color: #ffd60a; text-shadow: 0 0 14px rgba(255, 214, 10, 0.5); }
-.level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: var(--wm-c0); text-transform: uppercase; }
+.level-card-praise { animation-delay: 0.90s; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; color: var(--wm-c0); text-transform: uppercase;
+    /* [260926l] MUCH MORE PROMINENT — designer's call ("not very noticeable").
+       15px cyan under a 26px lime title read as a footnote. It is now the
+       loudest line on the card: 24px, gold, glowing, in a pop of its own. */
+    font-size: 24px; font-weight: 800; letter-spacing: 2px; color: #ffd60a; line-height: 1.1;
+    text-shadow: 0 0 18px rgba(255, 214, 10, 0.55), 0 0 4px rgba(255, 214, 10, 0.35);
+    animation: lcPraiseIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.90s forwards; }
+@keyframes lcPraiseIn { 0% { opacity: 0; transform: scale(0.6) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 .level-card-extra  { animation-delay: 1.25s; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #7dd3fc; }
 @keyframes lcCardIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes lcRowIn { to { opacity: 1; transform: translateY(0); } }
@@ -389,7 +396,7 @@ body.theme-day .level-card-box { background: rgba(255, 255, 255, 0.92); border-c
 body.theme-day .level-card-title { color: #4d7c0f; }
 body.theme-day .level-card-cov { color: #334155; }
 body.theme-day .level-card-cov.gold { color: #b45309; text-shadow: none; }
-body.theme-day .level-card-praise { color: var(--day-ink); }
+body.theme-day .level-card-praise { color: #b45309; text-shadow: none; }
 body.theme-day .level-card-extra { color: var(--wm-c0); }
 /* ── [180926c] THE REPLAY IS AN OFFER NOW ────────────────────────────────────
    Field call: "before we get 'action replay' at the end of each level, we need
@@ -414,7 +421,9 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
     /* [250926i] SQUARER, per the field call: a 999px pill reads as a tag, and
        the button beneath a two-line title wants the same family of corners as
        the card itself (26px on the box, 10px here — a small card, not a pill). */
-    min-height: 32px; padding: 7px 14px; border-radius: 10px; cursor: pointer;
+    /* [260926l] WIDER THAN IT IS TALL — designer's call. The card keeps its
+       size; the button stretches to a landscape bar under the praise line. */
+    min-height: 32px; min-width: 170px; padding: 7px 18px; border-radius: 10px; cursor: pointer;
     font-family: inherit; font-size: 10.5px; font-weight: 700; letter-spacing: 1.6px;
     border: 1px solid rgba(34, 211, 238, 0.45); background: rgba(34, 211, 238, 0.08);
     color: var(--wm-c0); box-shadow: none; opacity: 0.85;
@@ -7309,6 +7318,43 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 260926-1330: THE CUBE THAT WENT OVER IS LOST. Designer's calls on playdata
+// 56. (1) A flip that puts part of the body over the frame — any edge — no
+// longer refuses: the cubes over the edge are lost and the rest land where
+// the flip put them. A flip that would take the whole body over keeps its
+// old answer. (2) A flip that lands part of the body on a set it does not fit
+// loses those cubes the same way; the survivors land; nothing is ever laid on
+// a set cell. A single keeps the refusal in both cases (it has nothing to
+// give). Each loss says what happened, two lines, and teaches once. (3) The
+// lost cube tells its own story: over the edge it tumbles out of the frame
+// (the scroll's bottom edge too); rejected by the set it is knocked back off
+// the slot and shatters; into a hole it settles, as before. (4) The level
+// card's praise line is the loudest thing on the card now — 24px, gold, a pop
+// of its own; the replay button is a wide bar under it, the card unchanged.
+// 260926-1045: THE ARROWS MOVE. Six field calls on playdata 54. (1) A green
+// you land ON (a square, a bond that would not fit, a stomp) pays the clock
+// +3s — it paid 5 points, which in clock mode was nothing. (2) The turn
+// quota: of the machines a row pays, at least one in three is a turn,
+// wherever it lands; and a square's roll leans to turns ×3 — a turn moves a
+// square one cell, which is its parity change, and the arm lays as it goes.
+// (3) The glyphs say what the tile does: a step's arrow nudges along its
+// vector once a second, a turn's arrow laps the ring in its direction every
+// five seconds; spent and dormant tiles hold still. (4) Tiles and glyphs a
+// tenth more visible. (5) A step covers its path — every cube's departure
+// cell, and the hole it vaults is laid as ground — and a turn covers where it
+// started; in a chain those cells had been marked by nobody. (6) MAROONED: a
+// respawn only lands on floor that connects to the top of the view, and a
+// body on a patch ringed by holes, with no tool on it, is answered after a
+// breath — a turn it can reach whose arm lays into the moat (north first),
+// or a green in the moat beside it. Once per region.
+// 260926-0015: THE LEVEL SETS THE SPEED. The help-vs-speed plan, all four,
+// designer's go on 25 Sep. (1) The clock no longer drives the scroll speed
+// (it ran 1.0× at 60s to 1.55× at 10s — the death spiral in playdata 52–54);
+// the level does, on a slightly steeper ramp (L4 1.11, L7 1.28, L10 1.50).
+// FASTER announces on the level's own steps. (2) Under 40s, with no hourglass
+// in reach, a finished row's object is an hourglass. (3) Mercy and the
+// reprieve count only hourglasses the body can reach, not any in view. (4)
+// The arrival grant is a flat 20s at every level (was 18/16/14/12).
 // 250926-2345: ROWS OFF THE CARD, and two things playdata 54 showed. (1) The
 // end card's depth figure ("187 ROWS DEEP") is cut — designer's call; LEVEL
 // stands alone; depth stays in the data. (2) A respawned single cannot fall
@@ -7369,7 +7415,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '250926-2345 ROTOЯ · ROWS OFF THE CARD';
+const BUILD_VERSION = '260926-1330 ROTOЯ · THE CUBE THAT WENT OVER IS LOST';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -7440,7 +7486,7 @@ function drawShifterCharge(sx, sy, chg, size) {
 // line (measured off the green cube's "+"), replacing the font arrows whose
 // stroke weight varied with the platform font and never matched the other
 // icons. White with the same day/night alpha as the green's "+".
-function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY) {
+function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
     ctx.save();
     // [290726j] Glyph ink is always the OPPOSITE value to the metal beneath:
     // dark on the light steel of night, white on the darker pewter of day.
@@ -7449,13 +7495,24 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY) {
     // consistent with every other day icon on the board and on the welcome
     // tiles, which all carry white glyphs. A lone dark-lined pair would read as
     // a different class of object.
+    /* [260926g] A TENTH MORE VISIBLE — designer's call ("quite subtle at
+       present"): ink alpha 0.92/0.88 → 1.0/0.97, stroke 3.6 → 4.0, the glyph's
+       reach and heads a tenth larger. The tile beneath is lifted the same tenth
+       in the draw loop.
+       AND THE GLYPH SAYS WHAT THE TILE DOES — designer's call. A step's arrow
+       nudges forward along its own vector and settles, once a second; a turn's
+       arrow travels round the ring in the direction of the turn, one lap in
+       five seconds. A spent or dormant tile holds still (anim = false), which
+       is one more way to read that it is not live. Time is Date.now(), as the
+       tiles' breath already is. */
     const ink = currentTheme === 'day' ? '#ffffff' : '#101729';
-    ctx.globalAlpha = currentTheme === 'day' ? 0.92 : 0.88;
+    ctx.globalAlpha = currentTheme === 'day' ? 1.0 : 0.97;
     ctx.strokeStyle = ink;
     ctx.fillStyle = ink;   // solid arrowheads
-    ctx.lineWidth = 3.6;   // [270726n] welcome-legend weight
+    ctx.lineWidth = 4.0;   // [270726n] welcome-legend weight, [260926g] +10%
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    const now = Date.now();
     if (item === 'pivot') {
         /* [SWEEP] THE TURN ARROWS, REDRAWN — designer's call, 110926. One
            construction for both turns: an arc on the ring, ending in a SOLID
@@ -7464,19 +7521,15 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY) {
              90°   a HALF ring — tail at nine o'clock, over the top, head down
              180°  NEARLY the whole ring, with a clear gap left between the
                    head's tip and the tail, so it still reads as one arrow
-           The previous 90° already ran three-quarters round, so a near-full
-           180° beside it would have read as the same tile. And the heads grow
-           0.145 -> 0.19 of a cell, wider (0.66 -> 0.75): the old head sat half
-           inside the arc's own stroke and read smaller than the step arrows'
-           chevrons; now they stand level with them.
            CW = clockwise on screen; CCW is the mirror image. */
         const ccw = meta && meta.dir === 'ccw', sgn = ccw ? -1 : 1;
         const half = (typeof turnsOf === 'function') && turnsOf(meta) === 2;
-        const R = CELL * 0.16, HEAD = CELL * 0.19, WIDE = 0.75;
+        const R = CELL * 0.176, HEAD = CELL * 0.21, WIDE = 0.75;
         const D = Math.PI / 180;
         const reach = (half ? 328 : 190) * D;               // tail to TIP, round the ring
         const start = (half ? 16 : -95) * D;                // tail, measured from twelve o'clock
-        const tail = -Math.PI / 2 + sgn * start;
+        const rot = anim ? sgn * ((now % 5000) / 5000) * Math.PI * 2 : 0;   // [260926g] the lap
+        const tail = -Math.PI / 2 + sgn * start + rot;
         const arcEnd = tail + sgn * (reach - HEAD / R);     // the head stands over the last HEAD/R of it
         ctx.beginPath();
         ctx.arc(gcx, gcy, R, tail, arcEnd, ccw);
@@ -7499,9 +7552,14 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY) {
         // aimed along the slip's direction vector.
         const v = slipVectorOf(meta);
         const th = Math.atan2(v.dy, v.dx);
-        const L = CELL * 0.155, HEAD = CELL * 0.105;
-        const tx = gcx + L * Math.cos(th), ty = gcy + L * Math.sin(th);
-        ctx.moveTo(gcx - L * Math.cos(th), gcy - L * Math.sin(th));
+        const L = CELL * 0.17, HEAD = CELL * 0.115;
+        /* [260926g] the nudge: forward along the vector and back, once a second */
+        const phase = (now % 1000) / 1000;
+        const nudge = anim ? (0.5 - 0.5 * Math.cos(phase * Math.PI * 2)) * CELL * 0.06 : 0;
+        const ox = nudge * Math.cos(th), oy = nudge * Math.sin(th);
+        const cx0 = gcx + ox, cy0 = gcy + oy;
+        const tx = cx0 + L * Math.cos(th), ty = cy0 + L * Math.sin(th);
+        ctx.moveTo(cx0 - L * Math.cos(th), cy0 - L * Math.sin(th));
         ctx.lineTo(tx, ty);
         for (const spread of [0.62, -0.62]) {
             const ang = th + Math.PI + spread;
@@ -8328,7 +8386,15 @@ function levelTimeGrant() {
     // 12/4/1 clears) the grant covers 41%, 34%, 29%, 20%, 23%: still tightening,
     // level on level, exactly as [210826av] intended. What has gone is a payment
     // that fell while the job it paid for doubled.
-    if (CLOCK_ONLY) return Math.max(12, 22 - 2 * advancedRound);
+    /* ── [260926d] HELD AT 20 — designer's call ─────────────────────────────
+       The taper (18/16/14/12 from level 2) was written when the clock link
+       made a level's pressure rise on its own; with that gone [260926a] and
+       the runs still ending out of time from level 4 on (playdata 52–54), the
+       arrival grant is a flat 20 at every level. +2 at level 2, +4 at 3, +6 at
+       4, +8 from 5 on. The set's own ladder still rises with the set, so the
+       total paid per level rises too. It is the one change in this build that
+       helps BEFORE trouble rather than after it. */
+    if (CLOCK_ONLY) return 20;
     return Math.max(25, 48 - 3 * advancedRound);
 }
 // [210826ar] Banking a single requirement pays a little, so the road to the
@@ -8571,6 +8637,14 @@ const SHIFTER_SPAWN_MAX_AHEAD = 8;
    of each other; and ONE AT A TIME — a single global cooldown that every
    path through spawnShifter must pass. */
 const SHIFTER_MIN_SEPARATION = 3;    // cells (Chebyshev) between any two machines
+/* [260926f] THE TURN QUOTA — designer's call: "a quota of turn shifters on rows
+   that aren't necessarily next to voids." Turns arrived almost only as bridges
+   (a turn tile beside a hole); the rows paid steps five times out of six
+   (playdata 54: 37 steps, 10 turns). Of the machines a row pays, at least one
+   in ROW_TURN_EVERY is a turn, wherever it lands — so a body always has a way
+   to change its facing and its parity, and to clear ground with the arm. */
+const ROW_TURN_EVERY = 3;
+const SQUARE_TURN_LEAN = 3;
 const ISLAND_MIN_GAP_MS = 1200;   // [120926d] the island question's own cadence
 const SHIFTER_MIN_GAP_MS     = 2500; // no machine within this of the last, from ANY path
 
@@ -9020,6 +9094,13 @@ function chooseShifterKind() {
     // [250926w] a square cannot grow (EVO.square is empty): while it is the body, a
     // favoured roll never wastes itself on a green — the tool is a step or a turn
     if (shapeFavoured() && game && game.shapeType === 'square') w.green = 0;
+    /* [260926f] A TURN IS THE SQUARE'S TOOL — designer's call. TURN_VALUE gave
+       the square 0 (one config, nothing to orient) and the parity clause above
+       pushed it toward steps. But a turn spins a square round its trigger cube,
+       which MOVES it one cell — a parity change — and the arm sweeps and lays
+       as it goes. For the one body that cannot grow, that is the most useful
+       tile on the board. Turns now lead the square's roll. */
+    if (game && game.shapeType === 'square') w.pivot *= SQUARE_TURN_LEAN;
     const r = Math.random() * (w.green + w.pivot + w.slip + w.warp);
     if (r < w.green) return 'green';
     if (r < w.green + w.pivot) return 'pivot';
@@ -11880,6 +11961,151 @@ function singleStrandedOnIsland() {
     }
     return plat;
 }
+/* ══ [260926h] MAROONED — designer's call ═══════════════════════════════════
+   "The player has been respawned on an island with no way of getting off ...
+   careful consideration of how the player can get off the island with the
+   help of available objects." The island rules above know only the DESIGNED
+   islands (islandCells); a plain patch of floor ringed by holes — the board
+   makes them, and a respawn can land on one — was nobody's business. Two
+   answers:
+   THE RESPAWN LOOKS BEFORE IT LANDS (nudgeSpawnClearOfSlots): the spawn point
+   is only used if the floor it stands on connects to the top of the view,
+   where new ground comes from; otherwise the nearest cell that does.
+   THE BOARD ANSWERS A CLOSED REGION (maroonTick): a body whose floor does not
+   reach the top of the view, with no tool on it or on its rim, is marooned. A
+   single gets the hand up — a green in a moat hole beside it, so it grows
+   and the green's cell becomes the first plank. A bigger body gets a TURN it
+   can land on within two moves whose arm lays ground in the moat, north
+   first — the bridge's own mechanism, without the bridge's need for a set
+   nearby. If no turn can be laid, the green. Once per region, after a
+   breath, and never while a tool is already there to use. */
+const MAROON_GRACE_MS = 1500;
+function bodyRegion(cells) {
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    const seen = new Set(), q = [];
+    for (const c of (cells || getPlayerCells())) { const k = `${c.x},${c.y}`; if (!seen.has(k)) { seen.add(k); q.push([c.x, c.y]); } }
+    let head = 0, touchesTop = false, minY = Infinity;
+    while (head < q.length) {
+        const [x, y] = q[head++];
+        if (y <= top) touchesTop = true;
+        if (y < minY) minY = y;
+        for (const [dx, dy] of NBR8) {
+            const nx = x + dx, ny = y + dy;
+            if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+            const k = `${nx},${ny}`;
+            if (seen.has(k)) continue;
+            const w = world[k];
+            if (w === 'void' || w === 'wall' || w === 'hazard') continue;
+            seen.add(k); q.push([nx, ny]);
+        }
+    }
+    return { cells: seen, touchesTop, minY, key: [...seen].sort()[0] };
+}
+function maroonedRegion() {
+    const r = bodyRegion();
+    if (r.touchesTop) return null;
+    for (const k of r.cells) {
+        const w = world[k];
+        if (w === 'pickup' || w === 'slip' || w === 'pivot') return null;
+        const q = k.split(','), x = +q[0], y = +q[1];
+        for (const [dx, dy] of NBR8) {
+            const nw = world[`${x + dx},${y + dy}`];
+            if (nw === 'pickup' || nw === 'slip' || nw === 'pivot') return null;
+        }
+    }
+    return r;
+}
+function maroonBridgePlan(region) {
+    if (!SWEEP || game.shapeType === 'single' || ONE_SHIFTER) return null;
+    const type = game.shapeType;
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    const slotKeys = new Set();
+    for (const sl of slots) for (const k of sl.keys) slotKeys.add(k);
+    const spins = { 1: nextTurnSpin(1), 2: nextTurnSpin(2) };
+    const bad = (x, y) => { const v = world[`${x},${y}`]; return x < 0 || x >= VIEW_W || y > bot || y < top || v === 'void' || v === 'wall' || v === 'hazard'; };
+    let best = null;
+    for (const st of bodyStates(2)) {
+        st.cells.forEach((T, ti) => {
+            const tk = `${T.x},${T.y}`;
+            if (!region.cells.has(tk) || world[tk] || slotKeys.has(tk)) return;
+            if (!machineCellOk(T.x, T.y) || nearAnyShifter(T.x, T.y)) return;
+            for (const turns of (SWEEP_HALF_TURNS ? [2, 1] : [1])) {
+                const ccw = spins[turns] === 'ccw';
+                const pose = bridgePoses(type, turns, ccw)[st.c + '|' + ti];
+                if (!pose) continue;
+                const land = pose.land.map(o => ({ x: T.x + o.dx, y: T.y + o.dy }));
+                if (land.some(c => bad(c.x, c.y)) || slotMisfitAt(land)) continue;
+                let lays = 0, north = 0;
+                for (const o of pose.swept) {
+                    const x = T.x + o.dx, y = T.y + o.dy;
+                    if (x < 0 || x >= VIEW_W || y < top || y > bot || world[`${x},${y}`] !== 'void') continue;
+                    lays++; if (y < region.minY) north++;
+                }
+                if (!lays) continue;
+                const score = lays * 10 + north * 6 - st.d * 2 + (turns === 2 ? 1 : 0) + Math.random();
+                if (!best || score > best.score)
+                    best = { score, k: tk, x: T.x, y: T.y, dir: spins[turns], turns, lays, moves: st.d };
+            }
+        });
+    }
+    return best;
+}
+function maroonGreen(region) {   // a green in a moat hole beside the body, north first
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    const holes = [];
+    for (const c of getPlayerCells()) for (const [dx, dy] of NBR8) {
+        const nx = c.x + dx, ny = c.y + dy;
+        if (nx < 0 || nx >= VIEW_W || ny < top || ny > bot) continue;
+        if (world[`${nx},${ny}`] !== 'void') continue;
+        if (slots.some(s => !s.claimed && s.keys.has(`${nx},${ny}`))) continue;
+        holes.push({ x: nx, y: ny, dy });
+    }
+    if (!holes.length) return null;
+    holes.sort((a, b) => a.dy - b.dy);
+    return holes[0];
+}
+let _maroonTryAt = 0;
+function maroonTick() {
+    if (game.testDrive || !game.running || game.paused || game._replay || game._deathHold || game.introHold || game.celebrating || game.inputLocked) return;
+    if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return;
+    const now = performance.now();
+    if (now < _maroonTryAt) return;
+    _maroonTryAt = now + 500;
+    const r = maroonedRegion();
+    if (!r) { game._maroonTag = null; game._maroonSinceAt = 0; return; }
+    const tag = advancedRound + ':' + r.key;
+    if (game._maroonTag !== tag) { game._maroonTag = tag; game._maroonSinceAt = now; }
+    if (now - game._maroonSinceAt < MAROON_GRACE_MS) return;
+    game._maroonAnswered = game._maroonAnswered || new Set();
+    if (game._maroonAnswered.has(tag)) return;
+    let laid = null;
+    if (game.shapeType !== 'single') {
+        const bp = maroonBridgePlan(r);
+        if (bp) {
+            world[bp.k] = 'pivot';
+            shifterMeta[bp.k] = { spawnTime: now, dir: bp.dir, turns: bp.turns, bridge: true };
+            noteTurnSpin(bp.dir, bp.turns);
+            game._lastShifterAt = now;
+            addBurst(bp.x * CELL + CELL / 2, (bp.y - game.cameraY) * CELL + CELL / 2, SHIFTER_FAMILY_COLOR);
+            triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
+            rec('spawn', { k: 'pivot', src: 'maroon', tn: bp.turns, lays: bp.lays, reach: bp.moves, s: game.shapeType, v: countShiftersInView() });
+            laid = { k: 'turn', x: bp.x, y: bp.y };
+        }
+    }
+    if (!laid) {
+        const h = maroonGreen(r);
+        if (!h) return;   // no moat hole beside the body — the rock is walled, not moated; not this rule's business
+        const k = `${h.x},${h.y}`;
+        delete world[k]; world[k] = 'pickup';
+        armFusion(k);
+        addBurst(h.x * CELL + CELL / 2, (h.y - game.cameraY) * CELL + CELL / 2, '#a3e635');
+        triggerEdgeGlow('#a3e635', 700);
+        rec('spawn', { k: 'green', src: 'maroon', s: game.shapeType });
+        laid = { k: 'green', x: h.x, y: h.y };
+    }
+    game._maroonAnswered.add(tag);
+    rec('rescue', { k: 'maroon', with: laid.k, s: game.shapeType, x: laid.x, y: laid.y, cells: r.cells.size, r: advancedRound, m: Math.round(momentumRemaining()) });
+}
 function runSingleRescue() {
     if (SINGLE_BUYS_GROUND || game.testDrive || !game.running || game.paused) return;
     if (game.introHold || game.celebrating || game.inputLocked) return;
@@ -11982,7 +12208,7 @@ function runReprieve() {
     if (game.testDrive || !game.running || game.paused || game.spinUp) return;
     if (game._reprieveGiven) return;                              // capped: one a level
     if (momentumRemaining() > REPRIEVE_WINDOW_SEC) return;        // only at the death
-    if (countTimeWindow(Math.floor(game.cameraY)) > 0) return;    // time already on the board
+    if (countReachableTime() > 0) return;    // [260926c] time already on the board — that the body can reach
     if (uncoveredFloorInView()) return;                           // still ground to earn on
     // Search outward from the middle of the view for somewhere to put it.
     const camI = Math.floor(game.cameraY);
@@ -14284,6 +14510,24 @@ function reserveDrip() {
 }
 const MAX_VISIBLE_TIME = 6;
 const MERCY_THRESHOLD_SEC = 30;
+/* [260926b] A LOW CLOCK MAKES ROWS PAY IN HOURGLASSES — designer's call. A
+   finished row pays a few seconds and an object (a green or a machine). At
+   level 7 in playdata 54 the rows were paying 1–2s because they were mostly
+   holes, and the run ended out of time with rows still landing. While the
+   clock is under this and no hourglass is within reach, the row's object is
+   an hourglass (+30) instead. Bounded by construction: one on the board at a
+   time, and collecting it usually lifts the clock back over the line, so the
+   next row pays as before. The stall card already says ROWS BUY TIME; now
+   they do, when it matters. */
+const ROW_GLASS_BELOW_SEC = 40;
+/* [260926e] A CUBE YOU CANNOT WEAR STILL PAYS — designer's call. Landing ON a
+   green (a square, which cannot grow; a body whose bond would not fit; a
+   deliberate stomp) collected it for +5 points, which in clock mode is no
+   reward at all. Playdata 54: 75 greens used in one run, many of them by a
+   body already at its size. The cube now pays the clock — small, the price of
+   a row — so a green is never worth avoiding. The bond still beats the stomp:
+   growth AND the cube's cell as ground. */
+const GREEN_STOMP_SEC = 3;
 /* [250926o] ONCE PER CRISIS, NOT ONCE PER LEVEL — designer's call. Playdata 52:
    the rescue fired 92 seconds before the end of the run, on the same level, so
    when the clock ran down a second time nothing could come — the last eleven
@@ -14307,6 +14551,25 @@ function timeCellClearOf(x, y) {
             if (isTimeCell(world[`${x + dx},${y + dy}`])) return false;
         }
     return true;
+}
+/* [260926c] TIME YOU CAN REACH. countTimeWindow counts every hourglass in the
+   view, which is the right cap for the terrain writers — but it is the wrong
+   question for a rescue. Playdata 54: at 1207s a tunnel hourglass appeared
+   with 15s on the clock and the run ended 33s later without it; "there is
+   time on the board" was true and useless. Mercy, the reprieve and the row's
+   low-clock hourglass ask THIS instead: hourglasses the body can actually
+   get to, by the same flood fill the spawner uses (walls, holes and reds are
+   not crossed). */
+function countReachableTime() {
+    const camI = Math.floor(game.cameraY);
+    const reach = reachableSpawnSet(camI, camI + VIEW_H);
+    let n = 0;
+    for (let y = camI; y < camI + VIEW_H; y++)
+        for (let x = 0; x < VIEW_W; x++) {
+            const k = `${x},${y}`;
+            if (isTimeCell(world[k]) && reach.has(k)) n++;
+        }
+    return n;
 }
 function countTimeWindow(aroundY) {
     const camI = Math.floor(game.cameraY);
@@ -17014,6 +17277,8 @@ function spawnShifter(src, atKey) {
     if (src === 'bridge') return null;
     let kind = chooseShifterKind();
     if (_ceilGreen && (kind === 'slip' || kind === 'pivot')) kind = 'green';   // [190926a] no machine over the ceiling; an hourglass roll stands
+    /* [260926f] the turn quota: a row's third machine is a turn if the two before it were steps */
+    if (_named && src === 'row' && kind === 'slip' && (game._rowStepsSinceTurn || 0) >= ROW_TURN_EVERY - 1) kind = 'pivot';
     const playerKeys = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
     const slotKeys = new Set();
     for (const s of slots) for (const k of s.keys) slotKeys.add(k);
@@ -17109,7 +17374,12 @@ function spawnShifter(src, atKey) {
        placement is never wholly predictable; and a turn with nowhere beside
        anything to stand becomes a STEP rather than a tile in open ground. */
     let besidePool = null;
-    if (kind === 'pivot' && Math.random() < TURN_BESIDE_CHANCE) {
+    /* [260926f] ...BUT NOT A ROW'S TURN. The designer's quota is for "turn
+       shifters on rows that aren't necessarily next to voids": a row's asset
+       goes on the row's own square wherever that is, so the beside rule would
+       only ever turn it back into a step — measured in grow_t J, fourteen
+       steps in a row on a board with no hole or set in reach. */
+    if (kind === 'pivot' && !(_named && src === 'row') && Math.random() < TURN_BESIDE_CHANCE) {
         const beside = pool.filter(key => { const q = key.split(','); return besideVoidOrSet(+q[0], +q[1]); });
         if (beside.length) besidePool = beside; else kind = 'slip';
     }
@@ -17324,9 +17594,17 @@ function spawnShifter(src, atKey) {
     // player's clock is under threshold, NO time is visible anywhere, and
     // mercy hasn't fired this level, this spawn becomes a GOLD hourglass
     // instead. Once per level, so running low deliberately can't farm it.
+    /* [260926b] the row's object is an hourglass while the clock is low — see ROW_GLASS_BELOW_SEC */
+    if (_named && src === 'row' && CLOCK_ONLY && !game.testDrive &&
+        momentumRemaining() < ROW_GLASS_BELOW_SEC && countReachableTime() === 0) {
+        world[k] = 't30';
+        rec('spawn', { k: 't30', src: 'row', low: Math.round(momentumRemaining()) });
+        addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#fcd34d');
+        return { kind: 't30', key: k };
+    }
     if (mercyGivenThisLevel && momentumRemaining() >= MERCY_REARM_SEC) mercyGivenThisLevel = false;   // [250926o]
     if (!mercyGivenThisLevel && !game.testDrive &&
-        momentumRemaining() < MERCY_THRESHOLD_SEC && countTimeWindow(gy) === 0) {
+        momentumRemaining() < MERCY_THRESHOLD_SEC && countReachableTime() === 0) {   // [260926c] reachable, not merely visible
         world[k] = 't30';   // [300726ay] the rescue is the big one
         rec('spawn', { k: 't30', src: 'mercy' });   // [070926e] playdata(17) collected 5 t30s from 3 recorded — these were the other two
         mercyGivenThisLevel = true;
@@ -17363,6 +17641,10 @@ function spawnShifter(src, atKey) {
         showTip('shifter');
         shifterMeta[k] = { spawnTime: performance.now(), dir };
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, SHIFTER_FAMILY_COLOR);
+    }
+    if (_named && src === 'row') {   // [260926f] the quota's ledger — on what was actually laid
+        if (kind === 'pivot') game._rowStepsSinceTurn = 0;
+        else if (kind === 'slip') game._rowStepsSinceTurn = (game._rowStepsSinceTurn || 0) + 1;
     }
     game._lastShifterAt = _nowSp;   // [FORMULA] the cooldown is stamped on success only
     rec('spawn', Object.assign({ k: kind, v: countShiftersInView(), d: shifterDrought() ? 1 : 0 },   // [160826p][160826w]
@@ -21504,6 +21786,32 @@ function turnTimeForArc(k) {
    did not choose the length of this animation. */
 let sweepQueue = [];
 const SWEEP_CHIME = [1, 9 / 8, 5 / 4, 3 / 2, 5 / 3, 2];
+/* [260926i] THE STEP COVERS WHAT IT PASSES OVER — designer's call: "any
+   shifters being used by the player cube that moves over any unoccupied ground
+   or voids makes them occupied." A step moved the body and marked nothing but
+   its final landing (and in a chain, not even that until the train stopped):
+   the cells it left, and the cell it vaulted, stayed unwalked. Now the whole
+   path is the walk — every cube's departure cell and, on a vault, the cell it
+   crossed. Plain floor is marked (as the sweep marks its arc); a hole the body
+   crossed is laid as ground, as the arm lays what it passes over. Returns the
+   holes laid, for the record. */
+function stepLay(oldCells, v, hop) {
+    const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
+    let laid = 0;
+    for (const c of oldCells) for (let h = 0; h < hop; h++) {
+        const x = c.x + v.dx * h, y = c.y + v.dy * h;
+        if (x < 0 || x >= VIEW_W || y < topB || y > botB) continue;
+        const k = `${x},${y}`;
+        if (world[k] === 'void') {
+            if (fillVoid(x, y)) { laid++; addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#7dd3fc'); }
+            continue;
+        }
+        if (world[k] !== undefined || visited.has(k)) continue;
+        markCovered(k, true);
+        addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#c4b5fd');
+    }
+    return laid;
+}
 function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
     if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
     /* [250926b] THE ARM COVERS WHAT IT PASSES OVER. Field call: every cell the
@@ -21530,8 +21838,15 @@ function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
        turn had no equivalent. So a turn could finish on three fresh cells and
        leave them reading unvisited, which is the half of this the field call
        kept seeing. Both sets go through the same filter below. */
+    /* [260926i] ...AND WHERE IT STARTED. In a chain the body lands on a tile
+       and is turned off it in the same frame — before checkCollisions' fresh-
+       ground pass has marked the landing — so the cells it stood on to fire
+       the turn were marked by nobody. Field call: "moves the player cube over
+       unoccupied grid cells without impacting them." The start footprint joins
+       the arc and the landing here; the same filter applies. */
     const arc = sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)
-                .concat(rotated.map(c => ({ x: c.x, y: c.y })));
+                .concat(rotated.map(c => ({ x: c.x, y: c.y })))
+                .concat(oldCells.map(c => ({ x: c.x, y: c.y })));
     for (const c of arc) {
         if (c.x < 0 || c.x >= VIEW_W || c.y < topB || c.y > botB) continue;
         const k = `${c.x},${c.y}`;
@@ -21751,17 +22066,26 @@ function nudgeSpawnClearOfSlots() {
         }
         return true;
     };
-    if (fits(game.playerX, game.playerY)) return;
+    /* [260926h] ...AND ONTO FLOOR THAT LEADS SOMEWHERE. The spawn point must
+       connect, over floor, to the top of the view; a fitting cell on a patch
+       ringed by holes is passed over for the nearest one that does connect.
+       If nothing in reach connects, the fitting cell stands and maroonTick
+       answers it. */
+    const open = (x, y) => bodyRegion(SHAPES[game.shapeType].cells[game.shapeConfig].map(([dx, dy]) => ({ x: x + dx, y: y - dy }))).touchesTop;
+    if (fits(game.playerX, game.playerY) && open(game.playerX, game.playerY)) return;
+    let fallback = fits(game.playerX, game.playerY) ? { dx: 0, dy: 0 } : null;
     for (let dy = 0; dy <= 4; dy++) {
         for (const dx of [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5]) {
             if (fits(game.playerX + dx, game.playerY + dy)) {
+                if (!open(game.playerX + dx, game.playerY + dy)) { if (!fallback) fallback = { dx, dy }; continue; }
                 game.playerX += dx;
                 game.playerY += dy;
                 return;
             }
         }
     }
-    // Fallback: leave as-is (effectively impossible on a 10-wide board).
+    // Fallback: the nearest fitting cell, connected or not (maroonTick answers a closed one).
+    if (fallback) { game.playerX += fallback.dx; game.playerY += fallback.dy; }
 }
 
 function respawnPlayer() {
@@ -22352,6 +22676,83 @@ const CLOCK_SHIELD_SEC = 0, CLOCK_SHIELD_FLOOR = 10;
    player is too big for the set with none in view. Reds are the fallback
    if shrinking proves scarce — the export's 'stuck' records will say. */
 const FRAME_REFUSES = true, SLOT_REFUSES = true;
+/* ══ [260926k] THE CUBE THAT WENT OVER IS LOST; THE REST LAND — designer's
+   call. "When the player flips out of bounds but still has a cube in bounds,
+   the cube out of bounds is lost and the configuration is reduced ... on all
+   edges, top, bottom, left and right." And the set: "the offending cube should
+   be lost, same as if the player landed in a void — the set is sacred and does
+   not result in an occupied cell appearing."
+   So a flip that puts SOME of the body over the frame, or onto a set it does
+   not fit, is no longer refused (FRAME_REFUSES / SLOT_REFUSES) and no longer
+   sheds-in-place (applyImpactDevolve): the flip HAPPENS, the offending cubes
+   are lost, and the survivors land where the flip put them — the hole's own
+   grammar, minus the ground. A single has nothing to give and keeps the
+   refusal; a flip that would put EVERY cube over keeps its old answer (the
+   frame refuses; the bottom is the fall). Nothing is laid on a set cell.
+   Each loss says what happened, in two lines, and the lost cube animates its
+   own story: over the edge it tumbles out of the frame; rejected by the set it
+   is knocked back off the slot and shatters (see drawAnimFX). */
+const SHED_ON_LANDING = true;
+function shedOnLanding(landing, hitIdx, label, dir) {
+    if (!SHED_ON_LANDING || game.testDrive || game.shapeType === 'single') return false;
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    const out = c => c.x < 0 || c.x >= VIEW_W || c.y < top || c.y > bot;
+    let idx = label === 'edge' ? landing.map((c, i) => out(c) ? i : -1).filter(i => i >= 0) : (hitIdx || []).slice();
+    if (!idx.length || idx.length >= landing.length) return false;
+    let result = tryMultiDevolve(landing, idx);
+    if (!result) {
+        const survivors = landing.filter((_, i) => !idx.includes(i));
+        const groups = connectedGroups(survivors).sort((a, b) => b.length - a.length);
+        if (!groups.length) return false;
+        const keep = new Set(groups[0].map(c => `${c.x},${c.y}`));
+        idx = landing.map((_, i) => i).filter(i => !keep.has(`${landing[i].x},${landing[i].y}`));
+        if (idx.length >= landing.length) return false;
+        result = tryMultiDevolve(landing, idx);
+    }
+    if (!result) return false;
+    const survivorCells = landing.filter((_, i) => !idx.includes(i));
+    // the survivors must be able to stand where they land: in the frame, on ground, off any set they do not fit
+    if (survivorCells.some(c => out(c) || ['void', 'wall', 'hazard'].includes(world[`${c.x},${c.y}`]))) return false;
+    if (slotMisfitAt(survivorCells)) return false;
+    const eng = contactPoints(getPlayerCells(), survivorCells);
+    if (eng.length && !eng.some(([gx, gy]) => socketAt(gx, gy))) return false;   // no hinge for the survivors — the flip itself is unlawful
+    const prevType = game.shapeType, oldCells = getPlayerCells(), col = playerColor();
+    const v = HINT_DIR_VEC[dir] || [0, 0];
+    game.shapeType = result.shapeType;
+    game.shapeConfig = result.config;
+    game.playerX = result.anchorX;
+    game.playerY = result.anchorY;
+    game.roundImpacts = (game.roundImpacts || 0) + 1;
+    const n = idx.length;
+    // the lost cubes' own stories, on the FX layer
+    const cas = idx.map(i => {
+        const c = landing[i];
+        if (label === 'edge') {
+            const dx = c.x < 0 ? -1 : c.x >= VIEW_W ? 1 : 0, dy = c.y < top ? -1 : c.y > bot ? 1 : 0;
+            const x = Math.min(VIEW_W - 1, Math.max(0, c.x)), y = Math.min(bot, Math.max(top, c.y));   // the tumble starts at the frame
+            return { x, y, col, e: { dx: dx || v[0], dy: dy || v[1], spin: Math.random() < 0.5 ? -1 : 1 } };
+        }
+        return { x: c.x, y: c.y, col, s: { dx: -v[0], dy: -v[1] } };
+    });
+    devolveStage = { cas, t0: performance.now(), dur: 560 };
+    game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
+    const oldSurv = oldCells.filter((_, i) => !idx.includes(i));
+    if (oldSurv.length === survivorCells.length) startSlipAnim(oldSurv, survivorCells);
+    tapeShift(oldCells, survivorCells);                                   // the move is on the tape, so the replay and the continuity rule both know it
+    if (label === 'edge') flagOutOfBounds(v[0] < 0 ? 'left' : v[0] > 0 ? 'right' : v[1] < 0 ? 'top' : 'bottom');
+    const cubes = n > 1 ? `−${n} CUBES` : '−1 CUBE';
+    const line = label === 'edge' ? 'OVER THE EDGE' : 'WRONG SHAPE FOR THE SET';
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `${line}\n${cubes}`, '#f87171', true, { life: 2000, hold: 1100 });
+    tapeNote(`${line}  ${cubes}`, '#f87171');
+    showTip(label === 'edge' ? 'edge' : 'misfit');
+    if (sfx.devolve) sfx.devolve();
+    triggerShake(5, 220);
+    flashPlayerDenied('shed');
+    signalSizeChange(prevType, result.shapeType, true);
+    captureSnapshot(label === 'edge' ? '↘ over the edge' : '✗ wrong fit');
+    rec('hurt', { from: prevType, to: result.shapeType, ch: label, n, landed: 1 });
+    return true;
+}
 // ── [210826as] A REFUSAL COSTS TWO SECONDS. ONCE. ───────────────────────────
 // bumpCost() charged 2s on EVERY refused move, and a refused move is not a rare
 // event — a held direction against a wall re-fires many times a second, and the
@@ -22741,6 +23142,7 @@ function move(dir) {
                    the bounce, the amber ghost on the slot, the wrong-shape
                    sound. Nothing is charged. */
                 if (SLOT_REFUSES) {
+                    if (shedOnLanding(probeCells, touch, 'slot', dir)) return;   // [260926k] the cube that does not fit is lost; the rest land; the set is untouched
                     startFlip(dir, getPlayerCells(), game.faceParity, true);   // the bounce — never on the tape
                     showMoveGhost(newX, newY, newConfig, 'wrong', dir);
                     if (sfx.wrongShape) sfx.wrongShape();
@@ -22802,6 +23204,7 @@ function move(dir) {
                 const wv = world[`${c.x},${c.y}`];
                 if (wv === 'wall' && !pendingWalls.has(`${c.x},${c.y}`)) { impactIdx.push(i); _wall++; }
             });
+            if (_edge && !_wall && shedOnLanding(probeCells, impactIdx, 'edge', dir)) return;   // [260926k] the cube over the side is lost; the rest land
             if (!FRAME_REFUSES && applyImpactDevolve(impactIdx,
                 _edge && _wall ? 'mixed' : _wall ? 'wall' : 'edge')) return;
             showMoveGhost(newX, newY, newConfig, null, dir);   // red ghost at the refused spot
@@ -23013,11 +23416,12 @@ function move(dir) {
         //   recoil and NO wall — a barrier would shield the player from
         //   the one hazard that is meant to catch them. The Move Guide
         //   marks these moves with the red ✕.
-        if (!FRAME_REFUSES) {
-            // [290726g] Ceiling contact costs cubes too, on the same rule.
+        {
             const ceilIdx = [];
             proposedCells.forEach((c, i) => { if (c.y < topRowWorld) ceilIdx.push(i); });
-            if (ceilIdx.length && applyImpactDevolve(ceilIdx, 'ceiling')) return;
+            if (ceilIdx.length && shedOnLanding(proposedCells, ceilIdx, 'edge', dir)) return;   // [260926k] the cube over the top is lost; the rest land
+            // [290726g] Ceiling contact costs cubes too, on the same rule.
+            if (!FRAME_REFUSES && ceilIdx.length && applyImpactDevolve(ceilIdx, 'ceiling')) return;
         }
         for (const c of proposedCells) {
             if (c.y < topRowWorld) {
@@ -23073,6 +23477,11 @@ function move(dir) {
                 HAPTICS.fire(HAPTIC.bump);   // [060826m]
             if (sfx.bonk) sfx.bonk(); flashPlayerDenied();
                 return;
+            }
+            {   // [260926k] the cube over the bottom is lost; the rest land — the fall is only for a body that goes over whole
+                const botIdx = [];
+                proposedCells.forEach((c, i) => { if (c.y > bottomRowWorld) botIdx.push(i); });
+                if (shedOnLanding(proposedCells, botIdx, 'edge', dir)) return;
             }
             triggerShake(6, 300);
             if (sfx.hit) sfx.hit();
@@ -23888,6 +24297,7 @@ function checkCollisions() {
                 triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
                 triggerShake(3, 150);
                 startSlipAnim(oldCellsForAnim, cells);
+                { const _laid = stepLay(oldCellsForAnim, v, hop); if (_laid) rec('fill', { n: _laid, s: game.shapeType, src: 'step' }); }   // [260926i]
                 tapeShift(oldCellsForAnim, cells);                     // [110926d] the step is a move too
                 tapeNote(hop > 1 ? 'SHIFTER  VAULTED' : 'SHIFTER  STEPPED', SHIFTER_FAMILY_COLOR);   // [100926f][120926i]
                 bookmark('shifter', 'THE SHIFTER');                    // [100926g]
@@ -23904,6 +24314,7 @@ function checkCollisions() {
                 cells = getPlayerCells();
                 startSlipAnim(oldCellsForAnim.filter((_, i) => keep(i)),
                               newCells.filter((_, i) => keep(i)));
+                stepLay(oldCellsForAnim.filter((_, i) => keep(i)), v, hop);   // [260926i] the survivors' path
             } else {
                 // [270726p] ABSORBED — every destination is blocked (e.g. a
                 // single stepped into a wall or off the edge). [270726x]:
@@ -24045,7 +24456,19 @@ function checkCollisions() {
             game.roundGreens = (game.roundGreens || 0) + 1;
             scoreGain(5, false);
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2, '#a3e635');
-            addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL, '+5', '#a3e635');
+            /* [260926e] the cube pays the clock — see GREEN_STOMP_SEC */
+            let _stompSec = 0;
+            if (CLOCK_ONLY && !game.testDrive) {
+                _stompSec = clockCredit(GREEN_STOMP_SEC);
+                if (_stompSec > 0) {
+                    momentumAddSeconds(_stompSec);
+                    game.roundTimeSecs = (game.roundTimeSecs || 0) + _stompSec;
+                    rec('time', { sec: _stompSec, src: 'green', m: Math.round(momentumRemaining()) });
+                }
+                tapeNote(`SPARE CUBE  ${secsLabel(_stompSec)}`, '#a3e635');
+            }
+            addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
+                     CLOCK_ONLY ? secsLabel(_stompSec) : '+5', '#a3e635');
             if (sfx.collect) sfx.collect();
             // Collected green becomes occupied floor: it falls through to the
             // fresh-ground pass below (no longer a pickup), which marks it
@@ -25420,8 +25843,14 @@ function applyImpactDevolve(hitIndices, label) {
     }
     if (sfx.devolve) sfx.devolve();
     // [180826t] Casualty beat here too — same staging as the red channel.
-    devolveStage = { cas: idx.map(i => ({ x: cells[i].x, y: cells[i].y })),
-                     t0: performance.now(), dur: 340 };
+    /* [260926k] a cube the scroll carries out of the bottom tumbles out of the
+       frame like one flipped over it; every other loss here keeps the strobe */
+    { const _col = (SLOT_DEFS[prevType] && SLOT_DEFS[prevType].color) || '#22d3ee';
+      const _bot = Math.floor(game.cameraY) + VIEW_H - 1;
+      devolveStage = { cas: idx.map(i => label === 'void'
+                           ? { x: cells[i].x, y: Math.min(_bot, cells[i].y), col: _col, e: { dx: 0, dy: 1, spin: Math.random() < 0.5 ? -1 : 1 } }
+                           : { x: cells[i].x, y: cells[i].y }),
+                       t0: performance.now(), dur: label === 'void' ? 560 : 340 }; }
     game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
     // [180826d] ONE VERB, EVERY CHANNEL. This path — wall bumps, misfit slots,
     // ceiling, edge — shed cubes with bursts and a sound but NO WORDS, while
@@ -27493,6 +27922,8 @@ const TIPS = {
     trim:      'Too big? Bridge a hole — a cube for a cell.',   // [100926h]
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
     onecube:   'One cube into a hole costs you the cube and 10 seconds. Grow first, or go round.',   // [250926m][250926s]
+    edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
+    misfit:    'A cube that lands in a set it does not fit is lost. Match the shape before you land.',   // [260926k]
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -28018,7 +28449,11 @@ function lethalMoveExists() {
         const nx = game.playerX + off[0], ny = game.playerY - off[1];
         const cells = S.cells[tr[dir]].map(([a, b]) => ({ x: nx + a, y: ny - b }));
         if (cells.some(c => c.x < 0 || c.x >= VIEW_W)) continue;   // the side refuses first
-        if (cells.some(c => c.y > bot)) return true;
+        /* [260926k] a flip that puts PART of the body under the frame is a cube
+           lost now, not a fall (shedOnLanding); the fall is only a flip that
+           takes every cube under, or a single's. Kept in step with move(). */
+        const under = cells.filter(c => c.y > bot).length;
+        if (under && (t === 'single' || under >= cells.length)) return true;
     }
     return false;
 }
@@ -28201,7 +28636,7 @@ let _beatAt = 0;
    Each now fires ONCE per crossing, with a picture and a sound together, and
    never twice for the same state. Speed announces at fixed multiples of the
    base rate so it reads as steps rather than a slope. ═══════════════════════ */
-const RATCHET_SPEED_STEPS = [1.3, 1.6, 1.9, 2.2, 2.6, 3.0];
+const RATCHET_SPEED_STEPS = [1.1, 1.2, 1.3, 1.4, 1.5];   // [260926a] the level's own steps — FASTER at levels 4, 6, 8, 9, 10; the clock-driven 1.6–3.0 cannot happen now
 /* [110926b] THE WARNING ZONE IS THE ZONE. Field note: "when the warning sound
    of the last 30 seconds starts playing, and the player then clears rows and
    collects hourglasses to get out of the danger time zone, they should be
@@ -28976,9 +29411,9 @@ function draw() {
                     // [180826c] Day gets the same breath as night — it had no
                     // pulse at all, so shifters sat flat on the white floor.
                     const dayPulse = pvInert ? 0 : 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);   // [110926p]
-                    roundedSq(sx - 1.5 * dayPulse, sy - 1.5 * dayPulse, CELL_SIZE + 3 * dayPulse, DAY_SHIFTER_FILL, '#8fa3b8', 1);
+                    roundedSq(sx - 1.5 * dayPulse, sy - 1.5 * dayPulse, CELL_SIZE + 3 * dayPulse, DAY_SHIFTER_FILL, '#8fa3b8', 2);   // [260926g] a firmer edge on the white floor
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
-                    try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY); }   // [100926a] one bad tile never takes the board with it
+                    try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY, !pvInert); }   // [100926a] one bad tile never takes the board with it
                 catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                     if (pvInert) ctx.restore();   // [170826b] matched exit
                     if (spentTile) drawShifterCharge(sx, sy, tileChg, CELL_SIZE);   // [180926d] at full strength — the ring is the one thing not dimmed
@@ -28991,9 +29426,9 @@ function draw() {
                 const pulse = pvInert ? 0 : 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);   // [110926p] asleep: no breath
                 const r = 184, g = 201, b = 217;   // [290726j] steel
                 ctx.save();
-                ctx.globalAlpha = 0.74 * (pvInert ? 0.45 : 1);   // metal should read bright, not dim ([110926p] unless asleep)
+                ctx.globalAlpha = 0.82 * (pvInert ? 0.45 : 1);   // metal should read bright, not dim ([110926p] unless asleep); [260926g] 0.74 → 0.82
                 ctx.shadowColor = `rgb(${r},${g},${b})`;
-                ctx.shadowBlur  = pvInert ? 0 : 6 + 6 * pulse;
+                ctx.shadowBlur  = pvInert ? 0 : 7 + 7 * pulse;   // [260926g]
                 // [180826c] SIZE BREATH, the hourglass lesson [170826b]: a glow
                 // pulse reads as static at a glance; a ±1.5px breath is what
                 // peripheral vision catches. All shifters breathe now — the
@@ -29002,7 +29437,7 @@ function draw() {
                 ctx.restore();
                 // Glyph — stroked vector, uniform 2.4px ([270726l]): matches
                 // the white "+" on greens, "−" on reds, and the hourglass.
-                try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY); }   // [100926a] one bad tile never takes the board with it
+                try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY, !pvInert); }   // [100926a] one bad tile never takes the board with it
                 catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
                 if (pvInert) ctx.restore();   // [170826b] matched exit
                 if (spentTile) drawShifterCharge(sx, sy, tileChg, CELL_SIZE);   // [180926d]
@@ -30979,6 +31414,7 @@ function loop(time, gen) {
     if (game.running && !game.paused) favourOfferTick();   // [110926l] the long reach: an offer on becoming a diagonal or a J
     if (game.running && !game.paused) bridgeOfferTick();   // [110926q] a turn tile that builds, when the body can use one
     if (game.running && !game.paused) islandTick();        // [120926d] the island question, and the prize's last call
+    if (game.running && !game.paused) maroonTick();        // [260926h] a body on floor that leads nowhere gets the way off
     if (game.running && !game.paused) ratchetWatch();   // [070926h] the significant changes, announced
     paintChainBar();                                       // [080926b] the chain window, visible
     if (game.running && !game.paused && !game._reprieveGiven) {
@@ -31082,11 +31518,28 @@ function loop(time, gen) {
     // player can learn, not raw speed), then steepening to the same ~1.5x top at
     // round 10. levelMul = 1 + MAX * t^EASE, t = (round-1)/9. Tune MAX (top-end
     // boost) and EASE (>1 = flatter early / steeper late).
+    /* ══ [260926a] THE CLOCK NO LONGER DRIVES THE SPEED — designer's call ═════
+       The line below used to read SPEED_MIN + speedTimer × RATE: the board ran
+       at 1.0× with a full clock, 1.22× at 40s, 1.44× at 20s, 1.55× at 10s. So
+       the moment a run was in trouble the game got faster — rows harder to
+       finish, the clock lower, the board faster again. Measured across
+       playdata 52–54, every run that ended did so in that spiral: level 4 in
+       playdata 53 spent 232s on the wall; level 7 in playdata 54 spent 36s
+       under 15 with rows paying 1–2s. Difficulty now rises with the LEVEL and
+       nothing else: EASE 1.8 → 1.4 steepens the per-level ramp a little to
+       stand in for what the clock link was adding in ordinary play —
+         L1 1.00 · L2 1.02 · L3 1.06 · L4 1.11 · L5 1.16 · L6 1.22 ·
+         L7 1.28 · L8 1.35 · L9 1.42 · L10 1.50
+       (was 1.00 · 1.01 · 1.03 · 1.07 · 1.12 · 1.17 · 1.24 · 1.32 · 1.41 · 1.50).
+       SPEED_RAMP_RATE stays declared so the old curve can be read; nothing
+       multiplies by it. speedOffset (the retired warp's slowdown) keeps its
+       place in the sum; with warps at weight 0 it is always 0. */
     const LEVEL_SPEED_MAX  = 0.5;
-    const LEVEL_SPEED_EASE = 1.8;
+    const LEVEL_SPEED_EASE = 1.4;   // [260926a] was 1.8
     const _lvT = Math.min(9, Math.max(0, advancedRound - 1)) / 9;
     const levelMul = 1 + LEVEL_SPEED_MAX * Math.pow(_lvT, LEVEL_SPEED_EASE);
-    let targetSpeed = SPEED_MIN + game.speedTimer * SPEED_RAMP_RATE - (game.speedOffset || 0);
+    void SPEED_RAMP_RATE;   // [260926a] the clock is not in this sum any more
+    let targetSpeed = SPEED_MIN - (game.speedOffset || 0);
     targetSpeed = Math.max(SPEED_MIN, targetSpeed) * levelMul;
     if (!game._testFrozen) {
         game.speed = targetSpeed;
@@ -31711,6 +32164,44 @@ function drawAnimFX() {
                thing being destroyed, the other is a thing letting go. */
             for (const c of devolveStage.cas) {
                 const sx = c.x * CELL + 3, sy = (c.y - game.cameraY) * CELL + 3;
+                /* [260926k] OVER THE EDGE — the cube tumbles out of the frame:
+                   accelerating along the edge's outward normal, spinning,
+                   shrinking and fading as it goes, in the body's own colour. */
+                if (c.e) {
+                    const t = k, go = t * t;
+                    const size = (CELL - 6) * (1 - 0.55 * t);
+                    const cx = sx + (CELL - 6) / 2 + c.e.dx * CELL * 1.7 * go;
+                    const cy = sy + (CELL - 6) / 2 + c.e.dy * CELL * 1.7 * go;
+                    ctx.save();
+                    ctx.translate(cx, cy); ctx.rotate(c.e.spin * t * Math.PI * 1.2);
+                    ctx.globalAlpha = 0.95 * (1 - t * t);
+                    roundedSq(-size / 2, -size / 2, size, c.col || '#22d3ee', null);
+                    ctx.restore();
+                    continue;
+                }
+                /* [260926k] REJECTED BY THE SET — knocked straight back off the
+                   slot (a third of the beat, with a red flash), then it comes
+                   apart: four shards fly to the corners and fade. The slot's
+                   cell is never painted; the story happens in the air above it. */
+                if (c.s) {
+                    const t = k, size = CELL - 6, q = size / 2;
+                    if (t < 0.34) {
+                        const u = t / 0.34, off = CELL * 0.5 * Math.sin(u * Math.PI / 2);
+                        ctx.save();
+                        ctx.globalAlpha = 0.95;
+                        roundedSq(sx + c.s.dx * off, sy + c.s.dy * off, size, (Math.floor(u * 6) % 2) ? '#ef4444' : (c.col || '#22d3ee'), null);
+                        ctx.restore();
+                    } else {
+                        const u = (t - 0.34) / 0.66, ox = sx + c.s.dx * CELL * 0.5, oy = sy + c.s.dy * CELL * 0.5;
+                        ctx.save();
+                        ctx.globalAlpha = 0.9 * (1 - u);
+                        const fl = CELL * 0.55 * u, sh = q * (1 - 0.45 * u);
+                        for (const [fx, fy] of [[0, 0], [1, 0], [0, 1], [1, 1]])
+                            roundedSq(ox + fx * q + (fx ? 1 : -1) * fl, oy + fy * q + (fy ? 1 : -1) * fl, sh, c.col || '#22d3ee', null);
+                        ctx.restore();
+                    }
+                    continue;
+                }
                 if (c.v === true) {
                     const settle = Math.min(1, k * 1.6);
                     const dip = 5.5 * (1 - Math.cos(settle * Math.PI)) / 2

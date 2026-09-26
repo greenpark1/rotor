@@ -391,13 +391,21 @@ body.theme-day .note-bar input { color: var(--day-ink); background: #f1f5f9; }
 .level-card-extra  { animation-delay: 1.25s; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #7dd3fc; }
 @keyframes lcCardIn { 0% { transform: scale(0.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes lcRowIn { to { opacity: 1; transform: translateY(0); } }
-body.theme-day .level-card { background: rgba(248, 250, 252, 0.30); }
-body.theme-day .level-card-box { background: rgba(255, 255, 255, 0.92); border-color: rgba(100, 116, 139, 0.30); }
-body.theme-day .level-card-title { color: #4d7c0f; }
+/* [260926r] THE DAY CARD IN THE SWEET SHOP'S COLOURS. Designer's call: "I don't
+   like the green and brown colours in the interlevel scorecard — make them
+   kiddy, playful, bright." The title was olive (#4d7c0f) and the praise line
+   burnt orange (#b45309) — a 2024 day palette's idea of legible. Now: the title
+   in hot bubble-gum pink, the praise line in tangerine with a soft glow, the
+   coverage line in the day ink (gold when it is gold), the extra line in sky,
+   on a white card edged in the board's baby blue. Every one still clears 3:1
+   on white at the size it is set. */
+body.theme-day .level-card { background: rgba(224, 242, 254, 0.35); }
+body.theme-day .level-card-box { background: rgba(255, 255, 255, 0.94); border-color: rgba(137, 207, 240, 0.9); box-shadow: 0 12px 40px rgba(14, 116, 178, 0.18); }
+body.theme-day .level-card-title { color: #ff2d95; }
 body.theme-day .level-card-cov { color: #334155; }
-body.theme-day .level-card-cov.gold { color: #b45309; text-shadow: none; }
-body.theme-day .level-card-praise { color: #b45309; text-shadow: none; }
-body.theme-day .level-card-extra { color: var(--wm-c0); }
+body.theme-day .level-card-cov.gold { color: #ff8c1a; text-shadow: none; }
+body.theme-day .level-card-praise { color: #ff6a1a; text-shadow: 0 0 14px rgba(255, 122, 26, 0.35); }
+body.theme-day .level-card-extra { color: #0ea5e9; }
 /* ── [180926c] THE REPLAY IS AN OFFER NOW ────────────────────────────────────
    Field call: "before we get 'action replay' at the end of each level, we need
    to mark the completion of the level with words of encouragement on screen and
@@ -436,7 +444,7 @@ body.theme-day .level-card-extra { color: var(--wm-c0); }
     font-size: 8.5px; font-weight: 800; letter-spacing: 0; font-variant-numeric: tabular-nums;
 }
 .lc-replay-hint { font-size: 8.5px; font-weight: 700; letter-spacing: 1.2px; color: #64748b; text-transform: uppercase; }
-body.theme-day .lc-replay-btn { background: rgba(8, 145, 178, 0.07); border-color: rgba(8, 145, 178, 0.4); color: var(--wm-c0); }
+body.theme-day .lc-replay-btn { background: rgba(255, 45, 149, 0.06); border-color: rgba(255, 45, 149, 0.45); color: #e0177f; }   /* [260926r] the card's pink */
 body.theme-day .lc-replay-hint { color: #94a3b8; }
 @media (prefers-reduced-motion: reduce) { .lc-replay-btn:active { transform: none; } }
 /* [080926a] the replay sits on the scorecard, above CONTINUE */
@@ -1871,7 +1879,7 @@ body.theme-day {
    palette in both themes (the deep day cyan visibly mismatched the verbs).
    --wm-steel keeps its day pewter for the BOARD, mini-mark and tiles; the
    ritual's multicolour T uses a fixed steel so the exhibit matches night. */
-body.theme-day { --wm-steel: #8fa3b8; }
+body.theme-day { --wm-steel: #7f93a8; }   /* [260926m] deep steel · [260926n] blue raspberry · [260926o] pewter again: the tiles are silver, the text a readable step darker */
 /* ── [070826p] DAY TEXT NEEDS MORE WEIGHT THAN NIGHT, not just more contrast ──
    Light text on a dark ground appears BOLDER than it is: the bright strokes
    bleed outward into the dark. Dark text on a light ground appears THINNER, for
@@ -2715,6 +2723,23 @@ body.theme-day .taunt-box .go-revolves { color: #64748b; }
 .go-scores-btn:active { transform: scale(0.97); }
 body.theme-day .go-scores-btn { color: #0e7490; border-color: rgba(14,116,144,0.5); }
 @media (prefers-reduced-motion: reduce) { .go-scores-btn:active { transform: none; } }
+/* [260926n] SAVE / SHARE REPLAY — the same shape as TOP SCORES, a size down and
+   in the replay's violet, side by side. */
+.go-clip { display: flex; gap: 10px; justify-content: center; margin: 0 0 8px; }
+.go-clip[hidden] { display: none; }
+.go-clip-btn {
+    background: none; border: 1px solid rgba(167,139,250,0.55); border-radius: 13px;
+    color: #c4b5fd; font-family: inherit;
+    font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+    padding: 8px 18px; cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+}
+.go-clip-btn:hover { color: #ede9fe; border-color: rgba(196,181,253,0.9); }
+.go-clip-btn:active { transform: scale(0.97); }
+.go-clip-btn[hidden] { display: none; }
+body.theme-day .go-clip-btn { color: #6d28d9; border-color: rgba(109,40,217,0.5); }
+body.theme-day .go-clip-btn:hover { color: #4c1d95; border-color: rgba(109,40,217,0.9); }
+@media (prefers-reduced-motion: reduce) { .go-clip-btn:active { transform: none; } }
 
 .toggle-box {
     display: flex;
@@ -2964,9 +2989,9 @@ body.theme-day .howto-tile { box-shadow: inset 0 0 0 2px var(--day-ink); }
    other four tiles wins: EVOLVE, DEVOLVE and +TIME all carry white glyphs, so a
    dark line on the two shifter tiles made them read as a different KIND of
    thing rather than two members of the same set. */
-body.theme-day .howto-tile.teal { background: #b8c9d9; }
+body.theme-day .howto-tile.teal { background: linear-gradient(#c5d3e0, #9fb3c8); }   /* [260926n] blue raspberry · [260926o] night's silver, brushed (CANDY.steelHi → steelLo) */
 body.theme-day .howto-tile.teal svg,
-body.theme-day .howto-tile.teal svg path { stroke: #ffffff; }
+body.theme-day .howto-tile.teal svg path { stroke: #101729; }   /* [260926o] night's dark glyph on the silver, on the board and here alike */
 .howto-tile.haz  { background: #ef4444; }
 .howto-tile.time { background: #e8b96a; }
 .howto-tile.wall { background: #9aa3b2; }
@@ -3354,7 +3379,7 @@ body.theme-day .level-tally { background: #f8fafc; }
     color: #7dd3fc; margin: 0 0 8px; text-align: center;
     text-shadow: 0 0 26px rgba(125, 211, 252, 0.45);
 }
-body.theme-day .tally-title { color: var(--wm-c0); text-shadow: none; }
+body.theme-day .tally-title { color: #ff2d95; text-shadow: none; }   /* [260926r] hot pink, as the level card's title */
 .tally-rows { width: min(420px, 92%); }
 .tally-row {
     display: flex; align-items: baseline; justify-content: space-between;
@@ -3400,14 +3425,14 @@ body.theme-day .tally-count { color: var(--day-ink); }
 .tally-row.low .tally-count { font-weight: 800; }
 .tally-row.low .tally-icon { opacity: 1; }
 body.theme-day .tally-row.low .tally-label,
-body.theme-day .tally-row.low .tally-count { color: #b45309; }
+body.theme-day .tally-row.low .tally-count { color: #f97316; }   /* [260926r] tangerine, not burnt orange */
 .tally-row.nopay .tally-icon { opacity: 0.72; }
-body.theme-day .tally-pts { color: #e8a800; }   /* [050826a] night gold, not burnt orange */
+body.theme-day .tally-pts { color: #ff6a1a; }   /* [050826a] night gold · [260926r] tangerine: gold on white read as mustard */
 .tally-row.gold .tally-label, .tally-row.gold .tally-count { color: #ffd60a; }
 /* [200826f] Night's pale gold washes out on the white day card — deepen to the
    day gold family (same as .tally-pts). */
 body.theme-day .tally-row.gold .tally-label,
-body.theme-day .tally-row.gold .tally-count { color: #e8a800; }
+body.theme-day .tally-row.gold .tally-count { color: #ff8c1a; }   /* [260926r] */
 .tally-total {
     margin-top: clamp(6px, 2cqw, 14px); width: min(420px, 92%);
     display: flex; align-items: baseline; justify-content: space-between;
@@ -3423,7 +3448,7 @@ body.theme-day .tally-row.gold .tally-count { color: #e8a800; }
     font-variant-numeric: tabular-nums; color: #ffd60a;
     text-shadow: 0 0 22px rgba(255, 214, 10, 0.5);
 }
-body.theme-day .tally-total-value { color: #e8a800; text-shadow: none; }   /* [050826a] */
+body.theme-day .tally-total-value { color: #ff2d95; text-shadow: none; }   /* [050826a] · [260926r] the level total in the card's pink */
 .tally-note {
     width: min(420px, 92%); margin-top: clamp(4px, 1.4cqw, 10px);
     font-size: 11px; letter-spacing: 0.4px; color: #64748b; text-align: center;
@@ -3452,7 +3477,7 @@ body.theme-day .tally-grand-value { color: var(--day-ink); }
     opacity: 0; transition: opacity 300ms ease;
 }
 .tally-start.in { opacity: 1; }
-body.theme-day .tally-start { color: #15803d; }
+body.theme-day .tally-start { color: #0284c7; font-weight: 700; }   /* [260926r] sky, not forest green */
 /* [030826x] THE BADGE. A rank is a reward for effort, so it leads the card as
    an emblem rather than trailing it as a footnote: a struck steel disc carrying
    the rung number, the name beneath in full size, then the ladder position and
@@ -3820,6 +3845,13 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
          who had just set one had to leave the screen to find it. One loud action
          and one quiet destination — the hierarchy the card itself uses. -->
     <button class="go-scores-btn" onclick="showScores('end')">TOP SCORES</button>
+    <!-- [260926n] The run's replay, as a file — shown only once a clip exists
+         (the browser has to be able to record a canvas), SHARE only where the
+         browser can hand a file to the system sheet (the iPhone and iPad). -->
+    <div class="go-clip" id="goClip" hidden>
+        <button class="go-clip-btn" id="goClipSave" onclick="replayClipSave()">⇓ SAVE REPLAY</button>
+        <button class="go-clip-btn" id="goClipShare" onclick="replayClipShare()" hidden>SHARE REPLAY</button>
+    </div>
     <button class="details-toggle debug-only" onclick="startReview()">⏮ Review last moves</button>
     <!-- [160826p] Downloads the run's event log as JSON for balance analysis.
          Visible (not debug-only): the data is collected on the phone and the
@@ -7318,6 +7350,142 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 270926-0030: THE REST NEVER BOUNCE. Four designer's calls.
+// · "I tried to land on a diagonal set with a horizontal pair and it took
+//   three or four bumps to get the cell to come off — an inconsistency." The
+//   export holds no such run (every set-shed in it came off first time), but
+//   the code had the gap: when the OTHER cube would have landed on a hole, a
+//   wall, a red, the frame or a second set, the shed gave up and the old
+//   bounce fired instead — nothing lost, nothing said — until an approach
+//   happened to put the survivor on ground. Aim at a set on an island from
+//   the mainland and that is every approach. Now every boundary takes its
+//   cube in the same instant (sets, frame) and the rest LAND if they have
+//   ground or STAY where the flip began if not, bounced back one body
+//   smaller; only a single, or a landing that would take every cube, is
+//   refused. hurt records landed:0 for a stay. Test U.
+// · "Go 20% lighter again with the salmon" — #ffb1a5 → #ffc1b7, its fresh
+//   paint, edge, bloom and rings with it (14 from the pair's wash, 33 from its
+//   outline, 27 from a red, 22 from white).
+// · "I don't like the green and brown on the interlevel scorecard — kiddy,
+//   playful, bright." The level card's olive title and burnt-orange praise
+//   line are hot pink and tangerine; the scorecard's mustard points and total
+//   are tangerine and pink, its forest-green STARTING LEVEL line is sky, its
+//   icons lime/sky/pink; the card is edged in the board's baby blue.
+// · "In day mode the J and the 2×2 colours are too similar — change one."
+//   The square is BLUE (#4a7dff), the one cool hue nothing else holds: 56 from
+//   the J, 33 from the single, 19 from the night trail; its day wash 14 and 21
+//   from the single's and the J's (were 6 and 6). One definition, so the set,
+//   the wash, the cube, the HUD icon and the legend all follow.
+// 260926-2245: SALMON, A FIFTH LIGHTER. Designer's call: "I like the salmon
+// pink but make it 20% lighter." The walked square, its fresh paint, edge and
+// bloom each move a fifth toward white (#ff9e8f → #ffb1a5). Measured: 18 from
+// the pair's wash and 32 from its outline, 23 from a red, 22 from the amber
+// hourglass, 25 from a white tile.
+// 260926-2300: THE DRY SPELL. Playdata57's last run, on SNOW AND ICE, asked
+// "was I stuck for the last thirty seconds by my own error or the game's?" —
+// the game's. A diagonal lost a cube to a set with 40s on the clock and
+// walked as a single for fifty seconds with no green it could reach until
+// the clock ran out: the rows pay every green ([180926b]) and a single that is
+// not finishing rows earns none; it cannot bridge (its last cube is its life);
+// the in-view floor was satisfied the whole time by two turn tiles, which a
+// single passes over; and every hand up the game has needed a harder fault
+// (no move at all, a rock, no floor left). Now a single with no reachable
+// green for eight seconds gets one two cells out, by the bridge offer's own
+// placement, at most one every nine seconds and only while it stays dry
+// (rescue k:dry; the probe records g, greens in reach). Two calls on the
+// day board with it: the grid is BABY BLUE now, the depths a shade deeper so
+// an opening still reads as below; the walked square is SALMON, 22 from the
+// pair's wash and 30 from its outline, 19 from a red, 19 from the amber.
+// 260926-1915: SNOW AND ICE. Designer's call on 1845, the day board: "nearly
+// there — but the underworld needs to be a version of the top layer: the cells
+// in the underworld should be white, like the top level. The game objects need
+// to be similar to the night version — shifters silver, metallic grey. The
+// colours need to be baby blue and girlie pink, bubble gum. The top layer is
+// supposed to feel like a grid above another grid below it; refer to the night
+// palette and think what the white version would be: a snowy landscape with
+// electric turquoise-blue ice as the grid, with super-neon bubble-gum sweet-shop
+// colours for all the game objects."
+// Night, read across into white: white cells on an ELECTRIC ICE grid (sky-400
+// between the tiles, a paler ice bevel on each), over smaller, blurred WHITE
+// cells edged in the same ice on deeper ice below — the top layer seen one
+// level down. The trail is hot bubble-gum pink (night's is violet), fresh paint
+// hotter, with a deeper pink on its rings; the grid's rings are ice. The
+// machines are night's own silver — a brushed fall-off, night's slate edge,
+// night's dark glyph, night's steel breath — on the board and the welcome
+// legend alike. The hourglasses are night's sand and amber, glowing; the greens
+// glow; the sets' outlines glow. Walls are packed slate (night's dark block in
+// daylight). Sockets and the openings' shadow and rim are ice. The set wash
+// drops to a fifth so the pair's sits clear of the pink trail. Measured: the
+// ice grid is a step bluer than the single's cyan (12) so a single's set still
+// stands out from the lattice; trail 11 from the pair's wash and 20 from its
+// outline (the outline glows; the wash is the lightest thing on the board);
+// hole 21 from a tile and 13 from a machine; machine 19 from a tile; the small
+// hourglass 17 from a diagonal cube, the big one 18. Night untouched.
+// 260926-1845: SWEET SHOP. Four designer's calls on the 1815 build.
+// · "The daylight colours are too boring and muted — super playful, bubble
+//   gummy colours that work well against white, bright sweet shop colours."
+//   The tiles stay white; everything on them is candy, named once in CANDY: a
+//   lilac grid, lavender walked squares with a violet edge (fresh paint a
+//   deeper violet), blue raspberry turn and step tiles with the white glyph
+//   at 5.2:1, a lemon +10 with a dark glyph and a tangerine +30, grape
+//   sockets; lime greens, mint walls and strawberry reds were already there.
+//   Measured as before (rendered, read back, CIEDE2000): walked 15 from the
+//   pair's wash, the machine 30 from walked and 40 from a cyan cube, lemon
+//   20 from a diagonal cube, tangerine 26 from it and 14 from a red. Night is
+//   untouched by the palette.
+// · "I can't make out the underworld layer; there should be a nice parallax
+//   effect when looking through the voids to what's below." Two causes. By
+//   day the 1815 hole was a flat slate FILL, painted over the depths; it is
+//   an opening now, with a shadow down its top edge and a violet rim, onto a
+//   GRAPE underworld (lighter grape tiles, white light in the pools) — a
+//   sweet-shop deep, not the black the 080926 note ruled out. At night the
+//   lip (75% black down the top third) and the pit vignette (30%) were
+//   burying the lattice; both are cut by more than half. In both themes the
+//   lattice is now drawn a second time inside the openings at full strength
+//   and with more body, on the same drift and phase, so a hole shows the
+//   depths plainly while a tile still only hints at them. The parallax rate
+//   goes from 40% to 30% of the board's scroll — further down, so the slide
+//   against the board is plainer — and the pools are brighter in both.
+// · "If a shifter pushes or rotates the player onto a set and the
+//   configuration doesn't fit, the lose-a-cell rule should apply; go through
+//   all the scenarios." The machines refused a misfit (tile spent, no
+//   movement) — the one place a wrong shape met a set and paid nothing. The
+//   cubes a set would take (slotOffenders) are now casualties of the push,
+//   alongside the reds, walls, holes and edges classifyShiftPush already
+//   trims, so every case resolves through the one path and the set is never
+//   painted: a single is still refused (nothing to give); a pair or diagonal
+//   with one cube on a set loses it and lands as a single; a J loses one and
+//   lands as a pair (or a diagonal, if the corner went) or loses two and
+//   lands as a single; a square loses one (a J), two (a pair or a diagonal)
+//   or three (a single); a body with EVERY cube on a set (a pair across a
+//   3-set, a square across two sets) cannot land and is absorbed — the
+//   recoil, tile spent, nothing lost. The set's cubes shatter as they do on
+//   a flip ([260926k]); a cube the same push drops in a hole still buys it,
+//   one pushed over the edge tumbles. The float says WRONG SHAPE FOR THE SET
+//   and the tape records ns. The ghost preview mirrors the rule. Tests O–S.
+// · "A download option for the replay — a keepsake, or bragging rights on
+//   social media." The death replay is recorded as it plays: the board with
+//   a strip above (ROTOЯ · score · level) and below (the replay's own words)
+//   is streamed into a MediaRecorder; the card then offers SAVE REPLAY
+//   (.mp4 where the browser makes one — Safari, the iPhone, the iPad, this
+//   Chromium — .webm elsewhere) and SHARE REPLAY where files can go to the
+//   system sheet. Nothing leaves the device unless the player sends it.
+// 260926-1815: THE DAY BOARD, MEASURED. Designer's call: "some of the day
+// colours are quite close together — the diagonal pair colour is quite close
+// to the occupied square." Rendered in a headless browser and read back cell
+// by cell (CIEDE2000): the pair slot's wash sat 6 from the walked square,
+// the hole 9 from an empty tile, the step tile 9 from the tile and 7 from
+// the hole, a diagonal cube 5 from a t10 hourglass, the three cool slot
+// washes 5–7 apart. Day only; the night board is untouched (diffed). The
+// walked square is VIOLET now, as at night (14 from the pair wash, 31 from
+// the diagonal's); the grout is a cool grey so lavender means walked and
+// nothing else; the hole is a slate recess with a lip (17 from the tile);
+// machine tiles are deep steel with a white glyph at 4.5:1 (22 from the
+// tile); the small hourglass is lemon with a dark glyph and the big one
+// deep orange (28 and 13 from a diagonal cube); the player wears the family
+// colour itself rather than a pastel of it; slot washes are a third, not a
+// fifth. Remeasured: no two things that share the board within 12, bar the
+// cool trio's washes (8), which their outlines and footprints settle.
 // 260926-1330: THE CUBE THAT WENT OVER IS LOST. Designer's calls on playdata
 // 56. (1) A flip that puts part of the body over the frame — any edge — no
 // longer refuses: the cubes over the edge are lost and the rest land where
@@ -7415,7 +7583,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #b45309; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '260926-1330 ROTOЯ · THE CUBE THAT WENT OVER IS LOST';
+const BUILD_VERSION = '270926-0030 ROTOЯ · THE REST NEVER BOUNCE';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -7505,7 +7673,7 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
        five seconds. A spent or dormant tile holds still (anim = false), which
        is one more way to read that it is not live. Time is Date.now(), as the
        tiles' breath already is. */
-    const ink = currentTheme === 'day' ? '#ffffff' : '#101729';
+    const ink = '#101729';   // [260926o] night's dark glyph in both themes — the day tile is night's silver now
     ctx.globalAlpha = currentTheme === 'day' ? 1.0 : 0.97;
     ctx.strokeStyle = ink;
     ctx.fillStyle = ink;   // solid arrowheads
@@ -7589,7 +7757,7 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
 // step/turn shift glyphs (2.4px at CELL=48, scaling with the board).
 // Replaces the bitmap art, whose line thickness varied across the image.
 // Same silhouette: top/bottom caps + pinched-waist glass.
-function drawHourglassIcon(sx, sy) {
+function drawHourglassIcon(sx, sy, ink = '#ffffff') {   // [260926m] ink follows the tile
     const tile = CELL - (currentTheme === 'day' ? 1 : 2) * 2;   // matches draw()'s CELL_SIZE
     const h = CELL * 0.62;
     const s = h / 14.8;                     // design box: x -5.8..5.8, y -7.4..7.4
@@ -7597,7 +7765,7 @@ function drawHourglassIcon(sx, sy) {
     ctx.save();
     ctx.translate(cx, cy);
     ctx.scale(s, s);
-    ctx.strokeStyle = '#ffffff';
+    ctx.strokeStyle = ink;
     ctx.lineWidth = 3.6 / s;   // [270726n] uniform 3.6px — welcome-legend ratio (12.1% of icon box)
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -8597,7 +8765,52 @@ const SHIFTER_FAMILY_COLOR = '#b8c9d9';                       // steel — night
 // chosen against the old off-white #e2e8f0 floor; the board is pure white now,
 // so the darker metal may no longer be necessary. If steel proves too pale
 // against white, this constant is the single place to put the pewter back.
-const DAY_SHIFTER_FILL = SHIFTER_FAMILY_COLOR;                // steel — day (was pewter #8fa3b8)
+/* ══ [260926o] SNOW AND ICE — the day board, as the white version of night ═══
+   Designer's call on the 1845 board: "the underworld needs to be a version of
+   the top layer — the cells in the underworld should be white, like the top
+   level. The game objects need to be similar to the night version: shifters
+   silver, metallic grey. The colours need to be baby blue and girlie pink,
+   bubble gum. The top layer is supposed to feel like a grid above another grid
+   below it — refer to the night palette and think what the white version would
+   be. A snowy landscape with electric turquoise-blue ice as the grid, with
+   super-neon bubble-gum sweet-shop colours for all the game objects."
+   So, reading night across: night is dark cells outlined in near-white on
+   navy, over dimmer periwinkle cells in the dark; day is WHITE cells on an
+   ELECTRIC ICE grid, over smaller white cells on deeper ice below. The trail is
+   hot bubble-gum pink where night's is violet. The machines are the same steel
+   as night, with night's dark glyph. The hourglasses are night's sand and
+   amber. Everything that glows at night glows by day too — a neon halo on
+   snow. Measured (CIEDE2000, rendered and read back): the ice grid is a step
+   bluer than the single's cyan (12 apart) so a single's set still stands out
+   from the lattice; the trail is 15 from the pair's wash and 20 from its
+   outline; the small hourglass 17 from a diagonal cube, the big one 18; the
+   steel 16 from white and 17 from the ice; the depths' base 21 from white. */
+/* [260926p] TWO CALLS ON 1915: "make the blue a lighter baby blue", and "make
+   the occupied square more salmon pink, to contrast against the pinky purple
+   of the pairs". The grid is baby blue now (9 from the single's cyan, 13 from
+   its wash — the single's set keeps its bold outline and glow); the depths'
+   base steps a shade deeper so an opening still reads as below the grid (10
+   from it, 29 from white). The walked square is salmon: 22 from the pair's
+   wash and 30 from its outline, 19 from a red and 19 from the amber hourglass,
+   26 from the diagonal's wash and cube, 28 from white. */
+const CANDY = {
+    grout:       '#89cff0',           // the ice between the tiles — the grid itself, baby blue
+    edge:        '#c4e9fb',           // the tile's own edge, a paler ice: a bevel on the block
+    walked:      [255, 193, 183],     // #ffc1b7 — salmon, a fifth lighter twice ([260926q][260926r], designer's calls: "make it 20% lighter", "go 20% lighter again")
+    fresh:       [255, 173, 161],     // #ffada1 — fresh paint, a hotter salmon, cooling to walked
+    walkedEdge:  '#f59b8a',
+    bloom:       '#ff9384',           // the first moment of fresh paint
+    steelHi:     '#c5d3e0', steelLo: '#9fb3c8',   // silver, top to bottom — night's steel with a brushed fall-off
+    steel:       '#b1c2d3',           // the flat silver, where one colour has to do
+    steelEdge:   '#5b6a82',           // night's slate edge
+    steelInk:    '#101729',           // night's glyph
+    sand:        '#fde047', sandEdge: '#c9a800', sandInk: '#3a3000',   // the +10: night's sand, a step to lemon (white on sand is 1.3:1 — the glyph is dark)
+    amber:       '#ff7a1a', amberEdge: '#b3400f',                        // the +30: night's amber, white glyph
+    wallBody:    '#8496ad', wallMortar: '#dbe3ee', wallGrout: '#c3cfdd', // packed slate — night's dark block, in daylight
+    holeShadow:  '3, 74, 120',        // the board's thickness, cast down the top of an opening (rgb)
+    holeRim:     'rgba(2, 132, 199, 0.75)',   // the cut edge round it, in deep ice
+};
+const DAY_SHIFTER_FILL = CANDY.steel;   // [260926m] deep steel · [260926n] blue raspberry · [260926o] night's silver, with night's dark glyph
 // [300726r] WALL_ON_CONSUME_CHANCE deleted — declared but never referenced
 // anywhere in the file, so consumed shifters never left walls. It sent me
 // down the wrong path twice while diagnosing board crowding.
@@ -10968,8 +11181,19 @@ const SLOT_DEFS = {
        the stroke carries it. */
     jshape:   { color: '#45e690', configs: ['A', 'B', 'C', 'D'],
                 configColors: { A: '#45e690', B: '#45e690', C: '#45e690', D: '#45e690' } },
-    square:   { color: '#12cfb2', configs: ['A'],
-                configColors: { A: '#12cfb2' } }
+    /* ── [260926r] THE SQUARE LEAVES THE COOL TRIO ──────────────────────────
+       Designer's call: "in day mode the J shape and 2×2 cube colours are too
+       similar — change one of them." Teal (hue 168) sat between the J's mint
+       (148) and the single's cyan (190), and on the white board their washes
+       were 6 apart. Blue is the one cool hue nothing else on the board holds
+       (the day trail left violet for salmon; the machines are silver). Measured
+       against everything on both boards: 56 from the J, 33 from the single, 19
+       from the night trail it stands on, 42 from the day trail, 24 from the
+       day grid, 19 from the day hole; its day wash 14 from the single's and 21
+       from the J's (were 6 and 6). One definition, every reader follows: the
+       set outline, the wash, the cube's faces, the HUD icon, the legend. */
+    square:   { color: '#4a7dff', configs: ['A'],
+                configColors: { A: '#4a7dff' } }
 };
 // Bump every slot colour's saturation +10% so claimable shapes pop a little
 // more on the grid. Single source — flows to both the grid slots and the SET
@@ -13596,6 +13820,7 @@ const UNDER_A_SCALE = 0.55,  UNDER_B_SCALE = 0.29;   // tile size vs CELL
 const UNDER_A_ALPHA = 0.68,  UNDER_B_ALPHA = 0.46;   // line alpha
 const UNDER_A_FILL  = 0.13,  UNDER_B_FILL  = 0.08;   // tile body — mass at a glance
 const UNDER_A_WIDTH = 1.3,   UNDER_B_WIDTH = 1.05;   // line width
+const UNDER_VOID_ALPHA = 1.0, UNDER_VOID_WIDTH = 1.7, UNDER_VOID_FILL = 0.34;   // [260926n] the second pass, inside the openings only
 const UNDER_A_VY    = -2.94, UNDER_B_VY    = -1.12;  // px/sec, straight up
 /* ══ [060926] THE SPACE BELOW BECOMES A PLACE ══════════════════════════════
    Designer's call: "the background lower level layer needs to play the role of
@@ -13702,7 +13927,7 @@ const UNDER_HOLES = [[1,1,2,2], [6,2,3,2], [2,6,2,2], [7,7,2,3], [3,10,2,2], [8,
    drawn behind the first. Still a baked box blur — no ctx.filter, so nothing
    about it can cost a frame or break on Safari. */
 const UNDER_BLUR_PX = 1.5;
-const UNDER_PARALLAX = 0.40;   // [180926a] the depths move at 40% of the board's scroll
+const UNDER_PARALLAX = 0.30;   // [180926a] the depths move at 40% of the board's scroll — [260926n] 30%: further down, so the slide against the board is plainer
 function underHoleAt(i, j) {
     for (const [x, y, w, h] of UNDER_HOLES) if (i >= x && i < x + w && j >= y && j < y + h) return true;
     return false;
@@ -13724,8 +13949,21 @@ function underHoleAt(i, j) {
 
    Sockets follow: white rings on a white board are nothing, so the day lattice
    is drawn in slate. */
-const UNDER_INK_DAY  = '108, 96, 150';    // deeper lilac, the grout's family
-const UNDER_BASE_DAY = '#e6e4f2';         // a pale recess, not a pit
+/* [260926n] ...AND THEN GRAPE. The pale recess was the muted board's hole, and
+   with the 1815 slate fill over it nothing showed at all. By day the space
+   below is now a deep candy grape with lighter grape tiles drifting in it and
+   white light in the pools — a sweet-shop deep, unmistakably below a white
+   board (53 from white, 33 from a walked square) and not black, which the
+   field note of 080926 ruled out. */
+/* [260926o] ...AND THEN THE WHITE VERSION OF NIGHT. Designer's call: "the
+   underworld needs to be a version of the top layer — the cells in the
+   underworld should be white." Night's depths are dimmer cells of the board's
+   own kind on a darker ground; day's are now WHITE cells, smaller and blurred,
+   edged in ice, on a deeper ice than the grid above — the top layer seen one
+   level down, which is what "a grid above another grid" asks for. */
+const UNDER_INK_DAY  = '255, 255, 255';   // light in the depths: the pools and the sockets below
+const UNDER_BASE_DAY = '#4db8ff';         // deeper ice than the grid — [260926p] a shade deeper again under the baby-blue grid (10 from it, 29 from white)
+const UNDER_TILE_DAY = '255, 255, 255', UNDER_TILE_EDGE_DAY = '137, 207, 240';   // white cells below, edged in the grid's baby blue
 function underInk() { return currentTheme === 'day' ? UNDER_INK_DAY : UNDER_INK; }
 const underPatterns = {};
 function underPattern(P, alpha, width, fillA) {
@@ -13763,8 +14001,8 @@ function underPattern(P, alpha, width, fillA) {
     for (let j = 0; j < UNDER_SUPER_H; j++) for (let i = 0; i < UNDER_SUPER_W; i++) {
         if (underHoleAt(i, j)) continue;   // a hole in the depths: the base shows through
         for (const [dx, dy, k] of TAPS) {
-            g.fillStyle   = dayTiles ? `rgba(255,255,255,${0.92 * k})` : `rgba(${underInk()},${fillA * k})`;
-            g.strokeStyle = `rgba(${underInk()},${(dayTiles ? 0.55 : alpha) * k})`;
+            g.fillStyle   = dayTiles ? `rgba(${UNDER_TILE_DAY},${0.90 * k})` : `rgba(${underInk()},${fillA * k})`;   // [260926n] grape · [260926o] white cells by day
+            g.strokeStyle = dayTiles ? `rgba(${UNDER_TILE_EDGE_DAY},${0.62 * k})` : `rgba(${underInk()},${alpha * k})`;
             tile(i * P + off + dx, j * P + off + dy);
         }
     }
@@ -13841,14 +14079,69 @@ function underPattern(P, alpha, width, fillA) {
    runs the whole way round the opening, brighter on the lit sides, and the
    interior gets a vignette so the middle of a pit is deeper than its edges —
    which no flat tile ever is. */
-const HOLE_DEEPEN = 'rgba(2, 10, 16, 0.10)';   // the 10%
-const HOLE_LIP_IN = 0.30;                      // how far the shadow reaches in, in cells
-const HOLE_LIP = { top: 0.75, side: 0.45, bottom: 0.16 };
+/* [260926n] LESS SHADOW IN THE OPENING. Designer's call: "I can't make out the
+   underworld layer." The lip and the pit were doing it: a 75% black band down
+   the top third of every hole and a 30% vignette over the middle left the
+   lattice below a few per cent of itself. The edge still reads — the cut
+   rim is untouched and the shadows are halved, not removed — and what is
+   below is now drawn again at full strength inside the openings (see
+   drawUnderworld's second pass). */
+const HOLE_DEEPEN = 'rgba(2, 10, 16, 0.04)';   // the 10% — now 4
+const HOLE_LIP_IN = 0.26;                      // how far the shadow reaches in, in cells
+const HOLE_LIP = { top: 0.40, side: 0.24, bottom: 0.10 };
 const HOLE_RIM_LIT = 'rgba(222, 234, 248, 0.34)';   // the near, lit edge of the break
 const HOLE_RIM_FAR = 'rgba(222, 234, 248, 0.15)';   // and the far one, in its own shade
-const HOLE_PIT = 0.30;                              // the vignette at the middle of an opening
+const HOLE_PIT = 0.12;                              // the vignette at the middle of an opening — [260926n] 0.30 → 0.12
+/* [260926m] THE DAY RECESS. A day hole drew nothing — the canvas clear showed
+   through, 8.7 from a white tile: an opening you could miss. It is slate now,
+   filled edge to edge so neighbouring holes merge into one opening, with a
+   darker lip along every side that meets floor. 20 from the tile, 14 from the
+   walked square, 20 from the machine tiles. */
+// [260926n] DAY_HOLE_FILL / DAY_HOLE_LIP retired with the flat slate hole — the depths show through now (drawHoleDepthDay)
+/* [260926n] THE OPENING, BY DAY. The 1815 board filled every hole with a flat
+   slate — the underworld was painted over, which is why "I can't make out the
+   underworld layer". Nothing is filled now: the grape depths and their drifting
+   lattice show through (drawUnderworld), and this pass only gives the opening
+   its edge — a shadow the board casts down the top of the hole, a lighter one
+   down the sides, and a violet cut edge where the opening meets a tile. */
+function drawHoleDepthDay(camInt, camFrac) {
+    const isV = (x, y) => world[`${x},${y}`] === 'void';
+    const D = CELL * 0.26;
+    const holes = [];
+    for (let row = -1; row <= VIEW_H + 1; row++) {
+        const wy = camInt + row;
+        for (let col = 0; col < VIEW_W; col++)
+            if (isV(col, wy)) holes.push([col, wy, col * CELL, (row - camFrac) * CELL]);
+    }
+    if (!holes.length) return;
+    ctx.save();
+    const band = (x0, y0, x1, y1, w, hgt, a) => {
+        const g = ctx.createLinearGradient(x0, y0, x1, y1);
+        g.addColorStop(0, `rgba(${CANDY.holeShadow}, ${a})`);   // [260926o] deep ice, not grape
+        g.addColorStop(1, `rgba(${CANDY.holeShadow}, 0)`);
+        ctx.fillStyle = g;
+        ctx.fillRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(w), Math.abs(hgt));
+    };
+    for (const [cx, cy, sx, sy] of holes) {
+        if (!isV(cx, cy - 1)) band(sx, sy, sx, sy + D, CELL, D, 0.42);
+        if (!isV(cx - 1, cy)) band(sx, sy, sx + D * 0.7, sy, D * 0.7, CELL, 0.22);
+        if (!isV(cx + 1, cy)) band(sx + CELL, sy, sx + CELL - D * 0.7, sy, D * 0.7, CELL, 0.22);
+        if (!isV(cx, cy + 1)) band(sx, sy + CELL, sx, sy + CELL - D * 0.4, CELL, D * 0.4, 0.10);
+    }
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = CANDY.holeRim;
+    ctx.lineWidth = 1.4;
+    for (const [cx, cy, sx, sy] of holes) {
+        const edge = (x0, y0, x1, y1) => { ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); };
+        if (!isV(cx, cy - 1)) edge(sx + 1.2, sy + 0.8, sx + CELL - 1.2, sy + 0.8);
+        if (!isV(cx - 1, cy)) edge(sx + 0.8, sy + 1.2, sx + 0.8, sy + CELL - 1.2);
+        if (!isV(cx, cy + 1)) edge(sx + 1.2, sy + CELL - 0.9, sx + CELL - 1.2, sy + CELL - 0.9);
+        if (!isV(cx + 1, cy)) edge(sx + CELL - 0.9, sy + 1.2, sx + CELL - 0.9, sy + CELL - 1.2);
+    }
+    ctx.restore();
+}
 function drawHoleDepth(camInt, camFrac) {
-    if (currentTheme === 'day') return;        // [080926d] day is a recess, not a pit
+    if (currentTheme === 'day') { drawHoleDepthDay(camInt, camFrac); return; }   // [080926d] day is a recess, not a pit — [260926m] drawn as one
     const isV = (x, y) => world[`${x},${y}`] === 'void';
     const holes = [];
     for (let row = -1; row <= VIEW_H + 1; row++) {
@@ -14002,10 +14295,11 @@ function drawUnderworld(camInt, camFrac) {
         ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
     };
     const R = Math.max(LOGICAL_W, LOGICAL_H);
+    const PK = currentTheme === 'day' ? 2.8 : 1.5;   // [260926n] more light down there: white by day, and a half again at night
     pool(LOGICAL_W * (0.5 + 0.42 * Math.sin(t / 23)),
-         LOGICAL_H * (0.5 + 0.38 * Math.cos(t / 31)), R * 0.62, 0.085);
+         LOGICAL_H * (0.5 + 0.38 * Math.cos(t / 31)), R * 0.62, 0.085 * PK);
     pool(LOGICAL_W * (0.5 + 0.46 * Math.sin(t / 17 + 2.2)),
-         LOGICAL_H * (0.5 + 0.44 * Math.cos(t / 41 + 1.1)), R * 0.44, 0.055);
+         LOGICAL_H * (0.5 + 0.44 * Math.cos(t / 41 + 1.1)), R * 0.44, 0.055 * PK);
 
     const wrap = (v, m) => { const r = v % m; return r > 0 ? r - m : r; };
     const layer = (S, alpha, width, vy, fillA) => {
@@ -14037,6 +14331,18 @@ function drawUnderworld(camInt, camFrac) {
        the board's. UNDER_B_* constants stay declared, unused, one line from
        coming back. */
     layer(CELL * UNDER_A_SCALE, UNDER_A_ALPHA, UNDER_A_WIDTH, UNDER_A_VY, UNDER_A_FILL);
+    /* [260926n] AND AGAIN, THROUGH THE OPENINGS, AT FULL STRENGTH. The one
+       lattice is drawn at a strength chosen to sit behind the board's own
+       cells — right through ground, too quiet through a hole. Inside the
+       openings it is laid down a second time, heavier and with more body, on
+       the same drift and the same parallax (same tile size, same phase), so
+       a hole shows the depths plainly and a tile still only hints at them. */
+    if (holes.length) {
+        ctx.beginPath();
+        for (const [x, y] of holes) ctx.rect(x, y, CELL, CELL);
+        ctx.clip();
+        layer(CELL * UNDER_A_SCALE, UNDER_VOID_ALPHA, UNDER_VOID_WIDTH, UNDER_A_VY, UNDER_VOID_FILL);
+    }
     ctx.restore();
 }
 
@@ -14206,7 +14512,7 @@ const SOCKET_R = 4.4;
    2.4px, and the welcome tiles carry a matching rim (see .howto-tile). */
 const CELL_OUTLINE_W = 2.1;   // [080926g] 2.4 was "a fraction too thick" on the objects; one number, one nudge
 const SOCKET_INK = '226, 232, 240';   // the cell-outline slate; the lattice belongs to the grid
-const SOCKET_INK_DAY = '71, 85, 105'; // [080926d] slate-600 — white rings on a white board are nothing
+const SOCKET_INK_DAY = '14, 165, 233';  // [080926d] slate-600 — white rings on a white board are nothing · [260926n] grape · [260926o] ice
 function socketInk() { return currentTheme === 'day' ? SOCKET_INK_DAY : SOCKET_INK; }
 function drawJoints() {
     const camInt = Math.floor(game.cameraY), camFrac = game.cameraY - camInt;
@@ -15997,7 +16303,7 @@ const PALETTES = {
     // tinting the squares — a soft lilac line (see emptyOutline), which reads as
     // a drawn grid instead of a shaded one and leaves the white doing the work.
     day: {
-        emptyOutline: 'rgba(196, 181, 253, 0.85)',   // lilac grout between white cells
+        emptyOutline: 'rgba(196, 233, 251, 0.95)',   // [260926m] cool-grey grout · [260926n] lilac · [260926o] pale ice (CANDY.edge) over the baby-blue grid
         // [050826h] 0.20 -> 0.12. Two shades lighter, so covered ground reads as
         // a faint blush on white rather than a filled square. The OUTLINE keeps
         // its weight and does the work of marking the cell — which is the right
@@ -16015,15 +16321,15 @@ const PALETTES = {
         // not from this palette. Value aligned to match so nobody retunes the
         // wrong knob again (the [200826b] pale-pink edit landed here and did
         // nothing on the board for exactly that reason).
-        visitedFill:  '#ffc2d4',   // [060926] re-aligned to the render path, as the note above instructs
+        visitedFill:  '#ffc1b7',   // [260926m] violet · [260926n] lavender · [260926o] bubble gum · [260926p] salmon · [260926q][260926r] a fifth lighter, twice (CANDY.walked) — see the render path's note
         // [040826p] MINT, not magenta. Candy magenta sat in the same hue family
         // as the PAIR slot (#e935ac) — the single most confusable pairing on the
         // board, since one is a target and the other is an obstacle. Mint is
         // still bubblegum-shop, and it is the one bright hue no slot family,
         // pickup or hazard is using.
-        wallBody:     '#7fe3c7',
-        wallStroke:   '#14a37f',
-        wallInner:    'rgba(20, 163, 127, 0.30)',
+        wallBody:     '#8496ad',   // [260926o] packed slate — night's dark block in daylight (was mint)
+        wallStroke:   '#dbe3ee',
+        wallInner:    'rgba(91, 106, 130, 0.30)',
         playerCyan:   '#06b6d4',                      // bright cyan, still the player's blue
         playerTeal:   '#14b8a6',
     }
@@ -17117,11 +17423,11 @@ function islandTick() {                  // called every frame of live play; wor
     spawnShifter('island');              // Q3 only — see the top of spawnShifter
     islandWash(now);
 }
-function bridgeCubeForSingle(holeX, holeY) {   // a single refused at a hole: a green on the hole's side
+function bridgeCubeForSingle(holeX, holeY, src = 'bridge') {   // a single refused at a hole: a green on the hole's side — [260926p] and the dry spell's green, by the same placement
     if (!BRIDGE_OFFER || game.testDrive || game.shapeType !== 'single') return false;
     const now = performance.now();
     if (now - _bridgeCubeAt < BRIDGE_CUBE_GAP_MS) return false;
-    if (countVisibleGreens() >= MAX_VISIBLE_GREENS) return false;
+    if (src !== 'dry' && countVisibleGreens() >= MAX_VISIBLE_GREENS) return false;   // [260926p] a hand up is not supply: the dry spell may pass the cap (its greens are unreachable by definition)
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
     const px = game.playerX, py = game.playerY;
     const slotKeys = new Set();
@@ -17149,8 +17455,54 @@ function bridgeCubeForSingle(holeX, holeY) {   // a single refused at a hole: a 
     world[best.k] = 'pickup';
     _bridgeCubeAt = now;
     addBurst(best.x * CELL + CELL / 2, (best.y - game.cameraY) * CELL + CELL / 2, '#a3e635');
-    rec('spawn', { k: 'green', src: 'bridge' });
+    if (src === 'dry') triggerEdgeGlow('#a3e635', 700);
+    rec('spawn', { k: 'green', src });
     return true;
+}
+/* ══ [260926p] THE DRY SPELL — a single with nothing to grow from ═══════════
+   playdata57, the last run on SNOW AND ICE: a diagonal lost a cube to a set
+   with 40s on the clock and spent the next fifty seconds as a single with no
+   green anywhere it could reach, walking, until the clock ran out. The rows
+   pay every green now ([180926b], ROWS_ARE_THE_SOURCE), and a single that is
+   not finishing rows earns none; it cannot bridge a hole either (its last cube
+   is its life), so the only thing left to it is to walk — and walked ground
+   pays nothing. The in-view floor was satisfied the whole time by two TURN
+   tiles, which a single passes over. The hand up [110926c] answers a single
+   with NO move; the maroon rule [260926h] answers one on a rock; the reprieve
+   [050826n] answers a board with no floor left. This answers the fourth dead
+   end: a single with moves, and nothing worth making them for.
+   Narrow, like its siblings: only a single; only when no green it can reach
+   is in view (the spawner's own flood fill — walls, holes and reds are not
+   crossed); only after SINGLE_DRY_MS of that; then one green, two cells out
+   and reachable by one move (the bridge offer's own placement), and the spell
+   starts again. The bridge cube's gap holds between them, so at its fastest
+   this is one cube every nine seconds, and only while the single stays dry. */
+const SINGLE_DRY_MS = 8000;
+function countReachableGreens() {
+    const camI = Math.floor(game.cameraY);
+    const reach = reachableSpawnSet(camI, camI + VIEW_H);
+    let n = 0;
+    for (let y = camI; y < camI + VIEW_H; y++)
+        for (let x = 0; x < VIEW_W; x++) {
+            const k = `${x},${y}`;
+            if (world[k] === 'pickup' && reach.has(k)) n++;
+        }
+    return n;
+}
+function runDryRescue() {
+    if (game.testDrive || !game.running || game.paused || game.introHold || game.celebrating || game.inputLocked) return;
+    if (game._replay || game._deathHold) return;
+    const now = performance.now();
+    if (now - (game._dryCheckAt || 0) < 500) return;   // twice a second is plenty for a flood fill
+    game._dryCheckAt = now;
+    const dry = game.shapeType === 'single' && countReachableGreens() === 0;
+    if (!dry) { game._dryAt = 0; return; }
+    if (!game._dryAt) { game._dryAt = now; return; }
+    if (now - game._dryAt < SINGLE_DRY_MS) return;
+    if (bridgeCubeForSingle(game.playerX, game.playerY, 'dry')) {
+        game._dryAt = now;
+        rec('rescue', { k: 'dry', r: advancedRound, m: Math.round(momentumRemaining()) });
+    }
 }
 
 /* ══ [170926a] THE PLAYER'S BREATHING ROOM ═══════════════════════════════════
@@ -18614,6 +18966,7 @@ function startBoardReplay(kind, reason, onDone, opts = {}) {
     deniedFlashT0 = 0;
     flip = { active: false };
     replayStageApply(game._replay, tape[0]);   // [110926a] the lead-in already shows the right board
+    replayClipStart(game._replay);             // [260926n] the death replay is recorded as it plays
     return true;
 }
 /* [110926a] Put the recorded board on, or take it off. Additive and reversible:
@@ -18707,6 +19060,7 @@ function replayTick() {
 function replayFinish() {
     const R = game._replay;
     if (!R || R.done) return;
+    replayClipStop();      // [260926n] the last frame is the one the replay stopped on
     R.done = true;
     replayStageClear(R);   // [110926a] the board goes back to now, before anything reads it
     game.cameraY = R.camRestore;
@@ -18729,6 +19083,190 @@ function drawReplayOverlay() {
     ctx.lineWidth = 2;
     ctx.strokeRect(1.5, 1.5, LOGICAL_W - 3, LOGICAL_H - 3);
     ctx.restore();
+}
+/* ══ [260926n] THE REPLAY, SAVED ═══════════════════════════════════════════
+   Designer's call: "create a download option for the replay if the player
+   wants to save it to their desktop or downloads folder as a keepsake or for
+   bragging rights on social media."
+   The death replay is recorded as it plays. Every frame the board is copied
+   onto a second canvas with a strip above it (ROTOЯ · the score · the level)
+   and a strip below (the replay's own captions, then how it ended), and that
+   canvas is streamed into a MediaRecorder. The clip is exactly what the
+   player watched, with the words the bars showed put back onto the picture —
+   the bars are DOM, and a recording of the canvas alone would be a silent
+   board with no name on it. When the replay ends the recorder stops and the
+   card offers SAVE REPLAY (a file download: .mp4 where the browser makes
+   one — Safari on the Mac, the iPhone and the iPad do — and .webm elsewhere)
+   and, where the browser can share files, SHARE REPLAY, which opens the
+   system sheet: Save Video, Messages, and the rest. Nothing is uploaded
+   anywhere; the clip lives in memory until the next run records over it.
+   Off in test drive, and silently absent where the browser cannot record a
+   canvas — the buttons only appear once a clip exists. */
+const REPLAY_CLIP_ON = true;
+const CLIP_TOP_H = 60, CLIP_BOT_H = 52;   // the strips, in board pixels
+let replayClip = null;
+function replayClipMime() {
+    if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') return null;
+    const tries = [['video/mp4;codecs=avc1', 'mp4'], ['video/mp4', 'mp4'],
+                   ['video/webm;codecs=vp9', 'webm'], ['video/webm;codecs=vp8', 'webm'], ['video/webm', 'webm']];
+    for (const [mime, ext] of tries) { try { if (MediaRecorder.isTypeSupported(mime)) return { mime, ext }; } catch (e) {} }
+    return null;
+}
+function replayClipLevelText() {
+    const cap = dailyMode ? DAILY_ROUNDS : 10;
+    return advancedRound > cap ? `ENDLESS ${advancedRound - cap}` : `${advancedRound} OF ${cap}`;
+}
+function replayClipStart(R) {
+    replayClip = null;
+    const box = document.getElementById('goClip');
+    if (box) box.hidden = true;
+    if (!REPLAY_CLIP_ON || game.testDrive || !R || R.kind !== 'death') return;
+    try {
+        if (typeof canvas.captureStream !== 'function') return;
+        const mt = replayClipMime();
+        if (!mt) return;
+        const k = canvas.width / LOGICAL_W;
+        const c = document.createElement('canvas');
+        c.width = canvas.width;
+        c.height = canvas.height + Math.round((CLIP_TOP_H + CLIP_BOT_H) * k);
+        const g = c.getContext('2d');
+        const stream = c.captureStream(30);
+        const rec = new MediaRecorder(stream, { mimeType: mt.mime, videoBitsPerSecond: 3000000 });
+        const chunks = [];
+        const clip = { rec, stream, chunks, canvas: c, ctx: g, k, mime: mt.mime, ext: mt.ext, live: true, blob: null,
+                       score: game.score, levelText: replayClipLevelText(), t0: performance.now(), day: currentTheme === 'day' };
+        rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+        rec.onstop = () => {
+            try {
+                clip.live = false;
+                clip.blob = new Blob(chunks, { type: mt.mime.split(';')[0] });
+                clip.ms = performance.now() - clip.t0;
+                if (replayClip === clip) replayClipReady(clip);
+            } catch (e) {}
+        };
+        rec.onerror = () => { clip.live = false; if (replayClip === clip) replayClip = null; };
+        replayClip = clip;
+        replayClipFrame();   // the first frame goes in before the stream is asked for one
+        rec.start(250);
+    } catch (e) { replayClip = null; }
+}
+function replayClipFrame() {
+    const C = replayClip;
+    if (!C || !C.live) return;
+    const R = game._replay;
+    try {
+        const g = C.ctx, k = C.k, W = C.canvas.width, H = C.canvas.height;
+        const TOP = Math.round(CLIP_TOP_H * k), BOT = Math.round(CLIP_BOT_H * k);
+        const day = C.day;
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        g.fillStyle = day ? '#ffffff' : '#0b1220';
+        g.fillRect(0, 0, W, H);
+        g.drawImage(canvas, 0, TOP);
+        // the strips' own hairline, so the board reads as a framed picture
+        g.fillStyle = day ? 'rgba(109,40,217,0.35)' : 'rgba(148,163,184,0.35)';
+        g.fillRect(0, TOP - 1, W, 1); g.fillRect(0, TOP + canvas.height, W, 1);
+        g.textBaseline = 'middle';
+        // top: the name and the run
+        g.textAlign = 'left';
+        g.font = `800 ${Math.round(21 * k)}px 'Unbounded', -apple-system, BlinkMacSystemFont, sans-serif`;
+        g.fillStyle = day ? '#6d28d9' : '#e2e8f0';
+        g.fillText('ROTOЯ', 14 * k, TOP * 0.5);
+        g.textAlign = 'right';
+        g.font = `700 ${Math.round(14 * k)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        g.fillStyle = day ? '#334155' : '#cbd5e1';
+        g.fillText(`SCORE ${C.score.toLocaleString()}    ·    LEVEL ${C.levelText}`, W - 14 * k, TOP * 0.5);
+        // bottom: the tag, the count, and the replay's words
+        const by = TOP + canvas.height + BOT * 0.5;
+        g.textAlign = 'left';
+        g.font = `700 ${Math.round(11 * k)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+        g.fillStyle = day ? '#7c3aed' : '#94a3b8';
+        const cnt = R && R.i >= 0 ? `   ${R.i + 1} / ${R.tape.length}` : '';
+        g.fillText((R && R.phase === 'lead' ? '◀◀  REPLAY' : '●  REPLAY') + cnt, 14 * k, by);
+        let line = '', col = day ? '#1e1b4b' : '#f1f5f9';
+        if (R) {
+            if (R.phase === 'lead') line = R.sub || '';
+            else if (R.phase === 'pause' && R.phrase) { line = R.phrase; col = R.phraseGold ? '#ffd60a' : col; }
+            else if (R.caption && R.caption.length) {
+                const last = R.caption[R.caption.length - 1];
+                line = R.caption.map(q => q.text).join('   ·   ');
+                if (last && last.color && R.caption.length === 1) col = last.color;
+            }
+        }
+        if (line) {
+            g.textAlign = 'right';
+            let px = Math.round(13 * k);
+            g.font = `800 ${px}px -apple-system, BlinkMacSystemFont, sans-serif`;
+            const room = W - 14 * k - 118 * k;
+            const wdt = g.measureText(line).width;
+            if (wdt > room) { px = Math.max(8 * k, Math.floor(px * room / wdt)); g.font = `800 ${px}px -apple-system, BlinkMacSystemFont, sans-serif`; }
+            g.fillStyle = col;
+            g.fillText(line, W - 14 * k, by);
+        }
+        // the name, over the board, for the lead-in — as the intro shows it
+        if (R && R.phase === 'lead') {
+            const L = Math.max(600, R.lead || RP_LEAD_MS);
+            const t = Math.max(0, Math.min(1, (performance.now() - R.t0) / L));
+            const a = t < 0.05 ? t / 0.05 : t > 0.82 ? Math.max(0, 1 - (t - 0.82) / 0.18) : 1;
+            g.save();
+            g.globalAlpha = a;
+            g.textAlign = 'center';
+            g.font = `800 ${Math.round(30 * k)}px 'Unbounded', -apple-system, BlinkMacSystemFont, sans-serif`;
+            g.lineWidth = 6 * k; g.strokeStyle = day ? 'rgba(255,255,255,0.85)' : 'rgba(11,18,32,0.85)';
+            g.strokeText('ACTION REPLAY', W / 2, TOP + canvas.height * 0.5);
+            g.fillStyle = day ? '#6d28d9' : '#f8fafc';
+            g.fillText('ACTION REPLAY', W / 2, TOP + canvas.height * 0.5);
+            g.restore();
+        }
+    } catch (e) {}
+}
+function replayClipStop() {
+    const C = replayClip;
+    if (!C || !C.live) return;
+    C.live = false;
+    try { replayClipFrame(); } catch (e) {}
+    try { C.rec.stop(); } catch (e) { replayClip = null; }
+    try { C.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+}
+function replayClipFile(C) {
+    const d = new Date(), z = n => String(n).padStart(2, '0');
+    const name = `ROTOR-replay-${C.score}-L${String(C.levelText).replace(/\s+/g, '')}-${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.${C.ext}`;
+    try { return new File([C.blob], name, { type: C.blob.type }); } catch (e) { return null; }
+}
+function replayClipReady(C) {
+    const box = document.getElementById('goClip'), share = document.getElementById('goClipShare');
+    if (!box || !C || !C.blob || !C.blob.size) return;
+    box.hidden = false;
+    let canShare = false;
+    try {
+        const f = replayClipFile(C);
+        canShare = !!(f && navigator.share && navigator.canShare && navigator.canShare({ files: [f] }));
+    } catch (e) { canShare = false; }
+    if (share) share.hidden = !canShare;
+    rec('clip', { ext: C.ext, kb: Math.round(C.blob.size / 1024), ms: Math.round(C.ms || 0), share: canShare ? 1 : 0 });
+}
+function replayClipSave() {
+    const C = replayClip;
+    if (!C || !C.blob) return;
+    try {
+        const f = replayClipFile(C);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(C.blob);
+        a.download = f ? f.name : `ROTOR-replay.${C.ext}`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+        rec('clipsave', { how: 'download' });
+    } catch (e) {}
+}
+function replayClipShare() {
+    const C = replayClip;
+    if (!C || !C.blob) return;
+    try {
+        const f = replayClipFile(C);
+        if (!f || !navigator.share) { replayClipSave(); return; }
+        rec('clipsave', { how: 'share' });
+        navigator.share({ files: [f], title: 'ROTOЯ', text: `ROTOЯ  ·  score ${C.score.toLocaleString()}  ·  level ${C.levelText}` }).catch(() => {});
+    } catch (e) { replayClipSave(); }
 }
 /* The bars: the HUD strip becomes the top bar (tag + move count), and the
    joystick pad, when there is one, becomes the bottom bar for the captions.
@@ -20111,11 +20649,11 @@ function tallyIcon(kind) {
     // [200826f] Day gold is #e8a800, NOT #b45309 — the burnt orange read as
     // brown next to the amber points column (same call as [050826a]). One
     // gold family across the whole tally card.
-    const GOLD = day ? '#e8a800' : '#ffd60a';
-    const BLUE = day ? '#0369a1' : '#7dd3fc';
+    const GOLD = day ? '#ff8c1a' : '#ffd60a';     // [260926r] day: tangerine-gold, not mustard
+    const BLUE = day ? '#0ea5e9' : '#7dd3fc';     // [260926r] day: sky
     const VIOLET = day ? '#8b5cf6' : '#c9a0f5';
-    const GREEN = day ? '#65a30d' : '#a3e635';
-    const PINK = day ? '#be185d' : '#ff6b9d';
+    const GREEN = day ? '#84cc16' : '#a3e635';    // [260926r] day: lime, not olive
+    const PINK = day ? '#ff2d95' : '#ff6b9d';     // [260926r] day: hot pink
     const sq = (fill, stroke) =>
         `<svg viewBox="0 0 20 20"><rect x="2.5" y="2.5" width="15" height="15" rx="3.5"
           fill="${fill}" ${stroke ? `stroke="${stroke}" stroke-width="1.6"` : ''}/></svg>`;
@@ -22693,11 +23231,36 @@ const FRAME_REFUSES = true, SLOT_REFUSES = true;
    own story: over the edge it tumbles out of the frame; rejected by the set it
    is knocked back off the slot and shatters (see drawAnimFX). */
 const SHED_ON_LANDING = true;
+/* ══ [260926r] EVERY BOUNDARY AT ONCE, AND THE REST NEVER BOUNCE ═══════════
+   Field call: "I tried to land on a diagonal set with a horizontal pair and it
+   took three or four bumps to get the cell to come off — there's an
+   inconsistency here." There was. The rule said the cube that touches a set it
+   does not fit is lost and the rest land — but when the rest COULD NOT land
+   (a hole, a wall, a red or the frame under them, or a second set) the shed
+   silently gave up and the move fell back to the old refusal: the bounce,
+   the wrong-shape sound, nothing lost, nothing explained. Aim at a set on an
+   island from the mainland and the other cube is always over the moat, so
+   every approach bumped until one happened to put the survivor on ground.
+   Same flip, two answers, and the difference invisible.
+   One answer now. Every boundary the landing crosses takes its cube in the
+   same instant — each set the footprint does not fit takes the cubes that
+   touched it, the frame takes the cubes that went over — and then the rest
+   LAND if they have ground under them, or STAY WHERE THE FLIP BEGAN if they
+   do not, one body smaller either way. A set's cube shatters, an edge cube
+   tumbles; the survivors that stayed are bounced back the way they came so
+   the refusal of the ground is still felt. Only when NOTHING would remain (a
+   single, or every cube taken) is the move refused as before. The one rule
+   [100926h] wanted — a cube leaves the body only at a boundary — now holds
+   at every boundary, and the same approach always gets the same answer. */
 function shedOnLanding(landing, hitIdx, label, dir) {
     if (!SHED_ON_LANDING || game.testDrive || game.shapeType === 'single') return false;
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
     const out = c => c.x < 0 || c.x >= VIEW_W || c.y < top || c.y > bot;
-    let idx = label === 'edge' ? landing.map((c, i) => out(c) ? i : -1).filter(i => i >= 0) : (hitIdx || []).slice();
+    const lost = new Set();
+    landing.forEach((c, i) => { if (out(c)) lost.add(i); });                        // the frame takes what went over
+    for (const i of slotOffenders(landing, true)) lost.add(i);                     // each set the footprint does not fit takes what touched it
+    if (label !== 'edge') for (const i of (hitIdx || [])) lost.add(i);              // and the caller's own finding
+    let idx = [...lost].sort((a, b) => a - b);
     if (!idx.length || idx.length >= landing.length) return false;
     let result = tryMultiDevolve(landing, idx);
     if (!result) {
@@ -22711,12 +23274,17 @@ function shedOnLanding(landing, hitIdx, label, dir) {
     }
     if (!result) return false;
     const survivorCells = landing.filter((_, i) => !idx.includes(i));
-    // the survivors must be able to stand where they land: in the frame, on ground, off any set they do not fit
-    if (survivorCells.some(c => out(c) || ['void', 'wall', 'hazard'].includes(world[`${c.x},${c.y}`]))) return false;
-    if (slotMisfitAt(survivorCells)) return false;
-    const eng = contactPoints(getPlayerCells(), survivorCells);
-    if (eng.length && !eng.some(([gx, gy]) => socketAt(gx, gy))) return false;   // no hinge for the survivors — the flip itself is unlawful
     const prevType = game.shapeType, oldCells = getPlayerCells(), col = playerColor();
+    // the survivors land if they have ground under them and a hinge to turn on; otherwise they stay
+    const eng = contactPoints(oldCells, survivorCells);
+    const hinge = !eng.length || eng.some(([gx, gy]) => socketAt(gx, gy));
+    const canLand = hinge && !survivorCells.some(c => out(c) || ['void', 'wall', 'hazard'].includes(world[`${c.x},${c.y}`]));
+    let stay = false;
+    if (!canLand) {
+        const r2 = tryMultiDevolve(oldCells, idx);   // the same count off the footprint the flip began on — every sub-footprint of these bodies is a body
+        if (!r2) return false;
+        result = r2; stay = true;
+    }
     const v = HINT_DIR_VEC[dir] || [0, 0];
     game.shapeType = result.shapeType;
     game.shapeConfig = result.config;
@@ -22724,10 +23292,11 @@ function shedOnLanding(landing, hitIdx, label, dir) {
     game.playerY = result.anchorY;
     game.roundImpacts = (game.roundImpacts || 0) + 1;
     const n = idx.length;
-    // the lost cubes' own stories, on the FX layer
+    const setIdx = slotOffenders(landing, true);
+    // the lost cubes' own stories, on the FX layer: a tumble out of the frame, a shatter on the set
     const cas = idx.map(i => {
         const c = landing[i];
-        if (label === 'edge') {
+        if (out(c)) {
             const dx = c.x < 0 ? -1 : c.x >= VIEW_W ? 1 : 0, dy = c.y < top ? -1 : c.y > bot ? 1 : 0;
             const x = Math.min(VIEW_W - 1, Math.max(0, c.x)), y = Math.min(bot, Math.max(top, c.y));   // the tumble starts at the frame
             return { x, y, col, e: { dx: dx || v[0], dy: dy || v[1], spin: Math.random() < 0.5 ? -1 : 1 } };
@@ -22736,21 +23305,26 @@ function shedOnLanding(landing, hitIdx, label, dir) {
     });
     devolveStage = { cas, t0: performance.now(), dur: 560 };
     game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
-    const oldSurv = oldCells.filter((_, i) => !idx.includes(i));
-    if (oldSurv.length === survivorCells.length) startSlipAnim(oldSurv, survivorCells);
-    tapeShift(oldCells, survivorCells);                                   // the move is on the tape, so the replay and the continuity rule both know it
-    if (label === 'edge') flagOutOfBounds(v[0] < 0 ? 'left' : v[0] > 0 ? 'right' : v[1] < 0 ? 'top' : 'bottom');
+    const newCells = getPlayerCells();
+    if (stay) startFlip(dir, newCells, game.faceParity, true);   // the ground refused the rest: bounced back, one body smaller
+    else {
+        const oldSurv = oldCells.filter((_, i) => !idx.includes(i));
+        if (oldSurv.length === survivorCells.length) startSlipAnim(oldSurv, survivorCells);
+    }
+    tapeShift(oldCells, newCells);                                   // the move is on the tape, so the replay and the continuity rule both know it
+    const edgeN = idx.filter(i => out(landing[i])).length, setN = idx.filter(i => setIdx.has(i)).length;
+    if (edgeN) flagOutOfBounds(v[0] < 0 ? 'left' : v[0] > 0 ? 'right' : v[1] < 0 ? 'top' : 'bottom');
     const cubes = n > 1 ? `−${n} CUBES` : '−1 CUBE';
-    const line = label === 'edge' ? 'OVER THE EDGE' : 'WRONG SHAPE FOR THE SET';
+    const line = setN && !edgeN ? 'WRONG SHAPE FOR THE SET' : edgeN && !setN ? 'OVER THE EDGE' : 'OVER THE EDGE · WRONG SHAPE';
     addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `${line}\n${cubes}`, '#f87171', true, { life: 2000, hold: 1100 });
     tapeNote(`${line}  ${cubes}`, '#f87171');
-    showTip(label === 'edge' ? 'edge' : 'misfit');
+    showTip(setN ? 'misfit' : 'edge');
     if (sfx.devolve) sfx.devolve();
     triggerShake(5, 220);
     flashPlayerDenied('shed');
     signalSizeChange(prevType, result.shapeType, true);
-    captureSnapshot(label === 'edge' ? '↘ over the edge' : '✗ wrong fit');
-    rec('hurt', { from: prevType, to: result.shapeType, ch: label, n, landed: 1 });
+    captureSnapshot(setN ? '✗ wrong fit' : '↘ over the edge');
+    rec('hurt', { from: prevType, to: result.shapeType, ch: setN && !edgeN ? 'slot' : edgeN && !setN ? 'edge' : 'both', n, landed: stay ? 0 : 1 });
     return true;
 }
 // ── [210826as] A REFUSAL COSTS TWO SECONDS. ONCE. ───────────────────────────
@@ -24104,7 +24678,9 @@ function checkCollisions() {
             const newCells = pv.newCells;
             // Socket gate: an imprecise rotation into slot territory is refused —
             // the pivot fires and is spent, but the world resists; no movement.
-            if (slotMisfitAt(newCells)) {
+            // [260926n] ...for a SINGLE. A bigger body loses the cubes the set
+            // takes and lands the rest — classifyShiftPush, see slotOffenders.
+            if (game.shapeType === 'single' && slotMisfitAt(newCells)) {
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil(null);                   // [270726x] recoil + wall at impact
                 triggerShake(3, 90);
@@ -24238,7 +24814,9 @@ function checkCollisions() {
             }));
             // Socket gate (see slotMisfitAt): an imprecise push into slot
             // territory is refused — slip spent, no movement.
-            if (slotMisfitAt(newCells)) {
+            // [260926n] ...for a SINGLE. A bigger body loses the cubes the set
+            // takes and lands the rest — classifyShiftPush, see slotOffenders.
+            if (game.shapeType === 'single' && slotMisfitAt(newCells)) {
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil({ dx: v.dx, dy: v.dy });   // [270726x] v = this slip's vector
                 triggerShake(3, 90);
@@ -24310,7 +24888,7 @@ function checkCollisions() {
                 // so survivors animate by filtering the trimmed indices.
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 const keep = i => !push.trim.redIndices.includes(i);
-                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey);
+                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { vec: v });   // [260926n] the push's direction, for the shatter
                 cells = getPlayerCells();
                 startSlipAnim(oldCellsForAnim.filter((_, i) => keep(i)),
                               newCells.filter((_, i) => keep(i)));
@@ -25967,19 +26545,57 @@ function tryMultiDevolve(playerCells, hitIndices) {
 // argument (bf → bg → permeable → back) starts from both ledgers.
 const SLOT_PERMEABLE = false;
 
-function slotMisfitAt(newCells) {
-    if (SLOT_PERMEABLE) return false;   // [180826e] slots are terrain
+/* ── [260926n] THE CUBES A SET WOULD TAKE ────────────────────────────────────
+   Designer's call: "if you use a shifter and it pushes the player or rotates
+   the player onto a set, the lose-a-cell rule should apply if the player's
+   configuration doesn't fit." The flip already works this way ([260926k],
+   shedOnLanding): the cube that touches a set it does not fit is lost, the
+   rest land, the set is untouched. The machines refused instead — the tile
+   fired and was spent, the body stayed put — which was the one place left
+   where a wrong shape met a set and paid nothing.
+   This returns the indices of the cubes that touch an unclaimed set the whole
+   footprint does not fit exactly; slotMisfitAt is "are there any". The machine
+   handlers feed them to classifyShiftPush as casualties, alongside the reds,
+   walls, holes and edges it already trims, so every scenario resolves through
+   the one push path:
+     · single onto any set it does not fit       → refused, tile spent (a
+       single has no cube to give; it pays as before)
+     · pair / diagonal, one cube on a set         → that cube lost, a single lands
+     · J, one cube on a set                       → lost; the two left stand as a
+       pair or, if the corner went, a diagonal
+     · J, two cubes on a set                      → both lost, a single lands
+     · square, one cube on a set                  → lost, a J lands
+     · square, two on a set (side or diagonal)    → lost; a pair or a diagonal
+     · square, three on a set                     → lost, a single lands
+     · every cube on a set (a pair across a 3-set,
+       a square across two sets)                  → nothing can land: absorbed,
+       tile spent, the recoil, no cube lost
+     · a set the survivors fit EXACTLY            → they claim it, as any push
+       into a clean fit does
+     · a push that also drops a cube in a hole or
+       over the edge                              → the hole is bought and the edge
+       cube tumbles, as before; the set's cubes shatter beside them
+   Every sub-footprint of these bodies is itself a body (any one or two cells
+   of a square or a J is a pair, a diagonal or a single; three of a square is
+   a J), so the survivors always have a shape to take; classifyShiftPush's
+   last-cube-standing grind is only ever reached by reds and walls. */
+function slotOffenders(newCells, inPlayOnly) {
+    const out = new Set();
+    if (SLOT_PERMEABLE) return out;   // [180826e] slots are terrain
     const keys = newCells.map(c => `${c.x},${c.y}`);
+    const _topL = inPlayOnly ? topLawfulRow() : -Infinity;
     for (const sl of slots) {
         if (sl.claimed || sl.retiring) continue;
-        let overlap = 0;
-        for (const k of keys) if (sl.keys.has(k)) overlap++;
-        if (overlap === 0) continue;
-        if (overlap === keys.length && sl.keys.size === keys.length) continue;   // exact insertion — allowed
-        return true;
+        if (inPlayOnly && sl.cells.some(c => c.y < _topL)) continue;   // [170826b] a set not fully in play cannot shed — [260926r] the flip's own rule, asked for here
+        const touch = [];
+        keys.forEach((k, i) => { if (sl.keys.has(k)) touch.push(i); });
+        if (!touch.length) continue;
+        if (touch.length === keys.length && sl.keys.size === keys.length) continue;   // exact insertion — allowed
+        for (const i of touch) out.add(i);
     }
-    return false;
+    return out;
 }
+function slotMisfitAt(newCells) { return slotOffenders(newCells).size > 0; }
 
 // THE SHAVE (V9): a flip's destination is resolved in CONTACT ORDER —
 // cells land nearest-first along the movement vector. Reds subtract the
@@ -26050,6 +26666,9 @@ function detectCasualties(newCells) {
 function classifyShiftPush(newCells) {
     let redIndices = [];
     const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
+    // [260926n] the cubes a set would take — see slotOffenders. A single is
+    // never here: its handlers refuse a misfit before classifying.
+    const setIdx = newCells.length > 1 ? slotOffenders(newCells) : new Set();
     for (let i = 0; i < newCells.length; i++) {
         const c = newCells[i];
         if (c.x < 0 || c.x >= VIEW_W || c.y < topB || c.y > botB) { redIndices.push(i); continue; }   // [270726zk] knocked out of the band
@@ -26058,6 +26677,7 @@ function classifyShiftPush(newCells) {
         // detectCasualties. The fill happens where the push is applied, not
         // here — this pass only decides who dies.
         if (world[k] === 'hazard' || world[k] === 'wall' || world[k] === 'void') redIndices.push(i);
+        else if (setIdx.has(i)) redIndices.push(i);   // [260926n] wrong shape for the set: the cube that touched it is lost
     }
     if (!redIndices.length) return { trim: null };
     let result = tryMultiDevolve(newCells, redIndices);
@@ -26075,15 +26695,18 @@ function classifyShiftPush(newCells) {
         result = { shapeType: 'single', config: 'A', anchorX: newCells[okIdx].x, anchorY: newCells[okIdx].y };
         redIndices = newCells.map((_, i) => i).filter(i => i !== okIdx);
     }
-    return { trim: { redIndices, result } };
+    return { trim: { redIndices, result, setIdx: [...setIdx].filter(i => redIndices.includes(i)) } };   // [260926n] setIdx: the cubes a set took
 }
 
 // [270726c] Shared trim path for shift pushes (turn + step shifts). The red
 // minus cells are consumed to real floor, the shape devolves in place to the
 // surviving configuration, the shifter is spent, and the trim pays the same
 // 3 as a flip trim on top of the 2 for engaging the mechanism.
-function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
+function applyShiftTrim(trim, newCells, triggerCell, triggerKey, opts) {
     const { redIndices, result } = trim;
+    const setLost = new Set(trim.setIdx || []);   // [260926n] the cubes a set took
+    const pushVec = (opts && opts.vec) || { dx: 0, dy: 0 };
+    const bodyCol = playerColor();                 // read before the body changes
     game._lastTrimT = performance.now();   // trim->claim in one gesture = THE SHAVE
     const topB2 = topLawfulRow(), botB2 = Math.floor(game.cameraY) + VIEW_H - 1;
     /* [FORMULA] A PUSH INTO A HOLE BUYS THE HOLE — and Q3 depends on it. The
@@ -26151,21 +26774,46 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey) {
     }
     sfx.devolve();
     // [180826t] Casualty beat on machine-push trims as well.
-    devolveStage = { cas: redIndices.map(i => ({ x: newCells[i].x, y: newCells[i].y })),
-                     t0: performance.now(), dur: 340 };
+    /* [260926n] Three stories on the FX layer, by what took the cube: a set
+       knocks it back and shatters it ([260926k]'s shatter, the push's own
+       direction); the frame's edge tumbles it out of view; a red or a hole
+       keeps the strobe. */
+    devolveStage = { cas: redIndices.map(i => {
+                         const c = newCells[i];
+                         if (setLost.has(i)) return { x: c.x, y: c.y, col: bodyCol, s: { dx: -pushVec.dx, dy: -pushVec.dy } };
+                         const offX = c.x < 0 ? -1 : c.x >= VIEW_W ? 1 : 0, offY = c.y < topB2 ? -1 : c.y > botB2 ? 1 : 0;
+                         if (offX || offY) return { x: Math.min(VIEW_W - 1, Math.max(0, c.x)), y: Math.min(botB2, Math.max(topB2, c.y)),
+                                                    col: bodyCol, e: { dx: offX, dy: offY, spin: Math.random() < 0.5 ? -1 : 1 } };
+                         return { x: c.x, y: c.y };
+                     }),
+                     t0: performance.now(), dur: setLost.size ? 560 : 340 };
     game.frozenTimer = Math.max(game.frozenTimer || 0, 340);
-    rec('hurt', { from: prevType, to: result.shapeType, ch: 'push', nv: _bought.length });   // [180826d][FORMULA] nv = cubes that bought ground
+    rec('hurt', Object.assign({ from: prevType, to: result.shapeType, ch: 'push', nv: _bought.length },   // [180826d][FORMULA] nv = cubes that bought ground
+                              setLost.size ? { ns: setLost.size } : {}));                                // [260926n] ns = cubes a set took
     signalSizeChange(prevType, result.shapeType, true);
     triggerShake(4, 200);
     // [100926f] "DEVOLVE!" → the body ledger's own words (see applyFusionMove).
     // [FORMULA] and when the push bought ground, the exchange line (see checkCollisions).
-    const _lost = redIndices.length > 1 ? `−${redIndices.length} CUBES` : '−1 CUBE';
-    const _line = _bought.length ? `${_lost}  →  +${_bought.length} GROUND` : _lost;
-    const _col = _bought.length ? '#7dd3fc' : '#94a3b8';
-    addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL, _line, _col, _bought.length > 1);
-    tapeNote(_line, _col);
-    if (_bought.length) bookmark('bridge', 'THE BRIDGE');
-    showTip('devolve');
+    /* [260926n] A set's refusal is said in the flip's words (shedOnLanding),
+       centred and held, so a push and a flip that end the same way read the
+       same way. Any other casualty in the same push keeps its own line. */
+    if (setLost.size) {
+        const _n = setLost.size, _cubes = _n > 1 ? `−${_n} CUBES` : '−1 CUBE';
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `WRONG SHAPE FOR THE SET\n${_cubes}`, '#f87171', true, { life: 2000, hold: 1100 });
+        tapeNote(`WRONG SHAPE FOR THE SET  ${_cubes}`, '#f87171');
+        showTip('misfit');
+        captureSnapshot('✗ wrong fit');
+    }
+    const _others = redIndices.length - setLost.size;
+    if (_others > 0) {
+        const _lost = _others > 1 ? `−${_others} CUBES` : '−1 CUBE';
+        const _line = _bought.length ? `${_lost}  →  +${_bought.length} GROUND` : _lost;
+        const _col = _bought.length ? '#7dd3fc' : '#94a3b8';
+        addFloat(triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL, _line, _col, _bought.length > 1);
+        tapeNote(_line, _col);
+        if (_bought.length) bookmark('bridge', 'THE BRIDGE');
+        showTip('devolve');
+    }
 }
 
 // ============ DRAWING ============
@@ -26805,7 +27453,7 @@ function computeShifterPreviewFor(aim) {
             const pv = turnAroundTrigger(bodyCells, trg.x, trg.y, ccw, game.shapeType, cfg, tn);
             if (!pv) break;
             const rotConfig = pv.newConfig;
-            if (slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }
+            if (game.shapeType === 'single' && slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }   // [260926n] a bigger body sheds instead
             const push = classifyShiftPush(pv.newCells);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
             if (push.trim) {
@@ -26830,7 +27478,7 @@ function computeShifterPreviewFor(aim) {
             const v = slipVectorOf(meta);
             const hop = slipHop(bodyCells, v);        // [120926i]
             const pushed = bodyCells.map(c => ({ x: c.x + v.dx * hop, y: c.y + v.dy * hop }));
-            if (slotMisfitAt(pushed)) { if (!poses.length) denial = true; break; }
+            if (game.shapeType === 'single' && slotMisfitAt(pushed)) { if (!poses.length) denial = true; break; }   // [260926n]
             const push = classifyShiftPush(pushed);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
             if (push.trim) {
@@ -28219,7 +28867,7 @@ function drawTurnNotYet() {          // a steel ring round the cell, 450ms, over
     ctx.save();
     ctx.globalAlpha = 0.9 * k;
     roundedSq(n.x * CELL + 2 - grow, (n.y - game.cameraY) * CELL + 2 - grow, CELL - 4 + grow * 2, null,
-              currentTheme === 'day' ? '#8fa3b8' : 'rgb(184,201,217)', 3);
+              currentTheme === 'day' ? CANDY.steelEdge : 'rgb(184,201,217)', 3);   // [260926m][260926n][260926o]
     ctx.restore();
 }
 
@@ -28242,8 +28890,8 @@ const CELL_RING_K = [0.75, 0.5];
 const CELL_RING_STYLE = {
     night:      { col: 'rgba(226,232,240,', a: [0.30, 0.24], w: 1.1 },
     nightTrail: { col: 'rgba(240,236,255,', a: [0.34, 0.26], w: 1.1 },
-    day:        { col: 'rgba(139,92,246,',  a: [0.30, 0.24], w: 1.0 },
-    dayTrail:   { col: 'rgba(225,29,72,',   a: [0.30, 0.24], w: 1.0 }
+    day:        { col: 'rgba(56,189,248,',  a: [0.30, 0.22], w: 1.0 },   // [260926o] ice, a step deeper than the baby-blue grid
+    dayTrail:   { col: 'rgba(230,110,90,',  a: [0.28, 0.22], w: 1.0 }    // [260926o] a deeper pink · [260926p] a deeper coral on the salmon · [260926r] lighter with it
 };
 function _appendScaledSq(sx, sy, size, k) {   // roundedSq's path, scaled about the centre (radius scales too)
     const r = Math.min(size * CORNER_K, CORNER_MAX) * k, z = size * k;
@@ -28313,7 +28961,7 @@ function _termPath(c, sx, sy, size, k) {             // roundedSq's own path, sc
 /* The tone of each step. `body` is the cube's flat fill, which the caller has
    already laid down; step 0 is the ring at 3/4 and step 1 the ring at 1/2. */
 function faceStepColour(fam, face, i, day) {
-    const base = day ? lightenHex(fam, 0.30) : lightenHex(fam, 0.16);   // = faceBodyColour
+    const base = day ? lightenHex(fam, 0.07) : lightenHex(fam, 0.16);   // = faceBodyColour · [260926m]
     return face === 'top' ? lightenHex(base, FACE_STEP_LIGHT[i])
                           : shadeHex(base, FACE_STEP_DARK[i]);
 }
@@ -28348,7 +28996,7 @@ function terminalSprite(face, day, fam) {
     _terminalSprites.set(key, sp);
     return sp;
 }
-function faceBodyColour(fam) { return currentTheme === 'day' ? lightenHex(fam, 0.30) : lightenHex(fam, 0.16); }
+function faceBodyColour(fam) { return currentTheme === 'day' ? lightenHex(fam, 0.07) : lightenHex(fam, 0.16); }   // [260926m]
 function faceOutline(sx, sy, size, fam) {           // the standard outline, flush inside the edge
     roundedSqScaled(sx, sy, size, (size - FACE_STROKE) / size, currentTheme === 'day' ? shadeHex(fam, 0.55) : shadeHex(fam, 0.42), FACE_STROKE);
 }
@@ -29124,7 +29772,7 @@ function draw() {
     // Canvas clear — night keeps the deep navy; day uses a lighter blue-grey
     // (#0f172a lightened 50% toward white) so the inset gaps between the white
     // floor tiles read as soft grout rather than harsh inky lines.
-    ctx.fillStyle = currentTheme === 'day' ? '#dde2e8' : '#0f172a';
+    ctx.fillStyle = currentTheme === 'day' ? CANDY.grout : '#0f172a';   // [260926n] a lilac grid · [260926o] electric ice between the white tiles
     ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
 
     // Per-level wash — the void tints as you climb (see LEVEL_WASH). Night gets
@@ -29210,7 +29858,7 @@ function draw() {
                 // First, fill the grout toward any adjacent wall neighbour with
                 // the wall colour, so a run of walls reads as one solid mass
                 // instead of separate tiles with the background showing between.
-                const wallGrout = currentTheme === 'day' ? '#d7dbe3' : palette().wallBody;   // [010826a]
+                const wallGrout = currentTheme === 'day' ? CANDY.wallGrout : palette().wallBody;   // [010826a][260926o]
                 let gx = sx, gy = sy, gw = CELL_SIZE, gh = CELL_SIZE;
                 if (world[`${col - 1},${worldY}`] === 'wall') { gx -= CELL_INSET; gw += CELL_INSET; }
                 if (world[`${col + 1},${worldY}`] === 'wall') { gw += CELL_INSET; }
@@ -29234,7 +29882,7 @@ function draw() {
                     // lighter slate kept for the bond drawn over it — so the wall is
                     // a dark mass described by light mortar lines, not a light mass
                     // with dark mortar.
-                    const bodyCol = day ? '#7fe3c7' : '#1c2435';   // [040826p] mint — clear of the pair slot's magenta
+                    const bodyCol = day ? CANDY.wallBody : '#1c2435';   // [040826p] mint · [260926o] packed slate
                     // [030826a] The mortar was drawn at pal2.wallStroke (#5b6a82) at FULL
                     // opacity — the same slate used for outlines elsewhere, but here it
                     // sat against a very dark wall body (#141d31), so the contrast
@@ -29242,7 +29890,7 @@ function draw() {
                     // dimmer grout in both themes: the bond should describe the wall,
                     // not outshine it.
                     // [030826e] The lighter grey outline stays as the mortar.
-                    const mortarCol = day ? '#14a37f' : pal2.wallStroke;   // [040826p] deeper mint bond
+                    const mortarCol = day ? CANDY.wallMortar : pal2.wallStroke;   // [040826p] deeper mint bond · [260926o] light mortar on slate
                     const wUp = world[`${col},${worldY - 1}`] === 'wall';
                     const wDn = world[`${col},${worldY + 1}`] === 'wall';
                     const wLf = world[`${col - 1},${worldY}`] === 'wall';
@@ -29325,7 +29973,7 @@ function draw() {
                 if (currentTheme === 'day') {
                     // Day — coral floor tile wearing the same grout-grey edge
                     // as every other tile: literally filed in the floor family.
-                    roundedSq(sx, sy, CELL_SIZE, dayTileFill(), '#c4b5fd', 1);   // [040826s] lilac grout, not grey
+                    roundedSq(sx, sy, CELL_SIZE, dayTileFill(), CANDY.edge, 1);   // [260926m] the grey grout · [260926n] lilac
                     ctx.save();
                     ctx.globalAlpha = pulse;
                     roundedSq(sx, sy, CELL_SIZE, '#ef4444', '#b9c0c9', 1);
@@ -29362,11 +30010,22 @@ function draw() {
                 // [010826a] The +30 goes ORANGE, the +10 stays yellow — the two
                 // tiers were both yellow and read as one object at a glance.
                 const fillN = big ? '#fb8b1e' : '#fcd34d';
-                const fillD = big ? '#ea7317' : '#fbbf24';
-                const edgeD = big ? '#a16207' : '#d97706';
+                /* [260926m] the small hourglass was 5 from a diagonal player
+                   cube in day (both amber). Day tiers are now LEMON (+10) and
+                   DEEP ORANGE (+30): 17 and 27 from the diagonal, 45 apart. The
+                   lemon carries a dark glyph, since white on lemon is 1.3:1. */
+                const fillD = big ? CANDY.amber : CANDY.sand;         // [260926n] sweet shop · [260926o] night's sand and amber
+                const edgeD = big ? CANDY.amberEdge : CANDY.sandEdge;
                 if (currentTheme === 'day') {
-                    roundedSq(sx, sy, CELL_SIZE, fillD, edgeD, 1);
-                    drawHourglassIcon(sx, sy);
+                    /* [260926o] and night's glow and breath, on snow */
+                    const tpD = big ? 0.5 + 0.5 * Math.sin(Date.now() / 900 * Math.PI) : 0;
+                    ctx.save();
+                    ctx.shadowColor = fillD;
+                    ctx.shadowBlur = big ? 10 + 8 * tpD : 8;
+                    if (big) roundedSq(sx - 1.5 * tpD, sy - 1.5 * tpD, CELL_SIZE + 3 * tpD, fillD, edgeD, 1);
+                    else roundedSq(sx, sy, CELL_SIZE, fillD, edgeD, 1);
+                    ctx.restore();
+                    drawHourglassIcon(sx, sy, big ? '#ffffff' : CANDY.sandInk);   // [260926m]
                     continue;
                 }
                 const tp = t45 ? 0.5 + 0.5 * Math.sin(Date.now() / 900 * Math.PI) : 0;
@@ -29411,7 +30070,19 @@ function draw() {
                     // [180826c] Day gets the same breath as night — it had no
                     // pulse at all, so shifters sat flat on the white floor.
                     const dayPulse = pvInert ? 0 : 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);   // [110926p]
-                    roundedSq(sx - 1.5 * dayPulse, sy - 1.5 * dayPulse, CELL_SIZE + 3 * dayPulse, DAY_SHIFTER_FILL, '#8fa3b8', 2);   // [260926g] a firmer edge on the white floor
+                    /* [260926o] SILVER, LIKE NIGHT: a brushed fall-off from light to
+                       darker steel, night's slate edge, night's dark glyph, and
+                       night's breath of steel light round it. */
+                    {
+                        const gy0 = sy - 1.5 * dayPulse, gsz = CELL_SIZE + 3 * dayPulse;
+                        const grad = ctx.createLinearGradient(0, gy0, 0, gy0 + gsz);
+                        grad.addColorStop(0, CANDY.steelHi); grad.addColorStop(1, CANDY.steelLo);
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(91,106,130,0.55)';
+                        ctx.shadowBlur = pvInert ? 0 : 6 + 6 * dayPulse;
+                        roundedSq(sx - 1.5 * dayPulse, gy0, gsz, grad, CANDY.steelEdge, 2);   // [260926g] a firmer edge on the white floor
+                        ctx.restore();
+                    }
                     // Glyph — stroked vector, uniform 2.4px ([270726l]).
                     try { drawShifterGlyph(sx + CELL_SIZE / 2, sy + CELL_SIZE / 2, item, meta, col, worldY, !pvInert); }   // [100926a] one bad tile never takes the board with it
                 catch (e) { if (!game._glyphErr) { game._glyphErr = true; console.error('[ROTOR] shifter glyph', e); } }
@@ -29476,8 +30147,29 @@ function draw() {
                     {   // [090926e] day trail cools too: hot pink fresh -> the pale pink base
                         const age = (isFinite(trailNow) ? trailNow : performance.now()) - (visitedAt.get(key) || 0);
                         const f = Math.max(0, Math.min(1, 1 - age / TRAIL_COOL_MS));
-                        const fill = f > 0.01 ? `rgb(255, ${Math.round(194 - 40 * f)}, ${Math.round(212 - 30 * f)})` : '#ffc2d4';
-                        roundedSq(sx, sy, CELL_SIZE, fill, '#ff8fa6', 1);
+                        /* ══ [260926m] THE DAY BOARD, MEASURED — designer's call ("some
+                           of them are quite close together"). Rendered in a headless
+                           browser and read back cell by cell (CIEDE2000, where ~10 is
+                           the edge of telling two colours apart at a glance):
+                             pair slot wash vs the walked square      6.2  ← the field call
+                             walked square vs its island twin         0
+                             hole vs empty tile                       8.7
+                             step tile vs hole / empty tile         7.1 / 8.9
+                             single / J / square slot washes       5–7 apart
+                             diagonal player cube vs t10 hourglass    5.1
+                             J player cube vs square player cube      8.2
+                           The walked square was PINK — the pair family's own
+                           neighbourhood, and the diagonal's warm one too. It is
+                           VIOLET now, as the night trail is: walked = violet in both
+                           themes, and no family lives there (the diagonal and the J
+                           were moved out of that sector at [060926] for exactly this
+                           reason). Fresh ground is a deeper violet cooling to
+                           lavender, the edge a violet line. Remeasured: pair wash
+                           13, every family wash ≥ 13, hole 14, tiles 30+. */
+                        /* [260926n] sweet shop · [260926o] bubble gum · [260926p] salmon: walked is #ff9e8f, fresh #ff806c, the edge coral — CANDY */
+                        const W_ = CANDY.walked, F_ = CANDY.fresh;
+                        const fill = f > 0.01 ? `rgb(${Math.round(W_[0] + (F_[0] - W_[0]) * f)}, ${Math.round(W_[1] + (F_[1] - W_[1]) * f)}, ${Math.round(W_[2] + (F_[2] - W_[2]) * f)})` : '#ffc1b7';   // [260926q][260926r]
+                        roundedSq(sx, sy, CELL_SIZE, fill, CANDY.walkedEdge, 1);
                     }
                 } else {
                     // [200826d] Fine bright edge on the night trail (see
@@ -29520,7 +30212,7 @@ function draw() {
                       else {
                           ctx.save();
                           ctx.globalAlpha = 0.4 * (1 - age / 1200);
-                          roundedSq(sx, sy, CELL_SIZE, currentTheme === 'day' ? '#ff8fa6' : '#c9a0f5', null);
+                          roundedSq(sx, sy, CELL_SIZE, currentTheme === 'day' ? CANDY.bloom : '#c9a0f5', null);   // [260926m][260926n]
                           ctx.restore();
                       }
                   } }
@@ -29587,7 +30279,7 @@ function draw() {
                     // gaps between tiles, so the floor reads as white tiles on
                     // a dark frame (was outline-only back when the canvas was
                     // white and showed through).
-                    roundedSq(sx, sy, CELL_SIZE, dayTileFill(), '#c4b5fd', 1);   // [040826s] lilac grout, not grey
+                    roundedSq(sx, sy, CELL_SIZE, dayTileFill(), CANDY.edge, 1);   // [260926m] the grey grout · [260926n] lilac
                 } else {
                     /* [HOLES] THE LID. Night's empty cell is outline-only with
                        no fill — which was right when there was nothing behind
@@ -29669,7 +30361,12 @@ function draw() {
             if (currentTheme === 'day') {
                 // Day green pickup — flat lime with a darker lime edge for
                 // definition against the white canvas. "+" glyph below.
+                // [260926o] ...and night's lime glow: neon on snow.
+                ctx.save();
+                ctx.shadowColor = '#a3e635';
+                ctx.shadowBlur = 10;
                 roundedSq(sx - 1.5 * breathe, sy - 1.5 * breathe, SIZE + 3 * breathe, '#a3e635', '#7eb821', 1);
+                ctx.restore();
             } else {
                 // Night green pickup — GLOWING MATTER: a loose cube of the same
                 // stuff the player is made of. Near-solid body, glow just under
@@ -29752,10 +30449,12 @@ function draw() {
                 // on white; reads as the "target footprint" the player is
                 // working toward.
                 ctx.save();
-                ctx.globalAlpha = (0.18 + 0.08 * breathe) * bowAlpha;
+                ctx.globalAlpha = (0.20 + 0.06 * breathe) * bowAlpha;   // [260926m] 0.18 → 0.30 · [260926o] 0.20: the pair's wash must sit clear of the bubble-gum trail (15); the outline carries the family
                 roundedSq(sx, sy, size, slot.color, null);
                 ctx.restore();
                 ctx.save();
+                ctx.shadowColor = slot.color;                              // [260926o] night's glow on the outline — neon on snow
+                ctx.shadowBlur = (5 + 4 * breathe) * bowAlpha;
                 ctx.globalAlpha = (0.85 + 0.15 * breathe) * bowAlpha;
                 roundedSq(sx, sy, size, null, slot.color, 2.4);
                 ctx.restore();
@@ -29981,10 +30680,14 @@ function draw() {
     // is pastel; the PLAYER shouldn't be. Lighten cut to 16/30% (parity step
     // preserved) and the defining edge now goes DARKER than the family colour
     // instead of lighter, so the cube keeps a crisp rim on every ground tint.
+    /* [260926m] Day faces were still lightened 16/30% — a J cube measured 8 from
+       a square cube, a diagonal cube 5 from a t10 hourglass, and every cube sat
+       within 10 of its own slot wash. The dark parity now wears the family
+       colour itself and the light parity a 14% lift; the highlight follows. */
     const FACE_DARK = currentTheme === 'day'
         ? (renderParity
-            ? [lightenHex(famBase, 0.55), lightenHex(famBase, 0.16), shadeHex(famBase, 0.55)]
-            : [lightenHex(famBase, 0.68), lightenHex(famBase, 0.30), shadeHex(famBase, 0.55)])
+            ? [lightenHex(famBase, 0.42), famBase, shadeHex(famBase, 0.55)]
+            : [lightenHex(famBase, 0.55), lightenHex(famBase, 0.14), shadeHex(famBase, 0.55)])
         : (renderParity
             ? [shadeHex(famBase, 0.82), shadeHex(famBase, 0.82), shadeHex(famBase, 0.82)]
             : [lightenHex(famBase, 0.16), lightenHex(famBase, 0.16), lightenHex(famBase, 0.16)]);
@@ -30419,6 +31122,7 @@ function draw() {
     
     // HUD updates — Set-only
     renderSetIcons();
+    if (replayClip && replayClip.live) replayClipFrame();   // [260926n] the finished frame goes into the clip
 }
 
 // Sync the three life-pip elements with the current `lives` count.
@@ -31426,6 +32130,7 @@ function loop(time, gen) {
     }
     if (game.running && !game.paused) {
         runSingleRescue();   // [110926c] a single with nowhere to go gets a green in the hole beside it
+        runDryRescue();      // [260926p] a single with nothing to grow from gets one two cells out
         /* [250926n] THE WARNING COMES FIRST. A single's hole is lethal now, so
            the tip that used to arrive on the refusal would arrive on the death.
            It is shown the first time a single stands beside a hole in a run —
@@ -31977,6 +32682,7 @@ setInterval(function () {
             cm: +(game.comboMult || 1).toFixed(1),
             v: (typeof countShiftersInView === 'function') ? countShiftersInView() : -1,
             mv: (typeof countMachinesInView === 'function') ? countMachinesInView() : -1,   // [110926] steps and turns alone
+            g: (typeof countReachableGreens === 'function') ? countReachableGreens() : -1,  // [260926p] greens the body can reach — the dry spell's own measure
             m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
             c: Math.round(game.coverage || 0),
             s: game.shapeType,
@@ -32127,7 +32833,7 @@ function drawAnimFX() {
             const sx = f.x * CELL + 2, sy = (f.y - game.cameraY) * CELL + 2;
             ctx.save();
             if (day) {
-                roundedSq(sx, sy, CELL - 4, DAY_SHIFTER_FILL, '#8fa3b8', 1);
+                roundedSq(sx, sy, CELL - 4, DAY_SHIFTER_FILL, CANDY.steelEdge, 1);   // [260926m][260926n][260926o]
             } else {
                 ctx.globalAlpha = 0.74;
                 roundedSq(sx, sy, CELL - 4, SHIFTER_FAMILY_COLOR, null);
@@ -32501,6 +33207,8 @@ function toggleDetails() {
 
 function startDaily() { startGame(false, true); }
 function startGame(testDrive = false, daily = false) {
+    replayClipStop(); replayClip = null;   // [260926n] the last run's clip is put away; a new one records at the next death replay
+    { const _gc = document.getElementById('goClip'); if (_gc) _gc.hidden = true; }
     /* [090926h] THE DAILY: same seed for everyone today, five levels, timed. */
     dailyMode = !!daily && !testDrive;
     _brinkArmed = true; _brinkAt = -1e9;   // [110926j]

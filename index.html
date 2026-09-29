@@ -1046,6 +1046,7 @@ input, textarea, select { -webkit-text-stroke: 0; }
    [270726w] Empty sockets keep their space but are invisible — the band
    shows only this round's requirements, layout never shifts. */
 .set-slot.socket-empty { visibility: hidden; }
+canvas.set-fly { position: fixed; z-index: 60; pointer-events: none; transform-origin: 50% 50%; }   /* [290926e] a claimed piece on its way to the set */
 /* [280926J] CENTRED. The invisible padding sockets kept the row six wide, so a
    three-piece set sat in the left half. They take no space now, and every
    socket keeps the size it would have in a row of six — so the set is centred
@@ -4418,8 +4419,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
                 <input type="checkbox" id="setStickDodge" onchange="settingStickDodge(this.checked)">
             </label>
 
-            <div class="settings-section-label">Practice</div>
-            <button class="settings-testdrive" onclick="startTestDriveFromSettings()">🕹 TEST DRIVE — open the practice arena</button>
+            <!-- [290926l] TEST DRIVE RETIRED — the welcome tutorials teach what it did. The mode is still in the file (startTestDriveFromSettings) for the harness. -->
 
             <!-- [300726aj] KEYBOARD & TOUCH REFERENCE. The utility buttons left
                  the HUD, so the shortcuts they replaced need to be discoverable
@@ -7525,6 +7525,50 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 290926-1100: REDS AND GREENS, BY RULE [290926i–n]. Agreed 29 Sep. REDS at every level,
+// one or two on screen (maintainReds): a red takes a cube you can spare and pays 5s; it
+// never takes your last — a single rolls over it. Placed in the arriving rows, never on
+// or beside a set, a row's reward square, another red, the restart spot, or within three
+// cells of you. Replaces the L6 red tool, the pre-L6 red tidy and the trim-supply red.
+// GREENS: no store (no stones, no HUD counter) — a hole takes a real cube; a green landed
+// ON pays 5s; two at least on screen, three at most (maintainGreens). ROWS pay by rotation:
+// green, step, green, turn, hourglass. TEST DRIVE retired from settings. Level 1's set is
+// dealt once. The dead `cm` field is out of the export. Tutorials: ON A GREEN replaces
+// STEPPING STONES, EDGES and WRONG SETS are two lessons, REDS covers every level (11).
+// 290926-0930: THE APPROACH [290926g–h]. The last piece of a set now lands in its HUD
+// socket before the fireworks and the level card: the flight runs on real time (the
+// game pauses at completeSet, so the game-time flight never flew at all), and the
+// celebration and card wait for it plus a 350ms beat. The danger beat is a new voice,
+// THE APPROACH: two low bowed notes (B flat 2, C 3) — slow and far apart at the first
+// hint, closing into a pair, running together at the brink (gap 1.4s -> 0.3s on a
+// curve), louder and brighter as it comes, an octave joining over the last stretch.
+// The rotor and toy-clock voices stay defined and are no longer dealt.
+// 290926-0925: THE FLIP KEEPS TIME [290926f]. The walking tune is gone — every flip
+// strikes the body's home note over its chord voices (the size rule stays), so it is a
+// pulse under the music rather than a second melody. Every fourth flip is the downbeat:
+// ~+3 dB, a little longer, a light octave above. A 1.1 s pause restarts the count.
+// 290926-0745: THE SET TAKES, THE SET KEEPS [290926d–e]. Wrong fit: the set flares red
+// through the hold, then takes the cube in three beats on its own cell — GRIP (its
+// outline closes, the cube squeezes and reddens), CRUSH (collapses white-hot, cracked,
+// with a crunch), TAKEN (shards drawn into the set, out in a point of light); the set
+// is itself again, and the survivors no longer flash red. SET_TAKE_MS 820. Right fit:
+// corner clamps close on the piece with a white flash (SEAT_MS 460), then a copy lifts
+// off and flies into its HUD socket, which fills and pops as it arrives.
+// 290926-0720: EIGHT NEW TUNES [290926b–c]. Four more tracks to play to (Polka, Reel,
+// Calypso, Toccata — 136-164bpm, two major, two minor) and four more for between
+// levels (Music Box, Nocturne, Kalimba, Lofi — 72-96bpm), all on C, A A B A, measured
+// inside the loudness range of the existing suite. A track can carry its own `mode`
+// for the flip tune. The knuckle: at rest a thin ring the weight of the grid line
+// (a small dim dot in a void, nothing white); the one a turn is made on thickens and
+// a white heart pops into it, held for 900ms (was 620) so it cannot be missed.
+// 290926-0650: THE FLIP SINGS [290926a]. The flip is a plucked note in a tune, not a
+// struck bell. Rule: the body is a chord and each cube is one voice — single C6
+// alone; pair G5 over C5; diagonal G5 over E4; J C5 over G4+E4; square G4 over
+// C4+G3+C3 — so growing adds a voice and lowers the register. Successive flips walk
+// the pentatonic in eight-flip phrases (home note first, a chord tone on the fourth,
+// home on the eighth); a pause starts a new phrase; near the edge the walk leans
+// up. Over the two minor tracks (Tarantella, Pizzicato) it takes C minor
+// pentatonic. Pure harmonics, 6 ms attack; level measured within 1 dB of the old.
 // 280926-1825: THE SET, CENTRED [280926I–J]. Night cell lid 0.56 -> 0.64, a slightly
 // deeper pane behind the white grid. The set row is centred on the pieces asked
 // for: the invisible padding sockets take no space, and each socket keeps its
@@ -7964,7 +8008,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '280926-1825 ROTOЯ · THE SET, CENTRED';
+const BUILD_VERSION = '290926-1100 ROTOЯ · REDS AND GREENS, BY RULE';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -9066,6 +9110,7 @@ let rowPay = [];                  // [170926e] and where each was earned: the ce
    The consequence, said plainly: a player who clears no rows gets nothing new.
    That is the intent — rows are the engine — and it is why the rescues stay. */
 const ROWS_ARE_THE_SOURCE = true;
+const ROW_ROTATION = ['green', 'slip', 'green', 'pivot', 'hourglass'];   // [290926k] what a finished row pays, in turn
 function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedTimer); }
 // [270726e] Direct time credit (hourglass +20s) poured through the SAME
 // funnel as points: full-ring clamp, surplus to the overflow factory,
@@ -10227,6 +10272,145 @@ const MUSIC_SUITE = [
         if (m !== null) mPluck(mHt(24 + m), t, S * 1.1, 0.085, 'triangle');
         mPluck(mHt(root + (k % 2 ? 7 : 0)), t, S * 0.55, 0.095, 'sine');
         if (k % 4 === 2) mSnare(t, 0.016);
+    }},
+    // ══ [290926c] EIGHT MORE — four to play to, four between levels ══════════
+    // Same rules as the nine above: every track rooted on C (mHt), an A and a
+    // B section in the A A B A shape, its own arrangement outright, and the
+    // play tracks between 132 and 168bpm, the calm ones under 100. `mode`
+    // tells the flip tune (FLIP TUNE, [290926a]) which pentatonic to sing in.
+
+    // 10 — POLKA. Oom-pah: the root on the beat, the chord on the off-beat, a
+    // bouncing tune over I-V7-V7-I; B goes to the subdominant and back.
+    { name: 'Polka', bpm: 148, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8);
+        const progA = [[0, 4, 7], [-5, -1, 2, 5], [-5, -1, 2, 5], [0, 4, 7]];
+        const progB = [[-7, -3, 0], [0, 4, 7], [-5, -1, 2, 5], [0, 4, 7]];
+        const ch = (sec ? progB : progA)[bar];
+        const melA = [12, null, 16, null, 19, null, 16, null,  17, null, 14, null, 11, null, 14, null,
+                      17, 19, 17, 14, 11, null, 7, null,       16, null, 12, null, 12, null, null, null];
+        const melB = [21, null, 17, null, 24, null, 21, null,  19, null, 16, null, 12, null, 16, null,
+                      14, null, 17, null, 19, null, 23, null,  24, null, 19, null, 12, null, null, null];
+        const m = (sec ? melB : melA)[k];
+        if (m !== null) mPluck(mHt(m), t, S * 0.9, 0.066 + 0.02 * I, 'triangle');
+        if (k % 4 === 0) mPluck(mHt(ch[0] - 12 + (k % 8 === 4 ? 7 : 0)), t, S * 1.4, 0.10, 'sine');   // oom
+        if (k % 4 === 2) ch.forEach(iv => mPluck(mHt(iv), t, S * 0.5, 0.026));                         // pah
+        if (k % 4 === 2) mSnare(t, 0.010 + 0.006 * I);
+    }},
+    // 11 — REEL. C dorian, running eighths over a drone: i-bVII in A, IV-i in
+    // B (dorian's major IV is its signature). Minor for the flip tune.
+    { name: 'Reel', bpm: 164, len: 128, mode: 'min', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8);
+        const rootsA = [0, -2, 0, -2], rootsB = [5, 0, 5, -2];
+        const melA = [12, 15, 19, 15, 12, 15, 19, 24,  22, 19, 17, 14, 10, 14, 17, 22,
+                      12, 15, 19, 15, 17, 19, 21, 22,  24, 22, 19, 17, 15, 14, 12, null];
+        const melB = [17, 21, 24, 21, 17, 21, 24, 29,  27, 24, 19, 15, 12, 15, 19, 24,
+                      21, 24, 21, 17, 14, 17, 21, 24,  22, 19, 17, 15, 14, 10, 12, null];
+        const m = (sec ? melB : melA)[k], r = (sec ? rootsB : rootsA)[bar];
+        if (m !== null) mPluck(mHt(m), t, S * 0.8, 0.058 + 0.02 * I, 'triangle');
+        if (k % 4 === 0) mPluck(mHt(r - 12 + (k % 8 === 4 ? 7 : 0)), t, S * 1.8, 0.09, 'sine');
+        if (k % 8 === 0) mPluck(mHt(r - 5), t, S * 7, 0.028, 'sine');   // the drone's fifth, held
+        if (k % 4 === 0) mKick(t, 0.07 + 0.03 * I);
+        if (k % 8 === 6) mSnare(t, 0.010);
+    }},
+    // 12 — CALYPSO. A steel-pan tune with rests in it and a bass that pushes
+    // the second beat: I-IV-V-I, then vi-ii-V-I. Off-beat chord chucks.
+    { name: 'Calypso', bpm: 136, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8), b8 = k % 8;
+        const progA = [[0, 4, 7], [5, 9, 12], [7, 11, 14], [0, 4, 7]];
+        const progB = [[9, 12, 16], [2, 5, 9], [7, 11, 14], [0, 4, 7]];
+        const ch = (sec ? progB : progA)[bar];
+        const melA = [16, null, 19, 16, null, 12, 14, 16,  21, null, 17, 21, null, 24, 21, 17,
+                      19, null, 23, 19, null, 14, 17, 19,  24, null, 19, 16, 12, null, null, null];
+        const melB = [21, null, 24, 21, null, 16, 19, 21,  17, null, 21, 17, null, 14, 17, 21,
+                      19, null, 23, 26, null, 23, 19, 17,  16, null, 12, null, 19, null, null, null];
+        const m = (sec ? melB : melA)[k];
+        if (m !== null) { mPluck(mHt(m), t, S * 1.6, 0.060 + 0.02 * I, 'sine'); mPluck(mHt(m + 12), t, S * 0.6, 0.012, 'sine'); }   // the pan: a note and its bright ghost
+        if (b8 === 0 || b8 === 3) mPluck(mHt(ch[0] - 12), t, S * 1.3, 0.10, 'sine');
+        if (b8 === 4 || b8 === 7) mPluck(mHt(ch[0] - 5), t, S * 1.0, 0.075, 'sine');
+        if (k % 2 === 1) ch.forEach(iv => mPluck(mHt(iv), t, S * 0.3, 0.018));
+        if (k % 2 === 1) mSnare(t, 0.007 + 0.004 * I);
+        if (b8 === 0) mKick(t, 0.09);
+    }},
+    // 13 — TOCCATA. Perpetual motion in C minor: a broken chord on every
+    // eighth over i-VI-iv-v, B through III-VII-VI-v. The v is an open fifth
+    // (G and D, no third), so nothing in it fights the flip tune's B flat.
+    { name: 'Toccata', bpm: 156, len: 128, mode: 'min', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8);
+        const progA = [[0, 3, 7, 12], [-4, 0, 3, 8], [-7, -4, 0, 5], [-5, 2, 7, 14]];
+        const progB = [[3, 7, 10, 15], [-2, 2, 5, 10], [-4, 0, 3, 8], [-5, 2, 7, 14]];
+        const ch = (sec ? progB : progA)[bar];
+        const fig = sec ? [3, 2, 1, 2, 3, 2, 1, 0] : [0, 1, 2, 3, 2, 1, 2, 1];
+        mPluck(mHt(12 + ch[fig[k % 8]]), t, S * 0.7, 0.050 + 0.02 * I, 'triangle');
+        if (k % 8 === 0) mPluck(mHt(ch[0] - 12), t, S * 3.5, 0.095, 'sine');
+        if (k % 8 === 4) mPluck(mHt(ch[0]), t, S * 1.5, 0.050, 'sine');
+        if (k % 16 === 0) mPluck(mHt(24 + ch[2]), t, S * 3, 0.030 + 0.015 * I, 'sine');   // a bell over the bar
+        if (k % 4 === 0) mKick(t, 0.06 + 0.04 * I);
+        if (k % 8 === 4) mSnare(t, 0.012);
+    }},
+
+    // ── the four calm ones, for between levels ──
+    // 14 — MUSIC BOX. A lullaby up high, a soft bass once a bar, a chord in
+    // the middle of it. The tune leaves gaps; a music box does.
+    { name: 'Music Box', bpm: 84, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8);
+        const progA = [[0, 4, 7], [-3, 0, 4], [-7, -3, 0], [-5, -1, 2]];
+        const progB = [[-7, -3, 0], [0, 4, 7], [-10, -7, -3], [-5, -1, 2]];
+        const ch = (sec ? progB : progA)[bar];
+        const melA = [7, null, null, 4, 0, null, 4, null,   9, null, null, 7, 4, null, 0, null,
+                      5, null, 9, null, 12, null, 9, null,   7, null, null, null, 2, null, null, null];
+        const melB = [9, null, 12, null, 9, null, 5, null,   7, null, 4, null, 0, null, 4, null,
+                      5, null, 2, null, 9, null, 5, null,    7, null, 11, null, 14, null, null, null];
+        const m = (sec ? melB : melA)[k];
+        if (m !== null) { mPluck(mHt(12 + m), t, S * 3.2, 0.046, 'sine'); mPluck(mHt(24 + m), t, S * 1.2, 0.012, 'sine'); }
+        if (k % 8 === 0) mPluck(mHt(ch[0] - 12), t, S * 6, 0.050, 'sine');
+        if (k % 8 === 4) ch.forEach((iv, n) => mPluck(mHt(iv + 12), t + n * 0.05, S * 3, 0.020, 'sine'));
+    }},
+    // 15 — NOCTURNE. A wide left hand turning under one long note at a time.
+    // B borrows the minor iv (F minor) for one bar: the ache of the piece.
+    { name: 'Nocturne', bpm: 72, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8);
+        const progA = [[0, 4, 7], [-3, 0, 4], [2, 5, 9], [-5, -1, 2]];
+        const progB = [[5, 9, 12], [5, 8, 12], [0, 4, 7], [-5, -1, 2]];
+        const [r, th, fi] = (sec ? progB : progA)[bar];
+        const lh = [r - 12, fi - 12, th, fi, r + 12, fi, th, fi - 12];
+        mPluck(mHt(lh[k % 8]), t, S * 2.4, 0.032, 'sine');
+        const melA = [4, 7, 9, 4, 5, 2, -1, 2], melB = [9, 12, 8, 5, 7, 4, 2, -1];
+        if (k % 4 === 0) mPluck(mHt(12 + (sec ? melB : melA)[Math.floor(k / 4)]), t, S * 7, 0.046, 'sine');
+    }},
+    // 16 — KALIMBA. Two thumbs interlocking in the pentatonic, a low C and G
+    // under them. B turns the figure toward A minor without leaving the scale.
+    { name: 'Kalimba', bpm: 96, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32;
+        const figA = [0, 7, 12, 4, 9, 7, 14, 4], figB = [9, 4, 12, 7, 16, 9, 14, 7];
+        const f = (sec ? figB : figA)[k % 8] + (Math.floor(k / 8) % 2 ? 2 : 0) * (k % 2);   // the second bar nudges the right thumb up a step
+        const n = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21].reduce((a, b) => Math.abs(b - f) < Math.abs(a - f) ? b : a);   // kept on the pentatonic
+        mPluck(mHt(12 + n), t, S * 2.2, k % 2 ? 0.040 : 0.053, 'triangle');
+        if (k % 16 === 0) mPluck(mHt(sec ? -3 - 12 : -12), t, S * 12, 0.058, 'sine');
+        if (k % 16 === 8) mPluck(mHt(sec ? 4 - 12 : -5), t, S * 10, 0.042, 'sine');
+    }},
+    // 17 — LOFI. Tired seventh chords on a lazy swing, a soft kick and a brush,
+    // a bass that walks root to fifth. IV-iii-ii-I, then vi-ii-V-I.
+    { name: 'Lofi', bpm: 80, len: 128, mode: 'maj', play(i, t, S, I) {
+        const sec = [0, 0, 1, 0][Math.floor(i / 32) % 4];
+        const k = i % 32, bar = Math.floor(k / 8), b8 = k % 8;
+        const progA = [[5, 'maj7'], [4, 'min7'], [2, 'min7'], [0, 'maj7']];
+        const progB = [[-3, 'min9'], [2, 'min7'], [-5, 'dom7'], [0, 'maj7']];
+        const SHP = { maj7: [0, 4, 7, 11], min7: [0, 3, 7, 10], dom7: [0, 4, 7, 10], min9: [0, 3, 10, 14] };
+        const [r, q] = (sec ? progB : progA)[bar];
+        const sw = (k % 2) ? S * 0.18 : 0;   // the swing: every off-beat a little late
+        if (b8 === 0 || b8 === 3) SHP[q].forEach((iv, n) => mPluck(mHt(r + iv), t + sw + n * 0.012, S * (b8 ? 1.4 : 3), 0.024, 'sine'));
+        if (b8 === 0) mPluck(mHt(r - 12), t, S * 3, 0.085, 'sine');
+        if (b8 === 4) mPluck(mHt(r - 5), t, S * 2.5, 0.060, 'sine');
+        if (b8 === 0 || b8 === 5) mKick(t + sw, 0.07);
+        if (b8 === 4) mSnare(t, 0.009);
+        if (k % 16 === 10) mPluck(mHt(r + 12 + SHP[q][3]), t + sw, S * 3, 0.026, 'sine');   // the seventh, up top
     }}
 ];
 
@@ -10245,10 +10429,11 @@ const MUSIC_SUITE = [
 //   MENUS (68-124):  Foyer, Harp, Ambient, Bossa
 // Bossa sits at 132 but belongs with the slow group by CHARACTER — it saunters,
 // and a track that saunters under a countdown is working against the game.
-const GAME_TRACKS = ['Tarantella', 'Baroque', 'Waltz', 'Chiptune', 'Pizzicato', 'Xylophone']
+const GAME_TRACKS = ['Tarantella', 'Baroque', 'Waltz', 'Chiptune', 'Pizzicato', 'Xylophone',
+                     'Polka', 'Reel', 'Calypso', 'Toccata']   // [290926c] four more
     .map(n => MUSIC_SUITE.find(t => t.name === n));
 const CALM_TRACKS = [MENU_TRACK]
-    .concat(['Harp', 'Ambient', 'Bossa'].map(n => MUSIC_SUITE.find(t => t.name === n)));
+    .concat(['Harp', 'Ambient', 'Bossa', 'Music Box', 'Nocturne', 'Kalimba', 'Lofi'].map(n => MUSIC_SUITE.find(t => t.name === n)));   // [290926c] four more
 
 // A shuffled BAG rather than an index. Straight rotation means a player always
 // meets the same track on level 3, and pure random repeats — a bag gives every
@@ -10980,38 +11165,135 @@ function snapScale(freq) {
    Move this and the screen follows the music by itself. */
 const DEATH_CATCH_MS = 1050;
 
+/* ══ [290926a] FLIP TUNE — EVERY CUBE IS A VOICE ═════════════════════════════
+   Field call: "make the flipping sound more melodic — is there some harmonious
+   rule that reflects the change in size and is more pleasing to the ear?"
+
+   THE RULE, in one line: the body is a chord, and each cube is one voice of it.
+
+     single    1 voice   the tune alone, high             home C6
+     pair      2 voices  the tune over the root below     home G5, over C5  (an open fifth)
+     diagonal  2 voices  the tune over the third below    home G5, over E4  (sweeter, leaning)
+     J         3 voices  the tune over the fifth + third  home C5, over G4 + E4 (the triad)
+     square    4 voices  the tune over root, fifth, root  home G4, over C4 + G3 + C3 (full, grounded)
+
+   So growing ADDS a voice and drops the tune into a lower register, and
+   shrinking takes one away and lifts it: the size is heard as weight and as
+   fullness, the same two things L4 of the sound formula asks for (height +
+   note-count = magnitude), and every note is a note of the home chord.
+
+   THE TUNE. Successive flips walk the pentatonic — mostly steps, sometimes a
+   skip, never out of range — in eight-flip phrases: the first flip of a burst
+   is the body's home note (so a new size announces itself), the fourth lands
+   on a chord tone, the eighth comes home. Stop for a beat and the next flip
+   starts a new phrase. Near the killing edge the walk leans upward, so the
+   tune climbs as the danger does. Any sequence of flips is a melody, and
+   none can land a wrong note, because a pentatonic has no semitone to clash.
+
+   THE KEY FOLLOWS THE MUSIC. All six gameplay tracks sit on C; two of them
+   (Tarantella, Pizzicato) are minor. Over those the tune takes the MINOR
+   pentatonic (C Eb F G Bb) and the third in the chord is E flat, so the flips
+   are in the key of what is playing rather than against it. Music off: major.
+
+   THE SOUND. A plucked note — 6ms attack, exponential ring — made of pure
+   harmonics only (1, 2 and a trace of 3), so it is pitched rather than
+   clanky. The chord voices ring a little longer and softer under it. Pitch
+   jitter is not applied: the tune is its own variety now, and a detuned
+   melody would sit off the music. Bullet time still bends it down. */
+const FLIP_PENTA = { maj: [0, 2, 4, 7, 9], min: [0, 3, 5, 7, 10] };
+const FLIP_THIRD = { maj: 4, min: 3 };
+const FLIP_MINOR_TRACKS = new Set(['Tarantella', 'Pizzicato']);
+// home: scale index from C4 (0 = C4, 3 = G4, 5 = C5, 8 = G5, 10 = C6)
+// under: the chord voices, semitones from C4; 'T' is the third of the key
+const FLIP_VOICE = {
+    single:   { home: 10, under: [],                ring: 0.17 },
+    pair:     { home: 8,  under: [0 + 12],          ring: 0.20 },
+    diagonal: { home: 8,  under: ['T'],             ring: 0.20 },
+    jshape:   { home: 5,  under: [7, 'T'],          ring: 0.24 },
+    square:   { home: 3,  under: [0, -5, -12],      ring: 0.28 }
+};
+function flipMode() {
+    try {
+        if (!musicPlaying || !game || !game.running) return 'maj';
+        const t = _playTrack, n = typeof t === 'string' ? t : (t && t.name);
+        return (t && t.mode === 'min') || FLIP_MINOR_TRACKS.has(n) ? 'min' : 'maj';   // [290926c] a track can say so itself
+    } catch (e) { return 'maj'; }
+}
+function flipScaleHz(idx, mode) {   // scale index from C4 -> Hz
+    const sc = FLIP_PENTA[mode], o = Math.floor(idx / 5), k = ((idx % 5) + 5) % 5;
+    return 261.63 * Math.pow(2, o + sc[k] / 12);
+}
+function flipIsChordTone(idx, mode) {   // root, third or fifth of the key
+    const k = ((idx % 5) + 5) % 5;
+    return k === 0 || k === 3 || k === (mode === 'maj' ? 2 : 1);
+}
+/* [290926f] ONE NOTE, AND A BAR OF FOUR. Field note: "I like the more melodic
+   flipping sound but it sounds too musical, distracting from the music — could
+   every 4 beats have some sort of subtle accent to vary it, and keep each beat
+   consistent in sound." The walking tune is gone: every flip now strikes the
+   same thing — the body's home note over its chord voices (the size rule of
+   [290926a] is kept whole) — so the flips are a pulse under the music, not a
+   second melody on top of it. The variety is metre instead: the first flip of
+   every four is the downbeat, a touch louder, a touch longer, with a light
+   octave above it; the other three sit back. Stop for a beat and the count
+   starts again, so a new run of flips always opens on the accent. */
+const FLIP_BAR = 4;             // flips per bar; the first is accented
+const FLIP_REST_MS = 1100;      // a pause this long starts the count again
+let _flipBeat = { n: -1, at: -1e9 };
+function flipNextIndex(shape, danger) {
+    const V = FLIP_VOICE[shape] || FLIP_VOICE.single;
+    const mode = flipMode(), now = performance.now(), B = _flipBeat;
+    B.n = (now - B.at > FLIP_REST_MS) ? 0 : (B.n + 1) % FLIP_BAR;
+    B.at = now;
+    return { V, mode, idx: V.home, accent: B.n === 0 };
+}
+function flipPluck(f, t0, dur, vol, pan, bright) {
+    const out = audioCtx.createGain(), panner = audioCtx.createStereoPanner();
+    out.connect(panner); panner.connect(duckBus());
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    out.gain.setValueAtTime(0.0001, t0);
+    out.gain.linearRampToValueAtTime(vol, t0 + 0.006);
+    out.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    for (const [mult, lvl] of [[1, 1], [2, bright], [3, bright * 0.18]]) {
+        if (lvl <= 0) continue;
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = 'sine'; o.frequency.value = f * mult; g.gain.value = lvl;
+        o.connect(g); g.connect(out);
+        o.start(t0); o.stop(t0 + dur + 0.02);
+    }
+}
+function flipSing(shape, danger = 0) {
+    if (!audioCtx || !document.getElementById('soundCheck').checked) return;
+    resumeAudio();
+    const { V, mode, idx, accent } = flipNextIndex(shape, danger);
+    let bend = 1, stretch = 1;
+    if (typeof bullet !== 'undefined' && bullet.active) {   // slo-mo groans, as playTone does
+        const k = bullet.timer / BULLET_DURATION;
+        bend = 0.56 + 0.44 * (1 - k); stretch = 1 + 0.88 * k;
+    }
+    const t0 = audioCtx.currentTime;
+    const v = MOVE_VOL * sfxVolume * 1.15 * (1 + 0.6 * danger) * (accent ? 1.15 : 0.95);   // the edge is louder, as before · [290926f] the downbeat a touch more
+    const pan = (typeof game !== 'undefined' && game) ? ((game.playerX + 0.5) / VIEW_W - 0.5) * 0.5 : 0;
+    const dur = V.ring * stretch * (accent ? 1.1 : 0.9);
+    const f0 = flipScaleHz(idx, mode) * bend;
+    flipPluck(f0, t0, dur, v, pan, 0.16 + 0.22 * danger + (accent ? 0.10 : 0));
+    if (accent) flipPluck(f0 * 2, t0 + 0.003, dur * 0.7, v * 0.18, pan, 0.05);   // [290926f] the downbeat's light octave
+    V.under.forEach((u, i) => {
+        const semi = u === 'T' ? FLIP_THIRD[mode] : u;
+        flipPluck(261.63 * Math.pow(2, semi / 12) * bend, t0 + 0.004 * (i + 1), dur * 1.35, v * 0.36, pan * 0.5, 0.10);
+    });
+}
+
 const sfx = {
-    move: (dangerLevel = 0, isDiagonal = false) => {
-        // [Tier D · ambient] LIVE AGAIN [060926] — see the note at the flip
-        // landing. Always ducks under any effect that's currently sounding, and
-        // never reserves the bus itself, which is what makes it safe to fire on
-        // literally every move.
+    move: (dangerLevel = 0, isDiagonal = false, shapeOverride = null) => {
+        // [Tier D · ambient] The flip. Always ducks under any effect that is
+        // sounding and never reserves the bus, so it is safe on every move.
+        // [290926a] It SINGS now — see FLIP TUNE above. The old tink (three
+        // inharmonic partials at 1 : 1.84 : 2.5 on a note near 2kHz) was a
+        // bell struck the same way every time; the only melody it had was the
+        // mass and danger bends, snapped to the nearest scale note.
         if (audioCtx && audioCtx.currentTime < audioBusyUntil) return;
-        const n = Math.max(1, Math.min(4, (SHAPES[game.shapeType] && SHAPES[game.shapeType].mult) || 1));
-        const massMul = [1, 0.8, 0.64, 0.5][n - 1];
-        const lenMul  = [1, 1.12, 1.25, 1.4][n - 1];
-        /* [060926d] Snap AFTER the danger bend, not before — the old order
-           tuned the note to the scale and then bent it 0-22% off it, so most
-           flips were between notes. And the bend widens, 0.22 -> 0.41: about
-           a fifth from the top of the screen to the bottom instead of a major
-           third, so the climb toward the killing edge is a thing you can hear
-           without listening for it. Mass still lowers the note; danger still
-           raises it. See the reply on this build for what the design is and
-           what is still missing from it. */
-        const base = snapScale(2200 * massMul * (1 + 0.41 * dangerLevel));
-        /* [060926] VOL.ambient (0.05) was tuned to hide under two other sounds
-           that fired on the same landing. With those gone it is simply too
-           quiet to register as feedback — the note asked for a flip sound, and
-           an inaudible one does not answer that. MOVE_VOL sits between ambient
-           and ui: clearly present, still comfortably under every event tone
-           (a countdown pip is VOL.ui 0.14, a green VOL.event 0.22). It carries
-           real information already — pitch drops with the mass of your shape
-           and rises with danger — so it is worth actually hearing. */
-        const v = MOVE_VOL * (1 + 0.9 * dangerLevel);
-        playTone(base,        0.05  * lenMul, WAVE.ui, v,        0, true);
-        playTone(base * 1.84, 0.045 * lenMul, WAVE.ui, v * 0.5,  0, true);
-        playTone(base * 2.5,  0.032 * lenMul, WAVE.ui, v * 0.28, 0, true);
-        if (n >= 2) playTone(base * 0.5, 0.06 * lenMul, WAVE.ui, v * (0.10 + 0.10 * (n - 1)), 0, true);
+        flipSing(shapeOverride || game.shapeType, dangerLevel);
     },
 
     /* ── [060926] `scuff` IS GONE, AND SO IS AMBIENT `collect` ───────────────
@@ -12467,6 +12749,7 @@ function diagnoseMissingTool(force = false) {
         const mine = SHAPES[game.shapeType] ? SHAPES[game.shapeType].mult : 1;
         const allSmaller = setNeeded.every(id => ((SHAPES[parseRequirement(id).type] || {}).mult || 1) < mine);
         if (!allSmaller) return null;
+        if (RED_POPULATION) return null;   // [290926i] one or two reds are always on screen: they are the way down
         return (NO_REDS && !redToolOn()) ? (voidInView() ? null : { kind: 'hole' }) : { kind: 'hazard' };   // [280926u]
     }
     const myMult   = SHAPES[game.shapeType] ? SHAPES[game.shapeType].mult : 1;
@@ -12477,7 +12760,7 @@ function diagnoseMissingTool(force = false) {
     // [100926h] The slot REFUSES now (SLOT_REFUSES), so the only way down is a
     // hole — a cube for a cell of ground. Usually there is one in view; when
     // there is not, the fitter carves a 2x2 ahead. With reds on, a red.
-    if (needMult < myMult) return (NO_REDS && !redToolOn()) ? (voidInView() ? null : { kind: 'hole' }) : { kind: 'hazard' };   // [280926u]
+    if (needMult < myMult) return RED_POPULATION ? null : (NO_REDS && !redToolOn()) ? (voidInView() ? null : { kind: 'hole' }) : { kind: 'hazard' };   // [280926u] · [290926i] the reds on screen are the way down
     // Right size, no route: it is a POSITION or a FORM problem.
     // Parity first, because it is the one a player cannot solve by trying
     // harder — diagonal, J and square are locked to one board colour, and only
@@ -14144,7 +14427,88 @@ const WALLS_AS_HOLES = true;
 const NO_REDS = true;
 const RED_TOOL_LEVEL = 6;   // [280926u] from this level the red comes back as a tool
 const RED_PAYS_SEC = 5;     // [280926u] what a red pays for each cube it takes
-function redToolOn() { return !dailyMode && advancedRound >= RED_TOOL_LEVEL; }
+function redToolOn() { return !RED_POPULATION && !dailyMode && advancedRound >= RED_TOOL_LEVEL; }   // [290926i] superseded by the population
+/* ══ [290926i] REDS, AT EVERY LEVEL, ONE OR TWO ON SCREEN ════════════════════
+   Designer's call, agreed 29 Sep: reds stay, present on every level, one or two
+   visible at any time. The rules, as the player meets them:
+     · A red takes a cube you can spare, and pays 5 seconds for it.
+     · It never takes your last cube: a single rolls over a red untouched.
+     · The board always holds one or two.
+   It REPLACES three special cases — the level-6 red tool, the tidy that
+   stripped reds below level 6, and the trim supply that placed a red when you
+   were too big — with one population rule (maintainReds). Every older red
+   writer stays behind NO_REDS. New reds arrive only in the fresh rows at the
+   top of the view, never on or beside a set, never on a row's reward square,
+   never beside another red, never within three cells of you, and never in the
+   spot a restart comes back to. */
+const RED_POPULATION = true;
+const RED_POP_MIN = 1, RED_POP_MAX = 2;
+const RED_POP_CHANCE = 0.35;   // per fresh row, while there are fewer than two
+function redCellOk(x, y) {
+    const k = `${x},${y}`;
+    if (x < 0 || x >= VIEW_W || world[k]) return false;
+    for (const sl of slots) { if (sl.claimed || sl.retiring) continue;
+        for (const c of sl.cells) if (Math.max(Math.abs(c.x - x), Math.abs(c.y - y)) <= 1) return false; }
+    if (typeof rowPay !== 'undefined' && rowPay.some(e => e.x === x && e.y === y)) return false;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (world[`${x + dx},${y + dy}`] === 'hazard') return false;
+    if (!clearOfPlayer(x, y)) return false;   // the three-cell ring every ambient writer keeps
+    const cam = Math.floor(game.cameraY);
+    if (Math.abs(x - Math.floor(VIEW_W / 2)) <= 1 && y - cam <= 3) return false;   // the restart spot
+    return true;
+}
+let _redPopAt = 0, _redPopRow = null;
+function maintainReds(nowT) {
+    if (!RED_POPULATION || game.testDrive || !game.running || game.paused || game.celebrating || game.introHold) return;
+    if (nowT - _redPopAt < 250) return;
+    _redPopAt = nowT;
+    const cam = Math.floor(game.cameraY);
+    let n = 0;
+    for (let y = cam; y < cam + VIEW_H; y++) for (let x = 0; x < VIEW_W; x++) if (world[`${x},${y}`] === 'hazard') n++;
+    const freshRow = _redPopRow !== cam; _redPopRow = cam;
+    if (n >= RED_POP_MAX) return;
+    if (n >= RED_POP_MIN && !(freshRow && Math.random() < RED_POP_CHANCE)) return;
+    const yTo = n < RED_POP_MIN ? cam + Math.floor(VIEW_H / 2) : cam + 1;   // none on screen: the top half; otherwise the row arriving
+    const cands = [];
+    for (let y = cam; y <= yTo; y++) for (let x = 0; x < VIEW_W; x++) if (redCellOk(x, y)) cands.push([x, y]);
+    if (!cands.length) return;
+    const [x, y] = cands[(Math.random() * cands.length) | 0], k = `${x},${y}`;
+    world[k] = 'hazard';
+    hazardBorn[k] = 'pop@' + replayMoveCount;
+    rec('spawn', { k: 'hazard', src: 'pop', v: n });
+}
+/* ══ [290926j] GREENS: ENOUGH TO PICK UP, AND NO STORE ═══════════════════════
+   Designer's call, 29 Sep: "no extra functionality — just ensure there are
+   enough green cubes to pick up on a screen. Holes go back to taking a real
+   cube; stones no longer fill holes, and a green landed ON is not stored —
+   it scores 5 seconds, the same as a red." So GREEN_STORE is off (no stones,
+   no store in the HUD), GREEN_STOMP_SEC is 5, and the board always holds two
+   greens at least (three at most, MAX_VISIBLE_GREENS) — topped up in the rows
+   arriving at the top, on cells you can reach. */
+const GREEN_POP_MIN = 2;
+function greenCellOk(x, y, reach) {
+    const k = `${x},${y}`;
+    if (x < 0 || x >= VIEW_W || world[k]) return false;
+    if (reach && !reach.has(k)) return false;
+    for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.keys.has(k)) return false;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const w = world[`${x + dx},${y + dy}`]; if (w === 'pickup' || w === 'hazard') return false; }
+    return clearOfPlayer(x, y);   // the three-cell ring
+}
+let _greenPopAt = 0;
+function maintainGreens(nowT) {
+    if (!RED_POPULATION || game.testDrive || !game.running || game.paused || game.celebrating || game.introHold) return;
+    if (nowT - _greenPopAt < 1200) return;
+    const cam = Math.floor(game.cameraY);
+    if (countVisibleGreens() >= GREEN_POP_MIN) return;
+    _greenPopAt = nowT;
+    const reach = reachableSpawnSet(cam - 1, cam + VIEW_H);
+    let cands = [];
+    for (let y = cam; y <= cam + 2; y++) for (let x = 0; x < VIEW_W; x++) if (greenCellOk(x, y, reach)) cands.push([x, y]);
+    if (!cands.length) for (let y = cam; y < cam + Math.floor(VIEW_H / 2); y++) for (let x = 0; x < VIEW_W; x++) if (greenCellOk(x, y, reach)) cands.push([x, y]);
+    if (!cands.length) return;
+    const [x, y] = cands[(Math.random() * cands.length) | 0];
+    world[`${x},${y}`] = 'pickup';
+    rec('spawn', { k: 'green', src: 'pop' });
+}
 // [FORMULA] true -> false. The turn is the reliable pole-crosser (see the
 // measured table at SLIP_VECTORS) and ONE_SHIFTER had kept it off the board
 // entirely — zero turns in playdata34. chooseShifterKind already zeroes the
@@ -15083,7 +15447,9 @@ function noteJointFlash(fromCells, toCells) {
     const pts = contactPoints(fromCells, toCells).filter(([x, y]) => socketAt(x, y));
     jointFlash = pts.length ? { t: performance.now(), pts } : { t: 0, pts: null };
 }
-const JOINT_DUR = 620;
+const JOINT_DUR = 900;   // [290926b] 620 -> 900: held, then faded — see drawJoints
+const KNUCKLE_W = 1.5;          // [290926b] the resting ring: the weight of the grid line
+const KNUCKLE_HEART_R = 3.1;    // [290926b] the white heart that fills it while the turn is made on it
 /* ── [060926c] THE SOCKET LATTICE — THREE STATES, ALWAYS ON ──────────────────
    Every grid intersection in view is marked. Three states, told apart by SHAPE
    first and colour second, because shape survives a small screen and a
@@ -15145,43 +15511,57 @@ function drawJoints() {
                ring — an empty joint waiting for a ball — and a socket in a VOID
                is a solid dot, the mark that fills the gap and says "not here".
                Same sizes as before; only which one is filled has changed. */
-            /* [280926o] a white rim round every knuckle, so it stands off the depths below */
-            const _rimA = currentTheme === 'day' ? 0.95 : 0.9;   // [280926E] night 0.6 -> 0.9: the knuckles stand off the depths
+            /* [290926b] THE KNUCKLE AT REST IS A THIN RING. Field note: "the white
+               circle outline knuckles need to be thinner — at present you can't
+               really tell if they are being engaged ... have the outer white circle
+               as a normal grid, and when it is being engaged an inner circle of
+               white appears." The resting knuckle was a 4.4px white band under a
+               1.8px ring — a fat white donut — and the knuckle in a void was a
+               white-rimmed disc: both already looked like the ENGAGED mark, so a
+               turn had nothing to stand out against. At rest now: a ring the
+               weight of the grid line, on a hairline of shadow so it reads over the
+               depths. In a void: a small dim dot, "not here", and nothing white. */
             if (socketAt(gx, gy)) {
-                ctx.globalAlpha = _rimA;
-                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4.4;
+                const _day = currentTheme === 'day';
+                ctx.globalAlpha = _day ? 0.6 : 0.35;   // the hairline it sits on: shadow by night, deep ice by day
+                ctx.strokeStyle = _day ? `rgb(${socketInk()})` : '#06142d'; ctx.lineWidth = KNUCKLE_W + 2;
                 ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
-                ctx.globalAlpha = 0.85;
-                ctx.strokeStyle = `rgb(${socketInk()})`;
-                ctx.lineWidth = 1.8;
+                ctx.globalAlpha = _day ? 1 : 0.9;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = KNUCKLE_W;
                 ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
-                ctx.lineWidth = 1.2;
             } else {
-                ctx.globalAlpha = _rimA;
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 2.6, 0, TAU); ctx.fill();
-                ctx.globalAlpha = 0.9;
+                ctx.globalAlpha = currentTheme === 'day' ? 0.6 : 0.5;
                 ctx.fillStyle = `rgb(${socketInk()})`;
-                ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 1.2, 0, TAU); ctx.fill();
+                ctx.beginPath(); ctx.arc(px, py, 2.2, 0, TAU); ctx.fill();
             }
         }
     }
-    // The joints the turn was made on — WHITE [080926f], solid, bigger, ringing out.
-    // Filled where the land sockets are hollow, so "the one you used" is the
-    // ring that just became a ball. By day the dot is slate with a white rim.
+    // [290926b] THE KNUCKLE THE TURN IS MADE ON: the ring thickens and a WHITE
+    // HEART pops into it — overshoots, settles, glows — and a ring rings out.
+    // It holds at full strength for most of JOINT_DUR and fades only at the end,
+    // so a flip at full speed still leaves it lit long enough to see. By day
+    // the ring turns deep ice so the white heart has an edge on the pale seams.
     if (jointFlash.pts) {
-        const used = currentTheme === 'day' ? `rgb(${SOCKET_INK_DAY})` : '#ffffff';
+        const day = currentTheme === 'day';
+        const heart = '#ffffff', rim = day ? '#0369a1' : '#ffffff';   // a white heart in both themes; by day in a deep-ice ring
+        const age = Math.max(0, k * JOINT_DUR);
+        const pop = age < 90 ? age / 90 * 1.35 : age < 180 ? 1.35 - 0.35 * (age - 90) / 90 : 1;   // 0 -> 1.35 -> 1
+        const hold = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
         for (const [gx, gy] of jointFlash.pts) {
             const px = gx * CELL, py = (gy - game.cameraY) * CELL;
-            ctx.globalAlpha = 0.6 + 0.4 * (1 - k);
-            ctx.fillStyle = used;
-            ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 1.4, 0, TAU); ctx.fill();
-            ctx.globalAlpha = 0.9;
-            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2;
-            ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 1.4, 0, TAU); ctx.stroke();
-            ctx.globalAlpha = (1 - k) * 0.5;
-            ctx.strokeStyle = used; ctx.lineWidth = 1.2;
-            ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 2 + k * 9, 0, TAU); ctx.stroke();
+            ctx.save();
+            ctx.globalAlpha = hold;
+            ctx.shadowColor = day ? 'rgba(3,105,161,0.7)' : 'rgba(255,255,255,0.95)'; ctx.shadowBlur = 10;
+            ctx.strokeStyle = rim; ctx.lineWidth = KNUCKLE_W + 1.6;
+            ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 0.8 * pop, 0, TAU); ctx.stroke();
+            ctx.shadowColor = 'rgba(255,255,255,0.9)';
+            ctx.fillStyle = heart;
+            ctx.beginPath(); ctx.arc(px, py, KNUCKLE_HEART_R * pop, 0, TAU); ctx.fill();
+            ctx.restore();
+            ctx.globalAlpha = (1 - k) * 0.55;
+            ctx.strokeStyle = rim; ctx.lineWidth = 1.4;
+            ctx.beginPath(); ctx.arc(px, py, SOCKET_R + 2 + k * 10, 0, TAU); ctx.stroke();
         }
     }
     ctx.restore();
@@ -15457,7 +15837,7 @@ const ROW_GLASS_BELOW_SEC = 40;
    body already at its size. The cube now pays the clock — small, the price of
    a row — so a green is never worth avoiding. The bond still beats the stomp:
    growth AND the cube's cell as ground. */
-const GREEN_STOMP_SEC = 3;
+const GREEN_STOMP_SEC = 5;   // [290926j] 3 -> 5: the same as a red
 /* [250926o] ONCE PER CRISIS, NOT ONCE PER LEVEL — designer's call. Playdata 52:
    the rescue fired 92 seconds before the end of the run, on the same level, so
    when the clock ran down a second time nothing could come — the last eleven
@@ -17016,7 +17396,7 @@ let game = {
 };
 
 let floats = [];
-const GREEN_STORE = true;        // [280926t]
+const GREEN_STORE = false;       // [280926t] · [290926j] off: holes take real cubes, a green landed on pays 5s
 const STORE_END_PTS = 50;        // [280926t] each stored cube left at the end of the run
 const STONE_DROP_MS = 240;       // [280926t] a stone's fall from the store into its hole (at least)
 let stones = [];                 // { x, y, t0, dur }
@@ -17231,7 +17611,7 @@ function drawCoins(dt) {
 // red/green source (terrain scatter, trim supply, adjacent-red guarantee,
 // shifter spawns) respects these visible-band caps.
 const MAX_VISIBLE_REDS = 3;
-const MAX_VISIBLE_GREENS = 2;   // [110926] 3 -> 2: greens no longer share the machines' ceiling, so they get their own tighter one
+const MAX_VISIBLE_GREENS = 3;   // [290926j] 2 -> 3: two at least, three at most (maintainGreens)   // [110926] 3 -> 2: greens no longer share the machines' ceiling, so they get their own tighter one
 function countVisibleGreens() {
     const camInt = Math.floor(game.cameraY);
     let n = 0;
@@ -18318,9 +18698,15 @@ function spawnShifter(src, atKey) {
     }
     if (src === 'bridge') return null;
     let kind = chooseShifterKind();
+    /* [290926k] A ROW PAYS BY ROTATION — green, step, green, turn, hourglass,
+       and round again, at every level. It replaces the hidden lean that paid
+       levels 7-10 in greens three times in four (the kind roll tilted x1.7 to
+       greens whenever the set wanted a bigger shape). */
+    let _rot = null;
+    if (ROW_ROTATION && src === 'row') { _rot = ROW_ROTATION[(game._rowRot || 0) % ROW_ROTATION.length]; kind = _rot === 'hourglass' ? 'green' : _rot; }
     if (_ceilGreen && (kind === 'slip' || kind === 'pivot')) kind = 'green';   // [190926a] no machine over the ceiling; an hourglass roll stands
     /* [260926f] the turn quota: a row's third machine is a turn if the two before it were steps */
-    if (_named && src === 'row' && kind === 'slip' && (game._rowStepsSinceTurn || 0) >= ROW_TURN_EVERY - 1) kind = 'pivot';
+    if (!ROW_ROTATION && _named && src === 'row' && kind === 'slip' && (game._rowStepsSinceTurn || 0) >= ROW_TURN_EVERY - 1) kind = 'pivot';
     const playerKeys = new Set(getPlayerCells().map(c => `${c.x},${c.y}`));
     const slotKeys = new Set();
     for (const s of slots) for (const k of s.keys) slotKeys.add(k);
@@ -18421,7 +18807,7 @@ function spawnShifter(src, atKey) {
        goes on the row's own square wherever that is, so the beside rule would
        only ever turn it back into a step — measured in grow_t J, fourteen
        steps in a row on a board with no hole or set in reach. */
-    if (kind === 'pivot' && !(_named && src === 'row') && Math.random() < TURN_BESIDE_CHANCE) {
+    if (kind === 'pivot' && src !== 'row' && Math.random() < TURN_BESIDE_CHANCE) {   // [290926k] no row's turn is turned back into a step
         const beside = pool.filter(key => { const q = key.split(','); return besideVoidOrSet(+q[0], +q[1]); });
         if (beside.length) besidePool = beside; else kind = 'slip';
     }
@@ -18535,7 +18921,19 @@ function spawnShifter(src, atKey) {
        is not in the pool — and putting an asset on it does not un-finish the
        row, because rowCellOwed counts any world value as occupied. */
     if (atKey && !world[atKey] && !slots.some(sl => !sl.claimed && sl.keys.has(atKey))) k = atKey;
-    const [gx, gy] = k.split(',').map(Number);
+    let [gx, gy] = k.split(',').map(Number);
+    /* [290926k] the rotation keeps its kind: a step or a turn owed on a frame
+       square moves inward along its own row to the nearest square that can hold
+       a machine, rather than turning into a green */
+    if (_rot && (kind === 'slip' || kind === 'pivot') && !machineCellOk(gx, gy)) {
+        let best = null;
+        for (let x = 0; x < VIEW_W; x++) {
+            const kk = `${x},${gy}`;
+            if (world[kk] || !machineCellOk(x, gy) || slots.some(sl => !sl.claimed && sl.keys.has(kk)) || !clearOfPlayer(x, gy, 1)) continue;
+            if (!best || Math.abs(x - gx) < Math.abs(best - gx)) best = x;
+        }
+        if (best !== null) { gx = best; k = `${gx},${gy}`; }
+    }
     /* [180926b] a named cell may sit on the frame columns, where a step or a
        turn may not be laid — the square keeps its asset, the asset becomes a
        green. (The pool never offers such a cell; only a row can name one.) */
@@ -18587,7 +18985,7 @@ function spawnShifter(src, atKey) {
             : 1;
         /* [250926z] not on the offer: a favoured body asked for a machine it can
            land on, and a green in its place is the one thing it did not ask for */
-        if (src !== 'offer' && SHAPES[game.shapeType].mult < maxNeed && countVisibleGreens() < 2)
+        if (src !== 'offer' && !_rot && SHAPES[game.shapeType].mult < maxNeed && countVisibleGreens() < 2)   // [290926k] not a row's: the rotation decides
             kind = 'green';
     }
     // [270726zn] Green budget: at the cap, the spawn becomes a shift instead.
@@ -18627,7 +19025,7 @@ function spawnShifter(src, atKey) {
            in the wrong currency six times out of six. The offer exists because the
            body cannot use the stream; it is for the BODY, and the body carries
            its new orientation to the set. The leash still governs the stream. */
-        if (_named || src === 'offer') { /* the row (or the body) chose the cell; the roll chose the tool */ }
+        if (_named || src === 'offer' || src === 'row') { /* the row (or the body) chose the cell; the roll chose the tool */ }
         else if (countVisibleGreens() < MAX_VISIBLE_GREENS) kind = 'green';
         else return false;
     }
@@ -18637,8 +19035,8 @@ function spawnShifter(src, atKey) {
     // mercy hasn't fired this level, this spawn becomes a GOLD hourglass
     // instead. Once per level, so running low deliberately can't farm it.
     /* [260926b] the row's object is an hourglass while the clock is low — see ROW_GLASS_BELOW_SEC */
-    if (_named && src === 'row' && CLOCK_ONLY && !game.testDrive &&
-        momentumRemaining() < ROW_GLASS_BELOW_SEC && countReachableTime() === 0) {
+    if (src === 'row' && !game.testDrive && (_rot === 'hourglass' ||   // [290926k] the rotation's hourglass
+        (!ROW_ROTATION && _named && CLOCK_ONLY && momentumRemaining() < ROW_GLASS_BELOW_SEC && countReachableTime() === 0))) {
         world[k] = 't30';
         rec('spawn', { k: 't30', src: 'row', low: Math.round(momentumRemaining()) });
         addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#fcd34d');
@@ -18970,7 +19368,7 @@ function checkSlotClaims() {
                     }
                 }, delay);
             });
-            game._setPop = { id: slot.id, t: bowNow };   // HUD ✓ pop (immediate)
+            if (!game._setIncoming || game._setIncoming.id !== slot.id) game._setPop = { id: slot.id, t: bowNow };   // HUD ✓ pop — [290926e] or when the piece arrives (flySetPiece)
         }
 
         // CLAIM SUSPENSE (D5): the state is committed above; the PAYOUT —
@@ -18990,6 +19388,7 @@ function checkSlotClaims() {
         if (setDone) bookmark('set', 'THE SET');                    // [100926g]
         seatFX = { cells: payCells, color: payColor,
                    t0: performance.now() + animQueueDelay() };   // [180826t][190826a] the fit shows at touch-down
+        flySetPiece(slot.id, payCells, payColor, animQueueDelay() + SEAT_MS * 0.7);   // [290926e] ...and then the piece goes to the set
         setTimeout(() => {
             if (!game.running) return;
             scoreGain(claimPts, true, _claimForge);   // [230826b]
@@ -19831,7 +20230,7 @@ function replayArm(R, i) {
     if (REPLAY_AS_PLAYED && e.dur) R.flipMs = e.dur;   // [280926r] ...and now at the move's own speed
     flip.dur = R.flipMs;
     R.now = e.t - 1;
-    if (typeof sfx !== 'undefined' && sfx.move) sfx.move(0, e.diag);
+    if (typeof sfx !== 'undefined' && sfx.move) sfx.move(0, e.diag, e.type);   // [290926a] the replayed body's own chord
 }
 function replayLand(R) {
     const e = R.tape[R.i], next = R.tape[R.i + 1];
@@ -22103,6 +22502,7 @@ function coverageGrade(cov, level) {
 }
 
 function completeSet() {
+    if (game._setFlightEnd && game._setFlightEnd < performance.now() - 5000) game._setFlightEnd = 0;   // [290926g] only a flight from this claim counts
     // Hard input lock the instant the advance condition is met — no further
     // player move can occur before the transition takes hold (independent of the
     // paused/celebrating flags set below, which the setTimeout chain relies on).
@@ -22245,7 +22645,9 @@ function completeSet() {
                 extra: ''
             };
         }
-        triggerSetCelebration(fwCount, fwDuration);
+        const _hold = setPieceHold();   // [290926g] the last piece lands first
+        if (_hold > 0) setTimeout(() => { if (game.running) triggerSetCelebration(fwCount, fwDuration); }, _hold);
+        else triggerSetCelebration(fwCount, fwDuration);
         game.paused = true;
         game.celebrating = true;
         const pp = document.getElementById('pausePanel');
@@ -22457,7 +22859,7 @@ function completeSet() {
                     // already cleared, which reads as the game hanging.
                 }, 4400);
             });
-        }, SET_TO_REPLAY_MS);   // [ACTION REPLAY] was 2200 — the card's hold; now the fireworks' first bloom
+        }, SET_TO_REPLAY_MS + _hold);   // [ACTION REPLAY] was 2200 — the card's hold; now the fireworks' first bloom · [290926g] after the landing
     } else {
         // [220826c] THE FINALE TAKES THE SAME ROUTE AS EVERY OTHER LEVEL — card,
         // then tally, then the transition — and only the last step differs: where
@@ -22472,9 +22874,10 @@ function completeSet() {
         // The card and tally are the game's existing language for "here is what
         // that level was worth". The finale had no business speaking a different
         // one.
+        const _holdF = setPieceHold();   // [290926g] the last piece of the game lands first
         {
             const gold = (game.roundRows || 0) >= 10;
-            showLevelCard(game._finaleCard = {   // [280926q] kept, for the replay offer after the celebration
+            game._finaleCard = {   // [280926q] kept, for the replay offer after the celebration
                 // [230826d] Was 'MISSION COMPLETE!'. A machine does not run a
                 // mission or a campaign, and this landed on the most important
                 // screen in the game. The rank ladder already says what winning
@@ -22498,9 +22901,10 @@ function completeSet() {
                    cannot hide a row that is full. */
                 praise: '',
                 extra: ''
-            });
+            };
+            setTimeout(() => { if (game.running) showLevelCard(game._finaleCard); }, _holdF);
         }
-        finaleCelebration();   // [280926q] ten seconds: fireworks, sparks, the finale's own music
+        setTimeout(() => { if (game.running) finaleCelebration(); }, _holdF);   // [280926q] ten seconds: fireworks, sparks, the finale's own music
         game.paused = true;
         game.celebrating = true;
         const pp = document.getElementById('pausePanel');
@@ -22529,7 +22933,7 @@ function completeSet() {
                     endGame('win');
                 }, { title: 'ROTOЯ COMPLETE', cta: '★ FINISH' });
             });
-        }, FINALE_MS);
+        }, FINALE_MS + _holdF);
     }
 }
 
@@ -24200,7 +24604,7 @@ function shedOnLanding(landing, hitIdx, label, dir) {
             const x = Math.min(VIEW_W - 1, Math.max(0, c.x)), y = Math.min(bot, Math.max(top, c.y));   // the tumble starts at the frame
             return { x, y, col, e: { dx: dx || v[0], dy: dy || v[1], spin: Math.random() < 0.5 ? -1 : 1 } };
         }
-        return { x: c.x, y: c.y, col, s: { dx: -v[0], dy: -v[1] } };
+        return { x: c.x, y: c.y, col, s: { dx: -v[0], dy: -v[1] }, slot: slotCellsAt(c.x, c.y) };   // [290926d] the set that takes it
     });
     const newCells = getPlayerCells();
     /* [280926d] THE WHOLE BODY IS SEEN TO ARRIVE. The rest used to slide to
@@ -24222,8 +24626,15 @@ function shedOnLanding(landing, hitIdx, label, dir) {
         const e = moveTape[moveTape.length - 1];       // the tape's entry for this fold: the whole body folds, in its own colour
         if (e) e.type = prevType;                      // (its settled body — the rest — is filled in by the next entry, as for every fold: an explicit `after` here broke the tape's continuity across a respawn)
     }
-    stageBreak(cas, { arriveIn, hold, dur: 560, survivors: stay ? newCells : survivorCells, fam: col, prevType, parity: game.faceParity, shake: 5, deny: 'shed', tape: true });
     const edgeN = idx.filter(i => out(landing[i])).length, setN = idx.filter(i => setIdx.has(i)).length;
+    /* [290926d] Field note: "land on it incorrectly, the offending cube is
+       destroyed — it gets taken away." A set-only loss now plays longer
+       (SET_TAKE_MS) so the set can be SEEN to take it — grip, crush, drawn in
+       — and the survivors no longer flash red: the red belongs to the set that
+       did it, not to the body that is left. An edge loss is as it was. */
+    const _setOnly = setN > 0 && !edgeN;
+    stageBreak(cas, { arriveIn, hold, dur: _setOnly ? SET_TAKE_MS : 560, survivors: stay ? newCells : survivorCells, fam: col, prevType, parity: game.faceParity, shake: 5, deny: _setOnly ? null : 'shed', tape: true });
+    if (_setOnly) later(arriveIn + hold + SET_TAKE_MS * 0.30, () => { if (sfx.hit) sfx.hit(); triggerShake(3, 120); });   // the crunch
     if (edgeN) later(arriveIn + hold, () => flagOutOfBounds(v[0] < 0 ? 'left' : v[0] > 0 ? 'right' : v[1] < 0 ? 'top' : 'bottom'));
     const cubes = n > 1 ? `−${n} CUBES` : '−1 CUBE';
     const _edgeWord = Math.random() < 0.5 ? 'OVER THE EDGE' : 'OUT OF BOUNDS';   // [280926s] two ways of saying it, taken in turn at random
@@ -24848,7 +25259,7 @@ function move(dir) {
                 HAPTICS.fire(HAPTIC.red, 90);
             }
         }
-        if (redIdx.length > 0 && !tryMultiDevolve(probeCells, redIdx)) {
+        if (!RED_POPULATION && redIdx.length > 0 && !tryMultiDevolve(probeCells, redIdx)) {   // [290926i] off: a red never takes the last cube (checkCollisions)
             // [300726bc] ONE RED RULE: THE RED IS ALWAYS CONSUMED. It used to
             // depend on who touched it — a multi-cube shape ATE the red and paid
             // a cube, while a single BOUNCED off it and the red survived. Two
@@ -25370,6 +25781,18 @@ function checkCollisions() {
         }
     }
 
+    /* [290926i] A RED TAKES ONLY A CUBE YOU CAN SPARE. If the reds (with any
+       holes) would take the whole body, the reds give way until one cube is
+       left: a single rolls over a red untouched, and the red stays. A hole
+       still takes what is over it. */
+    if (RED_POPULATION && hazardHits.length >= cells.length) {
+        let over = hazardHits.length - (cells.length - 1);
+        for (let i = hazardHits.length - 1; i >= 0 && over > 0; i--) {
+            const h = hazardHits[i];
+            if (h.isVoid || h.wall) continue;
+            hazardHits.splice(i, 1); over--;
+        }
+    }
     // Process hazard hits - may need multiple devolutions
     if (hazardHits.length > 0) {
         // Remove hazards from world and mark the cell as occupied floor. A red
@@ -30450,7 +30873,7 @@ function heartLevel(dz) {
    different signal wearing the same name, and alternating it with these would
    teach the player two different meanings for one moment. */
 const HEART_VOICE = 'rotor';                  // fallback, and a one-voice build's pick
-const HEART_BAG   = ['rotor', 'clock'];       // 'chest' | 'wood' | 'lifted' declined [180926by]
+const HEART_BAG   = ['approach'];            // [290926h] one voice: its RHYTHM differs from the others, so it cannot share a bag with them (see below) · was ['rotor', 'clock'] [180926by]
 let _heartCards = [], _heartLast = null, _heartHeld = null;
 function dealHeartVoice() {
     if (HEART_BAG.length < 2) return HEART_BAG[0] || HEART_VOICE;
@@ -30507,6 +30930,17 @@ function _hbWhum(at, f, dur, g0) {                // a swell that LIFTS: somethi
     fl.frequency.linearRampToValueAtTime(f * 2.0, at + dur);
     g.gain.setValueAtTime(0.0001, at);
     g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.045);   // swell, not punch
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(fl); fl.connect(g); g.connect(_hbOut());
+    o.start(at); o.stop(at + dur + 0.02);
+}
+function _hbBow(at, f, dur, g0, bright) {         // [290926h] a low bowed string: a saw through a lowpass that opens with danger
+    const o = audioCtx.createOscillator(), fl = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(f, at);
+    fl.type = 'lowpass'; fl.Q.value = 0.9; fl.frequency.setValueAtTime(f * (2.6 + 8 * bright), at);   // dull and distant, then biting
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0), at + 0.03);          // the bow digs in
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, g0 * 0.45), at + dur * 0.55);
     g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
     o.connect(fl); fl.connect(g); g.connect(_hbOut());
     o.start(at); o.stop(at + dur + 0.02);
@@ -30575,8 +31009,31 @@ const HEART_VOICES = {
     lifted: { gain: 0.54, play: (t, v) => {
         _hbThump(t, 192, 92, 0.24, v);
         _hbThump(t + 0.15, 168, 80, 0.28, v * 0.62);
+    } },
+    /* F · THE APPROACH [290926h] — field note: "make the warning heartbeat
+       sound a little more like the Jaws theme in pacing, and increase as the
+       danger becomes more present." The pacing, not the tune: two low bowed
+       notes, a whole tone apart (B flat, then C), that start far apart and
+       slow — da ... dum ....... — close up into a pair, and at the brink run
+       together into a relentless alternation. It grows three ways at once: the
+       beats come faster (see HEART_GAP), louder (heartLevel), and the bow
+       opens from a dull, distant rumble to a biting edge, with an octave above
+       joining in over the last stretch. Low, but not sub-bass: a saw has the
+       harmonics a phone speaker can play, so it is heard, not felt. */
+    approach: { gain: 0.42, play: (t, v, dz, gap) => {
+        const inner = Math.min(0.34, (gap || 1.4) / 2);        // the pair; at the brink, an even run
+        const dur = Math.min(0.46, inner * 1.35);
+        const lo = 116.54, hi = 130.81;                          // B flat 2, C 3
+        _hbBow(t, lo, dur, v, dz);
+        _hbBow(t + inner, hi, dur, v * 0.92, dz);
+        const up = Math.max(0, (dz - 0.55) / 0.45);            // the last stretch: the octave joins
+        if (up > 0) { _hbBow(t, lo * 2, dur * 0.8, v * 0.34 * up, dz); _hbBow(t + inner, hi * 2, dur * 0.8, v * 0.32 * up, dz); }
     } }
 };
+/* [290926h] THE GAP BETWEEN BEATS, as the approach wants it: far apart at the
+   first hint (~1.4s), closing on a curve rather than a line so most of the
+   acceleration happens as the danger becomes real, and 300ms at the brink. */
+function heartGapMs(dz) { return 300 + 1200 * Math.pow(1 - Math.max(0, Math.min(1, dz)), 1.5); }
 
 function heartBeat(dz) {
     if (!audioCtx) return;
@@ -30589,7 +31046,7 @@ function heartBeat(dz) {
     if (!_heartHeld) _heartHeld = dealHeartVoice();
     const voice = HEART_VOICES[_heartHeld] || HEART_VOICES[HEART_VOICE] || HEART_VOICES.wood;
     const t0 = audioCtx.currentTime + 0.01;
-    voice.play(t0, heartLevel(dz) * voice.gain * sfxVolume, Math.max(0, Math.min(1, dz)));
+    voice.play(t0, heartLevel(dz) * voice.gain * sfxVolume, Math.max(0, Math.min(1, dz)), heartGapMs(dz) / 1000);
 }
 function runHeartbeat() {
     const dz = dangerLevel();
@@ -30603,7 +31060,7 @@ function runHeartbeat() {
     if (dz <= 0.05) { _heartHeld = null; return; }
     // 1100ms between beats at the threshold, down to 340ms at the brink — the
     // quickening IS the information, so it must be felt before it is counted.
-    const gap = 1100 - 760 * dz;
+    const gap = HEART_BAG.includes('approach') ? heartGapMs(dz) : 1100 - 760 * dz;   // [290926h] the approach keeps its own time
     const now = performance.now();
     if (now - _beatAt < gap) return;
     _beatAt = now;
@@ -32244,13 +32701,14 @@ function renderSetIcons() {
             if (seen.has(id)) continue;                       // grouped: one entry per family
             seen.add(id);
             const total = totalById[id] || 1;
-            const claimedCount = total - (remById[id] || 0);
+            const _inc = game._setIncoming && game._setIncoming.id === id && performance.now() < game._setIncoming.until;   // [290926e] its piece is still in the air
+            const claimedCount = total - (remById[id] || 0) - (_inc ? 1 : 0);
             const allDone = claimedCount >= total;
             const color = slotColorFor(target.type, target.config, target.difficulty);
-            const pop = game._setPop && game._setPop.id === id && (performance.now() - game._setPop.t) < 900;
+            const pop = !_inc && game._setPop && game._setPop.id === id && (performance.now() - game._setPop.t) < 900;
             const badge = total > 1
                 ? `<span class="set-mult${allDone ? ' done' : ''}">${claimedCount}/${total}</span>` : '';
-            html += `<div class="set-slot${allDone ? ' claimed' : ''}${pop ? ' pop' : ''}">`
+            html += `<div class="set-slot${allDone ? ' claimed' : ''}${pop ? ' pop' : ''}" data-id="${id}">`
                   + miniShapeGlyph(target.type, color, allDone ? 1 : 0, target.config)
                   + badge + `</div>`;
             shown++;
@@ -32852,6 +33310,7 @@ function loop(time, gen) {
           if (owedCell) made = spawnShifter('row', owedCell);
           else if (rowForge > 0) { made = spawnShifter('row'); if (made) rowForge--; }
           if (made) {
+              game._rowRot = (game._rowRot || 0) + 1;   // [290926k] the rotation moves on only when a row is paid
               const waited = owedIdx >= 0 ? Math.round((game._playMs || 0) - rowPay[owedIdx].at) : null;   // [180926cf]
               if (owedIdx >= 0) rowPay.splice(owedIdx, 1);
               game._nextRowForge = nowT + 700;
@@ -33357,10 +33816,11 @@ function loop(time, gen) {
         for (let i = 0; i < 3 && enforceMinHoleSize(_ci + VIEW_H + 2, _ci - 3, null, true) > 0; i++) {}
         // [090926g] and no red survives on screen while the diet is on — a
         // backstop for any writer the six guards above did not reach
-        if (NO_REDS && !redToolOn()) for (let y = _ci - 3; y <= _ci + VIEW_H + 2; y++) for (let x = 0; x < VIEW_W; x++) {   // [280926u]
+        if (NO_REDS && !redToolOn() && !RED_POPULATION) for (let y = _ci - 3; y <= _ci + VIEW_H + 2; y++) for (let x = 0; x < VIEW_W; x++) {   // [280926u] · [290926i] off: the population keeps its reds
             const k = `${x},${y}`; if (world[k] === 'hazard') delete world[k];
         }
     }
+    { const _pn = performance.now(); maintainReds(_pn); maintainGreens(_pn); }   // [290926i][290926j]
     if (checkCollisions() === 'death') {
         captureSnapshot(game._lastMoveDir || '✗ death');
         handleDeath('dissolved');
@@ -33727,7 +34187,7 @@ setInterval(function () {
             // that will say whether x4 is a ceiling a player reaches twice a run or
             // a state they live in, and whether the late levels (where fresh ground
             // runs out and the streak keeps dying) ever see gold at all.
-            cm: +(game.comboMult || 1).toFixed(1),
+            // [290926m] `cm` dropped: COMBO_ENABLED is off, it read 1 on every sample
             v: (typeof countShiftersInView === 'function') ? countShiftersInView() : -1,
             mv: (typeof countMachinesInView === 'function') ? countMachinesInView() : -1,   // [110926] steps and turns alone
             g: (typeof countReachableGreens === 'function') ? countReachableGreens() : -1,  // [260926p] greens the body can reach — the dry spell's own measure
@@ -33968,6 +34428,65 @@ function drawMachineStroke() {
     ctx.restore();
 }
 let seatFX = null;         // { cells:[{x,y}], color, t0 }
+const SEAT_MS = 460;       // [290926e] 320 -> 460: the lock, with its clamps and flash
+const SET_FLIGHT_MS = 640; // [290926e] the piece carried from the board to its place in the set
+/* [290926e] THE PIECE GOES TO THE SET. Field note: "land on it the right way,
+   the set is complete." The claim filled a socket in the HUD at the instant of
+   the landing, a hand's width away from where the eye was — so the link
+   between the two had to be read. Now, once the piece has locked, a copy of
+   it lifts off the board, rises, and flies up into its socket; the socket
+   fills and pops as it arrives. The board keeps the burn it always had. A DOM
+   copy (the HUD is not on the canvas), sized from the canvas's own scale. */
+function flySetPiece(id, cells, color, delay) {
+    if (game._replay || !cells || !cells.length) return;
+    game._setIncoming = { id, until: performance.now() + delay + SET_FLIGHT_MS + 400 };
+    game._setFlightEnd = performance.now() + delay + SET_FLIGHT_MS;   // [290926g] completeSet waits for this
+    setTimeout(() => {
+        const done = () => { if (game._setIncoming && game._setIncoming.id === id) game._setIncoming = null; game._setPop = { id, t: performance.now() };
+                             const el = document.getElementById('hudSetIcons'); if (el) el._lastSetHtml = ''; try { renderSetIcons(); } catch (e) {} };
+        try {
+            const cv = document.getElementById('canvas'), host = document.getElementById('hudSetIcons');
+            const target = host && [...host.querySelectorAll('.set-slot')].find(e => e.getAttribute('data-id') === id);
+            if (!cv || !target || !game.running) return done();
+            const r = cv.getBoundingClientRect(), sc = r.width / LOGICAL_W, tr = target.getBoundingClientRect();
+            let L = Infinity, T = Infinity, R = -Infinity, B = -Infinity;
+            for (const c of cells) { L = Math.min(L, c.x); R = Math.max(R, c.x + 1); T = Math.min(T, c.y); B = Math.max(B, c.y + 1); }
+            const w = (R - L) * CELL * sc, h = (B - T) * CELL * sc;
+            const x0 = r.left + L * CELL * sc, y0 = r.top + (T - game.cameraY) * CELL * sc;
+            const pc = document.createElement('canvas'), dpr = window.devicePixelRatio || 1;
+            pc.width = Math.ceil(w * dpr); pc.height = Math.ceil(h * dpr);
+            pc.className = 'set-fly';
+            pc.style.cssText = `left:${x0}px;top:${y0}px;width:${w}px;height:${h}px;filter:drop-shadow(0 0 8px ${color})`;
+            const g = pc.getContext('2d'), u = CELL * sc * dpr, pad = u * 0.08, rr = u * 0.22;
+            for (const c of cells) {
+                const x = (c.x - L) * u + pad, y = (c.y - T) * u + pad, z = u - pad * 2;
+                g.beginPath(); g.moveTo(x + rr, y); g.arcTo(x + z, y, x + z, y + z, rr); g.arcTo(x + z, y + z, x, y + z, rr); g.arcTo(x, y + z, x, y, rr); g.arcTo(x, y, x + z, y, rr); g.closePath();
+                g.fillStyle = color; g.fill(); g.lineWidth = Math.max(1, u * 0.05); g.strokeStyle = 'rgba(255,255,255,0.9)'; g.stroke();
+            }
+            document.body.appendChild(pc);
+            const s = Math.min(tr.width / w, tr.height / h) * 0.8;
+            const dx = tr.left + tr.width / 2 - (x0 + w / 2), dy = tr.top + tr.height / 2 - (y0 + h / 2);
+            const anim = pc.animate([
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(0,${-0.35 * CELL * sc}px) scale(1.12)`, opacity: 1, offset: 0.22 },
+                { transform: `translate(${dx}px,${dy}px) scale(${s})`, opacity: 0.95 }
+            ], { duration: SET_FLIGHT_MS, easing: 'cubic-bezier(0.45, 0, 0.25, 1)', fill: 'forwards' });
+            anim.onfinish = () => { pc.remove(); done(); };
+            setTimeout(() => { if (pc.isConnected) { pc.remove(); done(); } }, SET_FLIGHT_MS + 600);   // belt and braces
+        } catch (e) { console.error('[290926e] flight', e); done(); }
+    }, delay);   // [290926g] real time — see setPieceHold
+}
+/* [290926g] Field note: "make sure when the set is complete, the final shape
+   being collected and landing in its space in the HUD has time to complete
+   before moving to the mini celebration." completeSet ran 200ms after the
+   claim, so the fireworks and then the level card came in over a piece still
+   in the air. The fireworks and the card now wait for the landing plus a beat
+   to see the socket pop; the rest of the timing is unchanged after that. */
+const SET_LAND_BEAT_MS = 350;
+function setPieceHold() {
+    const end = game._setFlightEnd || 0;
+    return Math.max(0, end - performance.now() + SET_LAND_BEAT_MS);
+}
 /* ══ [280926d] THE BREAK, STAGED AT THE LANDING ══════════════════════════════
    stageBreak(cas, opts) is the one call every loss makes. `arriveIn` is how
    long until the body is on the ground (the flip still in the air, the
@@ -33985,6 +34504,32 @@ const BREAK_FREEZE_AFTER = 120;    // input unlocks this far into the shear
 const V_DROP_MS = 420;             // the drop into the opening (then the ground surfaces — drawPlugs)
 const BREAK_HANG = 0.62;           // a cube over the frame hangs this far out (cells) during the hold — a sliver on the board, tipping
 const BREAK_TILT = 0.5;            // ...and tips by this much (rad) as the hold runs
+const SET_TAKE_MS = 820;           // [290926d] a set taking a cube that does not fit: grip · crush · drawn in
+function slotCellsAt(x, y) {       // [290926d] the cells of the live set covering (x, y), if any
+    const k = `${x},${y}`;
+    for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.keys.has(k)) return sl.cells.map(c => ({ x: c.x, y: c.y }));
+    return null;
+}
+function rrWH(x, y, w, h, r) {     // a rounded rectangle path, any aspect
+    r = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+}
+/* the set, angry: its outline red and closing in. `g` 0..1 is how hard it grips */
+function drawSetGrip(cells, g, alpha) {
+    if (!cells || alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 14;
+    for (const c of cells) {
+        const ins = 1 + 3 * g;
+        roundedSq(c.x * CELL + ins, (c.y - game.cameraY) * CELL + ins, CELL - ins * 2, null, '#ef4444', 3.2);
+    }
+    ctx.restore();
+}
 let deferred = [];                 // { at, fn, run } — game-time callbacks, run by the loop (they wait through a pause)
 function later(ms, fn) { deferred.push({ at: performance.now() + Math.max(0, ms || 0), fn, run: runToken }); }
 function runDeferred(now) {
@@ -34148,7 +34693,10 @@ function drawAnimFX() {
         const k = (el - hold) / D.dur;
         if (k >= 1) devolveStage = null;
         else if (el < 0) { /* [280926d] the body is still on its way — the break is staged at the landing */ }
-        else if (el < hold) { drawBreakHold(D, el / hold, el); }   // [280926d] the body whole, the doomed cube marked
+        else if (el < hold) {
+            drawBreakHold(D, el / hold, el);   // [280926d] the body whole, the doomed cube marked
+            for (const c of D.cas) if (c.s && c.slot) drawSetGrip(c.slot, 0, (0.4 + 0.6 * (el / hold)) * (0.7 + 0.3 * Math.sin(el / 40)));   // [290926d] and the set it touched flares
+        }
         else {
             ctx.save();
             const pulse = 0.5 + 0.5 * Math.sin(now / 42);
@@ -34192,6 +34740,70 @@ function drawAnimFX() {
                    slot (a third of the beat, with a red flash), then it comes
                    apart: four shards fly to the corners and fade. The slot's
                    cell is never painted; the story happens in the air above it. */
+                if (c.s && c.slot) {
+                    /* [290926d] THE SET TAKES IT. Three beats, all on the set's
+                       own cell, so the cause is never in doubt:
+                         GRIP   0-.30  the set's red outline closes on the cube;
+                                       the cube is squeezed, reddens, trembles
+                         CRUSH .30-.52 it collapses, white-hot, cracked through
+                         TAKEN .52-1   it bursts into shards that are drawn INTO
+                                       the set and go out in a point of light;
+                                       the set lets go and is itself again,
+                                       untouched, still waiting for the right shape */
+                    const t = k, size = CELL - 6, cx0 = sx + size / 2, cy0 = sy + size / 2;
+                    let tx = 0, ty = 0;
+                    for (const q of c.slot) { tx += q.x * CELL + CELL / 2; ty += (q.y - game.cameraY) * CELL + CELL / 2; }
+                    tx /= c.slot.length; ty /= c.slot.length;
+                    const fam = faceBodyColour(c.fam || devolveStage.fam, c.par || 0);
+                    if (t < 0.30) {
+                        const u = t / 0.30, jit = Math.sin(now / 17 + (c.seed % 7)) * 1.8 * u;
+                        drawSetGrip(c.slot, u, 1);
+                        const w = size * (1 - 0.14 * u), h = size * (1 - 0.34 * u);
+                        ctx.save();
+                        rrWH(cx0 - w / 2 + jit, cy0 - h / 2 + (size - h) * 0.25, w, h, 9); ctx.fillStyle = fam; ctx.fill();
+                        ctx.globalAlpha = 0.65 * u; ctx.fillStyle = '#ef4444'; ctx.fill();
+                        ctx.restore();
+                    } else if (t < 0.52) {
+                        const u = (t - 0.30) / 0.22, sz = size * (0.72 - 0.42 * u);
+                        drawSetGrip(c.slot, 1, 1);
+                        ctx.save();
+                        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 16 * u;
+                        rrWH(cx0 - sz / 2, cy0 - sz / 2, sz, sz, 6); ctx.fillStyle = '#ef4444'; ctx.fill();
+                        ctx.globalAlpha = 0.85 * u; ctx.fillStyle = '#fff1f2'; ctx.fill();
+                        ctx.shadowBlur = 0; ctx.globalAlpha = 0.9; ctx.strokeStyle = '#7f1d1d'; ctx.lineWidth = 1.6;
+                        ctx.beginPath();
+                        ctx.moveTo(cx0 - sz * 0.45, cy0 - sz * 0.1); ctx.lineTo(cx0, cy0 + sz * 0.05); ctx.lineTo(cx0 + sz * 0.4, cy0 - sz * 0.35);
+                        ctx.moveTo(cx0 - sz * 0.1, cy0 + sz * 0.45); ctx.lineTo(cx0, cy0 + sz * 0.05);
+                        ctx.stroke();
+                        ctx.restore();
+                    } else {
+                        const u = (t - 0.52) / 0.48, e = u * u * (3 - 2 * u);
+                        drawSetGrip(c.slot, 1 - u, 1 - u);
+                        ctx.save();
+                        for (let i = 0; i < 8; i++) {
+                            const a = (i / 8) * Math.PI * 2 + (c.seed % 13) * 0.2;
+                            const out = CELL * 0.42 * Math.sin(Math.min(1, u * 2.2) * Math.PI / 2) * (1 - e);   // thrown out a little, then pulled in
+                            const sw = a + e * 2.4;                                                          // and swirled as they go
+                            const px = cx0 + (tx - cx0) * e + Math.cos(sw) * out, py = cy0 + (ty - cy0) * e + Math.sin(sw) * out;
+                            const sh = size * 0.2 * (1 - 0.75 * e);
+                            ctx.globalAlpha = 0.95 * (1 - e * e);
+                            ctx.fillStyle = i % 2 ? '#ef4444' : fam;
+                            ctx.save(); ctx.translate(px, py); ctx.rotate(a + u * 5);
+                            rrWH(-sh / 2, -sh / 2, sh, sh, 2); ctx.fill();
+                            ctx.restore();
+                        }
+                        if (u > 0.72) {   // gone: a point of light where the set swallowed it
+                            const v = (u - 0.72) / 0.28;
+                            ctx.globalAlpha = 1 - v; ctx.fillStyle = '#ffffff';
+                            ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 18;
+                            ctx.beginPath(); ctx.arc(tx, ty, 5 * (1 - v) + 1, 0, Math.PI * 2); ctx.fill();
+                            ctx.shadowBlur = 0; ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                            ctx.beginPath(); ctx.arc(tx, ty, CELL * 0.45 * (1 - v), 0, Math.PI * 2); ctx.stroke();
+                        }
+                        ctx.restore();
+                    }
+                    continue;
+                }
                 if (c.s) {
                     const t = k, size = CELL - 6, q = size / 2;
                     if (t < 0.34) {
@@ -34242,7 +34854,7 @@ function drawAnimFX() {
         }
     }
     if (seatFX) {
-        const k = (now - seatFX.t0) / 320;
+        const k = (now - seatFX.t0) / SEAT_MS;
         if (k >= 1) seatFX = null;
         else if (k < 0) { /* [190826a] queued behind the flight — not yet */ }
         else {
@@ -34256,6 +34868,23 @@ function drawAnimFX() {
             for (const c of seatFX.cells) {
                 const sx = c.x * CELL - inset, sy = (c.y - game.cameraY) * CELL - inset;
                 roundedSq(sx, sy, CELL + inset * 2, null, ctx.strokeStyle, ctx.lineWidth);
+            }
+            /* [290926e] THE CLAMPS. Four brackets close on the piece's corners
+               from outside — the set locking round it — and a white flash runs
+               through the cubes as they lock. */
+            let L = Infinity, T = Infinity, R = -Infinity, B = -Infinity;
+            for (const c of seatFX.cells) { L = Math.min(L, c.x * CELL); R = Math.max(R, c.x * CELL + CELL); T = Math.min(T, (c.y - game.cameraY) * CELL); B = Math.max(B, (c.y - game.cameraY) * CELL + CELL); }
+            const e = 1 - (1 - Math.min(1, k * 1.8)) ** 3, off = 14 * (1 - e) - 1, arm = CELL * 0.32;
+            ctx.globalAlpha = Math.min(1, 1.6 * (1 - k));
+            ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.shadowBlur = 8;
+            for (const [cx, cy, sx2, sy2] of [[L, T, 1, 1], [R, T, -1, 1], [L, B, 1, -1], [R, B, -1, -1]]) {
+                const x = cx - sx2 * off, y = cy - sy2 * off;
+                ctx.beginPath(); ctx.moveTo(x, y + sy2 * arm); ctx.lineTo(x, y); ctx.lineTo(x + sx2 * arm, y); ctx.stroke();
+            }
+            if (k > 0.25 && k < 0.8) {
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.55 * Math.sin((k - 0.25) / 0.55 * Math.PI);
+                for (const c of seatFX.cells) roundedSq(c.x * CELL + 4, (c.y - game.cameraY) * CELL + 4, CELL - 8, '#ffffff', null);
             }
             ctx.restore();
         }
@@ -34811,7 +35440,8 @@ function startGame(testDrive = false, daily = false) {
     { const tb = document.getElementById('tdBar'); if (tb) tb.classList.toggle('hidden', !testDrive); }
     if (testDrive && typeof tdSyncShapeBar === 'function') tdSyncShapeBar();
 
-    resetSetTracker();
+    // [290926m] resetSetTracker() was called here AND after resetGenState below, so
+    // every run dealt level 1's set twice (two 'level' records, the first thrown away)
     bullet.active = false; bullet.timer = 0; bullet.charge = 0; bullet.stock = 0;
     shifterProgress = 0; slotProgress = 0; shifterMeta = {}; pendingWalls = new Set();
     invulnTimer = 0;
@@ -36802,7 +37432,7 @@ function fbTick(now) {
 const TUT_ON = true;
 const TUT_COLS = 7, TUT_ROWS = 4;
 const TUT_FLIP = 320, TUT_GAP = 430, TUT_TAIL = 1500;
-const TUT_ACT_MS = { flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820,
+const TUT_ACT_MS = { flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820, stomp: 620, settake: 1150,
                      claim: 900, rowclear: 900, red: 900, hourglass: 700, spin: 950, wait: 400 };
 const TUT = [
   { title: 'STEER', line: 'Eight directions — your shape tips over its edge, it never slides.', compass: true,
@@ -36821,20 +37451,24 @@ const TUT = [
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '3,2': 'green' } },
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'grow', g: [3, 2], to: [[2, 2], [3, 2]], type: 'pair', say: 'GROWN' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
-  { title: 'STEPPING STONES', line: 'Land ON a green to store it. A stored green drops into a hole as a stepping stone — your shape stays whole.',
-    showStore: true,
-    init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green', '5,1': 'void', '6,1': 'void', '5,2': 'void', '6,2': 'void' }, store: 0 },
-    acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'store', g: [3, 2], say: '+1 STONE' },
-            { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]], stone: [5, 2] }, { k: 'wait' } ] },
-  { title: 'HOLES COST A CUBE', line: 'Nothing stored? The cube over the hole goes in and becomes ground — you are a size smaller.',
-    showStore: true,
-    init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' }, store: 0 },
+  { title: 'ON A GREEN', line: 'Land ON a green instead of beside it and it pays you 5 seconds.',   // [290926n] was STEPPING STONES — the store is gone
+    showClock: true,
+    init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green' }, clock: 30 },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'stomp', g: [3, 2], sec: 5, say: '+5s' },
+            { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
+  { title: 'HOLES COST A CUBE', line: 'The cube over a hole goes in and becomes ground — you are a size smaller.',
+    init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' } },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'sink', cube: [4, 2], to: [[3, 2]], type: 'single', say: '−1 CUBE → +1 GROUND' },
             { k: 'flip', dir: 'S', to: [[3, 3]] } ] },
-  { title: 'EDGES AND WRONG SETS', line: 'A cube carried over the edge, or onto a set it does not fit, breaks off — the rest carries on.',
+  { title: 'EDGES', line: 'A cube carried over the edge breaks off — the rest carries on.',
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
+  { title: 'WRONG SETS', line: 'Land the wrong shape on a set and the set takes the cube that doesn’t fit. Land the right shape and it’s yours.',   // [290926n]
+    init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, sets: [{ type: 'single', cells: [[2, 1]] }] },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'flip', dir: 'N', to: [[2, 1], [3, 1]] },
+            { k: 'settake', cube: [2, 1], set: 0, to: [[3, 1]], type: 'single', say: 'WRONG SHAPE · −1 CUBE' },
+            { k: 'flip', dir: 'W', to: [[2, 1]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
   { title: 'SHIFTERS', line: 'A step shifter pushes you, a turn shifter swings you. Shifters never cost a cube — the ring shows when one is ready again.',
     init: { body: { cells: [[0, 3], [1, 3]], type: 'pair', par: 0 }, tiles: { '1,2': 'slip', '4,2': 'pivot' } },
     acts: [ { k: 'flip', dir: 'N', to: [[0, 2], [1, 2]] }, { k: 'push', trig: [1, 2], vec: [1, 0], to: [[1, 2], [2, 2]] },
@@ -36845,11 +37479,11 @@ const TUT = [
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },
     acts: [ { k: 'flip', dir: 'N', to: [[3, 2], [4, 2]] }, { k: 'rowclear', row: 2, sec: 4, say: 'ROW +4s' },
             { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] }, { k: 'hourglass', h: [4, 1], sec: 30, say: '+30s' } ] },
-  { title: 'REDS · FROM LEVEL 6', line: 'Too big for the set? Land a cube on a red to shrink on purpose — and it pays you time.',
+  { title: 'REDS', line: 'A red takes a cube you can spare and pays you 5 seconds. It never takes your last — a single rolls over it.',   // [290926n] every level now
     showClock: true,
-    init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,2': 'red' }, clock: 40 },
+    init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,2': 'red', '4,1': 'red' }, clock: 40 },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'red', cube: [4, 2], to: [[3, 2]], type: 'single', sec: 5, say: '−1 CUBE → +5s' },
-            { k: 'flip', dir: 'N', to: [[3, 1]] } ] }
+            { k: 'flip', dir: 'NE', to: [[4, 1]], say: 'A SINGLE ROLLS OVER' } ] }
 ];
 // the timeline of a lesson: when each act starts, and its length
 function tutTimeline(L) {
@@ -36888,6 +37522,8 @@ function tutApply(S, a, tEnd) {
     else if (a.k === 'claim') S.sets[a.set].done = true;
     else if (a.k === 'rowclear') { S.clock += a.sec; for (let x = 0; x < TUT_COLS; x++) S.walked.add(x + ',' + a.row); }
     else if (a.k === 'hourglass') { delete S.tiles[a.h.join(',')]; S.clock += a.sec; }
+    else if (a.k === 'stomp') { delete S.tiles[a.g.join(',')]; S.clock += a.sec; }   // [290926n]
+    else if (a.k === 'settake') { S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }   // [290926n] the set is untouched
     else if (a.k === 'red') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; S.clock += a.sec; }
 }
 // ── the painter: draws a lesson frame at the game canvas's corner ────────────
@@ -37060,6 +37696,52 @@ function tutPaintActive(S, t) {
         const g = a.g, sx = g[0] * CELL + CELL / 2, sy = g[1] * CELL + CELL / 2, tx = TUT_COLS * CELL - 40, ty = 14;
         const cx = sx + (tx - sx) * e, cy = sy + (ty - sy) * e - Math.sin(p * Math.PI) * CELL * 0.5, z = (CELL - 10) * (1 - 0.6 * p);
         ctx.save(); ctx.shadowColor = '#a3e635'; ctx.shadowBlur = 10; roundedSq(cx - z / 2, cy - z / 2, z, '#a3e635', '#4d7c0f', 1.5); ctx.restore();
+        return;
+    }
+    if (a.k === 'stomp') {   // [290926n] a green landed on: a ring of green goes out from it
+        tutPaintBody(B.cells, B.type, B.par);
+        const g = a.g, cx = g[0] * CELL + CELL / 2, cy = g[1] * CELL + CELL / 2;
+        ctx.save(); ctx.globalAlpha = 1 - p; ctx.strokeStyle = '#a3e635'; ctx.lineWidth = 3; ctx.shadowColor = '#a3e635'; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.3 + 0.5 * e), 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+        return;
+    }
+    if (a.k === 'settake') {   // [290926n] the set takes the cube: grip, crush, drawn in — as in play [290926d]
+        const doomed = a.cube, rest = A.from.filter(c => !(c[0] === doomed[0] && c[1] === doomed[1]));
+        const fam = (SLOT_DEFS[A.type] && SLOT_DEFS[A.type].color) || '#22d3ee';
+        const st = S.sets[a.set], x0 = doomed[0] * CELL + 4, y0 = doomed[1] * CELL + 4, z = CELL - 8, cx0 = x0 + z / 2, cy0 = y0 + z / 2;
+        let tx = 0, ty = 0; for (const c of st.cells) { tx += c[0] * CELL + CELL / 2; ty += c[1] * CELL + CELL / 2; } tx /= st.cells.length; ty /= st.cells.length;
+        tutPaintBody(rest, A.type, B.par);
+        const grip = (g, al) => { ctx.save(); ctx.globalAlpha = al; ctx.shadowColor = '#ef4444'; ctx.shadowBlur = 12;
+            for (const c of st.cells) { const i = 2 + 3 * g; roundedSq(c[0] * CELL + i, c[1] * CELL + i, CELL - i * 2, null, '#ef4444', 3.2); } ctx.restore(); };
+        const hold = 0.3;
+        if (p < hold) {
+            tutPaintBody([doomed], A.type, B.par);
+            grip(0, 0.5 + 0.5 * Math.sin(t / 40));
+        } else {
+            const k = (p - hold) / (1 - hold);
+            if (k < 0.3) {
+                const u = k / 0.3, w = z * (1 - 0.14 * u), h = z * (1 - 0.34 * u);
+                grip(u, 1);
+                ctx.save(); roundedSq(cx0 - w / 2 + Math.sin(t / 17) * 1.6 * u, cy0 - h / 2, Math.min(w, h), faceBodyColour(fam, B.par), null);
+                ctx.globalAlpha = 0.6 * u; roundedSq(cx0 - w / 2, cy0 - h / 2, Math.min(w, h), '#ef4444', null); ctx.restore();
+            } else if (k < 0.52) {
+                const u = (k - 0.3) / 0.22, zz = z * (0.72 - 0.42 * u);
+                grip(1, 1);
+                ctx.save(); ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 14 * u;
+                roundedSq(cx0 - zz / 2, cy0 - zz / 2, zz, u > 0.5 ? '#fff1f2' : '#ef4444', null); ctx.restore();
+            } else {
+                const u = (k - 0.52) / 0.48, ee = u * u * (3 - 2 * u);
+                grip(1 - u, 1 - u);
+                ctx.save();
+                for (let i = 0; i < 8; i++) {
+                    const an = (i / 8) * Math.PI * 2, out = CELL * 0.42 * Math.sin(Math.min(1, u * 2.2) * Math.PI / 2) * (1 - ee), sw = an + ee * 2.4;
+                    const px = cx0 + (tx - cx0) * ee + Math.cos(sw) * out, py = cy0 + (ty - cy0) * ee + Math.sin(sw) * out, sh = z * 0.2 * (1 - 0.75 * ee);
+                    ctx.globalAlpha = 0.95 * (1 - ee * ee); roundedSq(px - sh / 2, py - sh / 2, sh, i % 2 ? '#ef4444' : faceBodyColour(fam, B.par), null);
+                }
+                if (u > 0.72) { const v = (u - 0.72) / 0.28; ctx.globalAlpha = 1 - v; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(tx, ty, 5 * (1 - v) + 1, 0, Math.PI * 2); ctx.fill(); }
+                ctx.restore();
+            }
+        }
         return;
     }
     if (a.k === 'sink' || a.k === 'red' || a.k === 'breakoff') {

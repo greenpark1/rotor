@@ -1030,7 +1030,8 @@ button:not(.scores-link):not(.details-toggle):not(.go-copy):not(.settings-seg) {
 }
 button:not(.scores-link):not(.details-toggle):not(.go-copy):not(.settings-seg):hover { transform: translateY(-0.5px); filter: drop-shadow(0 2px 0 var(--lip)); }
 button:not(.scores-link):not(.details-toggle):not(.go-copy):not(.settings-seg):active { transform: translateY(1px); filter: drop-shadow(0 0.5px 0 var(--lip)); }
-.scores-link, .details-toggle, .go-copy { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.details-toggle, .go-copy { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.scores-link { text-decoration: none; }   /* [290926t] designer's call: no underline under TOP SCORES (it only ever showed in day) */
 /* a button has a fill, never an outline alone — the outline-only ones get one (solid, so the lip reads as a lip and the text is not doubled) */
 body button.go-clip-btn, body button.go-scores-btn, body button.scores-back, body button.settings-testdrive, body button.settings-close { background: #12263a; }
 body button.lc-replay-btn { background: #0c2834; }
@@ -1662,8 +1663,14 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 .tut-wrap #demoVideo, .tut-wrap #demoCanvas { display: none !important; }
 .tut { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .tut-stage { position: relative; width: 100%; }
-#tutCanvas { width: 100%; height: auto; aspect-ratio: 7 / 4; display: block; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25); cursor: pointer; touch-action: pan-y; }
+#tutCanvas { width: 100%; height: auto; aspect-ratio: 7 / 5.6;   /* [290926w] the board and its joystick strip */ display: block; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25); cursor: pointer; touch-action: pan-y; }
 body.theme-day #tutCanvas { border-color: var(--day-ice, #89cff0); }
+/* [290926w] a short landscape window (a laptop) had no room to spare on the welcome page
+   before the strip arrived; there the lesson gives up width rather than push the page into
+   a scroll. Portrait phones and tablets keep the full width. */
+@media (orientation: landscape) {
+    #tutCanvas { width: min(100%, max(170px, calc((85.7dvh - 430px) * 7 / 5.6))); margin: 0 auto; }
+}
 .tut-nav { display: flex; align-items: center; gap: 12px; }
 .tut-arrow { width: 32px; height: 32px; padding: 0; border-radius: 50%;
     background: #12263a; color: #e2e8f0; border: 1px solid rgba(56, 189, 248, 0.55); font-size: 24px; font-weight: 700; line-height: 1;
@@ -2058,91 +2065,26 @@ body.theme-day .wm-ritual .wl { text-shadow: none; }
    color fall back to base, so any gap now lands on the home key instead of
    the letter's palette colour (the cause of the lone red Я during the blue
    rest, and the mids drifting into colour early). */
-.wm-ritual .w0 { color: var(--wm-c0); animation: wmR0 70s linear infinite; }
-.wm-ritual .w1 { color: var(--wm-c0); animation: wmM1 70s linear infinite; }
-.wm-ritual .w2 { color: var(--wm-c0); animation: wmM2 70s linear infinite; }
-.wm-ritual .w3 { color: var(--wm-c0); animation: wmM3 70s linear infinite; }
-.wm-ritual .w4 { color: var(--wm-c0); animation: wmR4 70s linear infinite; }
-/* [300726g] THE BLUE CYCLE (70s). Player cyan is now the mark's home key:
-   the word rests in all-blue, the monograms are all-blue, and the mirrored
-   full word is all-blue — the five-colour palette appears once per cycle as
-   the flourish, arriving and leaving through a flip as ever. Steel remains
-   the T's colour within the multicolour word only. Timeline (seconds of 70):
-     0–14   ROTOЯ all blue (the resting, most prominent face)
-     fold · 14.8–24.8 monogram nose-to-nose, blue
-     flip · 25.6–35.6 monogram back-to-back, blue
-     expand · 36.4–46.4 ЯOTOR all blue
-     fold · flip (colours arrive) · expand · 48.8–58.8 ROTOЯ multicolour
-     fold · flip (blue returns) · flip · expand · 62–loop all blue. */
-@keyframes wmM1 {
-    0%,20% { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    67.4%  { color: var(--wm-c0); }   /* pinned: no drift before the join */
-    0.7%   { transform: rotateY(0); }
-    2%     { transform: rotateY(360deg); }
-    21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
-    52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
-    67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-c0); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
-    86%,100% { color: var(--wm-c0); }
-    88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
+/* ── [290926s] THE TITLE TURNS, IT NEVER FOLDS ─────────────────────────────
+   Designer's call: "change the title rotor animation so that it doesn't contract
+   at all, just all the letters rotate to point the opposite direction every 20
+   seconds." The 70s ritual (fold, monogram, expand) is gone. The five letters
+   keep their places and their widths; every 20 seconds all five turn half a
+   revolution together about their own upright — ROTOЯ becomes ЯOTOR, and 20
+   seconds later turns back — always in the same direction, like a rotor. The
+   turn takes 0.9s, eased at both ends. The Я starts half a turn ahead. */
+.wm-ritual .w4 { transform: rotateY(180deg); }   /* at rest (and with reduced motion) the last letter is mirrored */
+.wm-ritual .w0, .wm-ritual .w1, .wm-ritual .w2, .wm-ritual .w3 { color: var(--wm-c0); animation: wmTurn 40s linear infinite; }
+.wm-ritual .w4 { color: var(--wm-c0); animation: wmTurnR 40s linear infinite; }
+@keyframes wmTurn {
+    0%, 47.75%  { transform: rotateY(0deg);   animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+    50%, 97.75% { transform: rotateY(180deg); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+    100%        { transform: rotateY(360deg); }
 }
-@keyframes wmM2 {
-    0%,20% { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    67.4%  { color: var(--wm-c0); }   /* pinned: no drift before the join */
-    0.7%   { transform: rotateY(0); }
-    2%     { transform: rotateY(360deg); }
-    21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
-    52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
-    67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-c0); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
-    86%,100% { color: var(--wm-c0); }
-    88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
-}
-@keyframes wmM3 {
-    0%,20% { transform: rotateY(360deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    67.4%  { color: var(--wm-c0); }   /* pinned: no drift before the join */
-    0.7%   { transform: rotateY(0); }
-    2%     { transform: rotateY(360deg); }
-    21.14%,50.86% { transform: rotateY(450deg); width: 0; margin-right: 0; }
-    52%,66.29% { transform: rotateY(540deg); width: 1.15em; margin-right: 0.55em; }
-    67.43%,68.57% { transform: rotateY(630deg); width: 0; margin-right: 0; }
-    68%    { color: var(--wm-c0); }
-    69.71%,84% { transform: rotateY(720deg); width: 1.15em; margin-right: 0.55em; color: var(--wm-c0); }
-    85.14%,87.43% { transform: rotateY(810deg); width: 0; margin-right: 0; }
-    86%,100% { color: var(--wm-c0); }
-    88.57%,100% { transform: rotateY(900deg); width: 1.15em; margin-right: 0.55em; }
-}
-@keyframes wmR0 {
-    0%,0.7% { transform: rotateY(0); margin-right: 0.55em; color: var(--wm-c0); }
-    2%     { transform: rotateY(360deg); }
-    20%    { transform: rotateY(360deg); margin-right: 0.55em; }
-    21.14% { margin-right: -0.43em; }
-    35.43% { transform: rotateY(360deg); }
-    36.57%,50.86% { transform: rotateY(540deg); margin-right: -0.43em; }
-    52%,66.29% { margin-right: 0.55em; }
-    67.43% { transform: rotateY(540deg); margin-right: -0.43em; }
-    68.57%,69.71% { transform: rotateY(720deg); }
-    69.71%,84% { margin-right: 0.55em; }
-    85.14% { transform: rotateY(720deg); margin-right: -0.43em; }
-    86.29% { transform: rotateY(900deg); }
-    87.43% { transform: rotateY(1080deg); margin-right: -0.43em; }
-    88.57%,100% { transform: rotateY(1080deg); margin-right: 0.55em; }
-}
-@keyframes wmR4 {
-    0%,0.7% { transform: rotateY(180deg); color: var(--wm-c0); }
-    2%     { transform: rotateY(540deg); }
-    35.43% { transform: rotateY(540deg); }
-    36.57% { transform: rotateY(720deg); }
-    67.43% { transform: rotateY(720deg); color: var(--wm-c0); }
-    68.57%,84% { transform: rotateY(900deg); color: var(--wm-c0); }
-    85.14% { transform: rotateY(900deg); color: var(--wm-c0); }
-    86.29% { transform: rotateY(1080deg); color: var(--wm-c0); }
-    87.43% { transform: rotateY(1260deg); }
-    88.57%,100% { transform: rotateY(1260deg); color: var(--wm-c0); }   /* pinned: no fade back to base */
+@keyframes wmTurnR {
+    0%, 47.75%  { transform: rotateY(180deg); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+    50%, 97.75% { transform: rotateY(360deg); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+    100%        { transform: rotateY(540deg); }
 }
 /* ── [290726o] MINI WORDMARK (game screen) ──────────────────────────────────
    Still during play — anything looping above a live puzzle steals attention.
@@ -2903,6 +2845,30 @@ body.theme-day .go-clip-btn:hover { color: #0369a1; border-color: rgba(2,132,199
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
 .coach-tip.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* [300926a] the set row flashes as a piece lands in it — brightness and a glow in the
+   piece's colour, no transform (a transform would lift the row onto its own layer) */
+#hudSetIcons.piece-flash { animation: pieceFlash 0.75s ease-out 1; }
+@keyframes pieceFlash {
+    0%   { filter: brightness(1.9) drop-shadow(0 0 10px var(--piece-col, #22d3ee)); }
+    100% { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+}
+@media (prefers-reduced-motion: reduce) { #hudSetIcons.piece-flash { animation: none; } }
+/* [290926u] THE TIP SITS BESIDE THE STICK. Field note: "when the tips appear on
+   the screen can the joystick dynamically move to the right and give space to the
+   tips to its left." The tip used to sit over the middle of the joystick. Now,
+   when one arrives, the stick glides to the right edge of the board and the tip
+   fades in to its left, in the room it made; when the tip has gone the stick
+   glides back. syncTipBeside() measures and places both. The stick never moves
+   under a thumb: a tip waits for the thumb to lift. */
+#stickPad { transition: transform 0.35s cubic-bezier(0.3, 0, 0.2, 1); }
+.coach-tip.beside {
+    left: var(--tip-left, 12px); bottom: auto; top: var(--tip-top, 50%);
+    width: var(--tip-w, 40%); max-width: none; box-sizing: border-box;
+    transform: translateY(-50%) translateX(-8px);
+    text-align: left;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.coach-tip.beside.show { transform: translateY(-50%); transition: opacity 0.3s ease 0.28s, transform 0.3s ease 0.28s; }
 .coach-tip .coach-label {
     display: block; font-size: 10px; letter-spacing: 2px;
     color: #7dd3fc; font-weight: bold; margin-bottom: 3px;
@@ -3839,7 +3805,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
             </div>
         </div>
         <div class="welcome-row full">
-            <!-- [280926z] THE TUTORIALS — ten lessons, flicked through. The old clip's elements stay, hidden, for TUT_ON = false. -->
+            <!-- [280926z] THE TUTORIALS — fourteen lessons now [290926r], flicked through. The old clip's elements stay, hidden, for TUT_ON = false. -->
             <div class="demo-wrap tut-wrap"><video id="demoVideo" muted loop playsinline disablepictureinpicture></video><canvas id="demoCanvas" width="320" height="160"></canvas>
                 <div class="tut" id="tut">
                     <div class="tut-stage"><canvas id="tutCanvas" aria-label="Tutorial"></canvas></div>
@@ -7525,6 +7491,58 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 290926-2244: THE WAY THROUGH [300926h–l]. From playdata65. The move guide sees the holes
+// (a route never lands on one) and runs shifters as the board does now (holes and reds
+// under a push are laid free; a blocked push is not a route; trains carry on). A set may
+// never take the last way through, with another set, for a 2x2 or a single — so two big
+// sets can no longer shut both lanes past an island. Sets sit on islands from level 3,
+// and level 3 always puts one of its pairs on an island made for it. The board always
+// keeps a hole-free way up for a single (it did so row by row; one screen in ten had no
+// joined way). When every piece left is bigger than you, the greens come to the set.
+// 290926-1823: WELL DONE, THEN ROUND [300926f–g]. SETS FIRST, THEN THE MACHINE: a landing
+// that covers a whole set and stands on a shifter gives the set its cubes first; the rest
+// then rides the shifter (a J on a single's set and a turn: the cube goes in, the pair or
+// diagonal left turns). Order of a landing: reds in the air, sets, greens, machine. WELL
+// DONE: when a piece arrives in its place in the HUD set — a thunk, a two-note "well done"
+// chime a step higher each piece, WELL DONE! / NICE ONE! / SPOT ON! ... over 2 TO GO, the
+// set row flashing, a light buzz. The claim's own rising pops are gone (they blurred).
+// 290926-1742: FOUR TURNS AND A PARTY [300926a–e]. Every set piece gets a small party
+// (three fireworks round the set in its colour, rising pops, the frame's glow, SET PIECE! /
+// N TO GO or LAST ONE!, the HUD set row flashing as the piece lands); the last keeps the
+// big one. A machine collects what it carries you over: hourglasses on a turn's arc or a
+// step's vault pay as the cube crosses them. A green beside a landing joins FIRST, then a
+// shifter under the new shape moves or turns all of it. Turn tiles come in 90°, 180°,
+// 270° and 360° (dealt 35/30/20/15; 20/40/25/15 for the long reach); the 360° brings the
+// shape back where it was and sweeps the whole circle. The turn icon is drawn to scale:
+// a faint ring and the arrow round it for exactly the turn, from twelve o'clock.
+// A run started while the last run's level card was still counting down is no longer
+// advanced by it [300926e].
+// 290926-1506: THE GUIDE AND THE DIAGONAL [290926y]. The MOVE GUIDE lesson now steers a
+// diagonal pair onto a diagonal set it cannot reach directly: NE, SE, E (the diagonal
+// changes) and back SW — four moves, four directions, found by the game's flip rules.
+// 290926-1502: THE CLOCK COUNTS UP [290926x]. In the welcome lessons every time payment
+// (a green landed on, a row, an hourglass, a red) runs the clock up one second at a time —
+// 0:30, 0:31 … 0:35 — 90ms a second (faster for +30, so it lands in about a second), the
+// clock swelling a little and brighter green while it counts.
+// 290926-1320: THE JOYSTICK IN EVERY LESSON [290926v–w]. The welcome lessons speak the
+// game's words: shapes FLIP over their edge (not tip), a single FLIPS over a red (not
+// rolls), EVOLVE replaces GROW (EVOLVED the float), and a cube lost is DEVOLVE; the tips
+// that said grow/shrink say evolve/devolve. Every lesson now has the game's layout — the
+// board, and under it a strip with the joystick, whose knob leans the way of each flip a
+// beat before it lands and lights that arrow. Lesson 1's thin compass is gone; the two
+// helper buttons and the tip card live in the strip, as on the screen.
+// 290926-1228: COVER THE SET [290926o–u]. A BIGGER SHAPE that covers every cell of a set
+// claims it: the cubes on the set go into it (locked in, flown to the HUD) and the rest
+// carries on smaller; touching only part of a set still loses the cube that touched
+// (coversSlot is the one test — landing, route guide, classifier, claim). The MOVE GUIDE
+// waits one second after it is switched on, then builds the route from the first move;
+// a trail line runs through the moves; ghosts are heavier with a dark casing at night;
+// it stays on until the whole route has stood 1.5s (max 12s). The APPROACH heartbeat
+// listens to the bottom edge only: silent until the second-last row, quickening into the
+// last. When a TIP shows, the joystick glides right and the tip sits to its left (never
+// under a thumb). The TITLE no longer folds: all five letters turn half a revolution
+// together every 20s. TOP SCORES loses its underline. Tutorials: BIGGER THAN THE SET,
+// WRONG SETS (part of a set), MOVE GUIDE and TIPS — fourteen lessons.
 // 290926-1100: REDS AND GREENS, BY RULE [290926i–n]. Agreed 29 Sep. REDS at every level,
 // one or two on screen (maintainReds): a red takes a cube you can spare and pays 5s; it
 // never takes your last — a single rolls over it. Placed in the arriving rows, never on
@@ -8008,7 +8026,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '290926-1100 ROTOЯ · REDS AND GREENS, BY RULE';
+const BUILD_VERSION = '290926-2244 ROTOЯ · THE WAY THROUGH';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8126,15 +8144,18 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
              180°  NEARLY the whole ring, with a clear gap left between the
                    head's tip and the tail, so it still reads as one arrow
            CW = clockwise on screen; CCW is the mirror image. */
+        /* [300926d] TO SCALE: a faint ring for the whole circle, and the arrow round it
+           for exactly the turn — ¼, ½, ¾ or all the way round — from twelve o'clock. */
         const ccw = meta && meta.dir === 'ccw', sgn = ccw ? -1 : 1;
-        const half = (typeof turnsOf === 'function') && turnsOf(meta) === 2;
-        const R = CELL * 0.176, HEAD = CELL * 0.21, WIDE = 0.75;
+        const tq = (typeof turnsOf === 'function') ? turnsOf(meta) : 1;
+        const R = CELL * 0.215, HEAD = CELL * 0.17, WIDE = 0.78;
         const D = Math.PI / 180;
-        const reach = (half ? 328 : 190) * D;               // tail to TIP, round the ring
-        const start = (half ? 16 : -95) * D;                // tail, measured from twelve o'clock
+        const reach = (tq * 90 - (tq === 4 ? 14 : 0)) * D;  // tail to TIP, round the ring (a full turn stops just short of its own tail)
+        const start = 0;                                    // tail at twelve o'clock
         const rot = anim ? sgn * ((now % 5000) / 5000) * Math.PI * 2 : 0;   // [260926g] the lap
         const tail = -Math.PI / 2 + sgn * start + rot;
-        const arcEnd = tail + sgn * (reach - HEAD / R);     // the head stands over the last HEAD/R of it
+        ctx.save(); ctx.globalAlpha *= 0.28; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(gcx, gcy, R, 0, Math.PI * 2); ctx.stroke(); ctx.restore();   // the whole circle, faint
+        const arcEnd = tail + sgn * Math.max(0.05, reach - HEAD / R);   // the head stands over the last HEAD/R of it
         ctx.beginPath();
         ctx.arc(gcx, gcy, R, tail, arcEnd, ccw);
         ctx.stroke();
@@ -9370,8 +9391,15 @@ function pivotAroundTrigger(cellsNow, tx, ty, ccw, type, newConfig) {
    rules are the ones already measured, not a second implementation. `rotated`
    keeps input order through both quarters, so each cube still arcs on its own
    constant radius. Returns null for a shape the tables do not cover. */
-function turnsOf(meta) { return (SWEEP_HALF_TURNS && meta && meta.turns === 2) ? 2 : 1; }
-function rollTurnSize(favoured) { return SWEEP_HALF_TURNS ? (Math.random() < (favoured ? FAVOUR_HALF_TURN : 0.5) ? 2 : 1) : 1; }
+function turnsOf(meta) { const t = meta && meta.turns; return (SWEEP_HALF_TURNS && (t === 2 || t === 3 || t === 4)) ? t : 1; }   // [300926d] 1–4 quarter turns
+const TURN_SIZE_SHARE = [0.35, 0.30, 0.20, 0.15], TURN_SIZE_SHARE_REACH = [0.20, 0.40, 0.25, 0.15];   // [300926d] 90°, 180°, 270°, 360°
+function rollTurnSize(favoured) {
+    if (!SWEEP_HALF_TURNS) return 1;
+    const w = favoured ? TURN_SIZE_SHARE_REACH : TURN_SIZE_SHARE;
+    let r = Math.random();
+    for (let i = 0; i < w.length; i++) { if (r < w[i]) return i + 1; r -= w[i]; }
+    return 1;
+}
 /* [SWEEP] CLOCKWISE AND ANTICLOCKWISE IN EQUAL MEASURE — designer's call,
    110926. Every writer of a turn tile (the stream, the island's answer, the
    island's own turn, the rescue) takes its spin from this one ledger:
@@ -9385,9 +9413,9 @@ function rollTurnSize(favoured) { return SWEEP_HALF_TURNS ? (Math.random() < (fa
 // 34 clockwise to 28 over twelve short runs with every run itself even).
 let turnSpinLedger = null;
 function turnLedger(turns) {
-    const L = turnSpinLedger || (turnSpinLedger = { 1: { cw: 0, ccw: 0 }, 2: { cw: 0, ccw: 0 } });
+    const L = turnSpinLedger || (turnSpinLedger = { 1: { cw: 0, ccw: 0 }, 2: { cw: 0, ccw: 0 }, 3: { cw: 0, ccw: 0 }, 4: { cw: 0, ccw: 0 } });   // [300926d]
     game._turnSpins = L;   // a view for the recorder/checks
-    return L[turns === 2 ? 2 : 1];
+    return L[turns] || L[1];
 }
 function nextTurnSpin(turns) {
     const c = turnLedger(turns);
@@ -11448,6 +11476,17 @@ const sfx = {
         setTimeout(() => playTone(NOTE.C6, 0.20, WAVE.reward, VOL.major), 210);
         setTimeout(() => playTone(NOTE.E6, 0.20, WAVE.reward, VOL.event), 310);
     },
+    // [reward · event] [300926g] PIECE IN — the piece seated in its place in the
+    // HUD set: a soft thunk, then "well — done", a rising fourth voiced like a
+    // small bell (fundamental + octave + twelfth), a step higher each piece.
+    pieceIn: (n = 1) => {
+        const L = PIECE_LADDER, i = Math.max(0, Math.min(L.length - 3, n - 1));
+        const a = L[i], b = L[i + 2];
+        playSweep(210, 105, 0.11, 'sine', VOL.event * 0.9);                  // the seat
+        const bell = (f, dur, v) => { playTone(f, dur, WAVE.reward, v); playTone(f * 2, dur * 0.7, 'sine', v * 0.32); playTone(f * 3, dur * 0.45, 'sine', v * 0.12); };
+        setTimeout(() => bell(a, 0.16, VOL.event * 0.85), 70);              // "well"
+        setTimeout(() => { bell(b, 0.62, VOL.event); playTone(b / 4, 0.5, 'sine', VOL.ui * 0.9); }, 210);   // "done", with its root under it
+    },
     // [reward · event] gold — bright high C-E-G, an octave above evolve (L4).
     // [030826af] TIME PICKUPS — two sounds, deliberately the same GESTURE at
     // different scales, so a player hears "more of the same thing" rather than
@@ -12957,7 +12996,7 @@ function maroonBridgePlan(region) {
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
     const slotKeys = new Set();
     for (const sl of slots) for (const k of sl.keys) slotKeys.add(k);
-    const spins = { 1: nextTurnSpin(1), 2: nextTurnSpin(2) };
+    const spins = { 1: nextTurnSpin(1), 2: nextTurnSpin(2), 3: nextTurnSpin(3), 4: nextTurnSpin(4) };   // [300926d]
     const bad = (x, y) => { const v = world[`${x},${y}`]; return x < 0 || x >= VIEW_W || y > bot || y < top || v === 'void' || v === 'wall' || v === 'hazard'; };
     let best = null;
     for (const st of bodyStates(2)) {
@@ -12965,7 +13004,7 @@ function maroonBridgePlan(region) {
             const tk = `${T.x},${T.y}`;
             if (!region.cells.has(tk) || world[tk] || slotKeys.has(tk)) return;
             if (!machineCellOk(T.x, T.y) || nearAnyShifter(T.x, T.y)) return;
-            for (const turns of (SWEEP_HALF_TURNS ? [2, 1] : [1])) {
+            for (const turns of (SWEEP_HALF_TURNS ? [2, 1, 3, 4] : [1])) {   // [300926d] the bridge may use a 270° or a 360° when it lays more
                 const ccw = spins[turns] === 'ccw';
                 const pose = bridgePoses(type, turns, ccw)[st.c + '|' + ti];
                 if (!pose) continue;
@@ -12978,7 +13017,7 @@ function maroonBridgePlan(region) {
                     lays++; if (y < region.minY) north++;
                 }
                 if (!lays) continue;
-                const score = lays * 10 + north * 6 - st.d * 2 + (turns === 2 ? 1 : 0) + Math.random();
+                const score = lays * 10 + north * 6 - st.d * 2 + (turns === 2 ? 1 : turns >= 3 ? -14 : 0) + Math.random();   // [300926d] 270°/360° only when they lay two cells more
                 if (!best || score > best.score)
                     best = { score, k: tk, x: T.x, y: T.y, dir: spins[turns], turns, lays, moves: st.d };
             }
@@ -13332,7 +13371,8 @@ function pickWeightedNeededTarget() {
     // nudging spawns toward mixed company (a single sitting alongside the
     // set's bigger shapes) without making it a rule — still weighted random.
     const onBoard = new Set(slots.filter(s => !s.claimed && !s.retiring).map(s => s.id));
-    const entries = setNeeded.map(id => {
+    const _isleHeld = game._isle3 && game._isle3.id;   // [300926j] level 3's island piece is dealt to its island, nowhere else
+    const entries = setNeeded.filter(id => id !== _isleHeld).map(id => {
         const { type, config, difficulty } = parseRequirement(id);
         // Single is exact-claim only — no trace path — so sits at 0 progress
         // until it's claimed (then removed from setNeeded).
@@ -13341,6 +13381,7 @@ function pickWeightedNeededTarget() {
         if (!onBoard.has(id)) weight *= 2;
         return { id, type, config, difficulty, weight };
     });
+    if (!entries.length) return null;
     const total = entries.reduce((s, e) => s + e.weight, 0);
     let r = Math.random() * total;
     for (const e of entries) {
@@ -13429,6 +13470,7 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // placed above the view, before the player is anywhere near them.)
             if (!slotIsApproachable(cells)) continue;
             if (!slotLeavesPassage(cells)) continue;   // [180826r] never cork the board
+            if (!slotKeepsWayThrough(cells)) continue;   // [300926i] nor close the last way past, with another set
             // [170826b] NO CORRIDOR SLOTS ON LEVEL 1. Field note: a vertical
             // pair inside a one-wide tunnel at L1 demands precise threading
             // before the basic flip is fluent. A slot cell walled on BOTH
@@ -14485,6 +14527,51 @@ function maintainReds(nowT) {
    greens at least (three at most, MAX_VISIBLE_GREENS) — topped up in the rows
    arriving at the top, on cells you can reach. */
 const GREEN_POP_MIN = 2;
+/* ══ [300926l] GROW AT THE SET ════════════════════════════════════════════════
+   Designer's note (29 Sep): "the player needs to be resourceful, to read the path
+   ahead and be given enough opportunities, tools, shapes to adapt their shape to
+   the task in hand." The export says where that fails. Every long hunt is for a
+   BIG last piece — a square took a median 222 s after the piece before it, a J
+   145 s, up to 17 minutes — and in those hunts the body was big enough 3-8% of
+   the time. Not for want of greens (1.9 in reach on average): in one square hunt
+   the player grew 73 times and lost a cube 63 times, half of them to holes on
+   the way to the set. The growing happened in one place and the set was in
+   another, and the ground between took the cubes back.
+   THE RULE: when every piece the set still wants is bigger than you are, the
+   greens come to the set. Up to the number of cubes you are short (two at most),
+   greens are placed within two cells of that set, on ground you can reach, as
+   the board's green top-up — still never more than three on screen. Grow where
+   the shape is needed, then step in. */
+const GROW_AT_SET = true;
+function growAtSet(nowT, cam) {
+    if (!GROW_AT_SET || !setNeeded.length) return false;
+    const my = SHAPE_SIZE[game.shapeType] || 1;
+    if (!setNeeded.every(id => (SHAPE_SIZE[parseRequirement(id).type] || 1) > my)) return false;
+    const topL = topLawfulRow(), bot = cam + VIEW_H - 1;
+    let target = null;
+    for (const sl of slots) {
+        if (sl.claimed || sl.retiring || !setNeeded.includes(sl.id)) continue;
+        if (sl.cells.some(c => c.y < topL || c.y > bot)) continue;   // wholly in play
+        const sz = SHAPE_SIZE[sl.type] || 1;
+        if (!target || sz > target.sz) target = { sl, sz };
+    }
+    if (!target) return false;
+    const want = Math.min(2, target.sz - my);
+    const near = (x, y) => target.sl.cells.some(c => Math.max(Math.abs(c.x - x), Math.abs(c.y - y)) <= 2);
+    let have = 0;
+    for (let y = cam; y <= bot; y++) for (let x = 0; x < VIEW_W; x++) if (world[`${x},${y}`] === 'pickup' && near(x, y)) have++;
+    if (have >= want || countVisibleGreens() >= MAX_VISIBLE_GREENS) return false;
+    const reach = reachableSpawnSet(cam - 1, cam + VIEW_H);
+    const cands = [];
+    for (let y = Math.max(cam, topL); y <= bot; y++) for (let x = 0; x < VIEW_W; x++)
+        if (near(x, y) && !target.sl.keys.has(`${x},${y}`) && greenCellOk(x, y, reach)) cands.push([x, y]);
+    if (!cands.length) return false;
+    const [x, y] = cands[(Math.random() * cands.length) | 0];
+    world[`${x},${y}`] = 'pickup';
+    _greenPopAt = nowT;
+    rec('spawn', { k: 'green', src: 'atset', id: target.sl.id });
+    return true;
+}
 function greenCellOk(x, y, reach) {
     const k = `${x},${y}`;
     if (x < 0 || x >= VIEW_W || world[k]) return false;
@@ -14498,6 +14585,7 @@ function maintainGreens(nowT) {
     if (!RED_POPULATION || game.testDrive || !game.running || game.paused || game.celebrating || game.introHold) return;
     if (nowT - _greenPopAt < 1200) return;
     const cam = Math.floor(game.cameraY);
+    if (growAtSet(nowT, cam)) return;   // [300926l]
     if (countVisibleGreens() >= GREEN_POP_MIN) return;
     _greenPopAt = nowT;
     const reach = reachableSpawnSet(cam - 1, cam + VIEW_H);
@@ -16318,6 +16406,100 @@ let islandCooldown = 0;
    stone; a 3x2 with a green, a red and a shifter is somewhere you work for a
    while. Bigger platforms carry more, and the moat scales with them so a big
    island is a bigger commitment rather than just a bigger target. */
+/* ══ [300926j] LEVEL 3: A SET ON AN ISLAND ══════════════════════════════════
+   Designer's call: "level 3 should have a shape on an island to up the
+   difficulty." Level 3 asked what level 2 asked (tricky single, a pair each way)
+   and played the same (61 s and 64 s median). Now:
+     · sets sit on islands from level 3 — never on levels 1 and 2 (before, the
+       random island seating could put one there, 16 times at level 1 in the
+       export), so the first two levels teach and the third tests;
+     · level 3 always has one: as it opens, one of its pairs is dealt to an island
+       made for it just above the view — a 3x2 platform in a two-deep moat, with
+       the green and a 30 s hourglass beside the set. It is built over ground not
+       yet seen, and only where a single can still get past it without a hole. The platform scrolls in over the first
+       half-minute, while the other two pieces are being taken.
+   Getting there is the level's question: a moat takes a cube for every hole
+   landed in (a single's last), so you arrive smaller than you set out and
+   rebuild on the platform with its green — or bridge on an earlier trip, or let
+   a turn's sweep or a step's vault carry you over. If that island scrolls away
+   with the piece still on it, another is made; if no island can be made in
+   twenty seconds the piece is dealt on open ground, so a level never stalls. */
+const ISLAND_SET_FROM = 3, ISLAND_SET_LEVEL = 3;
+function carveLevelIsland(target) {
+    const cam = Math.floor(game.cameraY);
+    const pw = 3, ph = 2, side = 2, vm = 2, w = pw + side * 2, rows = ph + vm * 2;   // 7 x 6
+    // what the island may be built over: ground, holes, walls, and loose things not yet seen (above the view);
+    // never a set, another island, ground the player bought, or a row's reward square
+    const TOOLS = { pickup: 1, hazard: 1, t10: 1, t30: 1, pivot: 1, slip: 1, warp: 1 };
+    // a set still wanted (other than this one) is never built over; one left over from the last level is cleared away
+    const liveSet = sl => !sl.claimed && !sl.retiring && setNeeded.includes(sl.id) && sl.id !== target.id;
+    const clearable = k => { const v = world[k]; return (!v || v === 'void' || v === 'wall' || TOOLS[v]) && !islandCells.has(k) &&
+                              !slots.some(sl => sl.keys.has(k) && liveSet(sl)) && !persistentFills.has(k) &&
+                              !(typeof rowPay !== 'undefined' && rowPay.some(e => `${e.x},${e.y}` === k)); };
+    for (let y = cam - 1; y >= cam - 20; y--) {
+        const xs = []; for (let x0 = 0; x0 + w <= VIEW_W; x0++) xs.push(x0); shuffleInPlace(xs);
+        for (const x0 of xs) {
+            let ok = true;
+            for (let r = 0; r < rows && ok; r++) for (let i = 0; i < w && ok; i++) if (!clearable(`${x0 + i},${y - r}`)) ok = false;
+            if (!ok) continue;
+            // build it, then make sure it has not taken the way past (for a 2x2 or a single, where there was one); if it has, put it all back
+            const yB = y + 4, yT = y - rows - 3, had = [2, 1].map(sz => wayThroughBand(yB, yT, null, sz));
+            const undo = [];
+            const put = (k, v) => { undo.push([k, world[k], shifterMeta[k], islandCells.has(k)]); if (v) world[k] = v; else delete world[k]; delete shifterMeta[k]; };
+            for (let r = 0; r < rows; r++) for (let i = 0; i < w; i++) put(`${x0 + i},${y - r}`, 'void');
+            const px = x0 + side, py = y - vm, plat = [];
+            for (let ry = 0; ry < ph; ry++) for (let rx = 0; rx < pw; rx++) { const k = `${px + rx},${py - ry}`; delete world[k]; islandCells.add(k); plat.push(k); }
+            if ([2, 1].some((sz, i) => had[i] && !wayThroughBand(yB, yT, null, sz))) {
+                for (let u = undo.length - 1; u >= 0; u--) { const [k, v, m, isl] = undo[u]; if (v) world[k] = v; else delete world[k]; if (m) shifterMeta[k] = m; if (isl) islandCells.add(k); else islandCells.delete(k); }
+                continue;
+            }
+            { const foot = new Set(undo.map(u => u[0]));   // the leftovers under it go
+              for (let i = slots.length - 1; i >= 0; i--) if (!liveSet(slots[i]) && [...slots[i].keys].some(k => foot.has(k))) slots.splice(i, 1); }
+            const platSet = new Set(plat), anchors = plat.slice(); shuffleInPlace(anchors);
+            let seat = null;
+            for (const a of anchors) {
+                const [ax, ay] = a.split(',').map(Number);
+                const cells = slotFootprint(target.type, target.config, ax, ay);
+                if (cells.every(c => platSet.has(`${c.x},${c.y}`))) { seat = cells; break; }
+            }
+            if (!seat) return false;   // cannot happen for a pair on 3x2; guarded anyway
+            const keys = seat.map(c => `${c.x},${c.y}`);
+            slots.push({ type: target.type, config: target.config, id: target.id,
+                         color: slotColorFor(target.type, target.config, target.difficulty), cells: seat,
+                         keys: new Set(keys), claimed: false, traced: new Set(), guardStamped: true, onIsland: true, levelIsle: true });
+            const free = plat.filter(k => !keys.includes(k)); shuffleInPlace(free);
+            if (free.length) world[free.shift()] = 'pickup';                                   // the fare home
+            if (free.length > 1) { world[free.shift()] = 't30'; rec('spawn', { k: 't30', src: 'island' }); }   // the reason, again
+            rec('spawn', { k: 'slot', src: 'isle3', id: target.id });
+            rec('island', { k: 'made', r: advancedRound, id: target.id, rowsUp: cam - y });
+            return true;
+        }
+    }
+    return false;
+}
+function startLevelIsland() {
+    game._isle3 = null;
+    if (advancedRound !== ISLAND_SET_LEVEL || game.testDrive) return;
+    const pairs = setNeeded.filter(id => parseRequirement(id).type === 'pair');
+    const pool = pairs.length ? pairs : setNeeded.filter(id => parseRequirement(id).type !== 'single');
+    if (!pool.length) return;
+    const id = pool[(Math.random() * pool.length) | 0];
+    game._isle3 = { id, since: nowPlay(), lastTry: -1e9, placed: 0 };
+    for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.id === id && !sl.onIsland) sl.retiring = performance.now();   // one left over from level 2 bows out: this piece is the island's
+    levelIslandTick(true);
+}
+function levelIslandTick(force) {
+    const R = game._isle3;
+    if (!R) return;
+    if (advancedRound !== ISLAND_SET_LEVEL || !setNeeded.includes(R.id)) { game._isle3 = null; return; }
+    if (!force && (!game.running || game.paused || game.celebrating || game.introHold)) return;
+    if (slots.some(s => s.id === R.id && !s.claimed && !s.retiring && s.onIsland)) return;   // it is out there
+    const now = nowPlay();
+    if (!force && now - R.lastTry < 1000) return;
+    R.lastTry = now;
+    if (carveLevelIsland({ id: R.id, ...parseRequirement(R.id) })) { R.placed++; R.since = now; return; }
+    if (now - R.since > 20000) { rec('island', { k: 'noroom', r: advancedRound, id: R.id }); game._isle3 = null; }   // dealt as usual from here
+}
 function carveIslandSet(y, safeZoneEnd) {
     if (islandCooldown > 0) { islandCooldown--; return; }
     if (y > safeZoneEnd - 14) return;
@@ -16397,7 +16579,7 @@ function carveIslandSet(y, safeZoneEnd) {
        set and no maze is stamped over it. If seating it would leave no cell
        for the green, it is undone: an island without the fare home is a cage,
        and a set piece does not change that. */
-    if (pw >= 2 && ph >= 2 && typeof setNeeded !== 'undefined' && setNeeded.length &&
+    if (pw >= 2 && ph >= 2 && typeof setNeeded !== 'undefined' && setNeeded.length && advancedRound >= ISLAND_SET_FROM &&   // [300926j] from level 3
         slots.filter(s => !s.claimed).length < 6) {
         const target = pickWeightedNeededTarget();
         if (target) {
@@ -16987,6 +17169,7 @@ function generateChunkInner(fromY, toY) {
        changes, because erasing a cell can expose its neighbour. */
     for (let i = 0; i < 6 && enforceMinHoleSize(fromY + 1, toY, null, true) > 0; i++) {}   // [110926k] the row below too
     guaranteeFeaturedHoles(fromY, toY, safeZoneEnd);   // [110926k] a featured 2x2 in every twelve rows
+    if (ensureWayUp(fromY, toY)) for (let i = 0; i < 6 && enforceMinHoleSize(fromY + 1, toY, null, true) > 0; i++) {}   // [300926k] and a hole-free way up, last
     worldGenY = toY;
 }
 
@@ -17092,6 +17275,62 @@ function enforceMinHoleSize(fromY, toY, track = null, eraseOnly = false) {
    repair reads as a corridor the chasm was carved around rather than as holes
    punched at random in a wall. ═══════════════════════════════════════════════ */
 let passageRepairs = 0;   // exported to the harness; also a smell if it climbs
+/* ══ [300926k] THE WAY THROUGH, FOR A SINGLE ═════════════════════════════════
+   The board's own rule (slotLeavesPassage, slotIsApproachable): "a way through
+   always EXISTS, and that has to mean a free one" — no hole in it. It was only
+   ever enforced ROW BY ROW (ensureRowsPassable: three clear cells in every row),
+   and three clear cells on the left of one row and three on the right of the next
+   do not join. Measured over 5000 generated rows: one screen in ten had no
+   hole-free way up for a single. In the export, 83 of 153 deaths were a single
+   landing in a hole, 37 of them within 15 s of the one before, and the run of
+   29 Sep 21:12 lost its last 60 s that way in level 5.
+   Now, after every other pass, the new rows are walked up from sixteen rows
+   below — a single's moves, eight ways, over anything that is not a hole or a
+   wall — and where the walk stops, the hole (a wall only if no hole will do) in
+   the next row up, beside where it stopped, is filled, away from any island's
+   moat where there is a choice. Holes are still everywhere to cross for a price;
+   there is always a way round that costs nothing. */
+let wayRepairs = 0;
+function ensureWayUp(fromY, toY) {
+    const yBot = fromY + 16, yTop = toY + 1;
+    const pass = (x, y) => { if (x < 0 || x >= VIEW_W) return false; const v = world[`${x},${y}`]; return v !== 'void' && v !== 'wall'; };
+    const nearIsland = (x, y) => { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (islandCells.has(`${x + dx},${y + dy}`)) return true; return false; };
+    let changed = 0;
+    for (let iter = 0; iter < 40; iter++) {
+        const seen = new Set(), q = [];
+        for (let x = 0; x < VIEW_W; x++) if (pass(x, yBot)) { seen.add(x + ',' + yBot); q.push([x, yBot]); }
+        if (!q.length) return changed;
+        let hi = yBot, done = false;
+        for (let h = 0; h < q.length && !done; h++) {
+            const [x, y] = q[h];
+            if (y < hi) hi = y;
+            if (y <= yTop) { done = true; break; }
+            for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+                if (!dx && !dy) continue;
+                const nx = x + dx, ny = y + dy;
+                if (ny > yBot || ny < yTop) continue;
+                const k = nx + ',' + ny;
+                if (seen.has(k) || !pass(nx, ny)) continue;
+                seen.add(k); q.push([nx, ny]);
+            }
+        }
+        if (done) return changed;
+        const ny = hi - 1;
+        if (ny > 0 || isAuthoredRow(ny)) return changed;
+        const cands = [];
+        for (let x = 0; x < VIEW_W; x++) {
+            if (!seen.has(x + ',' + hi)) continue;
+            for (let dx = -1; dx <= 1; dx++) { const nx = x + dx; if (nx >= 0 && nx < VIEW_W && !pass(nx, ny)) cands.push(nx); }
+        }
+        if (!cands.length) return changed;
+        const score = x => (world[`${x},${ny}`] === 'void' ? 0 : 10) + (nearIsland(x, ny) ? 5 : 0) + Math.abs(x - VIEW_W / 2) * 0.1;
+        cands.sort((a, b) => score(a) - score(b));
+        const k = `${cands[0]},${ny}`;
+        delete world[k]; delete shifterMeta[k]; islandCells.delete(k);
+        changed++; wayRepairs++;
+    }
+    return changed;
+}
 function ensureRowsPassable(fromY, toY) {
     for (let y = fromY; y > toY; y--) {
         if (y > 0) continue;
@@ -17688,6 +17927,53 @@ function slotLeavesPassage(cells) {
     return false;
 }
 
+/* ══ [300926i] A SET NEVER CLOSES THE WAY THROUGH ════════════════════════════
+   Field note: "never block two paths onto an island with two big shapes, because
+   it's impossible to get around them." The old check (slotLeavesPassage) asked
+   only for one open COLUMN through the new set's own rows — so a square in the
+   left lane beside an island passed, and a square in the right lane a few rows
+   higher passed too, and between them there was no way past at all.
+   THE RULE: a set may not take the last way through. Before a set is placed the
+   board around it (six rows either side) is walked from below to above — once
+   for a 2x2 body, once for a single — with holes, walls and every live set as
+   the obstacles (a red too, for the 2x2: it takes a cube). If a way existed
+   before the set and none exists with it, the set goes somewhere else. So a set
+   can stand beside an island, but never in the only lane left open. */
+function wayThroughBand(yBot, yTop, extra, size) {
+    const blocked = (x, y) => {
+        if (x < 0 || x >= VIEW_W) return true;
+        const k = `${x},${y}`, w = world[k];
+        if (w === 'void' || w === 'wall' || (size > 1 && w === 'hazard')) return true;
+        if (extra && extra.has(k)) return true;
+        for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.keys.has(k)) return true;
+        return false;
+    };
+    const fits = (x, y) => { for (let dx = 0; dx < size; dx++) for (let dy = 0; dy < size; dy++) if (blocked(x + dx, y - dy)) return false; return true; };
+    const seen = new Set(), q = [];
+    for (let x = 0; x + size <= VIEW_W; x++) if (fits(x, yBot)) { seen.add(x + ',' + yBot); q.push([x, yBot]); }
+    for (let h = 0; h < q.length; h++) {
+        const [x, y] = q[h];
+        if (y - (size - 1) <= yTop) return true;
+        for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+            if (!dx && !dy) continue;
+            const nx = x + dx, ny = y + dy;
+            if (ny > yBot || ny < yTop || nx < 0 || nx + size > VIEW_W) continue;
+            const k = nx + ',' + ny;
+            if (seen.has(k) || !fits(nx, ny)) continue;
+            seen.add(k); q.push([nx, ny]);
+        }
+    }
+    return false;
+}
+const SET_WAY_ROWS = 6;
+function slotKeepsWayThrough(cells) {
+    const minY = Math.min(...cells.map(c => c.y)), maxY = Math.max(...cells.map(c => c.y));
+    const yBot = maxY + SET_WAY_ROWS, yTop = minY - SET_WAY_ROWS;
+    const mine = new Set(cells.map(c => `${c.x},${c.y}`));
+    for (const size of [2, 1])
+        if (wayThroughBand(yBot, yTop, null, size) && !wayThroughBand(yBot, yTop, mine, size)) return false;
+    return true;
+}
 function slotIsApproachable(cells) {
     // [ISLANDS] Is this slot on a platform we deliberately moated?
     const _toIsland = cells.some(c => islandCells.has(`${c.x},${c.y}`));
@@ -18362,7 +18648,7 @@ function bridgePlan() {
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
     const slotKeys = new Set();
     for (const sl of slots) for (const k of sl.keys) slotKeys.add(k);
-    const spins = { 1: nextTurnSpin(1), 2: nextTurnSpin(2) };
+    const spins = { 1: nextTurnSpin(1), 2: nextTurnSpin(2), 3: nextTurnSpin(3), 4: nextTurnSpin(4) };   // [300926d]
     let best = null;
     const holeNear = (x, y) => { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (world[`${x + dx},${y + dy}`] === 'void') return true; return false; };
     const bad = (x, y) => { const v = world[`${x},${y}`]; return x < 0 || x >= VIEW_W || y > bot || y < top || v === 'void' || v === 'wall' || v === 'hazard'; };
@@ -18373,7 +18659,7 @@ function bridgePlan() {
             if (!machineCellOk(T.x, T.y)) return;                    // [120926a] off the frame
             if (!holeNear(T.x, T.y)) return;                         // an arm reaches two cells at most
             if (nearAnyShifter(T.x, T.y) || !nearSet(T.x, T.y)) return;
-            for (const turns of (SWEEP_HALF_TURNS ? [2, 1] : [1])) {
+            for (const turns of (SWEEP_HALF_TURNS ? [2, 1, 3, 4] : [1])) {   // [300926d] the bridge may use a 270° or a 360° when it lays more
                 const ccw = spins[turns] === 'ccw';
                 const pose = bridgePoses(type, turns, ccw)[st.c + '|' + ti];
                 if (!pose) continue;
@@ -18388,7 +18674,7 @@ function bridgePlan() {
                     if (x >= 0 && x < VIEW_W && y >= top && y <= bot && world[`${x},${y}`] === 'void' && useful(x, y, T.x, T.y)) lays++;
                 }
                 if (!lays) continue;
-                const score = lays * 10 - st.d * 2 + (turns === 2 ? 1 : 0) + Math.random();
+                const score = lays * 10 - st.d * 2 + (turns === 2 ? 1 : turns >= 3 ? -14 : 0) + Math.random();   // [300926d] 270°/360° only when they lay two cells more
                 if (!best || score > best.score)
                     best = { score, k: tk, x: T.x, y: T.y, dir: spins[turns], turns, lays, moves: st.d, path: st.path };
             }
@@ -19174,19 +19460,45 @@ function slotClaimReward(slot) {
 // After a move: claim any unclaimed slot whose footprint the player exactly
 // matches (equal cell-sets ⇒ player IS that shape/config there).
 function checkSlotClaims() {
-    const cells = getPlayerCells();
-    const pk = cells.map(c => `${c.x},${c.y}`);
     for (const slot of slots) {
+        const cells = getPlayerCells();   // [290926q] read per slot: a covering claim leaves a smaller body for the next
+        const pk = cells.map(c => `${c.x},${c.y}`);
         if (slot.claimed) continue;
         // Skip slots whose requirement has already been banked
         if (slot.retiring) continue;
         if (!setNeeded.includes(slot.id)) continue;
-        if (pk.length !== slot.keys.size) continue;
-        let all = true;
-        for (const k of pk) if (!slot.keys.has(k)) { all = false; break; }
-        if (!all) continue;
+        let cover = null;
+        if (pk.length === slot.keys.size) {
+            let all = true;
+            for (const k of pk) if (!slot.keys.has(k)) { all = false; break; }
+            if (!all) continue;
+        } else if (!game._replay && coversSlot(pk, slot)) {
+            // [290926q] A BIGGER SHAPE OVER THE WHOLE SET: the cubes on it go into it
+            const idx = [];
+            pk.forEach((k, i) => { if (slot.keys.has(k)) idx.push(i); });
+            const res = tryMultiDevolve(cells, idx);
+            if (!res) continue;
+            cover = { idx, res, cells };
+        } else continue;
 
         slot.claimed = true;
+        if (cover) {
+            const prevType = game.shapeType, par = game.faceParity, fam = playerColor();
+            const given = cover.idx.map(i => ({ x: cover.cells[i].x, y: cover.cells[i].y }));
+            game.shapeType = cover.res.shapeType;
+            game.shapeConfig = cover.res.config;
+            game.playerX = cover.res.anchorX;
+            game.playerY = cover.res.anchorY;
+            const arrive = animQueueDelay(), t = performance.now();
+            coverFX = { cells: given, fam, par, prevType, setCol: slot.color, t0: t + arrive, until: t + arrive + SEAT_MS * 0.7 };
+            signalSizeChange(prevType, game.shapeType, true);   // the claim is the sound; the pip still says smaller
+            game._ringPrevType = game.shapeType;                  // and no shrink ring: this is a claim, not damage
+            const n = given.length, gc = given.reduce((a, c) => ({ x: a.x + c.x / n, y: a.y + c.y / n }), { x: 0, y: 0 });
+            later(arrive + 120, () => addFloat(gc.x * CELL + CELL / 2, (gc.y - game.cameraY) * CELL + CELL + 14,
+                n > 1 ? `\u2212${n} CUBES \u2192 SET` : '\u22121 CUBE \u2192 SET', slot.color));
+            rec('cover', { id: slot.id, from: prevType, to: game.shapeType, n });
+            showTip('cover');
+        }
         // SEAT (V9): the key slides into the lock — settle animation + click
         // at commit, before the suspense beat and payout.
         game._seatT0 = performance.now();
@@ -19375,6 +19687,7 @@ function checkSlotClaims() {
         // score, float, bursts, tone, glow, set completion — lands one beat
         // (~200ms) later. Commit, then watch it pay.
         const setDone = (setNeeded.length === 0);
+        if (setDone) game._setDoneHold = true;   // [300926f] machines stand still while the level closes
         // FAMILY GONE (V9): the last needed requirement of this shape family
         // just banked (mid-round only — the final claim has its own party).
         const typeGone = !setDone && !setNeeded.some(id => parseRequirement(id).type === slot.type);
@@ -19495,6 +19808,7 @@ function checkSlotClaims() {
             // celebrations, two tallies. completeSet sets `celebrating`
             // synchronously, so testing it is enough, and on the normal path it is
             // still false at this point.
+            if (!setDone) celebratePiece(payCells, payColor, doneReq, totalReq);   // [300926a] a party for every piece
             if (setDone && !game.celebrating) completeSet();
         }, CLAIM_SUSPENSE_MS);
     }
@@ -19676,6 +19990,64 @@ const REPLAY_OFFER_MS = 4000;    // the offer's window; when it closes the level
 const LC_RING_C = 56.549;        // 2πr for the r=9 ring in the markup
 let replayOffer = null;          // { id, at, taken, take(), pass() }
 let _replayOfferSeq = 0;
+let _runSerial = 0;
+/* ══ [300926f] SETS FIRST, THEN THE MACHINE ══════════════════════════════════
+   Designer's call: a J landing with one cube on a single's set and one on a turn
+   shifter leaves that cube in the set, and THEN the rest reacts to the shifter.
+   Until now the machine fired first and carried the whole J away from the set.
+   THE ORDER OF A LANDING, as the game now states it:
+     1. in the air — a red takes the cube that touches it (as before);
+     2. the sets — a set covered whole takes its cubes and they fly to the HUD;
+        a cube on PART of a set is taken by it (both as before, now always
+        before any machine);
+     3. the greens — a green beside what is left joins it [300926c];
+     4. the machine — a step or turn under what is left moves or turns it,
+        about the cube that is on it.
+   What that means, shape by shape (one cube on a single's set, one on the tile):
+     · J → a pair or a diagonal (the corner gone) rides the tile;
+     · square → a J rides the tile;
+     · pair or diagonal → a single: a STEP moves it; a TURN has nothing to
+       turn, so the single stands on the tile and the tile waits for later
+       (a single never uses a turn — SINGLE_PASSES_TURNS);
+     · two cubes on a pair's set, the third on the tile → a single, as above.
+   The machine waits until the cubes have gone in (the seat), so the eye reads
+   it in order: in, then round. If that piece finishes the set the level ends
+   there and the machine does not fire. What the machine carries the rest onto
+   is judged like any machine landing: an exact set is a claim (a gear-train
+   claim pays the train bonus), part of a set takes a cube, a red, a hole or the
+   edge costs as usual, a hole the arm crosses is laid, an hourglass it crosses
+   pays. The route guide already assumed this order (routeStep: "the real
+   handler banks the claim before firing a shifter"); now the handler does too. */
+const SET_BEFORE_MACHINE = true;
+const SET_THEN_MACHINE_BEAT_MS = 110;   // after the seat, before the grab
+let machineHoldUntil = 0;
+function armedMachineUnder(cells) {
+    for (const c of cells) {
+        const k = `${c.x},${c.y}`, w = world[k];
+        if ((w !== 'pivot' && w !== 'slip') || shifterSpent(k)) continue;
+        if (w === 'pivot' && SINGLE_PASSES_TURNS && game.shapeType === 'single') continue;
+        return true;
+    }
+    return false;
+}
+function serveSetsBeforeMachine(cells) {
+    if (!SET_BEFORE_MACHINE || !COVER_CLAIM || game._replay || game.celebrating) return false;
+    const keys = cells.map(c => `${c.x},${c.y}`);
+    if (!slots.some(sl => coversSlot(keys, sl))) return false;
+    if (!cells.some(c => { const k = `${c.x},${c.y}`, w = world[k]; return (w === 'pivot' || w === 'slip') && !shifterSpent(k); })) return false;
+    const before = game.roundClaims || 0;
+    checkSlotClaims();
+    if ((game.roundClaims || 0) === before) return false;
+    rec('order', { k: 'set>machine', s: game.shapeType });
+    if (setNeeded.length === 0) return true;   // the last piece: the level ends, the machine stays
+    let rest = getPlayerCells();
+    game._restBefore = rest.map(c => ({ x: c.x, y: c.y }));   // for the party's fireworks to keep clear of
+    // the greens next, on what is left [300926c]
+    if (GREEN_BEFORE_MACHINE) { const fuse = findFusionAt(rest); if (fuse && fuseAllowed(rest, fuse)) { applyFusionMove(rest, fuse); rest = getPlayerCells(); } }
+    if (armedMachineUnder(rest) && coverFX && coverFX.until)
+        machineHoldUntil = Math.max(machineHoldUntil, coverFX.until + SET_THEN_MACHINE_BEAT_MS);
+    return true;
+}   // [300926e] one per run: a level's closing timers belong to the run that earned them
 let _lcTick = 0;
 
 /* Is there anything to offer? The same test startBoardReplay applies, asked
@@ -22502,6 +22874,7 @@ function coverageGrade(cov, level) {
 }
 
 function completeSet() {
+    const _run = _runSerial;   // [300926e]
     if (game._setFlightEnd && game._setFlightEnd < performance.now() - 5000) game._setFlightEnd = 0;   // [290926g] only a flight from this claim counts
     // Hard input lock the instant the advance condition is met — no further
     // player move can occur before the transition takes hold (independent of the
@@ -22712,6 +23085,7 @@ function completeSet() {
             slotProgress = getSlotEveryLandings();
             game._needSeed = true;   // [300726an] seed this level's opening slots
             game._levelStartScore = game.score;
+            game._piecesHome = 0; game._setDoneHold = false;   // [300926g][300926f]
             game._elapsedLevel = 0; game._lastTimeMark = 0;   // [270726za] fresh reminder clock
             game.speedOffset = 0;
             lastTickSecond = 999;
@@ -22760,6 +23134,7 @@ function completeSet() {
             game.coverage = 0;
             game._rowsThisRound = new Set();   // [160826t] fresh ledger of this round's ground
             resetSetTracker();
+            startLevelIsland();   // [300926j] the island first, so its piece is not dealt elsewhere
             seedSlotsAtTop();
             // Slots are seeded after the player is placed — make sure none landed
             // on the spawn cube (you can't legally be inside a slot).
@@ -22791,6 +23166,7 @@ function completeSet() {
         // the player dismisses it (or it auto-continues) the level advances
         // and the round overlay plays as before; play resumes as it fades.
         setTimeout(() => {
+            if (_run !== _runSerial) return;   // [300926e] that run is over
             hideLevelCard();
             /* ── [080926k] THE INTER-LEVEL SCORECARD IS GONE ────────────────────
                Measured across 25 transitions: the card was on screen for a median
@@ -22836,6 +23212,7 @@ function completeSet() {
                startBoardReplay() outright, with the title and praise riding it
                as captions. */
             levelCardThenReplay(_lc, () => {
+                if (_run !== _runSerial) return;   // [300926e] that run is over
                 _advanceNow();
                 setTimeout(() => {
                     // [300726an] Seed the new level's opening slots the moment
@@ -22960,6 +23337,66 @@ function finaleCelebration() {
     }, 120 + i * 150);
     if (sfx.finale) sfx.finale();
     triggerShake(4, 300);
+}
+const PIECE_PARTY = true;
+function celebratePiece(cells, color, done, total) {
+    if (!PIECE_PARTY || game._replay || !cells || !cells.length) return;
+    const left = Math.max(0, total - done);
+    let cx = 0, cy = 0;
+    for (const c of cells) { cx += c.x * CELL + CELL / 2; cy += (c.y - game.cameraY) * CELL + CELL / 2; }
+    cx /= cells.length; cy /= cells.length;
+    const clampX = v => Math.max(24, Math.min(LOGICAL_W - 24, v)), clampY = v => Math.max(24, Math.min(LOGICAL_H - 24, v));
+    /* [300926f] the bursts keep clear of the body — where it stands and where a
+       machine is taking it — so "in, then round" is seen, not buried in sparks */
+    const avoid = getPlayerCells().concat(game._restBefore || []).map(c => ({ x: c.x * CELL + CELL / 2, y: (c.y - game.cameraY) * CELL + CELL / 2 }));
+    const spots = [];
+    for (let k = 0; k < 12; k++) for (const rr of [1.45, 2.1]) {
+        const a = -Math.PI / 2 + (k / 12) * Math.PI * 2, x = clampX(cx + Math.cos(a) * CELL * rr), y = clampY(cy + Math.sin(a) * CELL * rr);
+        const clear = Math.min(9, ...avoid.map(q => Math.hypot(q.x - x, q.y - y) / CELL));
+        spots.push({ x, y, score: clear - rr * 0.35 - Math.abs(Math.sin(a / 2)) * 0.2 });   // clear first, then close to the set, then above it
+    }
+    spots.sort((p, q) => q.score - p.score);
+    const pick = [];
+    for (const sp of spots) { if (pick.length >= 4) break; if (pick.every(q => Math.hypot(q.x - sp.x, q.y - sp.y) > CELL * 1.1)) pick.push(sp); }
+    game._restBefore = null;
+    for (let i = 0; i < pick.length; i++) setTimeout(() => {
+        if (!game.running) return;
+        const fx = pick[i].x, fy = pick[i].y;
+        addBurst(fx, fy, color); addBurst(fx, fy, '#ffffff');
+        for (let k = 0; k < 8; k++) {
+            const an = (k / 8) * Math.PI * 2 + i * 0.4;
+            for (const rr of [18, 30]) addBurst(fx + Math.cos(an) * rr, fy + Math.sin(an) * rr, (k + (rr > 20 ? 1 : 0)) % 2 ? '#ffffff' : color);
+        }
+    }, 110 + i * 150);
+    triggerEdgeGlow(color, 900);
+    // [300926g] the words and the tune wait for the piece to arrive in the set — pieceHome
+}
+/* ══ [300926g] WELL DONE — THE PIECE HOME IN THE SET ═════════════════════════
+   Designer's call: "need more of a recognition, a sound, a low level 'well done'
+   for slotting a piece into a set — this is really important to celebrate."
+   The claim itself fires a scatter of short blips (the seat click, the scale
+   step, the evolve run, the party's pops) all inside 300 ms — they blur into
+   one bling. So the recognition gets its OWN moment: when the piece lands in
+   its place in the HUD set. There, together:
+     · a soft thunk as it seats;
+     · a two-note "well — done" chime (a rising fourth, bell-voiced), that
+       starts a step higher with each piece, so the set climbs as it fills;
+     · the words, low-key and never the same twice running — WELL DONE!,
+       NICE ONE!, SPOT ON!, IN IT GOES!, GOOD FIT!, SLOTTED! — over the count:
+       2 TO GO / ONE TO GO;
+     · the set row flashing (as 1742), and a light buzz where phones can.
+   The last piece keeps the level's big party instead. */
+const PIECE_PRAISE = ['WELL DONE!', 'NICE ONE!', 'SPOT ON!', 'IN IT GOES!', 'GOOD FIT!', 'SLOTTED!'];
+const PIECE_LADDER = [NOTE.G4, NOTE.A4, NOTE.C5, NOTE.D5, NOTE.E5, NOTE.G5, NOTE.A5, NOTE.C6, NOTE.D6, NOTE.E6];
+function pieceHome(color) {
+    if (!PIECE_PARTY || game._replay || !game.running) return;
+    const left = setNeeded.length;
+    if (left === 0 || game.celebrating) return;   // the last piece: the level's party
+    game._piecesHome = (game._piecesHome || 0) + 1;
+    if (sfx.pieceIn) sfx.pieceIn(game._piecesHome);
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.16, `${dealLine('piece', PIECE_PRAISE)}\n${left === 1 ? 'ONE TO GO' : left + ' TO GO'}`, color, true, { life: 1800, hold: 1000 });
+    if (typeof HAPTICS !== 'undefined') HAPTICS.fire(HAPTIC.claim);
+    rec('piece', { n: game._piecesHome, left });
 }
 function triggerSetCelebration(fireworkCount = 15, duration = 2500) {
     const colors = SLOT_TYPES.map(t => SLOT_DEFS[t].color);
@@ -23301,6 +23738,7 @@ function commitFusion(cellsHere, fuse, dir) {
 //   the struck cube in place, letting the survivor finish its full arc. Any
 //   green fusion with the survivors then resolves on the next auto-fuse pass.
 // Returns true only if a green ADD/REMOVE was performed here (move handled).
+const GREEN_BEFORE_MACHINE = true;   // [300926c]
 function tryFuseAlongPath(dir) {
     const shapeType = game.shapeType, config = game.shapeConfig;
     const newConfig = SHAPES[shapeType].trans[config][dir];
@@ -23317,6 +23755,10 @@ function tryFuseAlongPath(dir) {
 
     const landedCells = SHAPES[shapeType].cells[newConfig]
         .map(([cx, cy]) => ({ x: landX + cx, y: landY - cy }));
+    // [290926q] A landing that covers a whole set is a claim first: the ordinary
+    // move lands it, the cubes go into the set, and a green beside what is left
+    // is judged on the settled body, not on the body that landed.
+    if (COVER_CLAIM) { const _lk = landedCells.map(c => `${c.x},${c.y}`); if (slots.some(sl => coversSlot(_lk, sl))) return false; }
 
     // ADD takes precedence (Model A) — EXCEPT over mechanisms (V9):
     // if the landing covers a pivot/slip, the GEAR ENGAGES FIRST and
@@ -23336,7 +23778,7 @@ function tryFuseAlongPath(dir) {
         const w = world[`${cc.x},${cc.y}`];
         return (w === 'pivot' && canTurn) || w === 'slip';
     });
-    if (fuse && !toolUnderfoot) {
+    if (fuse && (!toolUnderfoot || GREEN_BEFORE_MACHINE)) {   // [300926c] the green joins first; the machine then moves the whole new shape
         game.playerX = landX;
         game.playerY = landY;
         game.shapeConfig = newConfig;
@@ -23578,7 +24020,8 @@ function startPivotAnim(oldCells, newCells, anchorX, anchorY, turn) {
     // [180826q] A single consuming a pivot rotates in place — every cell maps
     // to itself. Animating that would lock input for 460ms of visible
     // stillness; the burst and sound carry the moment instead.
-    if (oldCells.length === newCells.length &&
+    if (!(turn && turn.turns === 4) &&   // [300926d] a full turn ends where it began, and is still a swing
+        oldCells.length === newCells.length &&
         oldCells.every((c, i) => c.x === newCells[i].x && c.y === newCells[i].y)) return;
     /* [SWEEP] `turn` = { ccw, turns }. A half turn cannot use the shortest-
        path wrap below (180° is ambiguous — it could swing either way), so
@@ -23591,7 +24034,7 @@ function startPivotAnim(oldCells, newCells, anchorX, anchorY, turn) {
     transformAnim = {
         type: 'pivot',
         startTime: performance.now() + animQueueDelay() + MACHINE_ENGAGE_MS,   // [180826ae][190826a] waits for flight AND any prior swing · [280926e] and the grab
-        duration: TURN_MS[turns === 2 ? 2 : 1],   // [280926e] was 460 / 640
+        duration: (TURN_MS[turns] || TURN_MS[1]),   // [280926e] was 460 / 640
         oldCells: oldCells.map(c => ({ x: c.x, y: c.y })),
         newCells: newCells.map(c => ({ x: c.x, y: c.y })),
         anchorX, anchorY,
@@ -23642,14 +24085,48 @@ function stepLay(oldCells, v, hop) {
             if (fillVoid(x, y)) { laid++; addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#7dd3fc'); }
             continue;
         }
+        if (MACHINE_TAKES_HOURGLASSES && isTimeCell(world[k])) {   // [300926b] vaulted over: collected as it is crossed
+            const hx = x, hy = y;
+            later(animQueueDelay() + MACHINE_ENGAGE_MS + STEP_MS * 0.5, () => payHourglass(hx, hy, 'step'));
+            continue;
+        }
         if (world[k] !== undefined || visited.has(k)) continue;
         markCovered(k, true);
         addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#c4b5fd');
     }
     return laid;
 }
+/* [300926b] an hourglass collected by passing over it — the same pay as landing on it */
+function payHourglass(x, y, by) {
+    const key = `${x},${y}`, v = world[key];
+    if (!isTimeCell(v)) return 0;
+    const raw = Math.round((v === 't30' ? 30 : v === 't10' ? 10 : v === 't45' ? 45 : 15) * (CLOCK_ONLY ? TIME_PICKUP_MUL : 1));
+    const sec = clockCredit(raw);
+    delete world[key];
+    game.roundWarps = (game.roundWarps || 0) + 1;
+    game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
+    markCovered(key);
+    scoreGain(3, false);
+    momentumAddSeconds(sec);
+    rec('time', { sec, src: 'hourglass', by: by || 'sweep', m: Math.round(momentumRemaining()), ...(sec !== raw ? { raw } : {}) });
+    if (sec >= 20) { if (sfx.time30) sfx.time30(); } else if (sfx.time10) sfx.time10();
+    addFloat(x * CELL + CELL / 2, (y - game.cameraY) * CELL, secsLabel(sec), sec >= 20 ? '#fb8b1e' : '#86efac');
+    tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= 20 ? '#fb8b1e' : '#86efac');
+    addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#86efac');
+    const clockEl = document.getElementById('rotorSecs');
+    if (clockEl) { clockEl.classList.remove('clock-boost'); void clockEl.offsetWidth; clockEl.classList.add('clock-boost'); setTimeout(() => clockEl.classList.remove('clock-boost'), 800); }
+    return sec;
+}
+const MACHINE_TAKES_HOURGLASSES = true;
 function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
     if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
+    if (MACHINE_TAKES_HOURGLASSES) {   // [300926b] hourglasses on the arm's path, each as the cube crosses it
+        const topH = topLawfulRow(), botH = Math.floor(game.cameraY) + VIEW_H - 1;
+        for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) {
+            if (c.x < 0 || c.x >= VIEW_W || c.y < topH || c.y > botH || !isTimeCell(world[`${c.x},${c.y}`])) continue;
+            sweepQueue.push({ x: c.x, y: c.y, at: transformAnim.startTime + transformAnim.duration * turnTimeForArc(c.k), i: 0, hg: true });
+        }
+    }
     /* [250926b] THE ARM COVERS WHAT IT PASSES OVER. Field call: every cell the
        sweep crosses should read as an occupied square, not just the holes it
        fills. It already laid ground in the voids (fillVoid marks it covered);
@@ -23721,6 +24198,7 @@ function tickSweepQueue() {
     if (!due.length) return;
     sweepQueue = sweepQueue.filter(q => q.at > now);
     for (const q of due) {
+        if (q.hg) { payHourglass(q.x, q.y, 'sweep'); continue; }   // [300926b]
         game._fillSfxAt = now;   // the chime below speaks for this cell, not the bought-ground cue
         if (!fillVoid(q.x, q.y)) continue;
         const sx = q.x * CELL + CELL / 2, sy = (q.y - game.cameraY) * CELL + CELL / 2;
@@ -23765,6 +24243,7 @@ function getAnimatedRenderCells() {
 // sequence instead of overwriting each other's swings.
 function animQueueDelay() {
     let d = flightRemaining();
+    if (machineHoldUntil) d = Math.max(d, machineHoldUntil - performance.now());   // [300926f] the cubes go into the set first
     if (transformAnim)
         d = Math.max(d, transformAnim.startTime + transformAnim.duration - performance.now());
     return Math.max(0, d);
@@ -25014,6 +25493,7 @@ function move(dir) {
                 keys.forEach((k, i) => { if (sl.keys.has(k)) touch.push(i); });
                 if (!touch.length) continue;
                 if (touch.length === keys.length && sl.keys.size === keys.length) break;  // exact fit — a claim
+                if (touch.length === sl.keys.size && coversSlot(keys, sl)) continue;       // [290926q] covered whole by a bigger shape — a claim
                 // [300726bg] ONE RULE, ALWAYS: a cube that touches a slot it does
                 // not fit is SHED. The earlier version only shed when you were
                 // too big and refused otherwise, on the argument that taking the
@@ -25411,6 +25891,7 @@ function move(dir) {
             const exactClaim = (proposedKeys.length === slot.keys.size) &&
                                proposedKeys.every(k => slot.keys.has(k));
             if (exactClaim) continue;   // exact claim is allowed — proceed
+            if (coversSlot(proposedKeySet, slot)) continue;   // [290926q] so is a bigger shape over the whole set
             // THE SHAVE (V9): before repelling, simulate the physics — if a
             // red is contacted first and the survivor fits, the move stands.
             if (shaveAllows(proposedCells, newX - game.playerX, newY - game.playerY)) break;
@@ -25949,6 +26430,11 @@ function checkCollisions() {
         let chainContinue = true;
         while (chainContinue && chainLinks < 5) {
         chainContinue = false;
+        if (serveSetsBeforeMachine(cells)) {   // [300926f] the sets first, then the machine
+            cells = getPlayerCells();
+            if (setNeeded.length === 0) break;   // that piece finished the set
+        }
+        if (game._setDoneHold) break;   // [300926f] the set is complete: no machine fires while the level closes
         let triggerCell = null, triggerKey = null, triggerItem = null, onDormantTurn = null;
         for (const c of cells) {
             const k = `${c.x},${c.y}`;
@@ -26043,7 +26529,7 @@ function checkCollisions() {
 
             if (!push.trim) {
                 // CLEAN ROTATION — all cells valid.
-                if (push.free && push.free.length) machineFreeLay(newCells, push.free, animQueueDelay() + MACHINE_ENGAGE_MS + TURN_MS[turns === 2 ? 2 : 1]);   // [280926n]
+                if (push.free && push.free.length) machineFreeLay(newCells, push.free, animQueueDelay() + MACHINE_ENGAGE_MS + (TURN_MS[turns] || TURN_MS[1]));   // [280926n]
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 game.shapeConfig = newConfig;
                 game.playerX = pv.anchorX;   // [270726] anchor moves with the rotation
@@ -26105,7 +26591,7 @@ function checkCollisions() {
                    rest and is marked where it arrives; the break is staged for
                    the end of the swing (applyShiftTrim's `arrive`). */
                 const _oldAll = cells.map(c => ({ x: c.x, y: c.y }));
-                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { from: _oldAll, arrive: animQueueDelay() + MACHINE_ENGAGE_MS + TURN_MS[turns === 2 ? 2 : 1] });   // [280926e]
+                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { from: _oldAll, arrive: animQueueDelay() + MACHINE_ENGAGE_MS + (TURN_MS[turns] || TURN_MS[1]) });   // [280926e]
                 cells = getPlayerCells();
                 startPivotAnim(_oldAll, pv.rotated, triggerCell.x, triggerCell.y, { ccw, turns });
                 // [SWEEP] Free and paid in the same instant: the cube that
@@ -27936,6 +28422,30 @@ const SLOT_PERMEABLE = false;
    of a square or a J is a pair, a diagonal or a single; three of a square is
    a J), so the survivors always have a shape to take; classifyShiftPush's
    last-cube-standing grind is only ever reached by reds and walls. */
+/* ══ [290926q] A BIGGER SHAPE CAN COVER THE WHOLE SET ═══════════════════════
+   Designer's call: "if a larger configuration can cover the whole of the set then
+   that should be a valid move — the cells that are used will detach accordingly,
+   filling the grid set and the HUD set."
+   THE RULE, as the game now states it:
+     · land EXACTLY on a set (same shape, same cells) and it is yours — you keep
+       every cube, as before;
+     · land a BIGGER shape so that EVERY cell of the set is under you and it is
+       yours too — but the cubes on the set go into it: they lock into the set,
+       fly to its place at the top, and the rest of you carries on, smaller;
+     · land on PART of a set (a cell of it uncovered) and the set takes the cube
+       that touched it, as before.
+   Any cubes of a 2x2 body are a body, so the rest is always a shape. A square
+   over a pair set leaves a pair; a pair over a single leaves a single. A cube of
+   the rest on a second set is judged on its own by the same rule. coversSlot()
+   is the one test: the landing rules, the route guide and the claim all ask it. */
+const COVER_CLAIM = true;
+function coversSlot(keys, sl) {   // keys: the landing's cell keys (array or Set)
+    if (!COVER_CLAIM || !sl || sl.claimed || sl.retiring || !setNeeded.includes(sl.id)) return false;
+    const ks = keys instanceof Set ? keys : new Set(keys);
+    if (ks.size <= sl.keys.size) return false;
+    for (const k of sl.keys) if (!ks.has(k)) return false;
+    return true;
+}
 function slotOffenders(newCells, inPlayOnly) {
     const out = new Set();
     if (SLOT_PERMEABLE) return out;   // [180826e] slots are terrain
@@ -27948,6 +28458,7 @@ function slotOffenders(newCells, inPlayOnly) {
         keys.forEach((k, i) => { if (sl.keys.has(k)) touch.push(i); });
         if (!touch.length) continue;
         if (touch.length === keys.length && sl.keys.size === keys.length) continue;   // exact insertion — allowed
+        if (touch.length === sl.keys.size && coversSlot(keys, sl)) continue;   // [290926q] the whole set covered by a bigger shape — a claim
         for (const i of touch) out.add(i);
     }
     return out;
@@ -28249,7 +28760,7 @@ function classifyFlip(dir) {
         for (const k of slot.keys) { if (keySet.has(k)) { overlaps = true; break; } }
         if (!overlaps) continue;
         const exact = (keys.length === slot.keys.size) && keys.every(k => slot.keys.has(k));
-        if (!exact) return { outcome: 'blocked', footprint };
+        if (!exact && !coversSlot(keySet, slot)) return { outcome: 'blocked', footprint };   // [290926q]
     }
 
     // Reds take precedence over a green interaction (mirrors
@@ -28392,9 +28903,10 @@ const routeCache = { sig: null, result: null, at: 0 };
 // Still-needed, unclaimed slots that match the CURRENT body (fixed-body target).
 function routeNeededSameBodySlots() {
     const out = [];
+    const mySize = SHAPE_SIZE[game.shapeType] || 1;
     for (const sl of slots) {
         if (sl.claimed || sl.retiring) continue;
-        if (sl.type !== game.shapeType) continue;
+        if (sl.type !== game.shapeType && !(COVER_CLAIM && sl.keys.size < mySize)) continue;   // [290926q] or smaller: a bigger body can cover it
         if (!setNeeded.includes(sl.id)) continue;
         out.push(sl);
     }
@@ -28406,6 +28918,7 @@ function routeNeededSameBodySlots() {
 function routeExactClaim(cells) {
     const keys = cells.map(c => c.x + ',' + c.y);
     for (const sl of routeNeededSameBodySlots()) {
+        if (coversSlot(keys, sl)) return sl;   // [290926q] a bigger body over the whole set
         if (sl.keys.size !== keys.length) continue;
         let all = true;
         for (const k of keys) if (!sl.keys.has(k)) { all = false; break; }
@@ -28426,7 +28939,7 @@ function routeRepelsNonExact(cells) {
         for (const k of sl.keys) if (keySet.has(k)) { overlap = true; break; }
         if (!overlap) continue;
         const exact = (keys.length === sl.keys.size) && keys.every(k => sl.keys.has(k));
-        if (!exact) return true;
+        if (!exact && !coversSlot(keySet, sl)) return true;   // [290926q]
     }
     return false;
 }
@@ -28460,6 +28973,13 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
 
     // Body-changers are out of scope → not edges.
     if (landsOnHazard(nx, ny, type, nConfig)) return null;           // devolve / death
+    /* [300926h] AND THE HOLES. Field note: "when the move guide calculates its route
+       it is not including the voids." It was not: this step checked walls (canFit)
+       and reds, and a flip onto a hole passed as a clean move — measured, 56 of 60
+       guide routes over a holed board landed on a hole somewhere. A hole takes a
+       cube (a single's last), so a route through one is not the same body arriving:
+       it is not a route. */
+    if (cells.some(function (c) { return world[c.x + ',' + c.y] === 'void'; })) return null;
     // [180826v] ...unless the body-change IS the objective. When the solver is
     // running its green stage, a landing that would fuse is the GOAL, not a
     // non-edge — the route may END at growth, never pass through it.
@@ -28476,7 +28996,52 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
     // the terminal (the real handler banks the claim before firing a shifter).
     if (routeExactClaim(cells)) return { config: nConfig, x: nx, y: ny, cells: cells };
 
-    // Auto-fire the first pivot/slip the landing covers (cell order), socket-gated.
+    /* [300926h] THE SHIFTERS, AS THE BOARD RUNS THEM NOW. The handler this copies
+       has moved on three times since it was written, and the guide had not:
+         · a push onto a hole or a red is FREE — the shifter lays the hole and clears
+           the red (MACHINE_NO_SHED, [280926n]) — so it no longer stops the route;
+         · a push into a wall, over the edge or onto a set it does not fit is
+           BLOCKED — the body is repelled a square — so it is not a route either
+           (it used to be counted as "stay where you landed");
+         · a push that ends on another shifter carries on (a gear train, up to five);
+         · a push that ends beside a green grows the body — not the same body.
+       classifyShiftPush is the handler's own judge, and is read-only. */
+    let cur = { config: nConfig, x: nx, y: ny, cells: cells }, via = null;
+    const usedTiles = new Set();
+    for (let link = 0; link < 5; link++) {
+        let next = null, tileKey = null;
+        for (let i = 0; i < cur.cells.length && !next; i++) {
+            const c = cur.cells[i], k = c.x + ',' + c.y, item = world[k];
+            if (usedTiles.has(k)) continue;
+            if ((item === 'pivot' || item === 'slip') && shifterSpent(k)) continue;
+            if (item === 'pivot' && SINGLE_PASSES_TURNS && type === 'single') continue;
+            if (item === 'pivot') {
+                const meta = shifterMeta[k];
+                const pv = turnAroundTrigger(cur.cells, c.x, c.y, meta && meta.dir === 'ccw', type, cur.config, turnsOf(meta));
+                if (!pv) return null;
+                next = { config: pv.newConfig, x: pv.anchorX, y: pv.anchorY, cells: pv.newCells };
+            } else if (item === 'slip') {
+                const v = slipVectorOf(shifterMeta[k]);
+                const hop = slipHop(cur.cells, v);
+                const sx = cur.x + v.dx * hop, sy = cur.y + v.dy * hop;
+                next = { config: cur.config, x: sx, y: sy,
+                         cells: SHAPES[type].cells[cur.config].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; }) };
+            } else continue;
+            tileKey = k;
+            if (!via) via = { x: c.x, y: c.y };
+        }
+        if (!next) break;
+        if (next.cells.some(function (c) { return c.x < 0 || c.x >= VIEW_W; })) return null;
+        if ((type === 'single' && slotMisfitAt(next.cells)) || classifyShiftPush(next.cells).trim) return null;   // blocked: repelled
+        if (findFusionAt(next.cells)) return fuseIsGoal ? { config: next.config, x: next.x, y: next.y, cells: next.cells, fuseGoal: true, via: via } : null;
+        usedTiles.add(tileKey);
+        cur = next;
+        if (routeExactClaim(cur.cells)) break;   // delivered into a set: the claim ends it
+    }
+    if (via) return { config: cur.config, x: cur.x, y: cur.y, cells: cur.cells, via: via };
+    return { config: nConfig, x: nx, y: ny, cells: cells };
+}
+function _routeStepMachinesRetired(type, nConfig, nx, ny, cells) {   // [300926h] the old auto-fire, kept for reference
     for (let i = 0; i < cells.length; i++) {
         const k = cells[i].x + ',' + cells[i].y;
         const item = world[k];
@@ -28683,8 +29248,11 @@ function drawRouteGhost(cells, color, alpha, solid) {
     // navy is a thin scratch on white, which is most of why the guide was
     // getting lost. Day also gets a soft white halo behind the line so it holds
     // even where it crosses a pale cell.
+    // [290926o] And night now gets the same in reverse: the night grid's lines
+    // are white, so a thin coloured outline sat among them and got lost. A dark
+    // casing under a heavier line (3.0, was 2.4) and a stronger fill.
     const day = currentTheme === 'day';
-    const w = solid ? (day ? 4.5 : 3) : (day ? 3.6 : 2.4);
+    const w = solid ? (day ? 4.5 : 3.8) : (day ? 3.6 : 3.0);
     ctx.save();
     ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
     if (solid) { ctx.shadowColor = color; ctx.shadowBlur = 12; }
@@ -28696,10 +29264,15 @@ function drawRouteGhost(cells, color, alpha, solid) {
             ctx.globalAlpha *= 0.55;
             roundedSq(sx, sy, CELL - inset * 2, null, '#ffffff', w + 3);
             ctx.restore();
+        } else {
+            ctx.save();
+            ctx.globalAlpha *= 0.7;
+            roundedSq(sx, sy, CELL - inset * 2, null, 'rgba(3, 10, 24, 0.9)', w + 3);   // [290926o]
+            ctx.restore();
         }
         // Fill first, outline over it.
         ctx.save();
-        ctx.globalAlpha *= (solid ? 0.55 : 0.30);
+        ctx.globalAlpha *= (solid ? 0.6 : 0.42);   // [290926o] was 0.55 / 0.30
         roundedSq(sx, sy, CELL - inset * 2, color, null);
         ctx.restore();
         roundedSq(sx, sy, CELL - inset * 2, null, color, w);
@@ -29011,8 +29584,33 @@ function drawMoveGuideRoute() {
     const STAGGER_MS = 700;    // gap between one ghost arriving and the next
     const FADE_MS    = 500;    // how long each takes to arrive
     const HOLD_MS    = 3300;   // complete route held before it replays
-    const cycle = steps * STAGGER_MS + HOLD_MS;
-    const t = performance.now() % cycle;
+    /* [290926o] THE GUIDE WAITS A BEAT, THEN STARTS FROM THE FIRST MOVE. Field
+       note: "when the move guide is toggled on and off the animation revealing
+       the solution should pause for a second and then reveal the correct route."
+       The reveal ran on the wall clock (performance.now() % cycle), so switching
+       the guide on dropped you into its loop wherever the loop happened to be —
+       the whole route already standing, or half of it, or one ghost. It now runs
+       from the moment the guide went on: a second of nothing, then the first
+       move, the next, and so on. Each loop ends the same way — the route fades,
+       a second's pause, and it builds again. When a move changes the route it
+       restarts at once from the new first move (no pause: the player is mid-play
+       and the next move is the one they need). */
+    const OUT_MS = 350;
+    const now = performance.now();
+    const rkey = path.map(n => n.config + ':' + n.x + ',' + n.y).join('|');
+    if (!game._guideAt) game._guideAt = now;
+    if (game._guideKey !== rkey) {
+        if (game._guideKey && now - game._guideAt > GUIDE_PAUSE_MS) game._guideAt = now - GUIDE_PAUSE_MS;
+        game._guideKey = rkey;
+    }
+    const build = (steps - 1) * STAGGER_MS + FADE_MS;
+    const cycle = GUIDE_PAUSE_MS + build + HOLD_MS + OUT_MS;
+    const since = Math.max(0, now - game._guideAt);
+    game._guideFullAt = game._guideAt + Math.floor(since / cycle) * cycle + GUIDE_PAUSE_MS + build;   // this loop's route complete — the auto-off waits for it
+    const inCycle = since % cycle;
+    if (inCycle < GUIDE_PAUSE_MS) return;              // the beat before it draws
+    const t = inCycle - GUIDE_PAUSE_MS;
+    const out = t > build + HOLD_MS ? Math.max(0, 1 - (t - build - HOLD_MS) / OUT_MS) : 1;   // the route fades before the next loop
 
     ctx.save();
     if (r.reachable) {
@@ -29034,7 +29632,7 @@ function drawMoveGuideRoute() {
         };
         // [180826v] A green-stage route ends LIME — the goal ghost wears the
         // green's own colour, so "go here first and grow" needs no words.
-        const goalCol = r.greenGoal ? '#a3e635' : '#ffffff';
+        const goalCol = r.greenGoal ? '#a3e635' : (day ? '#0369a1' : '#ffffff');   // [290926o] white vanished on the day floor
         for (let i = 1; i < path.length; i++) {
             const age = t - (i - 1) * STAGGER_MS;
             if (age < 0) continue;                       // this move has not arrived yet
@@ -29052,9 +29650,9 @@ function drawMoveGuideRoute() {
             const settle = 1 - 0.22 * Math.min(1,
                 Math.max(0, (age - FADE_MS - 420) / 340));
             const isGoal = (i === path.length - 1);
-            const base = isGoal ? 0.95 : (0.30 + 0.34 * (i / steps));
+            const base = isGoal ? 0.95 : (0.62 + 0.30 * (i / steps));   // [290926o] was 0.30 + 0.34: the early moves were faint
             const col = isGoal ? goalCol : hueFor(i);
-            const alpha = Math.min(1, base * lift) * arrive * (isGoal ? 1 : settle);
+            const alpha = Math.min(1, base * lift) * arrive * (isGoal ? 1 : settle) * out;
             // [170826c] THE HOP IS SHOWN. When this step resolved through a
             // machine, ring the machine in the step's own colour and tie it to
             // the landing — the ghost stops teleporting inexplicably (field
@@ -29078,6 +29676,44 @@ function drawMoveGuideRoute() {
                 ctx.restore();
             }
             drawRouteGhost(path[i].cells, col, alpha, isGoal);
+        }
+        /* [290926o] THE TRAIL. A line from the body through every move to the
+           goal, drawn as each move arrives, in that move's colour, over a casing
+           (dark at night, white by day) so it holds against the grid's own
+           lines. The eye follows a line; it has to search for outlines. Each move
+           gets a dot where it lands. */
+        const segs = [];
+        let prev = routeCentroid(path[0].cells);
+        for (let i = 1; i < path.length; i++) {
+            const age = t - (i - 1) * STAGGER_MS;
+            if (age < 0) break;
+            const to = routeCentroid(path[i].cells);
+            const pts = path[i].via ? [prev, { x: path[i].via.x, y: path[i].via.y }, to] : [prev, to];
+            segs.push({ pts, k: Math.min(1, age / FADE_MS), col: i === path.length - 1 ? goalCol : hueFor(i) });
+            prev = to;
+        }
+        const X = c => c.x * CELL + CELL / 2, Y = c => (c.y - game.cameraY) * CELL + CELL / 2;
+        const lw = day ? 4.2 : 3.6;
+        for (let pass = 0; pass < 2; pass++) {
+            for (const sg of segs) {
+                ctx.save();
+                ctx.globalAlpha = out * (pass ? 0.95 : (day ? 0.95 : 0.8));
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                ctx.strokeStyle = ctx.fillStyle = pass ? sg.col : (day ? '#ffffff' : 'rgba(3, 10, 24, 0.92)');
+                ctx.lineWidth = pass ? lw : lw + 4;
+                let len = 0;
+                for (let j = 1; j < sg.pts.length; j++) len += Math.hypot(X(sg.pts[j]) - X(sg.pts[j - 1]), Y(sg.pts[j]) - Y(sg.pts[j - 1]));
+                let left = len * sg.k, ex = X(sg.pts[0]), ey = Y(sg.pts[0]);
+                ctx.beginPath(); ctx.moveTo(ex, ey);
+                for (let j = 1; j < sg.pts.length && left > 0; j++) {
+                    const ax = X(sg.pts[j - 1]), ay = Y(sg.pts[j - 1]), bx = X(sg.pts[j]), by = Y(sg.pts[j]);
+                    const d = Math.hypot(bx - ax, by - ay), f = d > 0 ? Math.min(1, left / d) : 1;
+                    ex = ax + (bx - ax) * f; ey = ay + (by - ay) * f; ctx.lineTo(ex, ey); left -= d;
+                }
+                ctx.stroke();
+                if (sg.k >= 1) { ctx.beginPath(); ctx.arc(ex, ey, pass ? 4.2 : 6.4, 0, Math.PI * 2); ctx.fill(); }
+                ctx.restore();
+            }
         }
     } else {
         // FRAYED: the trail builds the same way but thins toward the frontier
@@ -29786,7 +30422,11 @@ function drawFlipHints() {
 let hintsPref = false;
 
 // Toggle plumbing — keeps checkbox, pill and game state in sync.
+const GUIDE_PAUSE_MS = 1000;   // [290926o] the beat before the route draws
+const GUIDE_SEEN_MS = 1500;    // [290926o] the whole route stands at least this long before the guide switches off
+const GUIDE_MAX_MS = 12000;    // [290926o] ...but never longer than this in all
 function applyHints(on) {
+    if (on) { game._guideAt = performance.now(); game._guideKey = null; game._guideFullAt = 0; }   // [290926o] every switch-on starts from the beat
     game.hintsOn = !!on;
     if (typeof armHintsAutoOff === 'function') armHintsAutoOff();
     const c = document.getElementById('hintsCheck');
@@ -29895,7 +30535,7 @@ applyStick(stickOn);   // sync the pill to the saved preference on load
 // [270726w] The guide is a GLANCE, not a permanent layer: turning it on
 // arms a 5-second timer that toggles it back off through the same path the
 // pill uses, so the switch is seen going off.
-let _hintsAutoOff = null;
+let _hintsAutoOff = null, _hintsOnAt = 0;
 function armHintsAutoOff() {
     if (_hintsAutoOff) { clearTimeout(_hintsAutoOff); _hintsAutoOff = null; }
     if (game.hintsOn && game.running) {
@@ -29907,9 +30547,15 @@ function armHintsAutoOff() {
             if (game && (game.paused || game.introHold) && game.running) {
                 _hintsAutoOff = setTimeout(tick, 500); return;
             }
+            // [290926o] not before the route has stood complete for a moment: a
+            // long route takes longer than five seconds to draw, and after the
+            // beat it would have been switched off half-built
+            const _left = (game._guideFullAt || 0) + GUIDE_SEEN_MS - performance.now();
+            if (game._guideFullAt && _left > 0 && performance.now() - _hintsOnAt < GUIDE_MAX_MS) { _hintsAutoOff = setTimeout(tick, Math.min(_left, 500)); return; }
             _hintsAutoOff = null; applyHints(false);
         };
-        _hintsAutoOff = setTimeout(tick, 5000);
+        _hintsOnAt = performance.now();
+        _hintsAutoOff = setTimeout(tick, 5000 + GUIDE_PAUSE_MS);   // [290926o] five seconds of guide after the beat
     }
 }
 
@@ -29922,14 +30568,15 @@ function armHintsAutoOff() {
 const TIPS = {
     start:     'Swipe to flip. Keep climbing.',
     fresh:     'Fresh ground attracts gear shifters.',
-    green:     'Green grows you \u2014 touch it to evolve.',
-    slot:      'Match the outline. Land to claim.',
+    green:     'A green evolves you \u2014 land beside it.',   // [290926v]
+    slot:      'Land exactly on the set to claim it \u2014 or cover all of it with a bigger shape.',   // [290926q]
+    cover:     'Bigger than the set: the cubes on it go into the set, the rest of you carries on.',   // [290926q]
     rose:      'Ringed single: the hard one.',
     shave:     'Blocked? Come at it THROUGH the red.',
     shifter:   'Gear shifters rotate or nudge you.',
     // [100926h] The slot refuses now and reds are gone, so the cures are the
     // green and the hole \u2014 say so.
-    wrong:     'Wrong shape for that slot. Grow on a green, or shrink on a hole.',
+    wrong:     'Wrong shape for that set. Evolve on a green, or devolve on a hole.',   // [290926v]
     devolve:   'A hole takes a cube and becomes ground. Sometimes that\u2019s the plan.',
     // [210826p] The shed path used to borrow the 'devolve' tip, so hitting a
     // wall taught the player about the minus square \u2014 an explanation for a
@@ -29950,11 +30597,11 @@ const TIPS = {
     // a completed row tops up the tank the player can see on the HUD. That is a
     // reward they can watch arrive, where points disappear into a total.
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
-    trim:      'Too big? Bridge a hole — a cube for a cell.',   // [100926h]
+    trim:      'Too big? Cover the whole set \u2014 the cubes on it go in.',   // [100926h] · [290926q]
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   'One cube into a hole costs you the cube and 10 seconds. Grow first, or go round.',   // [250926m][250926s]
+    onecube:   'One cube into a hole costs you the cube and 10 seconds. Evolve first, or go round.',   // [290926v]   // [250926m][250926s]
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
-    misfit:    'A cube that lands in a set it does not fit is lost. Match the shape before you land.',   // [260926k]
+    misfit:    'Land on part of a set and it takes the cube that touched it. Cover all of it, or match it.',   // [260926k] · [290926q]
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -29975,8 +30622,8 @@ const TIPS = {
     // is exactly the problem "right size, wrong form" describes.
     diagForm:    'Right size, wrong form. Revolve — find a TURN shifter.',
     diagBigger:  'Too small for that slot. Find a green.',
-    diagSmaller: 'Too big for that slot. Bridge a hole — a cube for a cell.',   // [100926h]
-    nofit:     'No slot fits you now. Grow on a green, or shrink on a hole.'     // [100926h]
+    diagSmaller: 'Too big for that set, and no way to cover it from here. Bridge a hole \u2014 a cube for a cell.',   // [100926h] · [290926q]
+    nofit:     'No set fits you now. Evolve on a green, or devolve on a hole.'   // [290926v]     // [100926h]
 };
 const TIP_MS = 4000;        // each tip's time on screen
 const TIP_GAP_MS = 6000;    // quiet gap between tips
@@ -30027,10 +30674,61 @@ function updateCoachBanner() {
     if (!el || !txt) return;
     if (tipCurrent && game.tipsOn) {
         txt.textContent = TIPS[tipCurrent];
+        syncTipBeside(true);   // [290926u] make room first, so the tip arrives in its place
         el.classList.add('show');
     } else {
+        if (el.classList.contains('show')) _tipHideAt = performance.now();
         el.classList.remove('show');
     }
+    syncTipBeside();
+}
+// [290926u] see .coach-tip.beside
+const TIP_BESIDE_STICK = true;
+let _tipBeside = false, _tipShift = 0, _tipHideAt = 0;
+function stickStacked() {   // the stick under the board, where the tip can sit beside it
+    const pad = document.getElementById('stickPad'), b = document.body;
+    return !!pad && TIP_BESIDE_STICK && stickOn && b.classList.contains('in-play') && !b.classList.contains('layout-beside') &&
+           !b.classList.contains('layout-land') && !b.classList.contains('stick-off') && pad.offsetWidth > 0 && !game._replay;
+}
+function stickHeld() { return typeof _stickTouch !== 'undefined' && _stickTouch.active; }
+function syncTipBeside(arriving) {
+    const el = document.getElementById('coachTip'), pad = document.getElementById('stickPad');
+    if (!el || !pad) return;
+    const showing = arriving || el.classList.contains('show');
+    const want = showing && stickStacked();
+    if (want) {
+        if (!_tipBeside && stickHeld()) return;   // never move the stick under a thumb
+        const host = el.offsetParent || el.parentElement, cv = document.getElementById('canvas');
+        if (!host || !cv) return;
+        const hr = host.getBoundingClientRect(), cr = cv.getBoundingClientRect(), pr = pad.getBoundingClientRect();
+        const bl = host.clientLeft || 0, bt = host.clientTop || 0;
+        const tf = getComputedStyle(pad).transform, tx = tf && tf !== 'none' ? new DOMMatrix(tf).m41 : 0;   // where the glide has got to
+        const padL = pr.left - tx - hr.left - bl;                    // where the stick sits when it is home
+        let boardL = cr.left - hr.left - bl, boardR = cr.right - hr.left - bl;
+        let shift = Math.max(0, Math.round(boardR - (padL + pr.width)));
+        let w = Math.round(padL + shift - 12 - boardL);
+        if (w < 150) {   // a board narrower than its frame (a small phone): use the frame's own width
+            const hs = getComputedStyle(host);
+            boardL = parseFloat(hs.paddingLeft) || 0; boardR = host.clientWidth - (parseFloat(hs.paddingRight) || 0);
+            shift = Math.max(0, Math.round(boardR - (padL + pr.width)));
+            w = Math.round(padL + shift - 12 - boardL);
+        }
+        if (w < 120) { if (_tipBeside) { _tipBeside = false; _tipShift = 0; pad.style.transform = ''; el.classList.remove('beside'); } return; }   // no room: the old place
+        _tipShift = shift; _tipBeside = true;
+        pad.style.transform = shift ? `translateX(${shift}px)` : '';
+        el.style.setProperty('--tip-left', Math.round(boardL) + 'px');
+        el.style.setProperty('--tip-w', w + 'px');
+        el.style.setProperty('--tip-top', Math.round(pr.top - hr.top - bt + pr.height / 2) + 'px');
+        el.classList.add('beside');
+        return;
+    }
+    if (!_tipBeside) return;
+    if (showing && stickStacked()) return;
+    // the tip has gone: let it fade where it was, then the stick glides home (never under a thumb)
+    if ((showing || performance.now() - _tipHideAt < 320 || stickHeld()) && document.body.classList.contains('in-play')) return;
+    _tipBeside = false; _tipShift = 0;
+    pad.style.transform = '';
+    el.classList.remove('beside');
 }
 
 function startCoachTips() {
@@ -30040,6 +30738,7 @@ function startCoachTips() {
 
 function updateCoach(dt) {
     updateScoreDisplay();
+    syncTipBeside();   // [290926u] placed each frame while a tip shows; the stick goes home once it has faded
     if (!game.tipsOn) { if (tipCurrent) { tipCurrent = null; updateCoachBanner(); } return; }
     if (tipCurrent) {
         tipTimer -= dt;
@@ -30047,13 +30746,15 @@ function updateCoach(dt) {
         return;
     }
     if (tipGap > 0) { tipGap -= dt; return; }
-    if (tipQueue.length) { tipCurrent = tipQueue.shift(); tipTimer = TIP_MS; updateCoachBanner(); }
+    if (tipQueue.length && !(stickStacked() && stickHeld())) { tipCurrent = tipQueue.shift(); tipTimer = TIP_MS; updateCoachBanner(); }   // [290926u] a tip waits for the thumb to lift
 }
 
 function endCoach() {
     tipCurrent = null;
     tipQueue = [];
     updateCoachBanner();
+    { const pad = document.getElementById('stickPad'), el = document.getElementById('coachTip');   // [290926u] the run is over: the stick home at once
+      _tipBeside = false; _tipShift = 0; if (pad) pad.style.transform = ''; if (el) el.classList.remove('beside'); }
 }
 
 // Diagonal-discovery watchdog: playtesting showed players missing 8-direction
@@ -30241,7 +30942,7 @@ function turnNotYet(x, y) {
     if (typeof playTone === 'function') setTimeout(() => playTone(NOTE.E5, 0.05, WAVE.ui, VOL.ui * 0.7), wait);
     /* [280926j] the spin: the words of 1230 are replaced by the turn itself */
     { const m = shifterMeta[`${x},${y}`] || {}, tn = (typeof turnsOf === 'function') ? turnsOf(m) : 1;
-      _singleSpin = { x, y, t0: performance.now() + wait + 90, dur: tn === 2 ? SINGLE_SPIN_MS * 1.5 : SINGLE_SPIN_MS,
+      _singleSpin = { x, y, t0: performance.now() + wait + 90, dur: SINGLE_SPIN_MS * ([1, 1.5, 1.8, 2.1][tn - 1] || 1),   // [300926d]
                       ang: (m.dir === 'ccw' ? -1 : 1) * tn * Math.PI / 2 };
       const _te = moveTape[moveTape.length - 1];   // [280926r] on the tape, for the replay
       if (_te && !game._replay) _te.spin = { x, y, dur: _singleSpin.dur, ang: _singleSpin.ang }; }
@@ -31048,11 +31749,34 @@ function heartBeat(dz) {
     const t0 = audioCtx.currentTime + 0.01;
     voice.play(t0, heartLevel(dz) * voice.gain * sfxVolume, Math.max(0, Math.min(1, dz)), heartGapMs(dz) / 1000);
 }
+/* ══ [290926p] THE APPROACH LISTENS TO THE EDGE ALONE ═══════════════════════
+   Field note: "the Jaws-style warning sound should only start when the player is
+   within 2 rows, then 1 row, of the boundary before dying." It was driven by
+   dangerLevel(), which also rises whenever the clock is under 30 seconds — so it
+   played anywhere on the board, and from three rows up. The beat now hears only
+   the bottom edge: silent until the body's lowest cube is in the second-last row,
+   slow there (about 1.3s between beats), quickening as the grid carries it into
+   the last row (about 0.5s), and running together at the brink. It follows the
+   scroll, not just the row, so it tightens while you watch. The mix ducking, the
+   edge line and the body's red glow still read dangerLevel() as before. */
+const HEART_EDGE_ONLY = true;
+const HEART_ROWS = 2;
+function heartDanger() {
+    if (!game.running || game.paused || game.testDrive) return 0;
+    const cells = getPlayerCells();
+    if (!cells.length) return 0;
+    let maxY = -Infinity;
+    for (const c of cells) if (c.y > maxY) maxY = c.y;
+    const rows = VIEW_H - (maxY - game.cameraY);   // 1 = the last row, 2 = the one above it; death comes under 0.5
+    if (rows > HEART_ROWS) return 0;
+    return Math.max(0.12, Math.min(1, 0.12 + 0.88 * (HEART_ROWS - rows) / (HEART_ROWS - 0.5)));
+}
 function runHeartbeat() {
-    const dz = dangerLevel();
-    updateDangerAudio(dz);   // [060826e] duck the mix
+    const dzAll = dangerLevel();
+    updateDangerAudio(dzAll);   // [060826e] duck the mix
     dangerWarning();         // [060826g] and the three-tier edge warning
     brinkWarning();          // [110926j] the brink: one sting as the glow arrives
+    const dz = HEART_EDGE_ONLY ? heartDanger() : dzAll;   // [290926p] the beat itself: the edge only
     // [180926by] OUT OF DANGER IS WHERE THE CARD IS DROPPED. This one line is
     // the spell boundary for the whole heartbeat bag: the next time danger
     // rises, heartBeat() finds no held voice and deals a fresh one. Holding and
@@ -33820,7 +34544,7 @@ function loop(time, gen) {
             const k = `${x},${y}`; if (world[k] === 'hazard') delete world[k];
         }
     }
-    { const _pn = performance.now(); maintainReds(_pn); maintainGreens(_pn); }   // [290926i][290926j]
+    { const _pn = performance.now(); maintainReds(_pn); maintainGreens(_pn); levelIslandTick(); }   // [290926i][290926j][300926j]
     if (checkCollisions() === 'death') {
         captureSnapshot(game._lastMoveDir || '✗ death');
         handleDeath('dissolved');
@@ -34328,7 +35052,7 @@ let devolveStage = null;   // { cas:[{x,y,...}], t0, hold, dur, fam } — [28092
 /* ══ [280926e] THE MACHINE'S STROKE — see the build log ═════════════════════ */
 const MACHINE_ENGAGE_MS = 130;                 // the grab, before the arm moves
 const MACHINE_AFTER_MS = 320;                  // the marks fade after the stroke
-const TURN_MS = { 1: 560, 2: 780 };            // the swing (was 460 / 640)
+const TURN_MS = { 1: 560, 2: 780, 3: 980, 4: 1160 };   // [300926d] 270° and 360°            // the swing (was 460 / 640)
 const STEP_MS = 400;                           // the slide (was 320)
 let machineFX = null;   // { kind, x, y, t0, tStroke, tEnd, meta, sweep, vec, hop, oldCells, newCells }
 function noteMachineStroke(kind, x, y, extra) {
@@ -34428,6 +35152,33 @@ function drawMachineStroke() {
     ctx.restore();
 }
 let seatFX = null;         // { cells:[{x,y}], color, t0 }
+/* [290926q] THE CUBES THAT WENT INTO THE SET. The body is already smaller (the
+   rules move at the commit); from touch-down until the piece lifts off for the
+   HUD, the cubes that covered the set are drawn on it: the body's own cubes,
+   settling into the socket and taking on the set's colour. Then flySetPiece
+   carries them up. */
+let coverFX = null;        // { cells, fam, par, prevType, setCol, t0, until }
+function drawCoverFX() {
+    const F = coverFX;
+    if (!F) return;
+    const now = performance.now();
+    if (now >= F.until) { coverFX = null; return; }
+    if (now < F.t0) return;   // still in the air: the flip draws the whole body
+    const k = Math.min(1, (now - F.t0) / Math.max(1, F.until - F.t0)), e = k * k * (3 - 2 * k);
+    const ins = 4 + 2.5 * e, size = CELL - ins * 2, day = currentTheme === 'day';
+    for (const c of F.cells) {
+        const sx = c.x * CELL + ins, sy = (c.y - game.cameraY) * CELL + ins;
+        ctx.save();
+        if (!day) { ctx.shadowColor = F.setCol; ctx.shadowBlur = 10 + 10 * e; }
+        roundedSq(sx, sy, size, faceBodyColour(F.fam, F.par), null);
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.85 * e;
+        roundedSq(sx, sy, size, F.setCol, null);
+        ctx.globalAlpha = 0.9;
+        roundedSq(sx, sy, size, null, '#ffffff', 1.6 + 1.2 * e);
+        ctx.restore();
+    }
+}
 const SEAT_MS = 460;       // [290926e] 320 -> 460: the lock, with its clamps and flash
 const SET_FLIGHT_MS = 640; // [290926e] the piece carried from the board to its place in the set
 /* [290926e] THE PIECE GOES TO THE SET. Field note: "land on it the right way,
@@ -34443,6 +35194,9 @@ function flySetPiece(id, cells, color, delay) {
     game._setFlightEnd = performance.now() + delay + SET_FLIGHT_MS;   // [290926g] completeSet waits for this
     setTimeout(() => {
         const done = () => { if (game._setIncoming && game._setIncoming.id === id) game._setIncoming = null; game._setPop = { id, t: performance.now() };
+                             { const hs = document.getElementById('hudSetIcons');   // [300926a] the whole set row flashes as the piece lands in it
+                               if (hs && PIECE_PARTY) { hs.style.setProperty('--piece-col', color); hs.classList.remove('piece-flash'); void hs.offsetWidth; hs.classList.add('piece-flash'); setTimeout(() => hs.classList.remove('piece-flash'), 800); } }
+                             pieceHome(color);   // [300926g] well done
                              const el = document.getElementById('hudSetIcons'); if (el) el._lastSetHtml = ''; try { renderSetIcons(); } catch (e) {} };
         try {
             const cv = document.getElementById('canvas'), host = document.getElementById('hudSetIcons');
@@ -34583,6 +35337,7 @@ function stageBreak(cas, opts = {}) {
 /* the body wears its old family colour until the break — through the flight
    and the hold it is still the body it was */
 function breakHoldType() {
+    if (coverFX && performance.now() < coverFX.t0) return coverFX.prevType;   // [290926q] the whole body, in its own colour, until it touches down
     const D = devolveStage;
     if (!D || !D.prevType) return null;
     return performance.now() < D.t0 + D.hold ? D.prevType : null;
@@ -34667,6 +35422,7 @@ let chainThread = [];      // [{x, y, t}]
 
 function drawAnimFX() {
     const now = performance.now();
+    drawCoverFX();   // [290926q]
     // [180826ae] Consumed tools linger until the piece visually lands — the
     // shifter must not vanish under a cube still in the air. Drawn in each
     // theme's own idiom, then released the frame after touch-down.
@@ -35141,6 +35897,9 @@ function toggleDetails() {
 
 function startDaily() { startGame(false, true); }
 function startGame(testDrive = false, daily = false) {
+    _runSerial++;   // [300926e]
+    game._piecesHome = 0; machineHoldUntil = 0; game._setDoneHold = false;   // [300926f][300926g]
+    game._isle3 = null;   // [300926j]
     replayClipStop(); replayClip = null;   // [260926n] the last run's clip is put away; a new one records at the next death replay
     { const _gc = document.getElementById('goClip'); if (_gc) _gc.hidden = true; }
     /* [090926h] THE DAILY: same seed for everyone today, five levels, timed. */
@@ -35462,7 +36221,7 @@ function startGame(testDrive = false, daily = false) {
     // a single slot which felt slow on PLAY. seedSlotsAtTop() spawns up
     // to mission-target-count slots (capped at 3 for visual sanity),
     // distributed across the top four rows so they don't stack.
-    if (!testDrive) seedSlotsAtTop();
+    if (!testDrive) { startLevelIsland(); seedSlotsAtTop(); }   // [300926j] (a debug start on level 3)
     captureSnapshot('START');
     
     // CLAIM EVERY SLOT hint surfaces after the instant overlay finishes
@@ -37418,7 +38177,7 @@ function fbTick(now) {
     }
 }
 
-/* ══ [280926z] THE TUTORIALS — ten short lessons on the welcome page ══════════
+/* ══ [280926z] THE TUTORIALS — short lessons on the welcome page (14 at [290926r]) ══
    Designer's call: "a cycle of different tips clips that will enable the player
    to grasp the game concept — mini tutorials that can be flicked through."
    Not video: each lesson is a scripted scene played live on a small board,
@@ -37430,12 +38189,13 @@ function fbTick(now) {
    swipe or the arrow keys flick through them. TUT_ON = false brings back the
    old demo clip. */
 const TUT_ON = true;
-const TUT_COLS = 7, TUT_ROWS = 4;
+const TUT_COLS = 7, TUT_ROWS = 4, TUT_STICK_H = 1.6;   // [290926w] the strip under the board, in cells
 const TUT_FLIP = 320, TUT_GAP = 430, TUT_TAIL = 1500;
 const TUT_ACT_MS = { flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820, stomp: 620, settake: 1150,
+                     cover: 1400, guide: 3000, tipon: 700, tip: 800, tipoff: 700,   // [290926r]
                      claim: 900, rowclear: 900, red: 900, hourglass: 700, spin: 950, wait: 400 };
 const TUT = [
-  { title: 'STEER', line: 'Eight directions — your shape tips over its edge, it never slides.', compass: true,
+  { title: 'STEER', line: 'Eight directions — your shape flips over its edge, it never slides.', compass: true,
     init: { body: { cells: [[1, 2]], type: 'single', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'flip', dir: 'NE', to: [[3, 1]] }, { k: 'flip', dir: 'E', to: [[4, 1]] },
             { k: 'flip', dir: 'SE', to: [[5, 2]] }, { k: 'flip', dir: 'S', to: [[5, 3]] }, { k: 'flip', dir: 'W', to: [[4, 3]] } ] },
@@ -37447,28 +38207,33 @@ const TUT = [
     init: { body: { cells: [[1, 3], [2, 3]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [4, 1]] }] },
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
-  { title: 'GROW', line: 'Land BESIDE a green and it joins your shape — single, pair, J or diagonal, square.',
+  { title: 'EVOLVE', line: 'Land BESIDE a green to evolve — it joins your shape: single, pair, J or diagonal, square.',
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '3,2': 'green' } },
-    acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'grow', g: [3, 2], to: [[2, 2], [3, 2]], type: 'pair', say: 'GROWN' },
+    acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'grow', g: [3, 2], to: [[2, 2], [3, 2]], type: 'pair', say: 'EVOLVED' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
+  { title: 'BIGGER THAN THE SET', line: 'Cover all of a set with a bigger shape and it’s yours — the cubes on it go into the set, and you devolve to what’s left.',   // [290926r] the cover rule [290926q]
+    init: { body: { cells: [[0, 1], [1, 1], [0, 2], [1, 2]], type: 'square', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1], [2, 2], [3, 2]] },
+            { k: 'cover', set: 0, give: [[3, 1], [3, 2]], to: [[2, 1], [2, 2]], type: 'pair', say: 'SET! · −2 CUBES' },
+            { k: 'flip', dir: 'W', to: [[1, 1], [1, 2]] } ] },
   { title: 'ON A GREEN', line: 'Land ON a green instead of beside it and it pays you 5 seconds.',   // [290926n] was STEPPING STONES — the store is gone
     showClock: true,
     init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green' }, clock: 30 },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'stomp', g: [3, 2], sec: 5, say: '+5s' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
-  { title: 'HOLES COST A CUBE', line: 'The cube over a hole goes in and becomes ground — you are a size smaller.',
+  { title: 'HOLES COST A CUBE', line: 'The cube over a hole goes in and becomes ground — you devolve by one cube.',
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' } },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'sink', cube: [4, 2], to: [[3, 2]], type: 'single', say: '−1 CUBE → +1 GROUND' },
             { k: 'flip', dir: 'S', to: [[3, 3]] } ] },
-  { title: 'EDGES', line: 'A cube carried over the edge breaks off — the rest carries on.',
+  { title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.',
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
-  { title: 'WRONG SETS', line: 'Land the wrong shape on a set and the set takes the cube that doesn’t fit. Land the right shape and it’s yours.',   // [290926n]
-    init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, sets: [{ type: 'single', cells: [[2, 1]] }] },
-    acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'flip', dir: 'N', to: [[2, 1], [3, 1]] },
-            { k: 'settake', cube: [2, 1], set: 0, to: [[3, 1]], type: 'single', say: 'WRONG SHAPE · −1 CUBE' },
-            { k: 'flip', dir: 'W', to: [[2, 1]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
+  { title: 'WRONG SETS', line: 'Land on part of a set without covering all of it and the set takes the cube that touched it — you devolve.',   // [290926n] · [290926r] a bigger shape over a smaller set is a claim now
+    init: { body: { cells: [[0, 1], [1, 1]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
+            { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
+            { k: 'wait' }, { k: 'wait' } ] },
   { title: 'SHIFTERS', line: 'A step shifter pushes you, a turn shifter swings you. Shifters never cost a cube — the ring shows when one is ready again.',
     init: { body: { cells: [[0, 3], [1, 3]], type: 'pair', par: 0 }, tiles: { '1,2': 'slip', '4,2': 'pivot' } },
     acts: [ { k: 'flip', dir: 'N', to: [[0, 2], [1, 2]] }, { k: 'push', trig: [1, 2], vec: [1, 0], to: [[1, 2], [2, 2]] },
@@ -37479,17 +38244,30 @@ const TUT = [
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },
     acts: [ { k: 'flip', dir: 'N', to: [[3, 2], [4, 2]] }, { k: 'rowclear', row: 2, sec: 4, say: 'ROW +4s' },
             { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] }, { k: 'hourglass', h: [4, 1], sec: 30, say: '+30s' } ] },
-  { title: 'REDS', line: 'A red takes a cube you can spare and pays you 5 seconds. It never takes your last — a single rolls over it.',   // [290926n] every level now
+  { title: 'REDS', line: 'A red devolves you by a cube you can spare and pays you 5 seconds. It never takes your last — a single flips over it.',   // [290926n] every level now
     showClock: true,
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,2': 'red', '4,1': 'red' }, clock: 40 },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'red', cube: [4, 2], to: [[3, 2]], type: 'single', sec: 5, say: '−1 CUBE → +5s' },
-            { k: 'flip', dir: 'NE', to: [[4, 1]], say: 'A SINGLE ROLLS OVER' } ] }
+            { k: 'flip', dir: 'NE', to: [[4, 1]], say: 'A SINGLE FLIPS OVER' } ] },
+  { title: 'MOVE GUIDE', line: 'Tap the compass, bottom left. After a beat the way to the set lights up, one move at a time — even for a diagonal.',   // [290926r] · [290926y] a diagonal pair
+    guideBtn: true,
+    init: { body: { cells: [[0, 3], [1, 2]], type: 'diagonal', par: 0 }, sets: [{ type: 'diagonal', cells: [[4, 2], [5, 3]] }] },
+    acts: [ { k: 'guide', route: [[[2, 1], [3, 0]], [[3, 2], [4, 1]], [[5, 1], [6, 2]], [[4, 2], [5, 3]]], d: 1000 + 3 * 450 + 350 + 1100 },
+            { k: 'flip', dir: 'NE', to: [[2, 1], [3, 0]] }, { k: 'flip', dir: 'SE', to: [[3, 2], [4, 1]] },
+            { k: 'flip', dir: 'E', to: [[5, 1], [6, 2]] }, { k: 'flip', dir: 'SW', to: [[4, 2], [5, 3]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
+  { title: 'TIPS', line: 'Tap the bulb, bottom right. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]
+    tipsBtn: true,
+    init: { body: { cells: [[0, 1]], type: 'single', par: 0 }, tiles: { '3,1': 'green' } },
+    acts: [ { k: 'tipon' }, { k: 'flip', dir: 'E', to: [[1, 1]] },
+            { k: 'tip', text: 'Land beside a green to evolve.' }, { k: 'wait' }, { k: 'wait' },
+            { k: 'flip', dir: 'E', to: [[2, 1]] }, { k: 'grow', g: [3, 1], to: [[2, 1], [3, 1]], type: 'pair', say: 'EVOLVED' },
+            { k: 'wait' }, { k: 'wait' }, { k: 'tipoff' } ] }
 ];
 // the timeline of a lesson: when each act starts, and its length
 function tutTimeline(L) {
     if (L._tl) return L._tl;
     let t = 500; const tl = [];
-    for (const a of L.acts) { const d = TUT_ACT_MS[a.k] || 400; tl.push({ a, t0: t, d }); t += d + (a.k === 'flip' ? TUT_GAP : 280); }
+    for (const a of L.acts) { const d = a.d || TUT_ACT_MS[a.k] || 400; tl.push({ a, t0: t, d }); t += d + (a.k === 'flip' ? TUT_GAP : 280); }   // [290926r] an act may carry its own length
     L._tl = tl; L._dur = t + TUT_TAIL;
     return tl;
 }
@@ -37497,14 +38275,25 @@ function tutState(L, t) {
     const S = { body: { cells: L.init.body.cells.map(c => c.slice()), type: L.init.body.type, par: L.init.body.par },
                 tiles: Object.assign({}, L.init.tiles || {}), walked: new Set((L.init.walked || []).map(c => c.join(','))),
                 sets: (L.init.sets || []).map(s => ({ type: s.type, cells: s.cells, done: false })), store: L.init.store || 0,
-                clock: L.init.clock || 0, spent: {}, active: null, floats: [] };
+                clock: L.init.clock || 0, spent: {}, active: null, floats: [], guide: null, tip: null, bulb: false };   // [290926r]
+    const pays = [];   // [290926x] the time payments so far: when each starts counting, and how much
     for (const e of tutTimeline(L)) {
         if (t < e.t0) break;
         const a = e.a, p = (t - e.t0) / e.d;
-        if (a.say && t - e.t0 < 1600) S.floats.push({ text: a.say, age: t - e.t0, at: a.cube || a.g || a.h || a.trig || (a.to && a.to[0]) || S.body.cells[0] });
+        if (a.sec) pays.push({ at: e.t0 + 80, sec: a.sec, step: Math.min(90, 1100 / a.sec) });
+        if (a.say && t - e.t0 < 1600) S.floats.push({ text: a.say, age: t - e.t0, at: a.cube || a.g || a.h || a.trig || (a.give && a.give[0]) || (a.to && a.to[0]) || S.body.cells[0] });
         if (p < 1) { S.active = { a, p, from: S.body.cells.map(c => c.slice()), par: S.body.par, type: S.body.type }; break; }
         tutApply(S, a, e.t0 + e.d);
     }
+    // [290926x] the clock as shown: the start, plus each payment counted up a second at a time
+    let shown = L.init.clock || 0, tick = 0;
+    for (const q of pays) {
+        if (t < q.at) continue;
+        const n = Math.min(q.sec, 1 + Math.floor((t - q.at) / q.step));
+        shown += n;
+        if (n < q.sec || t - q.at < q.sec * q.step) tick = Math.max(tick, 1 - ((t - q.at) % q.step) / q.step);
+    }
+    S.clockShown = shown; S.clockTick = tick;
     return S;
 }
 function tutApply(S, a, tEnd) {
@@ -37514,12 +38303,18 @@ function tutApply(S, a, tEnd) {
         if (a.stone) { delete S.tiles[a.stone.join(',')]; S.store = Math.max(0, S.store - 1); }
         S.body.cells = (a.land || a.to).map(c => c.slice()); S.body.par ^= 1;
         if (a.type) S.body.type = a.type;
+        if (S.guide && S.guide.length && S.guide[0].every(g => S.body.cells.some(c => c[0] === g[0] && c[1] === g[1]))) S.guide.shift();   // [290926r] a move taken leaves the guide
     } else if (a.k === 'grow') { delete S.tiles[a.g.join(',')]; S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
     else if (a.k === 'store') { delete S.tiles[a.g.join(',')]; S.store++; }
     else if (a.k === 'sink') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
     else if (a.k === 'breakoff') { S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
     else if (a.k === 'push' || a.k === 'turn') { walk(S.body.cells); S.body.cells = a.to.map(c => c.slice()); S.spent[a.trig.join(',')] = tEnd; }
-    else if (a.k === 'claim') S.sets[a.set].done = true;
+    else if (a.k === 'claim') { S.sets[a.set].done = true; S.guide = null; }
+    else if (a.k === 'cover') { S.sets[a.set].done = true; S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }   // [290926r]
+    else if (a.k === 'guide') S.guide = a.route.map(r => r.map(c => c.slice()));
+    else if (a.k === 'tipon') S.bulb = true;
+    else if (a.k === 'tip') S.tip = a.text;
+    else if (a.k === 'tipoff') S.tip = null;
     else if (a.k === 'rowclear') { S.clock += a.sec; for (let x = 0; x < TUT_COLS; x++) S.walked.add(x + ',' + a.row); }
     else if (a.k === 'hourglass') { delete S.tiles[a.h.join(',')]; S.clock += a.sec; }
     else if (a.k === 'stomp') { delete S.tiles[a.g.join(',')]; S.clock += a.sec; }   // [290926n]
@@ -37587,7 +38382,7 @@ function tutPaint(L, t) {
     // sets
     for (const st of S.sets) {
         const col = SLOT_DEFS[st.type].color;
-        const claiming = A && A.a.k === 'claim';
+        const claiming = A && (A.a.k === 'claim' || A.a.k === 'cover');   // [290926r]
         for (const c of st.cells) {
             const sx = c[0] * CELL + ins, sy = c[1] * CELL + ins;
             ctx.save();
@@ -37598,6 +38393,9 @@ function tutPaint(L, t) {
             ctx.restore();
         }
     }
+    // [290926r] the move guide's route, under the body
+    if (A && A.a.k === 'guide') tutRoute(S.body.cells, A.a.route, A.p * A.a.d - 1000);
+    else if (S.guide && S.guide.length) tutRoute(A && A.a.k === 'flip' ? A.from : S.body.cells, S.guide, 1e9);
     // the body, and what the active act is doing to it
     tutPaintActive(S, t);
     // the words
@@ -37608,19 +38406,172 @@ function tutPaint(L, t) {
         const hw = ctx.measureText(f.text).width / 2 + 8, px = Math.max(hw, Math.min(W - hw, x));   // kept inside the frame
         ctx.textAlign = 'center'; ctx.lineJoin = 'round';
         ctx.strokeStyle = 'rgba(6, 20, 45, 0.7)'; ctx.lineWidth = 3.4; ctx.strokeText(f.text, px, Math.max(18, y));
-        ctx.fillStyle = /GROUND|STONE|GROWN|SET/.test(f.text) ? '#bef264' : (/\+/.test(f.text) ? '#86efac' : '#fda4af');
+        ctx.fillStyle = /GROUND|STONE|EVOLVED|SET!/.test(f.text) ? '#bef264' : (/\+/.test(f.text) ? '#86efac' : '#fda4af');   // [290926r] SET! — 'OF THE SET' is a loss
         ctx.fillText(f.text, px, Math.max(18, y));
         ctx.restore();
     }
     // the store and the clock
     if (L.showStore) tutChip(W - 8, 20, S.store, A && A.a.k === 'store' ? A.p : 0);
     if (L.showClock) {
-        const m = Math.floor(S.clock / 60), s2 = Math.round(S.clock % 60);
-        ctx.save(); ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'left'; ctx.lineJoin = 'round';
+        const c = S.clockShown !== undefined ? S.clockShown : S.clock, k = S.clockTick || 0;   // [290926x] counted up, a second at a time
+        const m = Math.floor(c / 60), s2 = Math.round(c % 60);
+        ctx.save(); ctx.font = `bold ${Math.round(20 * (1 + 0.16 * k))}px sans-serif`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
         ctx.strokeStyle = 'rgba(6, 20, 45, 0.6)'; ctx.lineWidth = 3; const txt = `${m}:${String(s2).padStart(2, '0')}`;
-        ctx.strokeText(txt, 8, 22); ctx.fillStyle = S.clock < 30 ? '#fb923c' : '#4ade80'; ctx.fillText(txt, 8, 22); ctx.restore();
+        ctx.strokeText(txt, 8, 18); ctx.fillStyle = k > 0 ? (currentTheme === 'day' ? '#22c55e' : '#bbf7d0') : (c < 30 ? '#fb923c' : '#4ade80'); ctx.fillText(txt, 8, 18); ctx.restore();
     }
-    if (L.compass) tutCompass(W - CELL * 0.55, CELL * 0.55, A && A.a.k === 'flip' ? A.a.dir : null);
+    tutStrip(L, S, t);   // [290926w] the joystick strip — the compass of lesson 1 is the joystick now
+    tutHelpers(L, S);   // [290926r]
+}
+/* [290926r] THE TWO HELPERS, TAUGHT. Designer's call: "in the guide animations on
+   the welcome, add the movement guide as a mini tutorial and the tips guide as a
+   mini tutorial as well." Both are drawn in the game's own grammar: the guide's
+   rainbow ghosts and trail after its one-second beat [290926o], and the tip card
+   arriving beside the joystick after the stick has moved over [290926u]. */
+/* [290926w] the strip under the board and the joystick in it. The knob leans the way of
+   each flip from a beat before the fold until just after it lands, and the arrow that way
+   lights: the push, then the move, as in play. */
+const TUT_STICK_V = { N: [0, -1], NE: [1, -1], E: [1, 0], SE: [1, 1], S: [0, 1], SW: [-1, 1], W: [-1, 0], NW: [-1, -1] };
+function tutStickPush(L, t) {
+    for (const e of tutTimeline(L)) {
+        if (e.a.k !== 'flip' || !e.a.dir) continue;
+        const a0 = e.t0 - 160, a1 = e.t0 + e.d + 80;
+        if (t < a0 || t > a1) continue;
+        const up = Math.min(1, (t - a0) / 160), down = Math.min(1, (a1 - t) / 140);
+        return { dir: e.a.dir, amt: Math.max(0, Math.min(up, down)) };
+    }
+    return { dir: null, amt: 0 };
+}
+function tutStickAt(L, S) {   // where the stick sits: home in the middle, or aside to the right while a tip shows
+    const W = TUT_COLS * CELL, A = S.active, ez = k => k * k * (3 - 2 * k);
+    let k = S.tip ? 1 : 0;
+    if (A && A.a.k === 'tip') k = ez(Math.min(1, A.p / 0.5));
+    if (A && A.a.k === 'tipoff') k = 1 - ez(Math.max(0, (A.p - 0.4) / 0.6));
+    const R = CELL * 0.64, home = W / 2, aside = W - CELL * 1.0 - R;   // 14/14's size
+    return { x: home + (aside - home) * k, y: TUT_ROWS * CELL + TUT_STICK_H * CELL / 2, R, k };
+}
+function tutStick(cx, cy, R, dir, amt) {
+    const day = currentTheme === 'day', steel = day ? CANDY.steelEdge : 'rgb(184,201,217)', lit = day ? '#0284c7' : '#22d3ee';
+    ctx.save();
+    ctx.globalAlpha = 0.95; ctx.fillStyle = day ? 'rgba(255,255,255,0.9)' : 'rgba(15,23,42,0.8)';
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1; ctx.lineWidth = 2.6; ctx.strokeStyle = steel; ctx.stroke();
+    for (const [d, v] of Object.entries(TUT_STICK_V)) {
+        const len = Math.hypot(v[0], v[1]), ux = v[0] / len, uy = v[1] / len;
+        const on = d === dir && amt > 0.05;
+        const x = cx + ux * R * 0.8, y = cy + uy * R * 0.8;
+        if (on) {   // the arrow that way lights
+            const s2 = R * 0.26, px = -uy, py = ux;
+            ctx.globalAlpha = 0.35 + 0.65 * amt; ctx.fillStyle = lit;
+            ctx.beginPath(); ctx.moveTo(x + ux * s2 * 1.2, y + uy * s2 * 1.2); ctx.lineTo(x - ux * s2 * 0.6 + px * s2, y - uy * s2 * 0.6 + py * s2);
+            ctx.lineTo(x - ux * s2 * 0.6 - px * s2, y - uy * s2 * 0.6 - py * s2); ctx.closePath(); ctx.fill();
+        } else { ctx.globalAlpha = 1; ctx.fillStyle = steel; ctx.beginPath(); ctx.arc(x, y, 2.3, 0, Math.PI * 2); ctx.fill(); }
+    }
+    let kx = cx, ky = cy;
+    if (dir && amt > 0) { const v = TUT_STICK_V[dir], len = Math.hypot(v[0], v[1]); kx += v[0] / len * R * 0.42 * amt; ky += v[1] / len * R * 0.42 * amt; }
+    const g = ctx.createRadialGradient(kx - R * 0.12, ky - R * 0.14, 1.5, kx, ky, R * 0.38);
+    g.addColorStop(0, day ? '#ffffff' : '#e2e8f0'); g.addColorStop(1, day ? '#94a3b8' : '#64748b');
+    ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(kx, ky, R * 0.36, 0, Math.PI * 2); ctx.fill();
+    if (dir && amt > 0.05) { ctx.globalAlpha = 0.5 * amt; ctx.lineWidth = 1.6; ctx.strokeStyle = lit; ctx.stroke(); }
+    ctx.restore();
+}
+function tutStrip(L, S, t) {
+    const day = currentTheme === 'day', W = TUT_COLS * CELL, H = TUT_ROWS * CELL, SH = TUT_STICK_H * CELL;
+    ctx.save();
+    ctx.fillStyle = day ? '#f4faff' : '#131c2c'; ctx.fillRect(0, H, W, SH);
+    ctx.fillStyle = day ? '#89cff0' : 'rgba(56, 189, 248, 0.28)'; ctx.fillRect(0, H, W, 1.5);
+    ctx.restore();
+    const st = tutStickAt(L, S), push = tutStickPush(L, t);
+    tutStick(st.x, st.y, st.R, push.dir, push.amt);
+}
+function tutRoute(fromCells, route, tRel) {
+    if (tRel < 0) return;
+    const day = currentTheme === 'day', STAG = 450, FADE = 350, n = route.length;
+    const hue = i => { const h = 275 * ((i - 1) / Math.max(1, n - 1)); return day ? `hsl(${h}, 85%, 38%)` : `hsl(${h}, 95%, 64%)`; };
+    const goal = day ? '#0369a1' : '#ffffff';
+    const cen = cs => ({ x: cs.reduce((a, c) => a + c[0], 0) / cs.length * CELL + CELL / 2, y: cs.reduce((a, c) => a + c[1], 0) / cs.length * CELL + CELL / 2 });
+    const pts = [cen(fromCells)], cols = [], ks = [];
+    for (let i = 1; i <= n; i++) {
+        const age = tRel - (i - 1) * STAG;
+        if (age < 0) break;
+        const a = Math.min(1, age / FADE), col = i === n ? goal : hue(i);
+        for (const c of route[i - 1]) {
+            const x = c[0] * CELL + 2, y = c[1] * CELL + 2, z = CELL - 4;
+            ctx.save();
+            ctx.globalAlpha = a * 0.7; roundedSq(x, y, z, null, day ? '#ffffff' : 'rgba(3, 10, 24, 0.9)', 6);
+            ctx.globalAlpha = a * (i === n ? 0.6 : 0.42); roundedSq(x, y, z, col, null);
+            ctx.globalAlpha = a; roundedSq(x, y, z, null, col, 3);
+            ctx.restore();
+        }
+        pts.push(cen(route[i - 1])); cols.push(col); ks.push(a);
+    }
+    for (let pass = 0; pass < 2; pass++) for (let i = 0; i < cols.length; i++) {
+        const A = pts[i], B = pts[i + 1], k = ks[i], ex = A.x + (B.x - A.x) * k, ey = A.y + (B.y - A.y) * k;
+        ctx.save();
+        ctx.lineCap = 'round'; ctx.globalAlpha = pass ? 0.95 : 0.85;
+        ctx.strokeStyle = ctx.fillStyle = pass ? cols[i] : (day ? '#ffffff' : 'rgba(3, 10, 24, 0.92)');
+        ctx.lineWidth = pass ? 3.6 : 7.6;
+        ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(ex, ey); ctx.stroke();
+        if (k >= 1) { ctx.beginPath(); ctx.arc(ex, ey, pass ? 4 : 6.2, 0, Math.PI * 2); ctx.fill(); }
+        ctx.restore();
+    }
+}
+const TUT_ICON = { guide: 'M20.8 3.2 15.2 15.2 3.2 20.8 8.8 8.8z',
+                   tips: 'M7.9 18.3h8.2M9.4 21.9h5.2M12 1.6a8.3 8.3 0 0 0-4.6 15.2c.5.3 1 1 1 1.7v1.4h7.2v-1.4c0-.7.5-1.4 1-1.7A8.3 8.3 0 0 0 12 1.6z' };
+function tutButton(cx, cy, kind, lit, tapMs) {
+    const day = currentTheme === 'day', blue = day ? '#0284c7' : '#22d3ee', r = CELL * 0.36;
+    ctx.save();
+    if (tapMs < 520) { const u = tapMs / 520; ctx.globalAlpha = 1 - u; ctx.strokeStyle = blue; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, r * (1 + 0.9 * u), 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = lit ? blue : (day ? '#ffffff' : '#0f172a'); ctx.fill();
+    ctx.lineWidth = 2.4; ctx.strokeStyle = blue; ctx.stroke();
+    const sc = (r * 1.1) / 24;
+    ctx.translate(cx - 12 * sc, cy - 12 * sc); ctx.scale(sc, sc);
+    ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = lit ? '#ffffff' : blue;
+    ctx.stroke(new Path2D(TUT_ICON[kind]));
+    ctx.restore();
+}
+function tutWrap(text, maxW) {
+    const words = text.split(' '), lines = [];
+    let line = '';
+    for (const w of words) { const t2 = line ? line + ' ' + w : w; if (ctx.measureText(t2).width > maxW && line) { lines.push(line); line = w; } else line = t2; }
+    if (line) lines.push(line);
+    return lines;
+}
+function tutHelpers(L, S) {
+    const A = S.active, W = TUT_COLS * CELL, H = TUT_ROWS * CELL, day = currentTheme === 'day';
+    const by = H + TUT_STICK_H * CELL / 2;   // [290926w] the buttons sit in the strip's corners, as on the screen
+    if (L.guideBtn) {
+        const on = A && A.a.k === 'guide';
+        tutButton(CELL * 0.5, by, 'guide', on || !!S.guide, on ? A.p * A.a.d : Infinity);
+    }
+    if (!L.tipsBtn) return;
+    const tapping = A && A.a.k === 'tipon';
+    tutButton(W - CELL * 0.5, by, 'tips', S.bulb || tapping, tapping ? A.p * TUT_ACT_MS.tipon : Infinity);
+    // the tip card, to the left of the stick in the room it made (the stick is drawn by tutStrip)
+    let card = S.tip ? 1 : 0, text = S.tip;
+    if (A && A.a.k === 'tip') { card = Math.max(0, (A.p - 0.45) / 0.55); text = A.a.text; }
+    if (A && A.a.k === 'tipoff') card = Math.max(0, 1 - A.p / 0.4);
+    const stk = tutStickAt(L, S), sx = stk.x, sy = stk.y, R = stk.R;
+    if (!text || card <= 0) return;
+    const x0 = CELL * 0.14, x1 = sx - R - CELL * 0.18, w = x1 - x0;
+    ctx.save();
+    ctx.font = '600 12.5px sans-serif';
+    const lines = tutWrap(text, w - 20), hgt = 26 + lines.length * 16, y0 = sy - hgt / 2;
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = card;
+    ctx.fillStyle = day ? 'rgba(255,255,255,0.97)' : 'rgba(15,23,42,0.94)';
+    ctx.strokeStyle = day ? '#0284c7' : 'rgba(56,189,248,0.7)'; ctx.lineWidth = 1.5;
+    const rr = 12;
+    ctx.beginPath(); ctx.moveTo(x0 + rr, y0); ctx.arcTo(x0 + w, y0, x0 + w, y0 + hgt, rr); ctx.arcTo(x0 + w, y0 + hgt, x0, y0 + hgt, rr);
+    ctx.arcTo(x0, y0 + hgt, x0, y0, rr); ctx.arcTo(x0, y0, x0 + w, y0, rr); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = 'bold 9.5px sans-serif'; ctx.fillStyle = day ? '#0284c7' : '#7dd3fc';
+    ctx.fillText('T I P', x0 + 10, y0 + 16);
+    ctx.font = '600 12.5px sans-serif'; ctx.fillStyle = day ? '#35507a' : '#e0f2fe';
+    lines.forEach((ln, i) => ctx.fillText(ln, x0 + 10, y0 + 32 + i * 16));
+    ctx.restore();
 }
 function tutGlyph(cx, cy, plus) {
     ctx.save(); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.6; ctx.lineCap = 'round';
@@ -37744,6 +38695,28 @@ function tutPaintActive(S, t) {
         }
         return;
     }
+    if (a.k === 'cover') {   // [290926r] the cubes over the set settle in, take its colour, and lift away to the set; the rest carries on
+        const day = currentTheme === 'day', give = a.give;
+        const rest = A.from.filter(c => !give.some(g => g[0] === c[0] && g[1] === c[1]));
+        const famOld = (SLOT_DEFS[A.type] && SLOT_DEFS[A.type].color) || '#22d3ee';
+        const setCol = SLOT_DEFS[S.sets[a.set].type].color;
+        tutPaintBody(rest, p < 0.3 ? A.type : a.type, B.par);
+        const k1 = Math.min(1, p / 0.55), e1 = k1 * k1 * (3 - 2 * k1);
+        for (const c of give) {
+            let lift = 0, sc = 1, al = 1;
+            if (p > 0.55) { const u = (p - 0.55) / 0.45, eu = u * u; lift = eu * (c[1] + 1.4) * CELL; sc = 1 - 0.45 * eu; al = 1 - Math.max(0, (u - 0.7) / 0.3); }
+            const ins = 4 + 2.5 * e1, z = (CELL - ins * 2) * sc, cx = c[0] * CELL + CELL / 2, cy = c[1] * CELL + CELL / 2 - lift;
+            ctx.save();
+            ctx.globalAlpha = al;
+            if (!day) { ctx.shadowColor = setCol; ctx.shadowBlur = 14; }
+            roundedSq(cx - z / 2, cy - z / 2, z, faceBodyColour(famOld, B.par), null);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = al * 0.85 * e1; roundedSq(cx - z / 2, cy - z / 2, z, setCol, null);
+            ctx.globalAlpha = al * 0.9; roundedSq(cx - z / 2, cy - z / 2, z, null, '#ffffff', 2);
+            ctx.restore();
+        }
+        return;
+    }
     if (a.k === 'sink' || a.k === 'red' || a.k === 'breakoff') {
         const hold = 0.42, doomed = a.cube, rest = A.from.filter(c => !(c[0] === doomed[0] && c[1] === doomed[1]));
         const fam = (SLOT_DEFS[A.type] && SLOT_DEFS[A.type].color) || '#22d3ee';
@@ -37848,8 +38821,8 @@ function tutFrame(now) {
     }
     const cv = document.getElementById('tutCanvas');
     if (!cv) return;
-    const R = RENDER_SCALE, W = TUT_COLS * CELL, H = TUT_ROWS * CELL;
-    if (cv.width !== Math.round(W * R)) { cv.width = Math.round(W * R); cv.height = Math.round(H * R); }
+    const R = RENDER_SCALE, W = TUT_COLS * CELL, H = (TUT_ROWS + TUT_STICK_H) * CELL;   // [290926w] with the strip
+    if (cv.width !== Math.round(W * R) || cv.height !== Math.round(H * R)) { cv.width = Math.round(W * R); cv.height = Math.round(H * R); }
     try {
         ctx.save(); ctx.setTransform(R, 0, 0, R, 0, 0);
         tutPaint(L, t);

@@ -7491,6 +7491,15 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 300926-0631: EXACT FIT, WORKED BACK [300926m–o]. The cover rule is retired: only the right shape,
+// exactly, in its orientation and on its pole, wins a set; a bigger shape over a set is a wrong
+// shape (the set takes what touches it). The move guide is worked back from the finish: a count
+// from every set back across every pose on the screen, through flips and the shifters those
+// landings set off; the route follows the count down and marks each shifter it uses (where you
+// land on it, a numbered badge, the turn's size and way or the step's arrow). One turn of the
+// right size reaches every orientation and pole of every shape (measured), so when there is no
+// route the fitter plants the tile that joins the body's ground to the set's approach, found
+// from both ends. Lesson TURN TO FIT replaces BIGGER THAN THE SET; WRONG SETS is exact fit again.
 // 290926-2244: THE WAY THROUGH [300926h–l]. From playdata65. The move guide sees the holes
 // (a route never lands on one) and runs shifters as the board does now (holes and reds
 // under a push are laid free; a blocked push is not a route; trains carry on). A set may
@@ -8026,7 +8035,7 @@ body.theme-day .replay-cap .rp-phrase.gold { color: #ff8c1a; text-shadow: none; 
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '290926-2244 ROTOЯ · THE WAY THROUGH';
+const BUILD_VERSION = '300926-0631 ROTOЯ · EXACT FIT, WORKED BACK';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -13267,6 +13276,11 @@ function runFitter() {
         g: grinding ? 1 : 0,
         dry: Math.round(sinceBank / 1000)
     });
+    // [300926o] A position or form problem: plant the tile that joins the body's ground to the set's approach.
+    if ((want.kind === 'pivot' || want.kind === 'slip') && ROUTE_BACKWARD && !r.reachable) {
+        const j = planJoiningTile();
+        if (j && plantJoiningTile(j)) { game._fitterAt = now; game._stuckFor = 0; return; }
+    }
     // Plant it CLOSE — 2 to 5 rows ahead, in or beside the player's column — so
     // it reads as an answer to the situation rather than a coincidence.
     const camI = Math.floor(game.cameraY);
@@ -28438,7 +28452,16 @@ const SLOT_PERMEABLE = false;
    over a pair set leaves a pair; a pair over a single leaves a single. A cube of
    the rest on a second set is judged on its own by the same rule. coversSlot()
    is the one test: the landing rules, the route guide and the claim all ask it. */
-const COVER_CLAIM = true;
+/* ══ [300926m] EXACT FIT AGAIN — THE COVER RULE IS RETIRED ═══════════════════
+   Designer's call, 30 Sep: "larger player shapes should not just be able to cover
+   smaller shapes and win that slot — a large part of the game is to orient
+   yourself correctly, to adjust the parity of your shape to fit that specific slot
+   precisely." So a set is won ONLY by the same shape landing exactly on it, in its
+   orientation, on its pole. A bigger shape over a set is what any wrong shape is:
+   the set takes the cubes that touch it and you carry on smaller (WRONG SETS).
+   Every [290926q] path asks coversSlot(), which answers false while this is off;
+   the lessons, the tip and the tests are back on exact fit. One line to restore. */
+const COVER_CLAIM = false;
 function coversSlot(keys, sl) {   // keys: the landing's cell keys (array or Set)
     if (!COVER_CLAIM || !sl || sl.claimed || sl.retiring || !setNeeded.includes(sl.id)) return false;
     const ks = keys instanceof Set ? keys : new Set(keys);
@@ -28947,19 +28970,30 @@ function routeRepelsNonExact(cells) {
 // One flip from (config,x,y), with any covered stance-shifter auto-fired. Returns
 // the true successor { config, x, y, cells } for a traversable same-body step,
 // or null if the flip is not a real same-body transition.
-function routeStep(type, config, x, y, dir, fuseIsGoal) {
+function routeStep(type, config, x, y, dir, fuseIsGoal, rawOnly) {   // [300926n] rawOnly: the landing itself, before any shifter
     const transRow = SHAPES[type].trans[config];
     if (!transRow || !transRow[dir]) return null;
     let nConfig = transRow[dir];
     const off = getOffset(type, config, dir);
     if (!off) return null;
     let nx = x + off[0], ny = y - off[1];
-
+    /* [300926n] everything from here on depends only on WHERE the flip lands, so while the
+       field is being counted the verdict for each landing is worked out once and shared
+       (many poses flip onto the same landing). */
+    if (_landMemo) {
+        const mk = type + nConfig + '|' + nx + '|' + ny + (fuseIsGoal ? 'g' : '') + (rawOnly ? 'r' : '');
+        let out = _landMemo.get(mk);
+        if (out === undefined) { out = routeLanding(type, nConfig, nx, ny, fuseIsGoal, rawOnly); _landMemo.set(mk, out); }
+        return out;
+    }
+    return routeLanding(type, nConfig, nx, ny, fuseIsGoal, rawOnly);
+}
+function routeLanding(type, nConfig, nx, ny, fuseIsGoal, rawOnly) {
     // Real flip legality (canFit is move()'s own gate).
     if (!canFit(nx, ny, type, nConfig)) return null;                 // wall / off-grid
     const topRow = Math.floor(game.cameraY);
     let cells = SHAPES[type].cells[nConfig].map(function (p) { return { x: nx + p[0], y: ny - p[1] }; });
-    if (cells.some(function (c) { return c.y < topRow; })) return null;   // top bonk-back (no move)
+    if (cells.some(function (c) { return c.y < topLawfulRow(); })) return null;   // top bonk-back (no move) — [300926n] the board's own top: fully-visible rows only, as the landing rules judge it
     // [050826q] AND THE SIDES. The solver bounded rows only — top via this line,
     // bottom via the maxRow test in solveRoute — but nothing checked COLUMNS
     // here, so a route could be proposed that steps off the left or right edge.
@@ -28983,7 +29017,7 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
     // [180826v] ...unless the body-change IS the objective. When the solver is
     // running its green stage, a landing that would fuse is the GOAL, not a
     // non-edge — the route may END at growth, never pass through it.
-    if (findFusionAt(cells)) {
+    if (routeGreenNear(cells) && findFusionAt(cells)) {   // [300926n] the cheap look first: most landings have no green beside them
         if (fuseIsGoal) return { config: nConfig, x: nx, y: ny, cells: cells, fuseGoal: true };
         return null;                                                 // green fusion → evolve
     }
@@ -28995,6 +29029,8 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
     // Claim-before-shifter: if the post-flip footprint already claims, that is
     // the terminal (the real handler banks the claim before firing a shifter).
     if (routeExactClaim(cells)) return { config: nConfig, x: nx, y: ny, cells: cells };
+    if (rawOnly) return { config: nConfig, x: nx, y: ny, cells: cells,
+                          armed: cells.some(function (c) { const k = c.x + ',' + c.y, w = world[k]; return (w === 'pivot' || w === 'slip') && !shifterSpent(k); }) };
 
     /* [300926h] THE SHIFTERS, AS THE BOARD RUNS THEM NOW. The handler this copies
        has moved on three times since it was written, and the guide had not:
@@ -29007,7 +29043,7 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
          · a push that ends beside a green grows the body — not the same body.
        classifyShiftPush is the handler's own judge, and is read-only. */
     let cur = { config: nConfig, x: nx, y: ny, cells: cells }, via = null;
-    const usedTiles = new Set();
+    const usedTiles = new Set(), tiles = [];   // [300926n] which shifters, in order, and what each does
     for (let link = 0; link < 5; link++) {
         let next = null, tileKey = null;
         for (let i = 0; i < cur.cells.length && !next; i++) {
@@ -29020,8 +29056,10 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
                 const pv = turnAroundTrigger(cur.cells, c.x, c.y, meta && meta.dir === 'ccw', type, cur.config, turnsOf(meta));
                 if (!pv) return null;
                 next = { config: pv.newConfig, x: pv.anchorX, y: pv.anchorY, cells: pv.newCells };
+                tiles.push({ x: c.x, y: c.y, kind: 'pivot', ccw: !!(meta && meta.dir === 'ccw'), turns: turnsOf(meta), from: cur.cells, to: pv.newCells });
             } else if (item === 'slip') {
                 const v = slipVectorOf(shifterMeta[k]);
+                tiles.push({ x: c.x, y: c.y, kind: 'slip', vx: v.dx, vy: v.dy, from: cur.cells });
                 const hop = slipHop(cur.cells, v);
                 const sx = cur.x + v.dx * hop, sy = cur.y + v.dy * hop;
                 next = { config: cur.config, x: sx, y: sy,
@@ -29033,12 +29071,12 @@ function routeStep(type, config, x, y, dir, fuseIsGoal) {
         if (!next) break;
         if (next.cells.some(function (c) { return c.x < 0 || c.x >= VIEW_W; })) return null;
         if ((type === 'single' && slotMisfitAt(next.cells)) || classifyShiftPush(next.cells).trim) return null;   // blocked: repelled
-        if (findFusionAt(next.cells)) return fuseIsGoal ? { config: next.config, x: next.x, y: next.y, cells: next.cells, fuseGoal: true, via: via } : null;
+        if (routeGreenNear(next.cells) && findFusionAt(next.cells)) return fuseIsGoal ? { config: next.config, x: next.x, y: next.y, cells: next.cells, fuseGoal: true, via: via } : null;
         usedTiles.add(tileKey);
         cur = next;
         if (routeExactClaim(cur.cells)) break;   // delivered into a set: the claim ends it
     }
-    if (via) return { config: cur.config, x: cur.x, y: cur.y, cells: cur.cells, via: via };
+    if (via) return { config: cur.config, x: cur.x, y: cur.y, cells: cur.cells, via: via, land: cells, tiles: tiles };
     return { config: nConfig, x: nx, y: ny, cells: cells };
 }
 function _routeStepMachinesRetired(type, nConfig, nx, ny, cells) {   // [300926h] the old auto-fire, kept for reference
@@ -29089,7 +29127,238 @@ function routeCentroid(cells) {
 //   { reachable:true,  path:[nodes…], slot }                     — a claim route
 //   { reachable:false, path:[nodes…], slot, noBody:false }       — frayed toward slot
 //   { reachable:false, path:[start],  slot:null, noBody:true }   — no same-body slot at all
+/* ══ [300926n] THE ROUTE, WORKED BACK FROM THE SET ═════════════════════════════
+   Designer's note, 30 Sep: "how can the move guide indicate which route, which turn
+   shifters and move shifters should be used to reach the goal of fitting into the
+   set — I imagine this needs to be reverse engineered from finish to start."
+   It is, now. The guide used to search forward from the body, one flip at a time,
+   and stop at the first set it happened to reach. Now it starts at the FINISH:
+     1. every pose the body could stand in on the screen is listed (shape, turn of
+        it, place), and every move out of each — a flip, and whatever shifters that
+        landing sets off (a turn, a step, a train of them), judged exactly as the
+        board judges them (holes, reds, edges, walls, sets it does not fit);
+     2. the poses that ARE the finish — the body exactly on a set it matches, in its
+        orientation and on its pole — are marked 0;
+     3. the count runs backwards from them: a pose one move from a finish is 1, one
+        move from a 1 is 2, and so on across the whole screen.
+   That field belongs to the board, not to where you stand, so it is built once for
+   a board and read many times: from wherever the body is, the route is simply the
+   move that lowers the count, then the next, down to 0. Moving does not re-plan;
+   the board changing does. Ties go to a plain flip over a shifter, then to the
+   eight directions in their usual order, so the same board always shows the same
+   route. The moves that ride a shifter carry which tile, in order, and what it does
+   (a turn and its size and way, a step and its arrow), and the guide marks them.
+   Poses the count never reaches cannot get to any set as the body is — that is
+   what the fitter reads (see planJoiningTile). */
+const ROUTE_BACKWARD = true;
+let _landMemo = null;    // [300926n] during a field build or a join search: each landing judged once
+let _greenNear = null;   // during a field build: the cells within one of a green, looked up once
+function routeGreenNear(cells) {   // is there a green touching this footprint at all (the only way it can grow)
+    if (_greenNear) { for (const c of cells) if (_greenNear.has(c.x * 1000 + c.y)) return true; return false; }
+    for (const c of cells) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (world[(c.x + dx) + ',' + (c.y + dy)] === 'pickup') return true;
+    return false;
+}
+let _routeField = { sig: null, F: null, at: 0 };
+function routeFieldSig(type) {
+    const topL = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    let sg = type + '|' + topL + '|' + setNeeded.join(',') + '|';
+    for (const sl of slots) if (!sl.claimed && !sl.retiring) sg += sl.id + '@' + sl.cells.map(c => c.x + ',' + c.y).join(' ') + ';';
+    for (let y = topL; y <= bot; y++) for (let x = 0; x < VIEW_W; x++) {
+        const k = x + ',' + y, v = world[k];
+        if (!v) continue;
+        sg += k + v;
+        if (v === 'pivot' || v === 'slip') { const m = shifterMeta[k]; sg += (shifterSpent(k) ? '*' : '') + (m ? m.dir + '/' + (m.turns || 1) : ''); }
+        sg += ';';
+    }
+    return sg;
+}
+function routeField(type) {
+    const sig = routeFieldSig(type);
+    if (_routeField.sig === sig && _routeField.F) return _routeField.F;
+    // a board that is changing a lot is re-counted at most four times a second; the walk checks every move live
+    if (_routeField.sig !== null && _routeField.F && _routeField.F.type === type && performance.now() - _routeField.at < 250 && _routeField.cam === Math.floor(game.cameraY)) return _routeField.F;   // (a reset — sig null — re-counts at once)
+    const topL = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    _landMemo = new Map();
+    _greenNear = new Set();
+    for (let y = topL - 4; y <= bot + 4; y++) for (let x = 0; x < VIEW_W; x++) if (world[x + ',' + y] === 'pickup')
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) _greenNear.add((x + dx) * 1000 + (y + dy));
+    const key = (c, x, y) => c + '|' + x + '|' + y;
+    const nodes = new Map();
+    for (const c of Object.keys(SHAPES[type].cells)) for (let y = topL - 3; y <= bot + 3; y++) for (let x = -3; x < VIEW_W + 3; x++) {
+        const cells = SHAPES[type].cells[c].map(([dx, dy]) => ({ x: x + dx, y: y - dy }));
+        if (cells.some(q => q.x < 0 || q.x >= VIEW_W || q.y < topL || q.y > bot)) continue;
+        if (cells.some(q => { const w = world[q.x + ',' + q.y]; return w === 'wall' || w === 'void' || w === 'hazard'; })) continue;   // nowhere to stand
+        nodes.set(key(c, x, y), { config: c, x, y, cells, out: [], inn: [], dist: Infinity, goal: false });
+    }
+    for (const n of nodes.values()) {
+        if (routeExactClaim(n.cells)) { n.goal = true; n.dist = 0; continue; }
+        if (routeRepelsNonExact(n.cells)) continue;
+        for (const d of DIRS_ORDER) {
+            const st = routeStep(type, n.config, n.x, n.y, d);
+            if (!st) continue;
+            const t = nodes.get(key(st.config, st.x, st.y));
+            if (!t || t === n) continue;
+            const e = { from: n, to: t, dir: d, step: st };
+            n.out.push(e); t.inn.push(e);
+        }
+    }
+    const q = [];
+    for (const n of nodes.values()) if (n.goal) q.push(n);
+    for (let h = 0; h < q.length; h++) { const t = q[h]; for (const e of t.inn) if (e.from.dist === Infinity) { e.from.dist = t.dist + 1; q.push(e.from); } }
+    _greenNear = null; _landMemo = null;
+    const F = { nodes, key, type };
+    _routeField = { sig, F, at: performance.now(), cam: Math.floor(game.cameraY) };
+    return F;
+}
 function solveRoute() {
+    if (ROUTE_BACKWARD) return solveRouteBackward();
+    return _solveRouteForwardRetired();
+}
+function solveRouteBackward() {
+    const type = game.shapeType;
+    const needed = routeNeededSameBodySlots();
+    const start = { config: game.shapeConfig, x: game.playerX, y: game.playerY, cells: getPlayerCells(), parent: null, depth: 0 };
+    if (!needed.length) return { reachable: false, path: [start], slot: null, noBody: true };
+    const F = routeField(type);
+    const dOf = st => { const t = F.nodes.get(F.key(st.config, st.x, st.y)); return t ? t.dist : Infinity; };
+    const path = [start];
+    let cur = start, guard = 0;
+    const seen = new Set([F.key(start.config, start.x, start.y)]);
+    while (guard++ < 80) {
+        let best = null, bd = Infinity, bestDir = null;
+        for (const d of DIRS_ORDER) {
+            const st = routeStep(type, cur.config, cur.x, cur.y, d);
+            if (!st) continue;
+            const dd = routeExactClaim(st.cells) ? 0 : dOf(st);
+            if (dd < bd || (dd === bd && best && best.via && !st.via)) { bd = dd; best = st; bestDir = d; }
+        }
+        if (!best || bd === Infinity) break;
+        const k = F.key(best.config, best.x, best.y);
+        if (seen.has(k)) break;
+        seen.add(k);
+        const node = { config: best.config, x: best.x, y: best.y, cells: best.cells, parent: cur, depth: cur.depth + 1,
+                       via: best.via, land: best.land, tiles: best.tiles, dir: bestDir };
+        path.push(node);
+        cur = node;
+        const claim = routeExactClaim(node.cells);
+        if (claim) { node.claim = claim; return { reachable: true, path, slot: claim, dist: node.depth }; }
+    }
+    // no way from here, as this body: name the nearest set it would fit, for the fitter
+    const cc = routeCentroid(start.cells);
+    let near = null, nd = Infinity;
+    for (const sl of needed) { if (sl.type !== type) continue; const c = routeCentroid(sl.cells), dd = Math.abs(c.x - cc.x) + Math.abs(c.y - cc.y); if (dd < nd) { nd = dd; near = sl; } }
+    return { reachable: false, path: [start], slot: near, noBody: !near };
+}
+/* ══ [300926o] THE RIGHT SHIFTER IN THE RIGHT PLACE ══════════════════════════
+   Designer's note: "turn shifters used in the right way should be able to orient
+   any shape correctly to fit into a specific slot." Measured, with the game's own
+   turn: flips alone take a diagonal to 2 of its 4 turns-and-poles, a J to 4 of 8,
+   a square to 1 of 2 poles (a pair to all of them) — and ONE turn, of the right
+   size, the right way, about the right cube, reaches every one. So when the body
+   has no route to a set it matches, the fitter no longer drops a random turn near
+   the player. It works the join out from both ends:
+     · the FINISH side is the route field: every pose that can still reach the set;
+     · the START side is every landing the body can make from where it can get to;
+     · a turn tile (any size, either way) or a step tile (any arrow) is tried on each
+       cell of each such landing — and the one that carries a landing into the
+       finish side in the fewest moves altogether is planted, on open floor, where
+       the body will land on it. A turn is preferred to a step at equal cost.
+   The guide then draws the whole route through it, marked. */
+function planJoiningTile() {
+    const type = game.shapeType;
+    if (type === 'single') return null;                       // a single fits a single's set from anywhere; it needs no turning
+    const F = routeField(type);
+    _landMemo = new Map();
+    try { return planJoiningTileInner(type, F); } finally { _landMemo = null; }
+}
+function planJoiningTileInner(type, F) {
+    const start = { config: game.shapeConfig, x: game.playerX, y: game.playerY };
+    // the start side: poses the body can reach now, and how many moves each takes
+    const depth = new Map(), order = [];
+    const k0 = F.key(start.config, start.x, start.y);
+    depth.set(k0, 0); order.push({ config: start.config, x: start.x, y: start.y, k: k0 });
+    for (let h = 0; h < order.length && order.length < 600; h++) {
+        const n = order[h], dn = depth.get(n.k);
+        for (const d of DIRS_ORDER) {
+            const st = routeStep(type, n.config, n.x, n.y, d);
+            if (!st) continue;
+            const k = F.key(st.config, st.x, st.y);
+            if (depth.has(k)) continue;
+            depth.set(k, dn + 1); order.push({ config: st.config, x: st.x, y: st.y, k });
+        }
+    }
+    const poseDist = (cfg, x, y) => { const n = F.nodes.get(F.key(cfg, x, y)); return n ? n.dist : Infinity; };
+    const cellFree = c => { const k = c.x + ',' + c.y; return !world[k] && !slots.some(sl => !sl.claimed && sl.keys.has(k)) && machineCellOk(c.x, c.y); };
+    let best = null;
+    const consider = (cost, cand) => { if (cost < Infinity && (!best || cost < best.cost || (cost === best.cost && cand.kind === 'pivot' && best.kind !== 'pivot'))) best = Object.assign({ cost }, cand); };
+    const seenLand = new Set();
+    for (const n of order) {
+        const dn = depth.get(n.k);
+        if (best && dn + 1 >= best.cost) continue;
+        for (const d of DIRS_ORDER) {
+            const L = routeStep(type, n.config, n.x, n.y, d, false, true);
+            if (!L || L.armed || routeExactClaim(L.cells)) continue;
+            const lk = F.key(L.config, L.x, L.y);
+            if (seenLand.has(lk)) continue;
+            seenLand.add(lk);
+            for (const c of L.cells) {
+                if (!cellFree(c)) continue;
+                for (const ccw of [false, true]) for (const tn of [1, 2, 3, 4]) {
+                    const pv = turnAroundTrigger(L.cells, c.x, c.y, ccw, type, L.config, tn);
+                    if (!pv || tn === 4) continue;                     // a full turn orients nothing
+                    if (pv.newCells.some(q => q.x < 0 || q.x >= VIEW_W)) continue;
+                    if (classifyShiftPush(pv.newCells).trim || (routeGreenNear(pv.newCells) && findFusionAt(pv.newCells))) continue;
+                    const dd = routeExactClaim(pv.newCells) ? 0 : poseDist(pv.newConfig, pv.anchorX, pv.anchorY);
+                    consider(dn + 1 + dd, { kind: 'pivot', x: c.x, y: c.y, ccw, tn, land: L.cells, to: pv.newCells });
+                }
+                for (let vi = 0; vi < SLIP_VECTORS.length; vi++) {
+                    const v = SLIP_VECTORS[vi], hop = slipHop(L.cells, v);
+                    const sx = L.x + v.dx * hop, sy = L.y + v.dy * hop;
+                    const cells = SHAPES[type].cells[L.config].map(([dx, dy]) => ({ x: sx + dx, y: sy - dy }));
+                    if (cells.some(q => q.x < 0 || q.x >= VIEW_W)) continue;
+                    if (classifyShiftPush(cells).trim || (routeGreenNear(cells) && findFusionAt(cells))) continue;
+                    const dd = routeExactClaim(cells) ? 0 : poseDist(L.config, sx, sy);
+                    consider(dn + 1 + dd, { kind: 'slip', x: c.x, y: c.y, vi, land: L.cells, to: cells });
+                }
+            }
+        }
+    }
+    return best;
+}
+/* The join comes to you: when your shape matches a set that is wholly on screen and
+   the count says there is no way into it, a joining tile is worked out and planted
+   within three seconds (and no more often than every six). It used to wait for the
+   fitter, which is only asked on the landings that earn a set — rarely, as the
+   export shows (ten stuck events in twenty-five runs). */
+const JOIN_AFTER_MS = 3000, JOIN_GAP_MS = 6000;
+let _joinSince = 0, _joinAt = -1e9, _joinLook = 0;
+function joinerTick(nowT) {
+    if (!ROUTE_BACKWARD || game.testDrive || !game.running || game.paused || game.celebrating || game.introHold || game._replay) { _joinSince = 0; return; }
+    if (nowT - _joinLook < 400) return;
+    _joinLook = nowT;
+    if (flip.active || isTransformAnimActive()) return;
+    const topL = topLawfulRow();
+    if (game.shapeType === 'single' || !routeNeededSameBodySlots().some(sl => sl.cells.every(c => c.y >= topL))) { _joinSince = 0; return; }
+    const r = getRoute();
+    if (!r || r.reachable) { _joinSince = 0; return; }
+    if (!_joinSince) { _joinSince = nowT; return; }
+    if (nowT - _joinSince < JOIN_AFTER_MS || nowT - _joinAt < JOIN_GAP_MS) return;
+    _joinAt = nowT;
+    const j = planJoiningTile();
+    if (j && plantJoiningTile(j)) _joinSince = 0;
+}
+function plantJoiningTile(j) {
+    const k = j.x + ',' + j.y;
+    if (world[k]) return false;
+    world[k] = j.kind;
+    if (j.kind === 'pivot') { shifterMeta[k] = { spawnTime: performance.now(), dir: j.ccw ? 'ccw' : 'cw', turns: j.tn, joined: true }; noteTurnSpin(shifterMeta[k].dir, j.tn); }
+    else shifterMeta[k] = { spawnTime: performance.now(), dir: j.vi, joined: true };
+    game._lastShifterAt = performance.now();
+    rec('spawn', { k: j.kind, src: 'join', ...(j.kind === 'pivot' ? { tn: j.tn } : { d: j.vi }), cost: j.cost });
+    _routeField.sig = null; routeCache.sig = null;   // the board changed: the guide re-plans through it
+    return true;
+}
+function _solveRouteForwardRetired() {
     const type = game.shapeType;
     const needed = routeNeededSameBodySlots();
     const start = { config: game.shapeConfig, x: game.playerX, y: game.playerY,
@@ -29538,6 +29807,62 @@ function drawShifterPreview() {
 // stepping toward the claim — one outline per flip, the body itself showing the
 // way rather than an abstract line. Persists through pause (own guards, no
 // paused-gate); hidden during scrub, which shows historical state instead.
+/* [300926n] THE SHIFTERS THE ROUTE USES, MARKED. For a move that rides a shifter the
+   guide draws: where the body lands ON the tile (a dashed outline in the move's
+   colour), the tile ringed, a numbered badge on it — the move it belongs to — and
+   what it will do: for a turn, an arc round the tile the size and way of the turn
+   with its label (90° / 180° / 270°, ↻ or ↺); for a step, its arrow. The ghost of
+   where the body ends up is the ordinary route ghost. */
+const _guideTileMarks = [];
+function drawRouteTiles(node, col, alpha, moveNo) {
+    const day = currentTheme === 'day';
+    ctx.save();
+    // where you land on it
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.setLineDash([5, 4]); ctx.lineWidth = 2.2; ctx.strokeStyle = col;
+    for (const c of (node.land || [])) { const x = c.x * CELL + 5, y = (c.y - game.cameraY) * CELL + 5; ctx.beginPath(); ctx.rect(x, y, CELL - 10, CELL - 10); ctx.stroke(); }
+    ctx.setLineDash([]);
+    node.tiles.forEach((t, j) => {
+        const cx = t.x * CELL + CELL / 2, cy = (t.y - game.cameraY) * CELL + CELL / 2;
+        const casing = day ? '#ffffff' : 'rgba(3,10,24,0.95)';
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = 7.5; ctx.strokeStyle = casing;   // a casing under the ring, so it holds over the ghosts and the grid
+        ctx.beginPath(); ctx.arc(cx, cy, CELL * 0.47, 0, Math.PI * 2); ctx.stroke();
+        ctx.lineWidth = 4; ctx.strokeStyle = col;
+        ctx.beginPath(); ctx.arc(cx, cy, CELL * 0.47, 0, Math.PI * 2); ctx.stroke();
+        let label = '';
+        if (t.kind === 'pivot') {
+            const sweep = (t.ccw ? -1 : 1) * t.turns * Math.PI / 2, R = CELL * 0.62, a0 = -Math.PI / 2;
+            ctx.lineWidth = 7; ctx.strokeStyle = casing; ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + sweep, t.ccw); ctx.stroke();
+            ctx.lineWidth = 3.4; ctx.strokeStyle = col; ctx.beginPath(); ctx.arc(cx, cy, R, a0, a0 + sweep, t.ccw); ctx.stroke();
+            const ae = a0 + sweep, hx = cx + Math.cos(ae) * R, hy = cy + Math.sin(ae) * R, tang = ae + (t.ccw ? -1 : 1) * Math.PI / 2;
+            ctx.fillStyle = col; ctx.beginPath();
+            ctx.moveTo(hx + Math.cos(tang) * 7, hy + Math.sin(tang) * 7);
+            ctx.lineTo(hx + Math.cos(tang + 2.5) * 7, hy + Math.sin(tang + 2.5) * 7);
+            ctx.lineTo(hx + Math.cos(tang - 2.5) * 7, hy + Math.sin(tang - 2.5) * 7);
+            ctx.closePath(); ctx.fill();
+            label = `${t.turns * 90}°${t.ccw ? '\u21BA' : '\u21BB'}`;
+        } else {
+            const L = Math.hypot(t.vx, t.vy) || 1, ux = t.vx / L, uy = t.vy / L, x1 = cx + ux * CELL * 0.35, y1 = cy + uy * CELL * 0.35, x2 = cx + ux * CELL * 0.85, y2 = cy + uy * CELL * 0.85;
+            ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x2 + ux * 6, y2 + uy * 6); ctx.lineTo(x2 - uy * 6, y2 + ux * 6); ctx.lineTo(x2 + uy * 6, y2 - ux * 6); ctx.closePath(); ctx.fill();
+            label = 'STEP';
+        }
+        // the badge: which move
+        const bx = cx + CELL * 0.4, by = cy - CELL * 0.4, br = CELL * 0.25;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+        ctx.lineWidth = 2.5; ctx.strokeStyle = casing; ctx.stroke();
+        ctx.fillStyle = day ? '#ffffff' : '#0b1220';
+        ctx.font = `800 ${Math.round(br * 1.35)}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(moveNo), bx, by + 0.5);
+        // the label under the tile
+        ctx.font = `900 ${Math.round(CELL * 0.26)}px system-ui, sans-serif`;
+        ctx.lineWidth = 5; ctx.strokeStyle = casing; ctx.lineJoin = 'round';
+        ctx.strokeText(label, cx, cy + CELL * 0.7); ctx.fillStyle = col; ctx.fillText(label, cx, cy + CELL * 0.7);
+    });
+    ctx.restore();
+}
 function drawMoveGuideRoute() {
     if (!game.hintsOn || !game.running || game.celebrating) return;
     if (scrubbing) return;
@@ -29657,6 +29982,7 @@ function drawMoveGuideRoute() {
             // machine, ring the machine in the step's own colour and tie it to
             // the landing — the ghost stops teleporting inexplicably (field
             // note: "not clear that this is what the guide is doing").
+            if (path[i].tiles && path[i].tiles.length) _guideTileMarks.push([path[i], col, alpha, i]);   // [300926n] marked on top, after the ghosts and the trail
             if (path[i].via) {
                 const vx = path[i].via.x * CELL + CELL / 2;
                 const vy = (path[i].via.y - game.cameraY) * CELL + CELL / 2;
@@ -29715,6 +30041,8 @@ function drawMoveGuideRoute() {
                 ctx.restore();
             }
         }
+        for (const m of _guideTileMarks) drawRouteTiles(m[0], m[1], m[2], m[3]);   // [300926n] the shifters to use, on top of everything
+        _guideTileMarks.length = 0;
     } else {
         // FRAYED: the trail builds the same way but thins toward the frontier
         // and simply stops — no landing ghost, so it is visibly a dead end.
@@ -34544,7 +34872,7 @@ function loop(time, gen) {
             const k = `${x},${y}`; if (world[k] === 'hazard') delete world[k];
         }
     }
-    { const _pn = performance.now(); maintainReds(_pn); maintainGreens(_pn); levelIslandTick(); }   // [290926i][290926j][300926j]
+    { const _pn = performance.now(); maintainReds(_pn); maintainGreens(_pn); levelIslandTick(); joinerTick(_pn); }   // [290926i][290926j][300926j]
     if (checkCollisions() === 'death') {
         captureSnapshot(game._lastMoveDir || '✗ death');
         handleDeath('dissolved');
@@ -35899,6 +36227,7 @@ function startDaily() { startGame(false, true); }
 function startGame(testDrive = false, daily = false) {
     _runSerial++;   // [300926e]
     game._piecesHome = 0; machineHoldUntil = 0; game._setDoneHold = false;   // [300926f][300926g]
+    _joinSince = 0; _joinAt = -1e9; _routeField.sig = null;   // [300926o]
     game._isle3 = null;   // [300926j]
     replayClipStop(); replayClip = null;   // [260926n] the last run's clip is put away; a new one records at the next death replay
     { const _gc = document.getElementById('goClip'); if (_gc) _gc.hidden = true; }
@@ -38211,11 +38540,7 @@ const TUT = [
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '3,2': 'green' } },
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'grow', g: [3, 2], to: [[2, 2], [3, 2]], type: 'pair', say: 'EVOLVED' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
-  { title: 'BIGGER THAN THE SET', line: 'Cover all of a set with a bigger shape and it’s yours — the cubes on it go into the set, and you devolve to what’s left.',   // [290926r] the cover rule [290926q]
-    init: { body: { cells: [[0, 1], [1, 1], [0, 2], [1, 2]], type: 'square', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
-    acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1], [2, 2], [3, 2]] },
-            { k: 'cover', set: 0, give: [[3, 1], [3, 2]], to: [[2, 1], [2, 2]], type: 'pair', say: 'SET! · −2 CUBES' },
-            { k: 'flip', dir: 'W', to: [[1, 1], [1, 2]] } ] },
+
   { title: 'ON A GREEN', line: 'Land ON a green instead of beside it and it pays you 5 seconds.',   // [290926n] was STEPPING STONES — the store is gone
     showClock: true,
     init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green' }, clock: 30 },
@@ -38229,7 +38554,7 @@ const TUT = [
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
-  { title: 'WRONG SETS', line: 'Land on part of a set without covering all of it and the set takes the cube that touched it — you devolve.',   // [290926n] · [290926r] a bigger shape over a smaller set is a claim now
+  { title: 'WRONG SETS', line: 'Land the wrong shape on a set — even a bigger one over all of it — and the set takes the cubes that touch it. Only the right shape, exactly, is yours.',   // [290926n] · [300926m] exact fit again
     init: { body: { cells: [[0, 1], [1, 1]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
@@ -38255,6 +38580,12 @@ const TUT = [
     acts: [ { k: 'guide', route: [[[2, 1], [3, 0]], [[3, 2], [4, 1]], [[5, 1], [6, 2]], [[4, 2], [5, 3]]], d: 1000 + 3 * 450 + 350 + 1100 },
             { k: 'flip', dir: 'NE', to: [[2, 1], [3, 0]] }, { k: 'flip', dir: 'SE', to: [[3, 2], [4, 1]] },
             { k: 'flip', dir: 'E', to: [[5, 1], [6, 2]] }, { k: 'flip', dir: 'SW', to: [[4, 2], [5, 3]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
+  { title: 'TURN TO FIT', line: 'Only an exact fit counts. Flips can’t turn this diagonal the other way round — a turn shifter can, and the guide marks which one.',   // [300926m][300926n]
+    guideBtn: true,
+    init: { body: { cells: [[0, 2], [1, 1]], type: 'diagonal', par: 0 }, tiles: { '3,2': 'pivot' }, sets: [{ type: 'diagonal', cells: [[5, 1], [6, 2]] }] },
+    acts: [ { k: 'guide', route: [[[3, 2], [4, 1]], [[5, 1], [6, 2]]], vias: { 0: { tile: [3, 2], land: [[2, 1], [3, 2]], label: '90°\u21BB' } }, d: 1000 + 1 * 450 + 350 + 1400 },
+            { k: 'flip', dir: 'E', to: [[2, 1], [3, 2]] }, { k: 'turn', trig: [3, 2], ccw: false, to: [[3, 2], [4, 1]] },
+            { k: 'flip', dir: 'E', to: [[5, 1], [6, 2]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
   { title: 'TIPS', line: 'Tap the bulb, bottom right. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]
     tipsBtn: true,
     init: { body: { cells: [[0, 1]], type: 'single', par: 0 }, tiles: { '3,1': 'green' } },
@@ -38303,15 +38634,16 @@ function tutApply(S, a, tEnd) {
         if (a.stone) { delete S.tiles[a.stone.join(',')]; S.store = Math.max(0, S.store - 1); }
         S.body.cells = (a.land || a.to).map(c => c.slice()); S.body.par ^= 1;
         if (a.type) S.body.type = a.type;
-        if (S.guide && S.guide.length && S.guide[0].every(g => S.body.cells.some(c => c[0] === g[0] && c[1] === g[1]))) S.guide.shift();   // [290926r] a move taken leaves the guide
+        if (S.guide && S.guide.length && S.guide[0].every(g => S.body.cells.some(c => c[0] === g[0] && c[1] === g[1]))) { S.guide.shift(); if (S.guideVias) S.guideVias.shift(); }   // [290926r] a move taken leaves the guide
     } else if (a.k === 'grow') { delete S.tiles[a.g.join(',')]; S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
     else if (a.k === 'store') { delete S.tiles[a.g.join(',')]; S.store++; }
     else if (a.k === 'sink') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
     else if (a.k === 'breakoff') { S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }
-    else if (a.k === 'push' || a.k === 'turn') { walk(S.body.cells); S.body.cells = a.to.map(c => c.slice()); S.spent[a.trig.join(',')] = tEnd; }
+    else if (a.k === 'push' || a.k === 'turn') { walk(S.body.cells); S.body.cells = a.to.map(c => c.slice()); S.spent[a.trig.join(',')] = tEnd;
+        if (S.guide && S.guide.length && S.guide[0].every(g => S.body.cells.some(c => c[0] === g[0] && c[1] === g[1]))) { S.guide.shift(); if (S.guideVias) S.guideVias.shift(); } }   // [300926n] the shifter's move leaves the guide too
     else if (a.k === 'claim') { S.sets[a.set].done = true; S.guide = null; }
     else if (a.k === 'cover') { S.sets[a.set].done = true; S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }   // [290926r]
-    else if (a.k === 'guide') S.guide = a.route.map(r => r.map(c => c.slice()));
+    else if (a.k === 'guide') { S.guide = a.route.map(r => r.map(c => c.slice())); S.guideVias = a.route.map((_, i) => (a.vias && a.vias[i]) || null); }   // [300926n]
     else if (a.k === 'tipon') S.bulb = true;
     else if (a.k === 'tip') S.tip = a.text;
     else if (a.k === 'tipoff') S.tip = null;
@@ -38394,8 +38726,8 @@ function tutPaint(L, t) {
         }
     }
     // [290926r] the move guide's route, under the body
-    if (A && A.a.k === 'guide') tutRoute(S.body.cells, A.a.route, A.p * A.a.d - 1000);
-    else if (S.guide && S.guide.length) tutRoute(A && A.a.k === 'flip' ? A.from : S.body.cells, S.guide, 1e9);
+    if (A && A.a.k === 'guide') tutRoute(S.body.cells, A.a.route, A.p * A.a.d - 1000, A.a.route.map((_, i) => (A.a.vias && A.a.vias[i]) || null));
+    else if (S.guide && S.guide.length) tutRoute(A && (A.a.k === 'flip' || A.a.k === 'turn' || A.a.k === 'push') ? A.from : S.body.cells, S.guide, 1e9, S.guideVias);
     // the body, and what the active act is doing to it
     tutPaintActive(S, t);
     // the words
@@ -38483,7 +38815,7 @@ function tutStrip(L, S, t) {
     const st = tutStickAt(L, S), push = tutStickPush(L, t);
     tutStick(st.x, st.y, st.R, push.dir, push.amt);
 }
-function tutRoute(fromCells, route, tRel) {
+function tutRoute(fromCells, route, tRel, vias) {   // [300926n] vias[i]: { tile, land, label } — the shifter that move rides
     if (tRel < 0) return;
     const day = currentTheme === 'day', STAG = 450, FADE = 350, n = route.length;
     const hue = i => { const h = 275 * ((i - 1) / Math.max(1, n - 1)); return day ? `hsl(${h}, 85%, 38%)` : `hsl(${h}, 95%, 64%)`; };
@@ -38501,6 +38833,22 @@ function tutRoute(fromCells, route, tRel) {
             ctx.globalAlpha = a * (i === n ? 0.6 : 0.42); roundedSq(x, y, z, col, null);
             ctx.globalAlpha = a; roundedSq(x, y, z, null, col, 3);
             ctx.restore();
+        }
+        const vv = vias && vias[i - 1];
+        if (vv) {   // [300926n] where you land on the tile, the tile ringed, the move's number, what it does
+            ctx.save();
+            ctx.globalAlpha = a * 0.9; ctx.setLineDash([5, 4]); ctx.lineWidth = 2.2; ctx.strokeStyle = col;
+            for (const c of vv.land) { ctx.beginPath(); ctx.rect(c[0] * CELL + 5, c[1] * CELL + 5, CELL - 10, CELL - 10); ctx.stroke(); }
+            ctx.setLineDash([]);
+            const tcx = vv.tile[0] * CELL + CELL / 2, tcy = vv.tile[1] * CELL + CELL / 2;
+            ctx.globalAlpha = a; ctx.lineWidth = 3.2; ctx.beginPath(); ctx.arc(tcx, tcy, CELL * 0.47, 0, Math.PI * 2); ctx.stroke();
+            const bx = tcx + CELL * 0.36, by = tcy - CELL * 0.36, br = CELL * 0.19;
+            ctx.fillStyle = col; ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = day ? '#ffffff' : '#0b1220'; ctx.font = `800 ${Math.round(br * 1.35)}px system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(String(i), bx, by + 0.5);
+            if (vv.label) { ctx.font = `800 ${Math.round(CELL * 0.22)}px system-ui, sans-serif`; ctx.lineWidth = 3.5; ctx.strokeStyle = day ? '#ffffff' : 'rgba(3,10,24,0.95)'; ctx.strokeText(vv.label, tcx, tcy + CELL * 0.66); ctx.fillStyle = col; ctx.fillText(vv.label, tcx, tcy + CELL * 0.66); }
+            ctx.restore();
+            pts.push(cen(vv.land));   // the line runs through the landing on the tile
         }
         pts.push(cen(route[i - 1])); cols.push(col); ks.push(a);
     }

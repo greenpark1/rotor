@@ -3238,6 +3238,8 @@ body.theme-day .howto-tile { box-shadow: inset 0 0 0 2px var(--day-ink); }
 body.theme-day .howto-tile.teal { background: linear-gradient(#c5d3e0, #9fb3c8); }   /* [260926n] blue raspberry · [260926o] night's silver, brushed (CANDY.steelHi → steelLo) */
 body.theme-day .howto-tile.teal svg,
 body.theme-day .howto-tile.teal svg path { stroke: #1f3555; }   /* [260926o] night's dark glyph on the silver, on the board and here alike · [270926d] blue-black */
+body.theme-day .howto-tile.teal svg,
+body.theme-day .howto-tile.teal svg path { stroke: #3f4652; }   /* [081026k] by day a very dark grey, as on the board */
 .howto-tile.haz  { background: #ef4444; }
 .howto-tile.time { background: #e8b96a; }
 .howto-tile.wall { background: #9aa3b2; }
@@ -3978,6 +3980,17 @@ body.theme-day .tally-rank.promoted .tally-rank-name { color: #0284c7; }
 body.theme-day .tally-label, body.theme-day .tally-rank-label, body.theme-day .tally-rank-next { color: #0369a1; }
 body.theme-day .tally-count, body.theme-day .tally-grand-value, body.theme-day .tally-rank-name { color: #0369a1; }
 body.theme-day .tally-hearts svg { color: #0284c7; }
+/* ══ [081026n] ONE LIGHT, FROM THE TOP LEFT — each layer casts down and to the right, further and softer the
+   nearer it is, with a thin lit edge on its top. [081026q] and each slides against the tilt by its depth. */
+body.theme-day .game-container { box-shadow: 4px 7px 22px rgba(2, 62, 110, 0.14), 1px 2px 4px rgba(2, 62, 110, 0.08), inset 1px 1px 0 rgba(255, 255, 255, 0.95); }
+body:not(.theme-day) .game-container { box-shadow: 5px 8px 26px rgba(0, 0, 0, 0.55), 1px 2px 5px rgba(0, 0, 0, 0.35), inset 1px 1px 0 rgba(255, 255, 255, 0.07); }
+body.theme-day .set-only-hud { box-shadow: 3px 6px 14px rgba(2, 62, 110, 0.16), 1px 1px 3px rgba(2, 62, 110, 0.1), inset 1px 1px 0 rgba(255, 255, 255, 0.95); }
+body:not(.theme-day) .set-only-hud { box-shadow: 4px 7px 18px rgba(0, 0, 0, 0.55), 1px 2px 4px rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.08); }
+body.theme-day .corner-toggle:not(:hover) { box-shadow: 3px 5px 10px rgba(2, 62, 110, 0.22), 1px 1px 2px rgba(2, 62, 110, 0.12), inset 1px 1px 0 rgba(255, 255, 255, 0.95); }
+body:not(.theme-day) .corner-toggle:not(:hover) { box-shadow: 3px 5px 12px rgba(0, 0, 0, 0.6), 1px 1px 3px rgba(0, 0, 0, 0.4), inset 1px 1px 0 rgba(255, 255, 255, 0.12); }
+.set-only-hud, #stickPad { translate: calc(var(--tilt-x, 0) * -3px) calc(var(--tilt-y, 0) * -3px); }
+.corner-toggle { translate: calc(var(--tilt-x, 0) * -3px) calc(var(--tilt-y, 0) * -3px); }
+@media (prefers-reduced-motion: reduce) { .set-only-hud, #stickPad, .corner-toggle { translate: none; } }
 </style>
 </head>
 <body>
@@ -7725,6 +7738,44 @@ body.theme-day .tally-hearts svg { color: #0284c7; }
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 081026-1406: THE SET MOMENT [081026x] + [081026y]. A piece into its set (not the last) holds the run for 1.5 s —
+// the board, the clock and the next move wait — with a spotlight on the set, two rings, a white pulse, a deep
+// lock-in sound at the claim and a louder chime as it lands in the HUD. The cell's white rim stays round the piece.
+// 081026-1342: A SECOND TO STOP [081026r] + [081026s] + [081026t] + [081026u] + [081026v] + [081026w]. A shifter fires when the
+// piece has stood on it for a second at rest — flip straight over it and it doesn't (a chained landing still
+// fires at once); a ring sweeps round as the second runs. The trail is a little see-through, and its rings are
+// white by day. Greens, reds, hourglasses and shifters sit inside the cell's white rim on a slight shadow. The
+// joystick has more contrast and rests at 82%. A shifter coming back with a new setting shuffles through
+// settings before it settles on its deal.
+// 081026-1256: DEPTH [081026l] + [081026m] + [081026n] + [081026o] + [081026p] + [081026q]. The joystick in the
+// cells' language (rounded-square pad and well, a rounded silver cube for a knob, the step arrow for the eight
+// directions). The piece casts its own hard-edged shadow, at rest and further in a flip. One light from the top
+// left: the card, HUD, corner buttons and joystick cast down-right by their depth, lit on their top edges. The
+// board sits sunk in the card; the depths darken toward its edges. Every tile a slab; the words cast shadows.
+// Tilt the phone and the layers part (iPhone asks once).
+// 081026-1205: GAPS KNUCKLES RIMS GREY [081026h] + [081026i] + [081026j] + [081026k]. By day the trail, hourglass,
+// green and red cells wear a firmer, pure white rim, and the shifters' arrows are a very dark grey. The 360° turn arrow stops 45° short of twelve, so a
+// gap shows between its head and its tail. Points where four holes meet wear the knuckle ring too (at
+// 100%), day and night, so the anchor points show across a hole.
+// 081026-1032: WASHED DEPTHS [081026g]. By day a white wash at 25% lies over the underworld, under everything
+// above it: its blue a little washed out in the holes, the seams and the open cells. Night unchanged.
+// 081026-1003: BOLD EDGE BLUE SHADE [081026e] + [081026f]. By day the empty cell's edge is twice as thick
+// (grown inward, so the seams stay open) and pure white; the shade under the tiles is ROTOЯ blue at the
+// same darkness, a fifth more colourful. Night unchanged.
+// 081026-0022: RINGS AND PRICES [081026a] + [081026b] + [081026c] + [081026d]. By day the cell loses its 1/4 ring
+// (night's three sections). Turn shifters carry the cell's 3/4 and 1/2 rings, and the turn arrow runs round
+// the 1/2 ring instead of a circle of its own. The day shade is a fifth lighter again. Every time price is
+// ×3 (fall 30 s, red toll 15 s, push off the board 30 s, red burn 36 s); ?price= tries other multipliers.
+// 071026-2352: LIGHTER SHADE [071026ab]. By day the dark shade behind the cells (each tile's float shadow)
+// is half as dark: 0.56 → 0.28, measured at 49% of the old darkness in perceived lightness. Night unchanged.
+// 071026-2324: NIGHT RINGS BY DAY [071026aa]. The day cell drops its solid white bands and wears night's
+// rings: an open cell, a white edge at night's weight, thin cool-white rings at 3/4, 1/2 and 1/4, set to
+// stand out from the blue as much as night's stand out from the dark (2.5:1 and 2:1, measured).
+// 071026-2236: FOUR BANDS [071026z]. An empty day cell is four bands cut by rings at 3/4, 1/2 and 1/4: white,
+// open onto the depths, white, open. Sets, trail, tiles and night unchanged.
+// 071026-2042: THE SCROLL BITES [071026y]. The board scrolls 1.8× faster, the level ramp is straight to
+// ×2.0 at level 10, and each set banked adds 4% until the level ends: a row every 4.4 s at level 1, 2.2 s
+// at level 10. ?pace= on the address tries other paces. Ticks record the body's height on the board.
 // 071026-1911: ON ROTATION [071026x]. A used shifter comes back with a new setting when its ring fills: a
 // turn tile deals the next of its eight (cw/ccw × 90–360°) from its own deck; a step tile points the next
 // useful way it has not pointed yet (beside a hole, only at the hole). Tallies on the tile, so every option
@@ -8352,7 +8403,7 @@ body.theme-day .tally-hearts svg { color: #0284c7; }
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '071026-1911 ROTOЯ · ON ROTATION';
+const BUILD_VERSION = '081026-1406 ROTOЯ · THE SET MOMENT';
 {
     const bs = document.getElementById('buildStamp');
     // [180826f] THE STAMP IS MEASURED NOW, NOT DECLARED. BUILD_VERSION was a
@@ -8434,7 +8485,49 @@ function drawShifterCharge(sx, sy, chg, size) {
 // line (measured off the green cube's "+"), replacing the font arrows whose
 // stroke weight varied with the platform font and never matched the other
 // icons. White with the same day/night alpha as the green's "+".
+/* [081026k] "i think the arrow in daylight mode can be a very dark grey rather than black." The shifters'
+   ink was #1f3555 in both themes — a navy (CIE L* 22, chroma 22) that reads as black on the silver. By day
+   it is now #3f4652, a near-neutral very dark grey (L* 29.5, chroma 8): the step and turn arrows, the
+   turn's dot and rings, on the board, in the lessons and on the HOW TO PLAY tiles. It still stands out
+   from the silver 6.2:1 at the tile's top and 4.4:1 at its foot (3:1 is what an icon needs). Night keeps
+   #1f3555. DAY_GLYPH_GREY = false puts it back. */
+const DAY_GLYPH_GREY = true;
+const DAY_GLYPH_INK = '#3f4652';
+const TURN_RINGS = true;                 // [081026c]
+const TURN_FULL_GAP_DEG = 45;           // [081026h] the full turn stops this far short of twelve: a gap between head and tail
+const TURN_RING_A = [0.30, 0.24];          // the 3/4 and 1/2 rings, in the glyph's ink: night's own cell-ring strengths, kept faint on purpose —
+                                         // how far the arrow runs IS the information, so the ring under it must not compete
+function turnRingPoint(cx, cy, h, r, a) {   // where a ray from the centre at angle a meets a rounded square (half-width h, corner r)
+    r = Math.max(0, Math.min(r, h));
+    const c = Math.cos(a), s = Math.sin(a);
+    let t = h / Math.max(Math.abs(c), Math.abs(s));
+    if (Math.abs(t * c) > h - r && Math.abs(t * s) > h - r) {   // in a corner: the ray meets the corner's arc
+        const Cx = Math.sign(c) * (h - r), Cy = Math.sign(s) * (h - r), B = c * Cx + s * Cy;
+        t = B + Math.sqrt(Math.max(0, B * B - (Cx * Cx + Cy * Cy - r * r)));
+    }
+    return [cx + t * c, cy + t * s];
+}
+/* [081026w] "when the shifters change ability can they have a brief random selection being considered animation
+   before settling on what it enables the player to do." A shifter coming back with a new setting ([071026x])
+   now shuffles for SHUFFLE_MS: its arrow flicks through settings of its kind — turns of every size and way,
+   or steps every way — fast at first and slowing, like a reel coming to rest, then lands on the one it was
+   dealt and holds it (the last fifth of the time is the deal, still). Only how the tile is drawn changes: the
+   deal itself was made, and is what the tile does, from the moment its ring filled. SHIFTER_SHUFFLE = false:
+   it lights with its new setting at once. */
+const SHIFTER_SHUFFLE = true, SHUFFLE_MS = 760;
+function shuffleFace(item, meta, el) {
+    const ph = el / SHUFFLE_MS;
+    if (ph >= 0.8) return null;   // settled: the deal
+    const tick = Math.floor(11 * (1 - Math.pow(1 - ph / 0.8, 2)));   // fast, then slowing
+    const h = (Math.imul(tick + 7, 2654435761) ^ Math.imul((meta.redealtAt | 0) + 13, 40503)) >>> 0;
+    if (item === 'pivot') { const c = TURN_CARDS[h % TURN_CARDS.length]; return Object.assign({}, meta, { dir: c.startsWith('ccw') ? 'ccw' : 'cw', turns: +c.slice(-1) }); }
+    return Object.assign({}, meta, { dir: h % 8 });
+}
 function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
+    if (SHIFTER_SHUFFLE && meta && meta.redealtAt && !game._replay) {   // [081026w] the reel, before the deal
+        const el = performance.now() - meta.redealtAt;
+        if (el >= 0 && el < SHUFFLE_MS) { const f = shuffleFace(item, meta, el); if (f) { meta = f; anim = false; } }
+    }
     ctx.save();
     // [290726j] Glyph ink is always the OPPOSITE value to the metal beneath:
     // dark on the light steel of night, white on the darker pewter of day.
@@ -8453,7 +8546,7 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
        five seconds. A spent or dormant tile holds still (anim = false), which
        is one more way to read that it is not live. Time is Date.now(), as the
        tiles' breath already is. */
-    const ink = '#1f3555';   // [260926o] night's dark glyph in both themes · [270926d] a very dark blue-grey, not a black (designer's call)
+    const ink = (DAY_GLYPH_GREY && currentTheme === 'day') ? DAY_GLYPH_INK : '#1f3555';   // [081026k] by day a very dark grey · [260926o] night's dark glyph · [270926d] a very dark blue-grey, not a black
     ctx.globalAlpha = currentTheme === 'day' ? 1.0 : 0.97;
     ctx.strokeStyle = ink;
     ctx.fillStyle = ink;   // solid arrowheads
@@ -8476,6 +8569,33 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
         const tq = (typeof turnsOf === 'function') ? turnsOf(meta) : 1;
         const R = CELL * 0.215, HEAD = CELL * 0.17, WIDE = 0.78;
         const D = Math.PI / 180;
+        /* [081026c] THE TURN RIDES THE CELL'S OWN RING — designer's call, 8 Oct: "can all turn shifters
+           use the same circle pattern as the circle pattern in the unoccupied grid cells, to echo the
+           style." An empty cell is its edge and two rings inside it, at 3/4 and 1/2 — scaled copies of
+           its own rounded square. A turn tile now carries the same two rings, in the glyph's ink, and its
+           arrow no longer runs round a circle of its own: it runs round the 1/2 ring, which was nearly the
+           same size (the circle's radius was 0.215 of a cell, the ring's half-width 0.24), so the tile has
+           one shape language, not a circle laid over a square. Everything else about the arrow holds: it
+           starts at twelve o'clock (the dot), sweeps clockwise or anticlockwise, and its tip lands on the
+           hour — three, six, nine or back to twelve, the middle of a side of the ring; the head is the
+           ring itself, swelling and tapering. The rings are drawn whole and do not fade with the arrow's
+           beat, so where the arrow has not run yet the ring still shows — the "no faint whole circle
+           behind it" of [061026l] gives way to the cell's pattern. Every turn glyph carries them: the
+           board, the lessons, HOW TO PLAY. TURN_RINGS = false puts back the circle. */
+        const _ts = CELL - 2 * cellInset(), _tr = Math.min(_ts * CORNER_K, CORNER_MAX);
+        const TRK = TURN_RINGS ? { h: _ts * 0.25, r: _tr * 0.5 } : null;   // the 1/2 ring: half-width and corner radius
+        const at = TRK ? (a, d) => turnRingPoint(gcx, gcy, TRK.h + d, TRK.r + d, a)
+                       : (a, d) => [gcx + (R + d) * Math.cos(a), gcy + (R + d) * Math.sin(a)];
+        if (TURN_RINGS) {   // the cell's two rings, whole, under the arrow
+            ctx.save();
+            ctx.lineWidth = 1.1;
+            const _g0 = ctx.globalAlpha;
+            for (const [k, a] of [[0.75, TURN_RING_A[0]], [0.5, TURN_RING_A[1]]]) {
+                ctx.globalAlpha = _g0 * a;
+                ctx.beginPath(); _appendScaledSq(gcx - _ts / 2, gcy - _ts / 2, _ts, k); ctx.stroke();
+            }
+            ctx.restore();
+        }
         /* [061026l] THE ARROW SWEEPS OUT ITS TURN. Designer's call, 6 Oct: the arrow starts at
            twelve o'clock and runs round — to three for 90°, to six for 180°, to nine for 270°,
            all the way back to twelve for 360° — clockwise or anticlockwise as the tile turns
@@ -8485,7 +8605,11 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
            360° takes four times a 90°), a hold at full length, then a fade and again; every
            turn tile on the board keeps the same beat. A spent or dormant tile shows the full
            sweep, still. */
-        const full = tq * 90 * D;                            // twelve o'clock to the TIP
+        /* [081026h] "can the 360 degree turn shifter have a discernible gap at the top and the tail of it, so
+           that it doesn't look like a complete circle." Every other size ends on its hour; a full turn would
+           end where it began, its head lying on its own tail, and read as a ring. Its tip now stops
+           TURN_FULL_GAP_DEG short of twelve, so a clear gap sits between the head and the tail's dot. */
+        const full = tq * 90 * D - (tq === 4 && TURN_FULL_GAP_DEG > 0 ? TURN_FULL_GAP_DEG * D : 0);   // twelve o'clock to the TIP
         const CYC = 2800, SPEED = 240 * D / 1000;            // radians per ms
         /* [071026g] THE TIP LANDS ON THE HOUR. Designer's note, 7 Oct: the 90° arrow "looks as
            though it only goes to 14.00 / 02.00" — and it did: the head was drawn as a straight
@@ -8496,15 +8620,22 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
            ~32°, shorter than before (its width unchanged), so the shaft runs round to meet it.
            Same weight, same beat. */
         const HL = CELL * 0.15, HW = HEAD * WIDE;                     // the head's length along the turn, and its half-width
-        const hAng = 2 * Math.asin(Math.min(0.95, HL / (2 * R)));     // the angle the head covers, back from the tip
+        const hAng = 2 * Math.asin(Math.min(0.95, HL / (2 * (TRK ? TRK.h : R))));     // the angle the head covers, back from the tip
         const tc = anim ? now % CYC : CYC * 0.7;
         const reach = Math.min(full, Math.max(hAng + 0.05, tc * SPEED));
         const fade = anim && tc > CYC - 380 ? Math.max(0, (CYC - tc) / 380) : 1;
         const tail = -Math.PI / 2;                           // tail at twelve o'clock
         ctx.globalAlpha *= fade;
-        ctx.beginPath(); ctx.arc(gcx, gcy - R, ctx.lineWidth * 0.62, 0, Math.PI * 2); ctx.fill();   // twelve o'clock, where it starts
+        { const [dx, dy] = at(-Math.PI / 2, 0); ctx.beginPath(); ctx.arc(dx, dy, ctx.lineWidth * 0.62, 0, Math.PI * 2); ctx.fill(); }   // twelve o'clock, where it starts
         const tipA = tail + sgn * reach, baseA = tail + sgn * (reach - hAng);
-        if (reach - hAng > 0.02) { ctx.beginPath(); ctx.arc(gcx, gcy, R, tail, baseA, ccw); ctx.stroke(); }
+        if (reach - hAng > 0.02) {
+            ctx.beginPath();
+            if (TRK) {   // [081026c] along the ring, in steps of 2°
+                const n = Math.max(2, Math.ceil(Math.abs(baseA - tail) / (2 * D)));
+                for (let i = 0; i <= n; i++) { const [x, y] = at(tail + (baseA - tail) * i / n, 0); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+            } else ctx.arc(gcx, gcy, R, tail, baseA, ccw);
+            ctx.stroke();
+        }
         /* [071026i] THE HEAD CURVES WITH THE RING. Designer's note, 7 Oct: "can the arrow head be
            more circular, more curved." The head is no longer a flat triangle laid across the ring:
            it is the ring itself, swelling at the shaft's end and tapering to the tip, its two
@@ -8513,11 +8644,11 @@ function drawShifterGlyph(gcx, gcy, item, meta, cellX, cellY, anim = true) {
         const N = 14, head = [], pt = (a, r) => [gcx + r * Math.cos(a), gcy + r * Math.sin(a)];
         for (let i = 0; i <= N; i++) {   // outer edge, base to tip
             const k = i / N, a = baseA + sgn * hAng * k, w = HW * Math.pow(1 - k, 1.3);
-            head.push(pt(a, R + w));
+            head.push(at(a, w));   // [081026c] the ring, or the circle
         }
         for (let i = N - 1; i >= 0; i--) {   // inner edge, tip back to base
             const k = i / N, a = baseA + sgn * hAng * k, w = HW * Math.pow(1 - k, 1.3);
-            head.push(pt(a, R - w));
+            head.push(at(a, -w));
         }
         ctx.beginPath();
         head.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
@@ -9333,7 +9464,35 @@ const CLOCK_ONLY = !/[?&]hearts=1(?:&|$)/.test(location.search || '');
    the shove's price PLUS the body, the position and a respawn as a single,
    which is where the rest of the punishment lives. bumpCost is told which of
    the two tens it is charging ([250926t]) so the export still tells them apart. */
-const FALL_COST_SEC = 10;
+/* ══ [081026d] TIME PRICES BITE — designer's call, 8 Oct, 00:14 ══════════════════════════════════
+   "the time that gets deducted from the clock by the player's actions needs to be increased more, as
+   the player is getting too much time to keep playing." Measured first, on playdata71's 33-minute run
+   (1825, to level 8): the clock averaged 74 s of its 90, never fell below 33 s, sat at 80 or more for
+   43% of the run — and 768 s of earned time was thrown away against the full clock. Time paid for
+   mistakes in the whole run: 90 s (eight falls at 10, two red tolls at 5). The 20 → 10 cut of
+   [250926s] was made when the median clock was 40–44 s; it is 77 now.
+   Every time price for something the player did is now three times what it was:
+     a fall — the last cube into a hole           10 → 30 s
+     a red's toll on a single                       5 → 15 s   (what a red PAYS for a spare cube stays 5 s:
+                                                               that is income, so it is now its own number)
+     a push off the board by a step                10 → 30 s
+     a red burn                                    12 → 36 s
+   A refused move stays 2 s — nothing happened.
+   Replayed against that run's own record (a full clock soaks up part of any new cost, because income
+   it would have thrown away now lands; that is counted): its lowest clock would have been 13 s, not 33;
+   its average 67, not 74; under 30 s for 4% of the run. ×2 gives a low of 23 s, ×4 a low of 1 s. That
+   was on the old scroll — since 2042 the board moves 1.8× faster.
+   The dial: `?price=` on the address (1–5) overrides TIME_PRICE_MUL without a new build, so 2 and 4 can
+   be tried on the iPad; the run event records it. Every place a price is shown — the tips, the REDS
+   lesson, the push preview, the level card, the loss line — reads the number, so all of them follow.
+   TIME_PRICES_BITE = false puts every price back. */
+const TIME_PRICES_BITE = true;
+const TIME_PRICE_MUL = (() => {
+    try { const m = /[?&]price=([0-9.]+)/.exec((typeof location !== 'undefined' && location.search) || ''); const v = m ? parseFloat(m[1]) : NaN; if (v >= 1 && v <= 5) return v; } catch (e) {}
+    return 3;
+})();
+function timePrice(sec) { return TIME_PRICES_BITE ? Math.round(sec * TIME_PRICE_MUL) : sec; }
+const FALL_COST_SEC = timePrice(10);   // [081026d] 10 × the price dial
 // [300726as] What a completed level GRANTS. It used to be the full ring
 // (MOMENTUM_MAX, now 600s) — so finishing level 1 handed over ten minutes
 // outright, whatever you had collected, which is why cutting hourglass
@@ -11913,10 +12072,19 @@ const sfx = {
     pieceIn: (n = 1) => {
         const L = PIECE_LADDER, i = Math.max(0, Math.min(L.length - 3, n - 1));
         const a = L[i], b = L[i + 2];
-        playSweep(210, 105, 0.11, 'sine', VOL.event * 0.9);                  // the seat
+        const G = (typeof PIECE_MOMENT !== 'undefined' && PIECE_MOMENT) ? 1.35 : 1;   // [081026x] a third louder
+        playSweep(210, 105, 0.11, 'sine', VOL.event * 0.9 * G);                  // the seat
         const bell = (f, dur, v) => { playTone(f, dur, WAVE.reward, v); playTone(f * 2, dur * 0.7, 'sine', v * 0.32); playTone(f * 3, dur * 0.45, 'sine', v * 0.12); };
-        setTimeout(() => bell(a, 0.16, VOL.event * 0.85), 70);              // "well"
-        setTimeout(() => { bell(b, 0.62, VOL.event); playTone(b / 4, 0.5, 'sine', VOL.ui * 0.9); }, 210);   // "done", with its root under it
+        setTimeout(() => bell(a, 0.16, VOL.event * 0.85 * G), 70);              // "well"
+        setTimeout(() => { bell(b, 0.62, VOL.event * G); playTone(b / 4, 0.5, 'sine', VOL.ui * 0.9 * G); }, 210);   // "done", with its root under it
+    },
+    // [reward · event] [081026x] LOCK-IN — the claim, held: a deep falling thump with a short rising shimmer over
+    // it, so the run's pause is heard as well as seen. Under the claim's old blips, not instead of them.
+    pieceLock: () => {
+        playSweep(150, 52, 0.26, 'sine', VOL.major);
+        playTone(NOTE.C4 / 2, 0.22, 'triangle', VOL.event * 0.7);
+        setTimeout(() => playSweep(NOTE.G5, NOTE.C6 * 1.5, 0.32, 'sine', VOL.ui * 0.8), 90);
+        setTimeout(() => playTone(NOTE.G6, 0.18, 'sine', VOL.ui * 0.55), 300);
     },
     // [reward · event] gold — bright high C-E-G, an octave above evolve (L4).
     // [030826af] TIME PICKUPS — two sounds, deliberately the same GESTURE at
@@ -15005,6 +15173,7 @@ const WALLS_AS_HOLES = true;
 const NO_REDS = true;
 const RED_TOOL_LEVEL = 6;   // [280926u] from this level the red comes back as a tool
 const RED_PAYS_SEC = 5;     // [280926u] what a red pays for each cube it takes
+const RED_TOLL_SEC = timePrice(5);   // [081026d] what a red takes from a single instead — a price, so it bites; the pay above does not
 function redToolOn() { return !RED_POPULATION && !dailyMode && advancedRound >= RED_TOOL_LEVEL; }   // [290926i] superseded by the population
 /* ══ [290926i] REDS, AT EVERY LEVEL, ONE OR TWO ON SCREEN ════════════════════
    Designer's call, agreed 29 Sep: reds stay, present on every level, one or two
@@ -15039,13 +15208,13 @@ function redToll(h) {
     delete world[h.key];
     hazardGone[h.key] = 'toll@' + (replayMoveCount + 1);
     markCovered(h.key, true);   // the red's cell is floor you are standing on
-    rec('toll', { k: 'red', s: game.shapeType, sec: RED_PAYS_SEC, m: Math.round(momentumRemaining()) });
+    rec('toll', { k: 'red', s: game.shapeType, sec: RED_TOLL_SEC, m: Math.round(momentumRemaining()) });   // [081026d]
     const arrive = flightRemaining(), sx = h.x * CELL + CELL / 2;
     later(arrive, () => {   // at the landing: the red bursts, the clock pays
         if (!game.running) return;
         const sy = (h.y - game.cameraY) * CELL + CELL / 2;
         addBurst(sx, sy, '#ef4444');
-        bumpCost(RED_PAYS_SEC, sx, sy + CELL * 0.2, 'penalty', 'red');
+        bumpCost(RED_TOLL_SEC, sx, sy + CELL * 0.2, 'penalty', 'red');   // [081026d]
         reactBody('time', 0);   // [071026j] no cube to spare: white, then red
         if (sfx.bonk) sfx.bonk();
         showTip('redtoll');
@@ -15505,6 +15674,15 @@ function underHoleAt(i, j) {
    edged in ice, on a deeper ice than the grid above — the top layer seen one
    level down, which is what "a grid above another grid" asks for. */
 const UNDER_INK_DAY  = '255, 255, 255';   // light in the depths: the pools and the sockets below
+/* [081026g] "in daylight mode can the underworld have a slightly whiter wash over the top of it so that it
+   looks slightly washed out of its colour." A sheet of white laid over the whole of the depths, by day —
+   their base, their wandering light and their lattice, in the holes, the seams and the open cells alike —
+   and under everything above them (the seam veil, the level wash, the tiles' shade, the tiles). Measured
+   on one frozen frame: in the holes, where the depths show bare, colour (CIE chroma) 28.3 → 25.5 (a tenth
+   less) and lightness L* 79 → 81; the open
+   cells, where the blue shade lies over them, 31.3 → 29.5 and 73 → 75. The holes come out a little paler than before,
+   which keeps them apart from the cells. Night unchanged. UNDER_WASH_DAY = 0 takes it off. */
+const UNDER_WASH_DAY = 0.25;
 const UNDER_BASE_DAY = '#4db8ff';         // deeper ice than the grid — [260926p] a shade deeper again under the baby-blue grid (10 from it, 29 from white)
 const UNDER_TILE_DAY = '255, 255, 255', UNDER_TILE_EDGE_DAY = '137, 207, 240';   // white cells below, edged in the grid's baby blue
 function underInk() { return currentTheme === 'day' ? UNDER_INK_DAY : UNDER_INK; }
@@ -15645,10 +15823,31 @@ const HOLE_PIT = 0.12;                              // the vignette at the middl
    One sprite, blurred once, drawn a hundred-odd times a frame: shadowBlur on
    every cell would cost a blur per tile per frame; drawImage costs nothing. */
 const HOLE_SLAB = false;
+/* ══ [071026ab] THE DAY SHADE, HALF AS DARK — designer's call, 7 Oct, 23:49 ══════════════════
+   "in day light mode, can the dark shade behind the grid cells be 50% lighter." The shade is each
+   tile's own float shadow (below). By day it was drawn under the whole tile, and while day tiles were
+   opaque it only showed on the seams and into the openings; since the cells opened up ([071026t],
+   [071026aa]) it darkens every cell like a plate. Its strength is halved, 0.56 → 0.28, and measured
+   on one frozen frame in perceived lightness (CIE L*): the cells go from L* 62 to 73 (no shade at
+   all would be 83), keeping 49% of the darkness; the seams keep 52%. Night is unchanged.
+   DAY_SHADE_HALF = false puts back 0.56. */
+const DAY_SHADE_HALF = true;
+/* [081026b] "can the darkness value behind the unoccupied grid cells be dialled down (made lighter by
+   20%)." The same shade, measured the same way (one frozen frame, CIE L*): 0.28 → 0.22 keeps 80% of the darkness in the
+   open cells and 81% on the seams (L* 67.9 → 70.5 in the cells; no shade at all would be 80.8). Night
+   unchanged. DAY_SHADE_FIFTH = false puts back 0.28. */
+const DAY_SHADE_FIFTH = true;
+/* [081026f] "can the shaded / darkened effect behind the top layer be slightly bluer in colour and less
+   black / grey." The shade was deep ice, #034a78 — dark enough to grey the blue it lay on. It is now ROTOЯ
+   blue, #0284c7, the brand's own, at the strength that keeps the same darkness: measured on one frozen
+   frame in the open cells, CIE L* 73.4 before and 73.4 after (the darkness is unchanged — it was set a
+   fifth lighter only last night), chroma 25.5 → 31.2 (bluer, less grey), hue the same 249°. Night
+   unchanged. DAY_SHADE_BLUE = false puts back the deep ice. */
+const DAY_SHADE_BLUE = true;
 const TILE_FLOAT = {
     dx: 0.8, dy: 3.8,                         // where the shadow falls: just below, a touch right — light from high and a little left
     blur: 5.2,                                // its softness (px; the sprite uses shadowBlur at twice this)
-    day: 'rgba(3, 74, 120, 0.56)',            // deep ice, on the veiled seams and in the openings (CANDY.holeShadow) — measured against 0.46: the float reads at this weight, not below
+    day: DAY_SHADE_BLUE ? 'rgba(2, 132, 199, 0.36)' : DAY_SHADE_FIFTH ? 'rgba(3, 74, 120, 0.22)' : DAY_SHADE_HALF ? 'rgba(3, 74, 120, 0.28)' : 'rgba(3, 74, 120, 0.56)',   // [081026b] a fifth lighter · [071026ab] half as dark · deep ice, on the veiled seams and in the openings (CANDY.holeShadow) — measured against 0.46: the float reads at this weight, not below
     night: 'rgba(0, 0, 0, 0.66)',             // on the lattice below
     spread: 0.6                               // the shadow's square is this much larger than the tile, each side
 };
@@ -15911,7 +16110,9 @@ function drawUnderworld(camInt, camFrac) {
        Cost is two gradient fills a frame inside an existing clip — the same
        order of work as the layers themselves, and far less than the thousands
        of rounded rects the cached pattern exists to avoid. */
+    const _tx = DEPTH_TILT ? TILT.x * TILT_UNDER_PX : 0, _ty = DEPTH_TILT ? TILT.y * TILT_UNDER_PX : 0;   // [081026q]
     const pool = (px, py, r, a) => {
+        px += _tx; py += _ty;   // [081026q]
         const gr = ctx.createRadialGradient(px, py, 0, px, py, r);
         const ink = underInk();   // [080926d] by day the pools are soft shade, not light
         gr.addColorStop(0,    `rgba(${ink},${a})`);
@@ -15942,9 +16143,9 @@ function drawUnderworld(camInt, camFrac) {
            nearer. Wrapped on the field's own period, so there is still no seam. */
         const oy = wrap(t * vy + (camInt + camFrac) * CELL * UNDER_PARALLAX, PH);
         ctx.save();
-        ctx.translate(0, oy);
+        ctx.translate(_tx, oy + _ty);   // [081026q] the depths slide with the tilt
         ctx.fillStyle = pat;
-        ctx.fillRect(-P, -oy - PH, LOGICAL_W + 2 * P, LOGICAL_H + 2 * PH);
+        ctx.fillRect(-P - _tx, -oy - PH - _ty, LOGICAL_W + 2 * P, LOGICAL_H + 2 * PH);
         ctx.restore();
     };
     /* [070926g] ONE GRID BELOW, NOT TWO. Field note, from a zoomed screenshot
@@ -15970,6 +16171,20 @@ function drawUnderworld(camInt, camFrac) {
         layer(CELL * UNDER_A_SCALE, UNDER_VOID_ALPHA, UNDER_VOID_WIDTH, UNDER_A_VY, UNDER_VOID_FILL);
     }
     ctx.restore();
+    if (DEPTH_WINDOW) {   // [081026o] down a shaft: the depths darken toward the board's edges
+        const day = currentTheme === 'day';
+        const gr = ctx.createRadialGradient(LOGICAL_W / 2, LOGICAL_H / 2, Math.min(LOGICAL_W, LOGICAL_H) * 0.3, LOGICAL_W / 2, LOGICAL_H / 2, Math.hypot(LOGICAL_W, LOGICAL_H) * 0.56);
+        gr.addColorStop(0, day ? 'rgba(2, 62, 110, 0)' : 'rgba(0, 0, 0, 0)');
+        gr.addColorStop(1, day ? 'rgba(2, 62, 110, 0.26)' : 'rgba(0, 0, 0, 0.4)');
+        ctx.save(); ctx.fillStyle = gr; ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10); ctx.restore();
+    }
+    if (currentTheme === 'day' && UNDER_WASH_DAY > 0) {   // [081026g] the depths, a little washed out
+        ctx.save();
+        ctx.globalAlpha = UNDER_WASH_DAY;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10);
+        ctx.restore();
+    }
 }
 
 /* Buy one cell of ground with one cube. Returns true if a void was filled, so
@@ -16143,6 +16358,16 @@ const CELL_OUTLINE_W = 2.1;   // [080926g] 2.4 was "a fraction too thick" on the
 const SOCKET_INK = '241, 246, 252';   // [280926E] was 226,232,240 — whiter with the outline   // the cell-outline slate; the lattice belongs to the grid
 const SOCKET_INK_DAY = '14, 165, 233';  // [080926d] slate-600 — white rings on a white board are nothing · [260926n] grape · [260926o] ice
 function socketInk() { return currentTheme === 'day' ? SOCKET_INK_DAY : SOCKET_INK; }
+/* [081026i] KNUCKLES IN THE HOLES — designer's call, 8 Oct: "can the knuckles that are featured on dry land
+   be featured in the voids as well, so that you can see the anchor points, or where the stepping stones
+   will be added, for both day and night." A point where four holes meet drew a small dim dot ([290926b]:
+   "not here"). It now wears the same knuckle as dry land — the white ring on its hairline — so the whole
+   lattice shows across a hole: the corners a stone would sit between. It is drawn at 100% of land's
+   strength, so a hole still reads as a hole and a turn is still made only where there is ground (the
+   joint the turn is made on lights only on ground — that rule is unchanged). VOID_KNUCKLES = false puts
+   back the dot. */
+const VOID_KNUCKLES = true;
+const VOID_KNUCKLE_A = 1;
 function drawJoints() {
     const camInt = Math.floor(game.cameraY), camFrac = game.cameraY - camInt;
     const used = new Set();
@@ -16182,6 +16407,15 @@ function drawJoints() {
                 ctx.strokeStyle = _day ? `rgb(${socketInk()})` : '#06142d'; ctx.lineWidth = KNUCKLE_W + 2;
                 ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
                 ctx.globalAlpha = _day ? 1 : 0.9;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = KNUCKLE_W;
+                ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
+            } else if (VOID_KNUCKLES) {   // [081026i] inside a hole: the same knuckle, so the anchor points show
+                const _day = currentTheme === 'day';
+                ctx.globalAlpha = (_day ? 0.6 : 0.35) * VOID_KNUCKLE_A;
+                ctx.strokeStyle = _day ? `rgb(${socketInk()})` : '#06142d'; ctx.lineWidth = KNUCKLE_W + 2;
+                ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
+                ctx.globalAlpha = (_day ? 1 : 0.9) * VOID_KNUCKLE_A;
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = KNUCKLE_W;
                 ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
@@ -18740,6 +18974,47 @@ function drawRedealGlows() {   // the tile lights with its new setting: white, f
         if (el < 0 || el > 420) continue;
         rxGlow(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, CELL * 1.1, '#ffffff', 0.8 * (1 - el / 420));
     }
+}
+/* ══ [081026v] A SHIFTER WAITS A SECOND — designer's call, 8 Oct, 13:31 ══════════════════════════════
+   "the turn and move shifters need to have a second delay on them that gets activated when the player has
+   become stationary, so that it is possible to walk on them or pass over them without being immediately
+   activated." A shifter fired the instant a cube landed on it. THE RULE NOW: a shifter fires when the piece
+   has stood on it, at rest, for a second (SHIFTER_DWELL_MS). Flip off it inside the second and you have
+   passed over it — it does not fire, it is not spent. The second counts only while the piece is still: not
+   during the flip that brings it there, not while the game is paused. A ring sweeps round the cube on the
+   tile as the second runs, so the wait is seen. A shifter you are CARRIED onto by another shifter — a gear
+   train ([170826e]) — fires at once, as before: you did not choose to stop there, and the train is the
+   payday. The lesson and the tip say so. SHIFTER_DWELL_MS = 0 puts back the instant shifter. */
+let SHIFTER_DWELL_MS = 1000;
+function shifterDwellGate(triggerKey, chainLinks) {   // true: let it fire now · false: still waiting
+    if (!(SHIFTER_DWELL_MS > 0) || chainLinks > 0 || game._replay || game.testDrive) { game._dwell = null; return true; }
+    const now = performance.now();
+    const sig = `${triggerKey}|${game.playerX},${game.playerY}|${game.shapeType}|${game.shapeConfig}`;
+    const busy = (flip && flip.active) || isTransformAnimActive() || game.paused || (game._pieceHoldUntil && now < game._pieceHoldUntil);   // [081026x]
+    const D = game._dwell;
+    if (!D || D.sig !== sig) { game._dwell = { sig, key: triggerKey, t0: now, last: now }; return false; }
+    const gap = now - D.last;
+    if (busy || gap > 120) D.t0 += gap;   // the second runs only while the piece is at rest and the game is live
+    D.last = now;
+    if (now - D.t0 >= SHIFTER_DWELL_MS) { game._dwell = null; return true; }
+    return false;
+}
+function drawShifterDwell() {   // the wait, seen: a ring sweeps round the cube on the tile
+    const D = game._dwell;
+    if (!D || !(SHIFTER_DWELL_MS > 0) || game._replay) return;
+    const now = performance.now();
+    if (now - D.last > 200) return;   // stale: the piece has left
+    const k = Math.max(0, Math.min(1, (now - D.t0) / SHIFTER_DWELL_MS));
+    if (k <= 0.02) return;
+    const [x, y] = D.key.split(',').map(Number);
+    const cx = x * CELL + CELL / 2, cy = (y - game.cameraY) * CELL + CELL / 2, R = CELL * 0.56;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = currentTheme === 'day' ? 'rgba(2, 44, 84, 0.5)' : 'rgba(0, 0, 0, 0.6)'; ctx.lineWidth = 5.5;
+    ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    ctx.restore();
 }
 function shifterArmed(key) { const v = world[key]; return (v === 'slip' || v === 'pivot') && !shifterSpent(key); }
 /* How far through the recharge, 0 → 1, for the renderer. 1 = ready — including a
@@ -24151,8 +24426,67 @@ function finaleCelebration() {
     triggerShake(4, 300);
 }
 const PIECE_PARTY = true;
+/* ══ [081026x] A PIECE IN ITS SET: THE RUN PAUSES FOR IT — designer's call, 8 Oct, 13:52 ═══════════════════
+   "when a set slot has been filled we need a pause in the player's run, and recognition — visual and audio — to
+   take place; at present the slot is filled and the player carries on with barely a recognition. Assess what is
+   in place and address this." What was in place, measured: at the claim, four bursts round the slot, an edge
+   glow and a scatter of short blips inside 300 ms; the slot locks (0.46 s); a copy of the piece flies up to the
+   HUD (0.64 s); only THEN, 1.1 s after the claim, the "well — done" chime and WELL DONE! / 2 TO GO, at the top
+   of the board. All the while the board scrolled, the clock ran and the next move was taken — so the moment
+   was over before it was seen, and its words and its tune arrived while the eye was on the next move.
+   Now, for every piece but the last (the last has the level's own party):
+     · THE RUN HOLDS for PIECE_HOLD_MS (1.5 s) from the claim: the board stops, the clock stops, and a move is
+       not taken — the hold the world already uses for a chain's third row and for a loss. It ends 0.4 s after
+       the chime, so the words are read before play resumes.
+     · SEEN: the board dims round the set like a spotlight (the set's cells stay lit), two rings ring out from
+       it in the set's colour and white, and its cells pulse white as it locks; then the flight, and the HUD row
+       flashes as before.
+     · HEARD: a deep "lock-in" — a falling thump with a short rising shimmer — at the claim, under the old blips;
+       then the "well — done" chime at the HUD, a third louder than before.
+   PIECE_MOMENT = false puts back the old: no hold, no spotlight, no lock-in, the quieter chime. */
+const PIECE_MOMENT = true;
+let PIECE_HOLD_MS = 1500;   // a let, so the older test suites can set it to 0
+function pieceMoment(cells, color) {
+    if (!PIECE_MOMENT || game._replay || !game.running || !cells || !cells.length) return;
+    if (sfx.pieceLock) sfx.pieceLock();
+    if (!(PIECE_HOLD_MS > 0)) return;
+    const now = performance.now();
+    game._pieceHoldUntil = now + PIECE_HOLD_MS;
+    game._hitstopUntil = Math.max(game._hitstopUntil || 0, now + PIECE_HOLD_MS);   // the board and the clock hold
+    game._pieceMoment = { t0: now, cells: cells.map(c => ({ x: c.x, y: c.y })), color };
+    game._queuedMove = null;
+}
+function drawPieceMoment() {   // the spotlight, the rings, the pulse
+    const M = game._pieceMoment;
+    if (!M || game._replay) return;
+    const el = performance.now() - M.t0;
+    if (el > PIECE_HOLD_MS) { game._pieceMoment = null; return; }
+    const day = currentTheme === 'day';
+    const env = Math.min(1, el / 150) * Math.min(1, (PIECE_HOLD_MS - el) / 300);
+    let cx = 0, cy = 0;
+    for (const c of M.cells) { cx += c.x * CELL + CELL / 2; cy += (c.y - game.cameraY) * CELL + CELL / 2; }
+    cx /= M.cells.length; cy /= M.cells.length;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-10, -10, LOGICAL_W + 20, LOGICAL_H + 20);   // the dim, with the set cut out of it
+    for (const c of M.cells) roundedSqPath(c.x * CELL - 2, (c.y - game.cameraY) * CELL - 2, CELL + 4);
+    ctx.fillStyle = day ? `rgba(2, 44, 84, ${0.34 * env})` : `rgba(0, 0, 0, ${0.5 * env})`;
+    ctx.fill('evenodd');
+    for (const [delay, col] of [[0, M.color], [170, '#ffffff']]) {   // two rings ring out
+        const k = (el - delay) / 700;
+        if (k <= 0 || k >= 1) continue;
+        ctx.globalAlpha = (1 - k) * 0.9; ctx.strokeStyle = col; ctx.lineWidth = 4 * (1 - k) + 1;
+        ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.7 + 1.9 * k), 0, Math.PI * 2); ctx.stroke();
+    }
+    if (el < 520) {   // the cells pulse white as they lock
+        const k = el / 520;
+        ctx.globalAlpha = 0.9 * (1 - k); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
+        for (const c of M.cells) { const g = CELL * 0.08 * k; roundedSq(c.x * CELL + 2 - g, (c.y - game.cameraY) * CELL + 2 - g, CELL - 4 + 2 * g, null, '#ffffff', 3); }
+    }
+    ctx.restore();
+}
 function celebratePiece(cells, color, done, total) {
     if (!PIECE_PARTY || game._replay || !cells || !cells.length) return;
+    if (total - done > 0) pieceMoment(cells, color);   // [081026x] every piece but the last: the run holds for it
     const left = Math.max(0, total - done);
     let cx = 0, cy = 0;
     for (const c of cells) { cx += c.x * CELL + CELL / 2; cy += (c.y - game.cameraY) * CELL + CELL / 2; }
@@ -24873,8 +25207,48 @@ function pivotRigidPose(kOverride) {
    the board's near-black, by day the deep blue, lighter. FLIP_SHADOW = false turns it off. */
 const FLIP_SHADOW = true;
 const FLIP_SHADOW_NIGHT = 0.5, FLIP_SHADOW_DAY = 0.22;
+/* ══ [081026m] THE SHADOW UNDER THE PIECE — designer's call, 8 Oct, 12:07 ═══════════════════════════
+   "the shadow underneath the moving cube doesn't really register, can you make it more obvious or give it
+   a harder edge perhaps, open to ideas." [071026w] laid a soft round glow under each cube, centred under
+   it — so the body hid most of it, and what showed was a blur. Now the shadow is the piece's own shape —
+   a rounded square per cube, the cube's size — hard-edged with a thin penumbra, thrown down and to the
+   right by the one light the whole screen is now lit by (top left, [081026n]):
+     at rest     the piece sits on the board: a firm contact shadow peeks out 7% of a cell right, 10% down
+     in a flip   the shadow slides out further as the piece rises — 25% right and 34% down at the top of
+                 the flip — and softens and lightens a little with height, then snaps back as it lands,
+                 crossfading from the cells it left to the cells it lands on
+     in a turn   it turns with the piece
+   By day a deep ROTOЯ blue, by night black. FLIP_SHADOW_HARD = false puts back the soft glow (and no
+   shadow at rest). */
+const FLIP_SHADOW_HARD = true;
+function _pieceShadow(cells, ox, oy, a, spread, scale) {   // hard core + thin penumbra, one rounded square per cube
+    const day = currentTheme === 'day', ink = day ? '2, 44, 84' : '0, 0, 0';
+    const z = (CELL - 8) * scale, off = (CELL - z) / 2;
+    ctx.save();
+    ctx.fillStyle = `rgba(${ink}, ${a * 0.35})`;
+    for (const c of cells) roundedSq(c.x * CELL + off + ox - spread, (c.y - game.cameraY) * CELL + off + oy - spread, z + spread * 2, `rgba(${ink}, ${a * 0.35})`, null);
+    for (const c of cells) roundedSq(c.x * CELL + off + ox, (c.y - game.cameraY) * CELL + off + oy, z, `rgba(${ink}, ${a})`, null);
+    ctx.restore();
+}
+function drawRestShadow(cells, rig) {   // [081026m] the piece sits on the board
+    if (!FLIP_SHADOW_HARD || !cells || !cells.length) return;
+    const day = currentTheme === 'day';
+    ctx.save();
+    if (rig) { ctx.translate(rig.cx, rig.cy); ctx.rotate(rig.ang); ctx.translate(-rig.cx, -rig.cy); }
+    _pieceShadow(cells, CELL * 0.07, CELL * 0.10, day ? 0.26 : 0.5, 1.5, 1);
+    ctx.restore();
+}
 function drawFlipShadow(ft) {
     if (!FLIP_SHADOW || !flip || !flip.fromCells) return;
+    if (FLIP_SHADOW_HARD) {   // [081026m]
+        const air = Math.sin(Math.PI * Math.max(0, Math.min(1, ft)));
+        const day = currentTheme === 'day';
+        const from = flip.fromCells, to = flip.repel ? flip.fromCells : (flip.toCells || flip.fromCells);
+        const ox = CELL * (0.07 + 0.18 * air), oy = CELL * (0.10 + 0.24 * air);
+        const a = (day ? 0.36 : 0.55) * (1 - 0.25 * air), spread = 1.5 + 3 * air, sc = 1 + 0.05 * air;
+        for (const [cells, w] of [[from, 1 - ft], [to, ft]]) if (w > 0.01) _pieceShadow(cells, ox, oy, a * w, spread, sc);
+        return;
+    }
     const air = Math.sin(Math.PI * Math.max(0, Math.min(1, ft)));   // 0 on the ground, 1 at the top of the flip
     if (air < 0.02) return;
     const day = currentTheme === 'day';
@@ -26136,7 +26510,7 @@ function refusalCost() {
 // [300726bb] A step shifter that shoves you over the edge. Sits between the
 // 2s frame bump and the 15s red: worse than brushing a wall, not as bad as
 // meeting the damage object, and foreseeable — the arrow is on the cell.
-const SHIFT_OOB_COST_SEC = 10;
+const SHIFT_OOB_COST_SEC = timePrice(10);   // [081026d]
 // [300726bc] A single BURNS through a red: the red is destroyed and the move
 // completes, for 10s. Replaces the old 15s bounce, which left the red standing
 // and the board more blocked than before the player touched it.
@@ -26167,7 +26541,7 @@ const SHIFT_OOB_COST_SEC = 10;
    help. And a red is not a punishment: the trim pays 3, and the supply system
    plants one NEXT TO YOU when you need to shed cubes. You do not guarantee a
    supply of punishments. ───────────────────────────────────────────────────── */
-const TRIM_COST_SEC = 12;
+const TRIM_COST_SEC = timePrice(12);   // [081026d] the red burn's price (RED_BURN_COST_SEC)
 const RED_BURN_COST_SEC = TRIM_COST_SEC;
 /* [HOLES] Now the same constant as a red — see TRIM_COST_SEC above. It briefly
    had its own value, set by feel rather than by any argument, which is how the
@@ -26405,6 +26779,7 @@ function move(dir) {
     if (game._freshPush) return;    // [061026q] still held from before the restart: let go first
     if (!game.running) return;
     if (game.paused) return;
+    if (game._pieceHoldUntil && performance.now() < game._pieceHoldUntil) return;   // [081026x] the run holds for a piece in its set
     if (game.frozenTimer > 0) return; // blocked during freeze-frame
     if (flipInAir()) { game._queuedMove = dir; return; }   // [100926e] finish the fold first
     // Block input during a pivot/slip animation so the player doesn't start
@@ -27481,6 +27856,8 @@ function checkCollisions() {
         // [110926p] this scan runs every frame; the cue is once per arrival
         if (onDormantTurn && onDormantTurn !== _notYetKey) { const q = onDormantTurn.split(','); turnNotYet(+q[0], +q[1]); }
         _notYetKey = onDormantTurn;
+        if (triggerItem && !shifterDwellGate(triggerKey, chainLinks)) { triggerCell = null; triggerKey = null; triggerItem = null; }   // [081026v] not yet: a second at rest first
+        else if (!triggerItem && game._dwell) game._dwell = null;
 
         // ── [210826d] THE HOP IS IN THE REVIEW NOW ──────────────────────────
         // The replay snapshotted only where a move ENDED, so a resolution
@@ -30804,7 +31181,7 @@ function drawShifterPreview() {
             ctx.fillStyle = '#ef4444';
             ctx.font = 'bold 13px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('−10s', p.shifterCell.x * CELL + CELL / 2,
+            ctx.fillText(`−${SHIFT_OOB_COST_SEC}s`, p.shifterCell.x * CELL + CELL / 2,   // [081026d] the price, read
                          (p.shifterCell.y - game.cameraY) * CELL - 6);
             ctx.restore();
         }
@@ -31195,6 +31572,111 @@ const TD_ROSE_VEC = { N:[0,-1], NE:[1,-1], E:[1,0], SE:[1,1], S:[0,1], SW:[-1,1]
 // knob would have taken the throw from 53 to 64 — making the stick noticeably
 // LESS sensitive, the opposite of the previous correction. 105 keeps the throw
 // at exactly 53, so engage stays 21 units and nothing about the feel moves.
+/* ══ [081026n–q] DEPTH — designer's call, 8 Oct, 12:13 ══════════════════════════════════════════════
+   "when looking at the whole screen ... it would be good to get more of a feeling of depth and 3D
+   shapeliness ... starting with the object furthest away: the underworld, then the game grid where the
+   player exists, then the text, then the on-screen buttons, then the canvas above the game, then the HUD
+   that sits on top of the canvas, and the joystick as well. Are there any tricks, embellishments...?"
+   Four, all chosen:
+   [081026n] ONE LIGHT. Every raised thing is lit from the top left and casts down and to the right, and
+             the nearer the layer, the further and softer its shadow: the card a little, the HUD and the
+             corner buttons more, the joystick's pad and knob most. Each has a thin lit edge on its top.
+   [081026o] THE BOARD AS A WINDOW. The card's lip throws a soft shadow in along the board's top and left
+             edges, so the grid sits sunk in the card; the underworld darkens toward the board's edges,
+             as if seen down a shaft.
+   [081026p] SLABS. Every floor tile's rim is shaded along its bottom-right (and, by night, lit along its
+             top-left), so each cell reads as a slab with thickness; floating words cast a firm shadow
+             down-right onto the board.
+   [081026q] TILT. Tilt the phone and the layers part: the underworld slides up to 9 px with the tilt,
+             the HUD, the joystick and the corner buttons 3 px against it; the board is the still plane.
+             iPhone asks once for motion access, on the first tap. Off where the system asks for reduced
+             motion. `?tilt=x,y` (each -1..1) holds a tilt, for looking at it on a desk.
+   Each has its own switch: DEPTH_LIGHT, DEPTH_WINDOW, DEPTH_SLABS, DEPTH_TILT. */
+const DEPTH_LIGHT = true, DEPTH_WINDOW = true, DEPTH_SLABS = true, DEPTH_TILT = true;
+const TILT = { x: 0, y: 0, tx: 0, ty: 0, live: false, asked: false, b0: null, g0: null, fixed: null };
+(function tiltSetup() {
+    if (typeof window === 'undefined') return;
+    try { const m = /[?&]tilt=(-?[0-9.]+),(-?[0-9.]+)/.exec(location.search || ''); if (m) TILT.fixed = { x: Math.max(-1, Math.min(1, +m[1])), y: Math.max(-1, Math.min(1, +m[2])) }; } catch (e) {}
+    const reduced = (() => { try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+    if (!DEPTH_TILT || reduced || TILT.fixed) return;
+    const onOri = (e) => {
+        if (e.beta == null || e.gamma == null) return;
+        if (TILT.b0 === null) { TILT.b0 = e.beta; TILT.g0 = e.gamma; }
+        TILT.b0 += (e.beta - TILT.b0) * 0.004; TILT.g0 += (e.gamma - TILT.g0) * 0.004;   // the rest pose drifts to wherever the phone is held
+        TILT.tx = Math.max(-1, Math.min(1, (e.gamma - TILT.g0) / 14));
+        TILT.ty = Math.max(-1, Math.min(1, (e.beta - TILT.b0) / 14));
+        TILT.live = true;
+    };
+    const listen = () => { try { window.addEventListener('deviceorientation', onOri); } catch (e) {} };
+    const D = window.DeviceOrientationEvent;
+    if (D && typeof D.requestPermission === 'function') {   // iPhone: ask once, on a tap
+        const ask = () => {
+            if (TILT.asked) return; TILT.asked = true;
+            try { D.requestPermission().then(r => { if (r === 'granted') listen(); }).catch(() => {}); } catch (e) {}
+            window.removeEventListener('touchend', ask, true); window.removeEventListener('click', ask, true);
+        };
+        window.addEventListener('touchend', ask, true); window.addEventListener('click', ask, true);
+    } else if (D) listen();
+})();
+let _tiltCssAt = { x: 9, y: 9 };
+function tiltTick() {   // every frame: ease toward the phone's tilt, and hand it to the page's layers
+    if (!DEPTH_TILT) return;
+    const tx = TILT.fixed ? TILT.fixed.x : TILT.tx, ty = TILT.fixed ? TILT.fixed.y : TILT.ty;
+    TILT.x += (tx - TILT.x) * 0.12; TILT.y += (ty - TILT.y) * 0.12;
+    if (Math.abs(TILT.x - _tiltCssAt.x) > 0.01 || Math.abs(TILT.y - _tiltCssAt.y) > 0.01) {
+        _tiltCssAt = { x: TILT.x, y: TILT.y };
+        try { const st = document.documentElement.style; st.setProperty('--tilt-x', TILT.x.toFixed(3)); st.setProperty('--tilt-y', TILT.y.toFixed(3)); } catch (e) {}
+    }
+}
+const TILT_UNDER_PX = 9;   // how far the underworld slides at full tilt
+function drawBoardWindow() {   // [081026o] the card's lip throws its shadow in along the top and left
+    if (!DEPTH_WINDOW) return;
+    const day = currentTheme === 'day', ink = day ? '2, 48, 88' : '0, 0, 0';
+    const T = day ? 0.2 : 0.5, D = 14;
+    ctx.save();
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    let gr = ctx.createLinearGradient(0, 0, 0, D);
+    gr.addColorStop(0, `rgba(${ink}, ${T})`); gr.addColorStop(1, `rgba(${ink}, 0)`);
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, LOGICAL_W, D);
+    gr = ctx.createLinearGradient(0, 0, D * 0.7, 0);
+    gr.addColorStop(0, `rgba(${ink}, ${T * 0.8})`); gr.addColorStop(1, `rgba(${ink}, 0)`);
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, D * 0.7, LOGICAL_H);
+    gr = ctx.createLinearGradient(0, LOGICAL_H, 0, LOGICAL_H - 6);   // and a lit lip along the bottom
+    gr.addColorStop(0, day ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.06)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gr; ctx.fillRect(0, LOGICAL_H - 6, LOGICAL_W, 6);
+    ctx.restore();
+}
+function _halfEdge(sx, sy, s, tl) {   // half a rounded square's outline: the top-left half, or the bottom-right
+    const r = Math.min(s * CORNER_K, CORNER_MAX);
+    if (tl) { ctx.moveTo(sx + r * 0.3, sy + s - r * 0.3); ctx.quadraticCurveTo(sx, sy + s, sx, sy + s - r); ctx.lineTo(sx, sy + r); ctx.quadraticCurveTo(sx, sy, sx + r, sy); ctx.lineTo(sx + s - r, sy); ctx.quadraticCurveTo(sx + s, sy, sx + s - r * 0.3, sy + r * 0.3); }
+    else    { ctx.moveTo(sx + s - r * 0.3, sy + r * 0.3); ctx.quadraticCurveTo(sx + s, sy, sx + s, sy + r); ctx.lineTo(sx + s, sy + s - r); ctx.quadraticCurveTo(sx + s, sy + s, sx + s - r, sy + s); ctx.lineTo(sx + r, sy + s); ctx.quadraticCurveTo(sx, sy + s, sx + r * 0.3, sy + s - r * 0.3); }
+}
+function drawCellBevels(camInt, camFrac, slotCells) {   // [081026p] every floor tile a slab: its rim shaded bottom-right, lit top-left
+    if (!DEPTH_SLABS) return;
+    const day = currentTheme === 'day', inset = cellInset(), size = CELL - inset * 2;
+    const br = [];
+    for (let row = -1; row <= VIEW_H + 1; row++) {
+        const wy = camInt + row;
+        for (let col = 0; col < VIEW_W; col++) {
+            const key = `${col},${wy}`, w = world[key];
+            if (voidShown(key) || w === 'wall' || w === 'slip' || w === 'pivot' || (slotCells && slotCells.has(key))) continue;
+            const occ = !!w || visited.has(key);
+            // the rim as it is drawn: by day an empty cell's 4.2 px edge or an occupied cell's 3.2 px, both grown inward; by night 2.1 px on the line
+            const lw = day ? (occ ? (typeof DAY_OCC_RIM_W !== 'undefined' ? DAY_OCC_RIM_W : CELL_OUTLINE_W) : CELL_OUTLINE_W * 2) : CELL_OUTLINE_W;
+            const ins = day ? (lw - CELL_OUTLINE_W) / 2 : 0;
+            br.push([col * CELL + inset + ins, (row - camFrac) * CELL + inset + ins, size - 2 * ins, lw]);
+        }
+    }
+    ctx.save();
+    for (const [pass, ink] of day ? [['br', 'rgba(2, 62, 110, 0.15)']] : [['br', 'rgba(0, 0, 0, 0.4)'], ['tl', 'rgba(255, 255, 255, 0.3)']]) {
+        for (const LW of [...new Set(br.map(b => b[3]))]) {
+            ctx.beginPath();
+            for (const [x, y, z, w] of br) if (w === LW) _halfEdge(x, y, z, pass === 'tl');
+            ctx.strokeStyle = ink; ctx.lineWidth = LW; ctx.lineCap = 'round'; ctx.stroke();
+        }
+    }
+    ctx.restore();
+}
 const STICK_R  = 105;     // input radius: grab, throw, dead zone
 const STICK_RING = 65;    // drawn ring radius
 // [090826k] 50 made the knob 56%% of the ring — it dominated the pad and read as
@@ -31313,6 +31795,32 @@ function stickRawDir(ox, oy) {
     return 'SE';
 }
 
+/* ══ [081026l] THE JOYSTICK IN THE CELLS' LANGUAGE — designer's call, 8 Oct, 12:07 ══════════════
+   "can the circle in the joystick design echo the design of the cells (i.e. cubes with rounded edges),
+   and the arrows for the directions should echo the arrows used in the move and turn shifters."
+   The pad was a disc, its well a disc, its knob a ball, its eight directions solid triangles. Now:
+     the pad and its well   the cell's rounded square — same corner proportion (0.42 of the side), the
+                            well exactly 3/4 of the pad, as a cell's first ring is 3/4 of its edge
+     the knob               a rounded cube in the shifters' silver, wearing the cell's two rings
+     the eight directions   the step shifter's arrow — a shaft and two strokes for a head, round caps —
+                            in the shifters' ink by day; the states are kept: a hollow thin line where a
+                            move is not possible, white with a glow while it is engaged, red on refusal
+   The input is untouched: the same radii are grabbed, thrown and read. STICK_CELLS = false puts back
+   the disc, the ball and the triangles. */
+const STICK_CELLS = true;
+/* [081026u] "make the joystick a bit more contrasty to make it pop out a bit." At rest it faded to half after a
+   second idle — so the stick the player looks at most was mostly seen at 50%. Now: it rests at 82%; the pad is
+   solid (white by day, near-black by night) with a firm edge (deep ROTOЯ blue by day, light steel by night) and a
+   deeper shadow; the eight arrows are at 92% / 88% (were 62% / 50%), the closed ones at 45% (were 30%); the knob
+   has a deeper brushed fall and a firm edge. STICK_POP = false puts back the quieter stick. */
+const STICK_POP = true;
+function _padSqPath(g, cx, cy, half) {   // a cell-shaped rounded square, centred
+    const z = half * 2, r = Math.min(z * CORNER_K, half), x = cx - half, y = cy - half;
+    g.moveTo(x + r, y); g.lineTo(x + z - r, y); g.quadraticCurveTo(x + z, y, x + z, y + r);
+    g.lineTo(x + z, y + z - r); g.quadraticCurveTo(x + z, y + z, x + z - r, y + z);
+    g.lineTo(x + r, y + z); g.quadraticCurveTo(x, y + z, x, y + z - r);
+    g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath();
+}
 function drawJoystickGuide() {
     if (!game.running) return;
     const R = STICK_R, KR = STICK_KR;
@@ -31393,7 +31901,7 @@ function drawJoystickGuide() {
 
     // ── idle fade ──
     if (_stickTouch.active || hot > 0 || denyLive) _stickUI.lastAct = now;
-    const fadeTgt = (now - _stickUI.lastAct > 1000) ? 0.5 : 1;
+    const fadeTgt = (now - _stickUI.lastAct > 1000) ? (STICK_POP ? 0.82 : 0.5) : 1;   // [081026u]
     _stickUI.fade += (fadeTgt - _stickUI.fade) * (1 - Math.exp(-dtms / 250));
     const FA = _stickUI.fade * stickOpacity;
     const FAc = (0.75 + 0.25 * _stickUI.fade) * stickOpacity;   // chevrons resist
@@ -31402,15 +31910,35 @@ function drawJoystickGuide() {
     pctx.save();
 
     // ── base pad ──
-    pctx.globalAlpha = (day ? 0.85 : 0.72) * FA;
+    pctx.globalAlpha = (STICK_POP ? (day ? 1 : 0.95) : (day ? 0.85 : 0.72)) * FA;   // [081026u]
     pctx.fillStyle = day ? '#ffffff' : '#0b1220';   // [040826l] white board in day
-    pctx.beginPath(); pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.fill();
+    if (STICK_CELLS) {   // [081026l] the cell's rounded square · [081026n] lifted: one light, from the top left
+        pctx.save();
+        if (DEPTH_LIGHT) { pctx.shadowColor = day ? `rgba(2, 62, 110, ${STICK_POP ? 0.34 : 0.22})` : `rgba(0, 0, 0, ${STICK_POP ? 0.75 : 0.55})`; pctx.shadowBlur = STICK_POP ? 18 : 14; pctx.shadowOffsetX = STICK_POP ? 5 : 4; pctx.shadowOffsetY = STICK_POP ? 8 : 6; }
+        pctx.beginPath(); _padSqPath(pctx, cx, cy, RD + 8); pctx.fill();
+        pctx.restore();
+    } else { pctx.beginPath(); pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.fill(); }
     pctx.globalAlpha = FA;
     pctx.lineWidth = 1.5;
     pctx.strokeStyle = day ? 'rgba(71,85,105,0.3)' : 'rgba(148,163,184,0.22)';
-    pctx.beginPath(); pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.stroke();
+    if (STICK_POP) { pctx.strokeStyle = day ? 'rgba(3, 105, 161, 0.6)' : 'rgba(203, 213, 225, 0.55)'; pctx.lineWidth = 2.6; }   // [081026u] a firm edge
+    pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, cx, cy, RD + 8); else pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.stroke();
+    if (STICK_CELLS && DEPTH_LIGHT) {   // [081026n] the lit top-left of its rim
+        pctx.save();
+        pctx.beginPath(); _padSqPath(pctx, cx, cy, RD + 8); pctx.clip();
+        pctx.strokeStyle = day ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.16)'; pctx.lineWidth = 3;
+        pctx.beginPath(); _padSqPath(pctx, cx + 1.5, cy + 1.5, RD + 8); pctx.stroke();
+        pctx.restore();
+    }
     pctx.fillStyle = day ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.07)';
-    pctx.beginPath(); pctx.arc(cx, cy, RD - 10, 0, Math.PI * 2); pctx.fill();
+    pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, cx, cy, RD - 10); else pctx.arc(cx, cy, RD - 10, 0, Math.PI * 2); pctx.fill();
+    if (STICK_CELLS && DEPTH_LIGHT) {   // [081026n] the well is sunk: its top-left lip casts into it
+        pctx.save();
+        pctx.beginPath(); _padSqPath(pctx, cx, cy, RD - 10); pctx.clip();
+        pctx.strokeStyle = day ? 'rgba(2, 62, 110, 0.16)' : 'rgba(0, 0, 0, 0.45)'; pctx.lineWidth = 6;
+        pctx.beginPath(); _padSqPath(pctx, cx - 2.5, cy - 2.5, RD - 10); pctx.stroke();
+        pctx.restore();
+    }
 
     // ── [210826a] COMPASS TICKS: N · E · S · W ──────────────────────────────
     // The eight flip directions have been called N/NE/E/SE/… in the code since
@@ -31495,8 +32023,9 @@ function drawJoystickGuide() {
         // than the player inferring it from the board moving.
         const cruise = game._cruising && dir === game.dragDir;
         const ARROW_LEN = cruise ? 46 : 30, ARROW_HALF = 19;   // [150826l] x1.2
-        const tipR = (active ? RD + 17 : RD + 12) + ARROW_LEN;   // [150826l] x1.2
-        const baseR = active ? RD + 17 : RD + 12;
+        const _ab = STICK_CELLS ? 4 : 0;   // [081026l] clear of the rounded square's corners
+        const tipR = (active ? RD + 17 : RD + 12) + _ab + ARROW_LEN;   // [150826l] x1.2
+        const baseR = (active ? RD + 17 : RD + 12) + _ab;
         // The active arrow no longer widens — at this spacing that was enough to
         // close the gap to its neighbours the moment a direction lit up. It grows
         // by reaching FURTHER instead, via tipR above, which reads as pointing
@@ -31514,6 +32043,33 @@ function drawJoystickGuide() {
         // and cap softens all three corners at once and costs nothing.
         pctx.lineJoin = 'round';
         pctx.lineCap = 'round';
+        if (STICK_CELLS) {   // [081026l] the step shifter's arrow: a shaft and two strokes for a head
+            const HL = (tipR - baseR) * 0.42, SPR = 0.62;   // the head as the glyph draws it: 0.115 / 0.17 of the half-shaft, at ±0.62 rad
+            pctx.beginPath();
+            pctx.moveTo(cx + Math.cos(ang) * baseR, cy + Math.sin(ang) * baseR); pctx.lineTo(tx, ty);
+            for (const sp of [SPR, -SPR]) { const a2 = ang + Math.PI + sp; pctx.moveTo(tx, ty); pctx.lineTo(tx + HL * Math.cos(a2), ty + HL * Math.sin(a2)); }
+            const W = 8.5;
+            if (deny) {
+                pctx.globalAlpha = 0.95 * (1 - denyAge / 320);
+                pctx.strokeStyle = '#ef4444'; pctx.shadowColor = '#ef4444'; pctx.shadowBlur = 12 * (1 - denyAge / 320);
+                pctx.lineWidth = W; pctx.stroke();
+            } else if (!legal) {
+                pctx.globalAlpha = (STICK_POP ? 0.45 : 0.3) * FAc;   // [081026u]
+                pctx.strokeStyle = day ? '#64748b' : '#94a3b8';
+                pctx.lineWidth = 2.2; pctx.stroke();
+            } else if (h > 0) {
+                pctx.globalAlpha = 0.95 * FA;
+                pctx.strokeStyle = '#ffffff'; pctx.shadowColor = mono; pctx.shadowBlur = 10 * h;
+                pctx.lineWidth = W; pctx.stroke();
+            } else {
+                pctx.globalAlpha = (STICK_POP ? (day ? 0.92 : 0.88) : (day ? 0.62 : 0.5)) * FAc;   // [081026u]
+                pctx.strokeStyle = day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#cbd5e1';
+                if (DEPTH_LIGHT) { pctx.shadowColor = day ? 'rgba(2, 62, 110, 0.25)' : 'rgba(0, 0, 0, 0.6)'; pctx.shadowBlur = 3; pctx.shadowOffsetX = 1.5; pctx.shadowOffsetY = 2; }
+                pctx.lineWidth = W; pctx.stroke();
+            }
+            pctx.restore();
+            continue;
+        }
         pctx.beginPath();
         pctx.moveTo(tx, ty); pctx.lineTo(b1x, b1y); pctx.lineTo(b2x, b2y);
         pctx.closePath();
@@ -31594,7 +32150,7 @@ function drawJoystickGuide() {
         pctx.save();
         pctx.globalAlpha = a;
         pctx.fillStyle = mono;
-        pctx.beginPath(); pctx.arc(hpt.x, hpt.y, KR * 0.85, 0, Math.PI * 2); pctx.fill();
+        pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, hpt.x, hpt.y, KR * 0.78); else pctx.arc(hpt.x, hpt.y, KR * 0.85, 0, Math.PI * 2); pctx.fill();
         pctx.restore();
     }
 
@@ -31607,7 +32163,8 @@ function drawJoystickGuide() {
     if (throwFrac > 0.02) { pctx.rotate(leanAng); pctx.scale(1 - 0.16 * throwFrac, 1); }
     pctx.shadowColor = 'rgba(6,20,45,0.45)';
     pctx.shadowBlur = 6;
-    pctx.shadowOffsetY = 2;   // [090826c] was `g.` — set on the gradient, and on a
+    pctx.shadowOffsetY = 2;
+    if (DEPTH_LIGHT) { pctx.shadowColor = day ? 'rgba(2, 48, 88, 0.35)' : 'rgba(0, 0, 0, 0.6)'; pctx.shadowBlur = 9; pctx.shadowOffsetX = 3; pctx.shadowOffsetY = 5; }   // [081026n] one light   // [090826c] was `g.` — set on the gradient, and on a
                               // `const g` that is not even declared until the NEXT
                               // line. A temporal-dead-zone throw, every frame the
                               // knob drew. Caught by the rename; it predates it.
@@ -31621,8 +32178,30 @@ function drawJoystickGuide() {
         g.addColorStop(0.55, glow > 0 ? '#e2e8f0' : '#94a3b8');
         g.addColorStop(1, glow > 0 ? '#64748b' : '#334155');
     }
+    const KH = KR * 0.9;   // [081026l] the knob cube's half-side
+    if (STICK_CELLS) {   // [081026l] a rounded cube in the shifters' silver, brushed top to bottom
+        const lg = pctx.createLinearGradient(0, -KH, 0, KH);
+        if (day) { lg.addColorStop(0, glow > 0 ? '#eef3f9' : (STICK_POP ? '#e2eaf2' : CANDY.steelHi)); lg.addColorStop(1, glow > 0 ? '#a3b6cb' : (STICK_POP ? '#8499b2' : CANDY.steelLo)); }   // [081026u] a deeper fall
+        else { lg.addColorStop(0, glow > 0 ? '#f1f5f9' : '#d5dee8'); lg.addColorStop(1, glow > 0 ? '#a9b8c9' : '#8597ab'); }
+        pctx.fillStyle = lg;
+        pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.fill();
+        pctx.shadowColor = 'transparent'; pctx.shadowBlur = 0; pctx.shadowOffsetX = 0; pctx.shadowOffsetY = 0;
+        pctx.save();   // the cell's two rings, in the shifters' ink, faint — as on a turn tile
+        pctx.strokeStyle = day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#1f3555';
+        pctx.lineWidth = 2.2;
+        for (const [k, a] of [[0.75, 0.3], [0.5, 0.24]]) { pctx.globalAlpha = FA * a; pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * k); pctx.stroke(); }
+        pctx.restore();
+        if (DEPTH_LIGHT) {   // [081026n] lit top-left, shaded bottom-right
+            pctx.save(); pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.clip();
+            pctx.lineWidth = 4;
+            pctx.strokeStyle = 'rgba(255,255,255,0.7)'; pctx.beginPath(); _padSqPath(pctx, 2, 2, KH); pctx.stroke();
+            pctx.strokeStyle = day ? 'rgba(2, 48, 88, 0.22)' : 'rgba(0, 0, 0, 0.35)'; pctx.beginPath(); _padSqPath(pctx, -2, -2, KH); pctx.stroke();
+            pctx.restore();
+        }
+    } else {
     pctx.fillStyle = g;
     pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.fill();
+    }
     pctx.shadowColor = 'transparent';
     // [090826i] The play/pause lamp is removed. It made the knob mean two things
     // on one gesture and forced a tap-versus-drag rule onto the control the
@@ -31637,12 +32216,13 @@ function drawJoystickGuide() {
         pctx.strokeStyle = mono;
         pctx.globalAlpha = 0.9 * FA;
         pctx.lineWidth = 2.5;
-        pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
+        pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, 0, 0, KH); else pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
         pctx.restore();
     } else {
         pctx.lineWidth = 1.5;
         pctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
-        pctx.beginPath(); pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
+        if (STICK_POP) { pctx.strokeStyle = day ? 'rgba(31, 53, 85, 0.75)' : 'rgba(226, 232, 240, 0.75)'; pctx.lineWidth = 2.2; }   // [081026u]
+        pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, 0, 0, KH); else pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
     }
     // [180826w] The five grip dimples are gone — designer's call. They read as
     // clutter at rest rather than texture; the knob's gradient carries its
@@ -31909,7 +32489,7 @@ const TIPS = {
     cover:     'Bigger than the set: the cubes on it go into the set, the rest of you carries on.',   // [290926q]
     rose:      'Ringed single: the hard one.',
     shave:     'Blocked? Come at it THROUGH the red.',
-    shifter:   'Shifters turn you or push you on. Once used, each recharges and comes back set a new way.',   // [071026x]
+    shifter:   'Stop on a shifter for a second and it turns you or pushes you on. Flip straight over it and it won\u2019t.',   // [071026x] · [081026v]
     // [100926h] The slot refuses now and reds are gone, so the cures are the
     // green and the hole \u2014 say so.
     wrong:     'Wrong shape for that set. Evolve on a green, or devolve on a hole.',   // [290926v]
@@ -31935,8 +32515,8 @@ const TIPS = {
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
     trim:      'Too big? Cover the whole set \u2014 the cubes on it go in.',   // [100926h] · [290926q]
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   'One cube into a hole costs 10 seconds: it becomes ground and you start again on it. Evolve first, or go round.',   // [071026m]   // [290926v]   // [250926m][250926s]
-    redtoll:   'A red can\u2019t take your last cube, so it takes 5 seconds instead.',   // [061026h]
+    onecube:   `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
+    redtoll:   `A red can\u2019t take your last cube, so it takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [061026h]
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
     misfit:    'Land on part of a set and it takes the cube that touched it. Cover all of it, or match it.',   // [260926k] · [290926q]
     diag:      'Swipe diagonally \u2014 corners count.',
@@ -32357,6 +32937,7 @@ const CELL_RING_STYLE = {
     night:      { col: 'rgba(226,232,240,', a: [0.30, 0.24], w: 1.1 },
     nightTrail: { col: 'rgba(240,236,255,', a: [0.34, 0.26], w: 1.1 },
     day:        { col: 'rgba(56,189,248,',  a: [0.30, 0.22], w: 1.0 },   // [260926o] ice, a step deeper than the baby-blue grid
+    dayBands:   { col: 'rgba(56,189,248,',  a: [0.45, 0.40, 0.36], w: 1.0, k: [0.75, 0.5, 0.25] },   // [071026z] the band edges, with the new ring at 1/4
     dayTrail:   { col: 'rgba(230,110,90,',  a: [0.28, 0.22], w: 1.0 }    // [260926o] a deeper pink · [260926p] a deeper coral on the salmon · [260926r] lighter with it
 };
 function _appendScaledSq(sx, sy, size, k) {   // roundedSq's path, scaled about the centre (radius scales too)
@@ -32367,12 +32948,115 @@ function _appendScaledSq(sx, sy, size, k) {   // roundedSq's path, scaled about 
     ctx.lineTo(x + r, y + z); ctx.quadraticCurveTo(x, y + z, x, y + z - r);
     ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
 }
+/* ══ [071026z] THE DAY CELL IN FOUR BANDS — designer's call, 7 Oct ══════════════════════════
+   "in the day mode grid there are 3 ringed sections to a cell — can you make it 4 ringed sections
+   with an extra ring in the middle, where the outer ring is white, the next ring in is transparent
+   (you can see the lower level through this), the next ring inwards is white and the last ring, the
+   middle, should be transparent (showing the lower level / underworld beneath)."
+   An empty day cell was one lid (white at 75%, [071026t]) with two faint rings on it, at 3/4 and 1/2.
+   It is now four bands cut by three rings at 3/4, 1/2 and 1/4 — the same scaled copies of the cell's
+   own edge, corners and all:
+     edge → 3/4   white      (DAY_BAND_WHITE)
+     3/4 → 1/2    open       the depths below show through
+     1/2 → 1/4    white
+     1/4 → centre open
+   The rings are stroked as before, with the new one at 1/4. A set's cells keep their solid white
+   (their colour stays true), the trail and the tiles are untouched, and night is unchanged.
+   DAY_BANDS = false puts back the single lid. */
+const DAY_BANDS = true;
+const DAY_BAND_WHITE = 1;
+/* ══ [071026aa] THE DAY CELL WEARS NIGHT'S RINGS — designer's call, 7 Oct, 23:20 ══════════════
+   "can the white rings of the day light cell copy the white rings of night time mode?" (with a grab
+   of the night board). By night a cell's white is LINES: a bright edge (white at 88%, 2.1 px) and
+   two faint rings inside (cool white at 30% and 24%, 1.1 px) over a dark lid. The four day bands of
+   [071026z] were solid white FILLS. Now the day cell is drawn the night way: no white fill at all —
+   the whole cell is open onto the depths — with a white edge at night's weight and the rings at 3/4,
+   1/2 and 1/4 (the four sections stay) as thin cool-white lines at night's weight.
+   Matched by measurement, not by copying the alphas: night's rings sit on near-black, day's on blue,
+   so the same 30% would all but vanish. Measured as contrast against the cell just beside each line
+   (WCAG ratio, four cells): night's 3/4 ring stands out 2.5:1 and its 1/2 ring 2.0:1; by day 78% and
+   55% give the same. The 1/4 ring, which night does not have, sits with the 1/2 (46%). The edge is
+   white at 95%: on day's blue no white can reach night's 12:1 — about 3:1 is the ceiling.
+   Holes are untouched (brighter, bubbled, no lines), as are set cells, the trail, the tiles and night.
+   DAY_RINGS_NIGHT = false puts back the four solid bands of [071026z]. */
+const DAY_RINGS_NIGHT = true;
+/* [081026e] "in daylight mode can the outer ring of the unoccupied cell be twice the thickness so that it
+   stands out a bit more from the background and the underworld beneath, or perhaps made whiter (if it's
+   possible)." Both: the edge is 4.2 px (was 2.1) and pure white (was 95% — the whitest it can be). It grows
+   INWARD — its outer line stays where it was — because a 4.2 px line on the edge itself would spill 2.1 px
+   into a 4 px seam from each side and close the seams and the knuckles between the cells. The 3/4 ring
+   still sits clear inside it. DAY_EDGE_BOLD = false puts back 2.1 px at 95%. */
+const DAY_EDGE_BOLD = true;
+/* [081026j] "in daylight mode, can the outer white rim be thickened slightly and made whiter on the occupied
+   cells, hourglass, green cube, red cube cells." By day those rims were the grid's pale ice (196,233,251 at
+   95%) at 2.1 px. Now pure white at 3.2 px — half as thick again — on the trail's cells, the hourglasses,
+   the greens and the reds. Grown inward, as the empty cell's edge is ([081026e]), so the seams and the
+   knuckles stay open. The shifters keep their own steel edge (not on the list). Night unchanged.
+   DAY_OCC_RIM = false puts back the pale ice at 2.1 px. */
+const DAY_OCC_RIM = true;
+const DAY_OCC_RIM_W = 3.2;
+function dayOccRim(sx, sy, size) {
+    const ins = (DAY_OCC_RIM_W - CELL_OUTLINE_W) / 2;
+    roundedSq(sx + ins, sy + ins, size - 2 * ins, null, '#ffffff', DAY_OCC_RIM_W);
+}
+const DAY_EDGE_BOLD_INK = 'rgba(255, 255, 255, 1)';
+const DAY_RING_EDGE = 'rgba(255, 255, 255, 0.95)';
+CELL_RING_STYLE.dayRings = { col: 'rgba(226,232,240,', a: [0.78, 0.55, 0.46], w: 1.1, k: [0.75, 0.5, 0.25] };   // night's cool white, at night's weight
+/* [081026a] "in daylight mode remove the inner of the unoccupied cell and match the ring configuration to
+   the one in the screen grab" (the night grab of 23:20): the ring at 1/4 goes — the cell is night's
+   three sections, the edge and the rings at 3/4 and 1/2, at the strengths measured for [071026aa]. */
+const DAY_RINGS_THREE = true;
+/* [081026r] "during gameplay, can the peach colour (occupied square) have a little bit of transparency through it,
+   so that you can just make out some underworld movement — same for the night version." The trail's fill is
+   drawn at 80% of itself (TRAIL_SEE): by day a fifth of the depths shows through the peach; by night, under
+   the lid, about a tenth shows through the violet. 1 puts back the solid trail.
+   [081026t] "I think the occupied peach rings could be white instead of dark peach, like the unoccupied grid
+   cells." By day the trail's rings at 3/4 and 1/2 are white (they were coral); night's were already near
+   white. TRAIL_RINGS_WHITE = false puts back the coral. */
+/* [081026s] "the other game objects (hourglass, green, red, turn and move shifter cells) should all sit within the
+   confines of the white outer ring on each of the grid cells and look as though they are inset into the grid
+   cells ... all game objects including the player objects should cast a slight shadow when they fit and sit on
+   each of the grid cells." Each of the five is drawn scaled down about its cell's centre so it sits inside the
+   white rim with a hair of the cell's floor showing round it (5 px in from the cell's edge by day, where the
+   rim is 3.2 px; 3.6 px by night, where it is 2.1), and it throws a slight shadow down and to the right onto
+   that floor, from the one light. Its glyph scales with it. The player already sits on its own shadow
+   ([081026m]). OBJ_INSET = false puts the objects back at the cell's full size. */
+const OBJ_INSET = true;
+const PLAYER_CELL_RIM = true;   // [081026y]
+function objInsetBegin(item, sx, sy, size) {   // the shadow, then the transform; true when the caller must restore
+    if (!OBJ_INSET) return false;
+    if (!(item === 'hazard' || item === 'pickup' || item === 'pivot' || item === 'slip' || isTimeCell(item))) return false;
+    const day = currentTheme === 'day', ins = day ? 5 : 3.6, z = size - 2 * ins;
+    const cx = sx + size / 2, cy = sy + size / 2, k = z / size;
+    roundedSq(cx - z / 2 + 1.3, cy - z / 2 + 2, z, day ? 'rgba(2, 44, 84, 0.3)' : 'rgba(0, 0, 0, 0.55)', null);
+    ctx.save();
+    ctx.translate(cx, cy); ctx.scale(k, k); ctx.translate(-cx, -cy);
+    return true;
+}
+const TRAIL_SEE = 0.8;
+const TRAIL_RINGS_WHITE = true;
+if (TRAIL_RINGS_WHITE) CELL_RING_STYLE.dayTrail = { col: 'rgba(255,255,255,', a: [0.9, 0.75], w: 1.1 };
+if (DAY_RINGS_THREE) CELL_RING_STYLE.dayRings = { col: 'rgba(226,232,240,', a: [0.78, 0.55], w: 1.1, k: [0.75, 0.5] };
+function drawDayBands(sx, sy, size) {
+    if (DAY_RINGS_NIGHT && DAY_EDGE_BOLD) {   // [081026e] twice the weight, grown inward; full white
+        const w = CELL_OUTLINE_W * 2, ins = (w - CELL_OUTLINE_W) / 2;
+        roundedSq(sx + ins, sy + ins, size - 2 * ins, null, DAY_EDGE_BOLD_INK, w);
+        return;
+    }
+    if (DAY_RINGS_NIGHT) { roundedSq(sx, sy, size, null, DAY_RING_EDGE, CELL_OUTLINE_W); return; }   // [071026aa] lines, not fills
+    ctx.save();
+    ctx.fillStyle = `rgba(255, 255, 255, ${DAY_BAND_WHITE})`;
+    ctx.beginPath(); _appendScaledSq(sx, sy, size, 1); _appendScaledSq(sx, sy, size, 0.75); ctx.fill('evenodd');
+    ctx.beginPath(); _appendScaledSq(sx, sy, size, 0.5); _appendScaledSq(sx, sy, size, 0.25); ctx.fill('evenodd');
+    ctx.restore();
+    roundedSq(sx, sy, size, null, CANDY.cellEdge, 1.1);   // the cell's own edge, as before
+}
 function paintCellRings(cells, size, styleKey) {   // cells: flat [sx, sy, sx, sy, ...]
     if (!cells.length) return;
     const st = CELL_RING_STYLE[styleKey];
     ctx.save();
     ctx.lineWidth = st.w;
-    CELL_RING_K.forEach((k, i) => {
+    (st.k || CELL_RING_K).forEach((k, i) => {
         ctx.beginPath();
         for (let j = 0; j < cells.length; j += 2) _appendScaledSq(cells[j], cells[j + 1], size, k);
         ctx.strokeStyle = st.col + st.a[i] + ')';
@@ -32755,7 +33439,32 @@ let _beatAt = 0;
    Each now fires ONCE per crossing, with a picture and a sound together, and
    never twice for the same state. Speed announces at fixed multiples of the
    base rate so it reads as steps rather than a slope. ═══════════════════════ */
-const RATCHET_SPEED_STEPS = [1.1, 1.2, 1.3, 1.4, 1.5];   // [260926a] the level's own steps — FASTER at levels 4, 6, 8, 9, 10; the clock-driven 1.6–3.0 cannot happen now
+/* ══ [071026y] THE SCROLL BITES — designer's call, 7 Oct ═════════════════════════════════
+   "the difficulty level needs to be ratcheted up much more by speeding up the scrolling screen, it
+   needs to be much more of a factor that the players run out of grid." Measured first: in
+   playdata71's longest run (33 min, to level 8) not one of eight losses was the bottom of the grid,
+   and the board crept down one row every 7.9 s at level 1 and every 6.2 s at level 7 — a whole
+   screen took 79 s and 62 s to pass, longer than most sets took to collect. The grid never ran out.
+   Now three things, one dial:
+     · SCROLL_PACE 1.8 — the board's own pace, 1.8× what it was, at every level
+     · the level ramp is straight and twice as tall: ×1.00 at level 1 to ×2.00 at level 10 (it was
+       an easing curve to ×1.50 that barely moved before level 5)
+     · each set banked notches it up 4% more until the level ends (×1.20 by the sixth) — the
+       sawtooth proposed earlier today: every level opens a little calmer than the last one closed
+   A row now passes every 4.4 s at level 1, 3.3 s at level 4, 2.6 s at level 7, 2.2 s at level 10
+   (and 1.8 s on a level 10's last set): a body standing still at the restart spot, two rows down, is
+   carried off the bottom in 35 s at level 1 and 18 s at level 10, against 63 s and 42 s before.
+   The dial: `?pace=` on the address (0.5–4) overrides SCROLL_PACE without a new build, so it can be
+   tried on the iPad at 1.4, 1.8 and 2.4. SCROLL_BITES = false puts back the old pace and ramp.
+   FASTER now announces at ×1.2, 1.4, 1.6, 1.8 and 2.0 of level 1's pace. Ticks now record the body's
+   height on the board (`py`, 0 = top row), so the next export says how close to the edge play runs. */
+const SCROLL_BITES = true;
+const SCROLL_PACE = (() => {
+    try { const m = /[?&]pace=([0-9.]+)/.exec((typeof location !== 'undefined' && location.search) || ''); const v = m ? parseFloat(m[1]) : NaN; if (v >= 0.5 && v <= 4) return v; } catch (e) {}
+    return 1.8;
+})();
+const SPEED_SET_NOTCH = 0.04;   // per set banked in the level, up to five
+const RATCHET_SPEED_STEPS = SCROLL_BITES ? [1.2, 1.4, 1.6, 1.8, 2.0] : [1.1, 1.2, 1.3, 1.4, 1.5];   // [260926a] the level's own steps — FASTER at levels 4, 6, 8, 9, 10; the clock-driven 1.6–3.0 cannot happen now
 /* [110926b] THE WARNING ZONE IS THE ZONE. Field note: "when the warning sound
    of the last 30 seconds starts playing, and the player then clears rows and
    collects hourglasses to get out of the danger time zone, they should be
@@ -33290,6 +33999,7 @@ function drawEdgeProximity() {
 
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
+    tiltTick();   // [081026q]
     replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
 
     ctx.save();
@@ -33384,7 +34094,18 @@ function draw() {
                An unoccupied square, then a hole, then an occupied square.
                During a flip every cell gets its floor; the destination is drawn
                as UNWALKED (see the visited branch) until the sprite lands. */
-            if (playerNow.has(key) && !flip.active && !_machineMoving) continue;   // [280926e] and not while a machine is carrying the body there — that cell was drawn as a hole for the whole swing
+            if (playerNow.has(key) && !flip.active && !_machineMoving) {   // [280926e] and not while a machine is carrying the body there — that cell was drawn as a hole for the whole swing
+                /* [081026y] "when the player flips onto an occupied or unoccupied grid cell, the outer white ring of the
+                   cell should still be visible — at present it disappears when the player lands on it and reappears
+                   when the player moves off." The cell under the piece was skipped whole, rim and all. Its rim is
+                   drawn now (by night with the cell's lid under it), and the piece — 4 px in from the cell's edge —
+                   sits inside it, as every object does ([081026s]). PLAYER_CELL_RIM = false: skipped whole again. */
+                if (PLAYER_CELL_RIM && !(item === 'void' || voidShown(key))) {
+                    if (currentTheme === 'day') { if (item || visited.has(key)) dayOccRim(sx, sy, CELL_SIZE); else drawDayBands(sx, sy, CELL_SIZE); }
+                    else { roundedSq(sx, sy, CELL_SIZE, GROUND_LID, null); roundedSq(sx, sy, CELL_SIZE, null, palette().emptyOutline, CELL_OUTLINE_W); }
+                }
+                continue;
+            }
 
             /* [HOLES] A VOID DRAWS NOTHING. It is not an object that gets
                painted, it is a cell that is not there — and drawUnderworld has
@@ -33396,6 +34117,8 @@ function draw() {
                as one hole rather than a row of tiles. */
             if (item === 'void' || voidShown(key)) continue;   // [280926d] a bought cell stays a hole to the eye until the cube has gone in
 
+            const _oi = objInsetBegin(item, sx, sy, CELL_SIZE);   // [081026s] inside the rim, on its own slight shadow
+            try {
             if (item === 'wall') {
                 // Organic walls only — claimed-slot cells are no longer
                 // walls, so this branch only handles real wall geometry now.
@@ -33713,7 +34436,7 @@ function draw() {
                         /* [260926n] sweet shop · [260926o] bubble gum · [260926p] salmon: walked is #ff9e8f, fresh #ff806c, the edge coral — CANDY */
                         const W_ = CANDY.walked, F_ = CANDY.fresh;
                         const fill = f > 0.01 ? `rgb(${Math.round(W_[0] + (F_[0] - W_[0]) * f)}, ${Math.round(W_[1] + (F_[1] - W_[1]) * f)}, ${Math.round(W_[2] + (F_[2] - W_[2]) * f)})` : '#ffc1b7';   // [260926q][260926r]
-                        roundedSq(sx, sy, CELL_SIZE, fill, CANDY.walkedEdge, 1);
+                        { ctx.save(); ctx.globalAlpha *= TRAIL_SEE; roundedSq(sx, sy, CELL_SIZE, fill, CANDY.walkedEdge, 1); ctx.restore(); }   // [081026r] the depths just show through
                     }
                 } else {
                     // [200826d] Fine bright edge on the night trail (see
@@ -33732,7 +34455,7 @@ function draw() {
                         const fill = f > 0.01
                             ? `rgba(${Math.round(124 + 36 * f)}, ${Math.round(96 + 30 * f)}, ${Math.round(196 + 30 * f)}, ${(0.88 + 0.06 * f).toFixed(3)})`
                             : palette().visitedFill;
-                        roundedSq(sx, sy, CELL_SIZE, fill, palette().visitedStroke, 1);
+                        { ctx.save(); ctx.globalAlpha *= TRAIL_SEE; roundedSq(sx, sy, CELL_SIZE, fill, palette().visitedStroke, 1); ctx.restore(); }   // [081026r]
                     }
                 }
                 /* [HOLES] AND THE CELL KEEPS ITS OWN OUTLINE. Covering a
@@ -33743,7 +34466,8 @@ function draw() {
                    is the STATE; the white outline is the cell itself, and it
                    is drawn last so nothing paints over it. Same rule the
                    unwalked branch follows, same width. */
-                roundedSq(sx, sy, CELL_SIZE, null,
+                if (DAY_OCC_RIM && currentTheme === 'day') dayOccRim(sx, sy, CELL_SIZE);   // [081026j]
+                else roundedSq(sx, sy, CELL_SIZE, null,
                           (GLASS_BOARD && currentTheme !== 'day') ? GLASS_OUTLINE : palette().emptyOutline, CELL_OUTLINE_W);
                 if (CELL_RINGS && !_slotCells.has(key)) _ringTrail.push(sx, sy);   // [110926n]
                 // FRESH PAINT COOLS (V9): just-covered cells bloom brighter
@@ -33836,6 +34560,8 @@ function draw() {
                     // gaps between tiles, so the floor reads as white tiles on
                     // a dark frame (was outline-only back when the canvas was
                     // white and showed through).
+                    if (DAY_BANDS && !(_slotCells && _slotCells.has(key))) drawDayBands(sx, sy, CELL_SIZE);   // [071026z] four bands: white, open, white, open
+                    else
                     roundedSq(sx, sy, CELL_SIZE, (_slotCells && _slotCells.has(key)) ? dayTileFill() : dayLidFill(), CANDY.cellEdge, 1.1);   // [260926m] the grey grout · [260926n] lilac · [280926c] deep ice, each tile's own edge · [071026t] a lid, not a slab (a set's cells keep the white, so its colour stays true)
                 } else {
                     /* [HOLES] THE LID. Night's empty cell is outline-only with
@@ -33865,13 +34591,14 @@ function draw() {
                     }
                 }
             }
+            } finally { if (_oi) ctx.restore(); }   // [081026s] every branch, even one that leaves early
             // (Other items — pickup, hazard-circle-overlay — are now handled
             // inline above or in the Special-items pass.)
         }
     }
     if (CELL_RINGS) {   // [110926n] the battery's rings, on the board
         const day = currentTheme === 'day';
-        paintCellRings(_ringPlain, CELL_SIZE, day ? 'day' : 'night');
+        paintCellRings(_ringPlain, CELL_SIZE, day ? (DAY_BANDS ? (DAY_RINGS_NIGHT ? 'dayRings' : 'dayBands') : 'day') : 'night');   // [071026z] · [071026aa]
         paintCellRings(_ringTrail, CELL_SIZE, day ? 'dayTrail' : 'nightTrail');
     }
     for (const g of _rxFloor) rxGlow(g[0], g[1], CELL_SIZE, g[2], g[3]);   // [071026l] the floor's reactions, over the floor
@@ -33915,6 +34642,7 @@ function draw() {
             // [180826c] Greens breathe too — same ±1.5px as pivots, slips and
             // the big hourglass, on the slow phase so the board reads as one
             // family of powered machines rather than three idioms.
+            const _oi = objInsetBegin('pickup', sx, sy, SIZE);   // [081026s]
             const breathe = 0.5 + 0.5 * Math.sin(Date.now() / 1500 * Math.PI);
             if (currentTheme === 'day') {
                 // Day green pickup — flat lime with a darker lime edge for
@@ -33953,6 +34681,7 @@ function draw() {
             ctx.moveTo(pcx, pcy - parm); ctx.lineTo(pcx, pcy + parm);
             ctx.stroke();
             ctx.restore();
+            if (_oi) ctx.restore();   // [081026s]
         }
     }
     
@@ -34098,6 +34827,10 @@ function draw() {
             for (let col = 0; col < VIEW_W; col++) {
                 const v = world[`${col},${wy}`];
                 if (!v || v === 'void' || v === 'wall') continue;
+                if (DAY_OCC_RIM && currentTheme === 'day' && (v === 'pickup' || v === 'hazard' || isTimeCell(v))) {   // [081026j]
+                    dayOccRim(col * CELL + _o, (row - camFrac) * CELL + _o, _s);
+                    continue;
+                }
                 roundedSq(col * CELL + _o, (row - camFrac) * CELL + _o, _s, null, _stroke, CELL_OUTLINE_W);
             }
         }
@@ -34115,6 +34848,7 @@ function draw() {
             }
         }
     }
+    drawCellBevels(camInt, camFrac, _slotCells);   // [081026p] every tile a slab
 
     drawStones();   // [280926t] under the body: a stored green dropping in as a stepping stone; a stomped one flying to the store
     // Player faces — same cyan hue, two brightness levels, with a metallic sheen.
@@ -34279,6 +35013,7 @@ function draw() {
     }
 
     if (flipping && !(game._bodyHidden && !game._replay)) drawFlipShadow(_flipT);   // [071026w] on the ground, under the body
+    else if (!(game._bodyHidden && !game._replay)) drawRestShadow(renderCells, _rig);   // [081026m] at rest, or turning with it
     ctx.save();
     // Post-respawn invulnerability: blink the whole player render so it reads
     // as "ghosted". globalAlpha gets restored by the matching ctx.restore().
@@ -34512,6 +35247,7 @@ function draw() {
     // the destination cells, never on the player's own, so nothing is occluded.
     drawMoveGhost();
     drawShifterPreview();   // [160826u] shifter outcome ghost, above the route
+    drawShifterDwell();     // [081026v] the second, sweeping round the cube on the tile
     drawAnimFX();           // [180826t] devolve flash, seat, spin, chain thread
     drawMachineStroke();    // [280926e] the grab, the arm and its arc, the push — over the body
     drawNoteMarks();        // [160826y] dev-note cell rings, topmost
@@ -34541,6 +35277,7 @@ function draw() {
     // [210826am] The edge flash sits under the text and over the board: it is
     // world feedback, so it should not obscure a float, and a float should not
     // have to compete with it.
+    drawPieceMoment();   // [081026x] the spotlight on a piece in its set
     drawEdgeFlash();
 
     /* Floating texts.
@@ -34631,6 +35368,14 @@ function draw() {
             baseY = Math.max(actualSize + MARGIN, Math.min(LOGICAL_H - blockH - MARGIN, baseY + d));
             _fBoxes.push({ l: box.l, r: box.r, t: baseY - actualSize, b: baseY + blockH + actualSize * 0.2 });
         }
+        if (DEPTH_SLABS) {   // [081026p] the words float over the board: a firm shadow, down and to the right
+            ctx.save();
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+            ctx.fillStyle = currentTheme === 'day' ? 'rgba(2, 44, 84, 0.3)' : 'rgba(0, 0, 0, 0.55)';
+            const so = Math.max(2, actualSize * 0.14);
+            for (let i = 0; i < lines.length; i++) ctx.fillText(lines[i], drawX + so, baseY + i * lineH + so * 1.3);
+            ctx.restore();
+        }
         // [280926g] a dark outline under the fill — read on white tiles and pink alike
         ctx.lineJoin = 'round';
         ctx.strokeStyle = 'rgba(6, 20, 45, 0.62)';
@@ -34643,6 +35388,7 @@ function draw() {
         return true;
     });
     drawReplayOverlay();   // [100926f] the replay's tag and captions, over the board
+    drawBoardWindow();     // [081026o] the card's lip, over everything inside the window
 
     // Grid coordinate labels (toggle with G) — world (x,y) on every cell
     if (window.SHOW_GRID_COORDS) {
@@ -35847,13 +36593,14 @@ function loop(time, gen) {
        SPEED_RAMP_RATE stays declared so the old curve can be read; nothing
        multiplies by it. speedOffset (the retired warp's slowdown) keeps its
        place in the sum; with warps at weight 0 it is always 0. */
-    const LEVEL_SPEED_MAX  = 0.5;
-    const LEVEL_SPEED_EASE = 1.4;   // [260926a] was 1.8
+    const LEVEL_SPEED_MAX  = SCROLL_BITES ? 1.0 : 0.5;   // [071026y] twice as tall
+    const LEVEL_SPEED_EASE = SCROLL_BITES ? 1.0 : 1.4;   // [260926a] was 1.8 · [071026y] straight
     const _lvT = Math.min(9, Math.max(0, advancedRound - 1)) / 9;
     const levelMul = 1 + LEVEL_SPEED_MAX * Math.pow(_lvT, LEVEL_SPEED_EASE);
     void SPEED_RAMP_RATE;   // [260926a] the clock is not in this sum any more
+    const setNotch = SCROLL_BITES ? 1 + SPEED_SET_NOTCH * Math.min(5, game._piecesHome || 0) : 1;   // [071026y] each set banked
     let targetSpeed = SPEED_MIN - (game.speedOffset || 0);
-    targetSpeed = Math.max(SPEED_MIN, targetSpeed) * levelMul;
+    targetSpeed = Math.max(SPEED_MIN, targetSpeed) * levelMul * setNotch;
     if (!game._testFrozen) {
         game.speed = targetSpeed;
     }
@@ -35876,7 +36623,7 @@ function loop(time, gen) {
     // multiplier above it (bullet time, the post-set breather, the level ramp)
     // scales with it rather than drifting apart.
     const _hitstop = game._hitstopUntil && performance.now() < game._hitstopUntil;   // [090926d] the shear holds the world
-    const scroll = (game.testDrive || game.introHold || _hitstop) ? 0 : game.speed * dt * 0.000126 * scrollMul;
+    const scroll = (game.testDrive || game.introHold || _hitstop) ? 0 : game.speed * dt * 0.000126 * scrollMul * (SCROLL_BITES ? SCROLL_PACE : 1);   // [071026y] the board's own pace
     game.cameraY -= scroll;
     
     drainQueuedMove();   // [100926e] a press that arrived mid-flip goes now, on the landing
@@ -36246,7 +36993,7 @@ function recStartRun() {
     recRunId = Date.now();
     recEvents = [];
     tipWant = {};   // [210826l] tip demand is per-run, like everything else here
-    rec('run', { when: Date.now(), build: BUILD_VERSION });
+    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_BITES ? SCROLL_PACE : 1, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1 });   // [071026y] · [081026d]
 }
 function recExport() {
     try {
@@ -36298,6 +37045,7 @@ setInterval(function () {
             m: (typeof momentumRemaining === 'function') ? Math.round(momentumRemaining()) : -1,
             c: Math.round(game.coverage || 0),
             s: game.shapeType,
+            py: Math.round((game.playerY - game.cameraY) * 10) / 10,   // [071026y] the body's height on the board: 0 top, 9 bottom row
             // [210826aq] `rv` was the reserve level, sampled every 2s. The tank
             // is gone, so the field would now always be 0 — worse than absent,
             // because a column of zeros in an export looks like a broken
@@ -39833,15 +40581,15 @@ const TUT = [
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
-  { ch: 'FLIP', title: 'REDS', line: 'A red devolves you by a cube you can spare and pays you 5 seconds. A single has none to spare — so the red takes 5 seconds instead.',   // [290926n] every level now · [061026h] the toll
+  { ch: 'FLIP', title: 'REDS', line: `A red devolves you by a cube you can spare and pays you ${RED_PAYS_SEC} seconds. A single has none to spare — so the red takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [290926n] every level now · [061026h] the toll
     showClock: true,
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,2': 'red', '4,1': 'red' }, clock: 40 },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'red', cube: [4, 2], to: [[3, 2]], type: 'single', sec: 5, say: '−1 CUBE → +5s' },
             { k: 'flip', dir: 'NE', to: [[4, 1]] }, { k: 'redtoll', cube: [4, 1], toll: 5, say: 'NO CUBE TO SPARE · −5s' } ] },
-  { ch: 'TURN', title: 'SHIFTERS', line: 'A step shifter pushes you, a turn shifter swings you. Shifters never cost a cube — once used, each recharges (the ring) and comes back set a new way.',   // [071026x]
+  { ch: 'TURN', title: 'SHIFTERS', line: 'Stop on a shifter for a second and it fires: a step pushes you, a turn swings you. Flip straight over one and it doesn\u2019t. Once used, each recharges (the ring) and comes back set a new way.',   // [071026x] · [081026v]
     init: { body: { cells: [[0, 3], [1, 3]], type: 'pair', par: 0 }, tiles: { '1,2': 'slip', '4,2': 'pivot' } },
-    acts: [ { k: 'flip', dir: 'N', to: [[0, 2], [1, 2]] }, { k: 'push', trig: [1, 2], vec: [1, 0], to: [[1, 2], [2, 2]] },
-            { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'turn', trig: [4, 2], ccw: false, to: [[4, 1], [4, 2]] }, { k: 'wait' } ] },
+    acts: [ { k: 'flip', dir: 'N', to: [[0, 2], [1, 2]] }, { k: 'wait', d: 1000 }, { k: 'push', trig: [1, 2], vec: [1, 0], to: [[1, 2], [2, 2]] },
+            { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'wait', d: 1000 }, { k: 'turn', trig: [4, 2], ccw: false, to: [[4, 1], [4, 2]] }, { k: 'wait' } ] },   // [081026v] a second on each before it fires
   { ch: 'TURN', title: 'MOVE GUIDE', line: 'Tap the compass, bottom left. After a beat the way to the set lights up, one move at a time — even for a diagonal.',   // [290926r] · [290926y] a diagonal pair
     guideBtn: true,
     init: { body: { cells: [[0, 3], [1, 2]], type: 'diagonal', par: 0 }, sets: [{ type: 'diagonal', cells: [[4, 2], [5, 3]] }] },

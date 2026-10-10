@@ -7839,6 +7839,14 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 101026-1200: THE ISLAND IN REACH. playdata79 (Jake, 11:57, on 1049: "i am pleased with this version of the game"): level 3
+// took 322 s, and its fourth piece came 263 s after the third — 1049's own rebuild of the unseen rows put it there.
+// · [101026n] REBUILT GROUND DEALS NO SETS: the rows rebuilt for a new level ([101026k]) were built after the new set was
+//   dealt, so the builder seated a piece of it on one of its own islands 20–50 rows above the view (pair-H, 2½ minutes of
+//   scroll away). Level 3's island rule then took that far island for the level's own and never built the near one; and
+//   since the island's piece is dealt nowhere else, the level waited for the far one to scroll down. Rebuilt rows now
+//   seat no set pieces (islands keep their green and hourglass; a tunnel's end pays its hourglass), and level 3 counts
+//   only its own island: any other copy of its piece bows out as the level opens.
 // 101026-1049: NO CARD. Jake, 10:13 (day screenshot): the white box goes and the grid grows; the jaws sound in the last 10 s;
 // two praise lines go; why level 3's second pair came late and why levels 2 and 3 felt the same; one rule for time penalties.
 // · [101026g] NO CARD: the frame round the HUD, the board and the stick draws nothing (both themes). The board spans the
@@ -8648,7 +8656,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101026-1049 ROTOЯ · NO CARD';
+const BUILD_VERSION = '101026-1200 ROTOЯ · THE ISLAND IN REACH';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -17789,7 +17797,7 @@ function startLevelIsland() {
     if (!pool.length) return;
     const id = pool[(Math.random() * pool.length) | 0];
     game._isle3 = { id, since: nowPlay(), lastTry: -1e9, placed: 0 };
-    for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.id === id && !sl.onIsland) sl.retiring = performance.now();   // one left over from level 2 bows out: this piece is the island's
+    for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.id === id && !sl.levelIsle) sl.retiring = performance.now();   // one left over from level 2 bows out: this piece is the island's · [101026n] any copy but the level's own island, a far island's too
     levelIslandTick(true);
 }
 /* ══ [101026j] AN ISLAND THAT HAS GONE PAST IS REPLACED THAT SECOND — Jake, 10 Oct, 10:13: "it took a long time for the 2nd
@@ -17805,7 +17813,7 @@ function levelIslandTick(force) {
     if (!R) return;
     if (advancedRound !== ISLAND_SET_LEVEL || !setNeeded.includes(R.id)) { game._isle3 = null; return; }
     if (!force && (!game.running || game.paused || game.celebrating || game.introHold)) return;
-    const _live = slots.find(s => s.id === R.id && !s.claimed && !s.retiring && s.onIsland);
+    const _live = slots.find(s => s.id === R.id && !s.claimed && !s.retiring && s.levelIsle);   // [101026n] the level's own island, not one the builder made
     if (_live) {
         const _bot = Math.floor(game.cameraY) + VIEW_H - 1;   // the last row a cube can stand on
         if (!(ISLE_REBUILD_BELOW && _live.cells.some(c => c.y > _bot))) return;   // it is out there
@@ -17898,7 +17906,7 @@ function carveIslandSet(y, safeZoneEnd) {
        set and no maze is stamped over it. If seating it would leave no cell
        for the green, it is undone: an island without the fare home is a cage,
        and a set piece does not change that. */
-    if (pw >= 2 && ph >= 2 && typeof setNeeded !== 'undefined' && setNeeded.length && advancedRound >= ISLAND_SET_FROM &&   // [300926j] from level 3
+    if (pw >= 2 && ph >= 2 && typeof setNeeded !== 'undefined' && setNeeded.length && advancedRound >= ISLAND_SET_FROM && !_regenQuiet &&   // [300926j] from level 3 · [101026n] not in rebuilt rows
         slots.filter(s => !s.claimed).length < 6) {
         const target = pickWeightedNeededTarget();
         if (target) {
@@ -18420,7 +18428,7 @@ function generateChunkInner(fromY, toY) {
                         // down there, and going for it costs me my options" —
                         // rather than a sweetener.
                         let placed = false;
-                        if (setNeeded.length && Math.random() < 0.5)
+                        if (setNeeded.length && Math.random() < 0.5 && !_regenQuiet)   // [101026n] not in rebuilt rows
                             placed = trySpawnSlot([y]);
                         if (!placed) {
                             const x = cands[(Math.random() * cands.length) | 0];
@@ -18779,6 +18787,11 @@ function ensureWorldGenerated(cameraY) {
    The coverage count for the level is left as it was.
    LEVEL_TERRAIN_NOW = false puts back the old delay. */
 const LEVEL_TERRAIN_NOW = true;
+/* [101026n] ...AND DEALS NO SETS. The rebuild runs after the new level's set is dealt, so the builder seated pieces of it on
+   its own islands and tunnel ends 20–50 rows above the view — minutes of scroll away, and on level 3 it took the island
+   piece (playdata79: the fourth piece 263 s after the third). While it rebuilds, no set piece is seated; islands keep their
+   green and hourglass, and a tunnel's end pays its hourglass. Rows built later in the level deal as before. */
+let _regenQuiet = false;
 function regenUnseenTerrain() {
     if (!LEVEL_TERRAIN_NOW || dailyMode || game.testDrive) return 0;
     const cut = Math.min(Math.floor(game.cameraY) - 3, -OPENING_ROWS.length - 1);   // the first row rebuilt
@@ -18793,7 +18806,8 @@ function regenUnseenTerrain() {
     const _cg = game.cellsGenerated, _rr = game._rowsThisRound;
     worldGenY = cut;
     genMode = 'barrier'; genRowsRemaining = 0; genIslandCooldown = 0;   // the next section is a cavern, dealt by this level
-    ensureWorldGenerated(game.cameraY);
+    _regenQuiet = true;
+    try { ensureWorldGenerated(game.cameraY); } finally { _regenQuiet = false; }   // [101026n] no set pieces in rebuilt rows
     game.cellsGenerated = _cg; game._rowsThisRound = _rr;
     rec('terrain', { r: advancedRound, from: cut, rows });
     return rows;

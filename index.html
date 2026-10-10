@@ -4068,6 +4068,26 @@ body.x3d .set-band-icons .set-slot svg { filter: drop-shadow(0 2px 0 var(--x3d-s
    the text ... i dont like it"). Every text-shadow in the game is off, glows included; the clock and the words keep
    their colours and their flashes of colour. Delete this block (and set TEXT_GLOWS = true) to put the glows back. */
 *, *::before, *::after { text-shadow: none !important; }
+/* ══ [101026g] NO CARD — designer's call, 10 Oct, 10:13: "remove the white box that houses the hud, the game play grid and
+   the joystick, keep these assets as they are position wise just remove the white box and then enlarge the gameplay grid
+   as much as you can keeping just the thinnest of white canvas between the grid edge and the edge of the screen."
+   The frame round the HUD, the board and the stick draws nothing now — no fill, edge or shadow, in either theme (night's
+   dark card goes too, so the two themes keep one layout). In the stacked play screen the frame also gives up its side
+   padding, its edge and its 560 px ceiling and spans the page, so the board runs to within the page's own 4 px of each
+   side of a phone (bounded by height on a short phone or a tablet, as before). To find the height for it: the frame's
+   foot comes down from 68 px to 54 px above the bottom of the screen and loses its 4 px of padding (the stick still ends above the tops of the two
+   bottom corner buttons, even slid right for a tip), and the room under the HUD from 13 px to 4 px (with the frame's
+   8 px gap, the HUD stands 11 px clear of the board — the same as the board stands clear of the stick). The HUD keeps
+   its place on top and its width matched to the board's (fitHudToBoard); the stick keeps its size and sits under the
+   board. Measured at 390 x 844: board 357 → 382 px, HUD top unmoved at 78. The sideways layouts keep their geometry.
+   Delete this block to put the card back. */
+.game-container, body.theme-day .game-container, body:not(.theme-day) .game-container {
+    background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+body.in-play:not(.layout-land):not(.layout-beside) { --frame-gap-bottom: 54px; }
+body.x3d.in-play:not(.layout-land):not(.layout-beside) .set-only-hud { margin-bottom: 4px; }
+body:not(.layout-land):not(.layout-beside) .game-container {
+    width: 100%; max-width: none; padding-left: 0 !important; padding-right: 0 !important; padding-bottom: 0 !important;
+    border-left-width: 0; border-right-width: 0; }
 </style>
 </head>
 <body>
@@ -7819,6 +7839,27 @@ body.x3d .set-band-icons .set-slot svg { filter: drop-shadow(0 2px 0 var(--x3d-s
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 101026-1049: NO CARD. Jake, 10:13 (day screenshot): the white box goes and the grid grows; the jaws sound in the last 10 s;
+// two praise lines go; why level 3's second pair came late and why levels 2 and 3 felt the same; one rule for time penalties.
+// · [101026g] NO CARD: the frame round the HUD, the board and the stick draws nothing (both themes). The board spans the
+//   page to within 4 px of each side of a phone: 357 → 381 px at 390 × 844, 267 → 284 at 375 × 667, 395 → 422 at 430 × 932,
+//   538 → 585 on an iPad held upright. The HUD keeps its place on top; the stick keeps its size, under the board.
+// · [101026h] THE JAWS SOUND IN THE LAST 10 SECONDS: the warning beat that closes in at the bottom edge also plays while
+//   the clock runs under 10 s — slow at 10, running together at 0, louder as it goes. The 10 s klaxon and the ticks stay.
+// · [101026i] GROWING INTO IT and FLIP. TURN. FIT. leave the level card.
+// · [101026j] THE ISLAND COMES BACK AT ONCE: level 3's island piece was held for its island; when the island went past the
+//   bottom of the screen untaken, a new one could not be built until the old one was cleared 2 rows further down, and the
+//   new one was built up to 8 rows above the view — 144 s between islands in this morning's run. Now the moment the
+//   island's set goes below the bottom row it bows out and the next island is built above the view, that second.
+// · [101026k] A LEVEL'S GROUND ARRIVES WITH THE LEVEL: the board is built 50 rows ahead, so each level's ground (tunnel
+//   and cavern lengths, barriers, islands, reds) arrived about four levels late. At each new level the rows nobody has
+//   seen yet (more than two rows above the view, after level 1's hand-built opening) are built again to that level's settings.
+// · [101026l] LEVEL 3 ASKS FOR FOUR: a single, a tricky single and a pair each way, one pair on an island (it was the same
+//   three pieces as level 2). The door says NEW: A SET ON AN ISLAND. Counts run 3,3,4,4,5,5,6,6,6,6.
+// · [101026m] ONE RULE FOR A MISTAKE: 15 s (losing your last cube 20 s), plus 5 s for each mistake already made in the
+//   level, never more than 30 s. A refused flip (nowhere to go) is 5 s, not a mistake, once a second at most. Level 1's
+//   lost cubes are free and the door says so. Was 15–36 s × the level (×1 → ×2) × 1½ per mistake: up to 120 s. On the
+//   nine recorded runs since the stepped prices, mistakes cost 968 s; under this rule 470 s, none over 30.
 // 101026-0917: 880 FROM THE LANDING. Jake, 09:05 (with playdata78): "whys there a question mark next to the 'how to play'
 // text on the welcome page? remove it. ensure that 880 ms is the delay that takes effect when a player cube lands on a move
 // or turn shifter befire anything happens."
@@ -8607,7 +8648,7 @@ body.x3d .set-band-icons .set-slot svg { filter: drop-shadow(0 2px 0 var(--x3d-s
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101026-0917 ROTOЯ · 880 FROM THE LANDING';
+const BUILD_VERSION = '101026-1049 ROTOЯ · NO CARD';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -9738,7 +9779,26 @@ const TIME_PRICE_MUL = (() => {
     return 3;
 })();
 function timePrice(sec) { return TIME_PRICES_BITE ? Math.round(sec * TIME_PRICE_MUL) : sec; }
-const FALL_COST_SEC = timePrice(10);   // [081026d] 10 × the price dial
+/* ══ [101026m] ONE RULE FOR WHAT A MISTAKE COSTS — designer's call, 10 Oct, 10:13: "look at the time penalties ... and apply
+   a logical formula to this that seems reasonable and transparent to the player, use your best judgement, anything more
+   than 30 second penalty does seem to be harsh also maybe the more minor penalties need to be bumped up so that the range
+   isnt so extreme across the board". THE RULE, as the player is told it:
+
+        a mistake costs 15 s — losing your last cube costs 20 s;
+        each mistake you have already made in the level adds 5 s;
+        no mistake costs more than 30 s, and a new level starts the count again.
+
+   The mistakes: losing your last cube; a red with no cube to spare (landed on, or dragged onto — the same 15 s, where a
+   drag cost 36 and a tap 15); a single pushed by a step shifter onto a set it does not fit (was 30). On level 1 losing your last
+   cube is free (the door says so; it was free "while spinning up", which the door did not say). A refused flip — deep in a
+   hole with nowhere to go — is not a mistake: a flat 5 s (was 2), charged at most once a second, not counted.
+   Was: 15–36 s × the level's step (×1 at level 1 to ×2 at level 10) × 1½ for each mistake already made — a fall cost 30,
+   45, 60 s at level 1 and 60, 90, 120 s at level 10. Replayed on the nine recorded runs since those prices (8 Oct, 17:51
+   to this morning): 968 s of mistakes become 470 s; the dearest was 73 s, now 30. MISTAKE_RULE = false puts back the old
+   prices and the dials. */
+const MISTAKE_RULE = true;
+const MISTAKE_SEC = 15, MISTAKE_LAST_CUBE_SEC = 20, MISTAKE_STEP_SEC = 5, MISTAKE_CAP_SEC = 30, REFUSAL_SEC = 5, REFUSAL_EVERY_MS = 1000;
+const FALL_COST_SEC = MISTAKE_RULE ? MISTAKE_LAST_CUBE_SEC : timePrice(10);   // [081026d] 10 × the price dial · [101026m] 20
 /* ══ [081026P] THE PRICE OF A MISTAKE STEPS UP — designer's call, 8 Oct, 17:51 ════════════════════════════════════
    "use time penalties to be the reason for running out of time and therefore the game ending; review the time
    penalties and ratchet them up with a logical-sounding formula." THE FORMULA:
@@ -9768,6 +9828,7 @@ let PENALTY_RATCHET = (() => {
 function penaltyNext(base) {   // what a mistake of this price costs right now, before it is paid
     const L = Math.max(1, Math.min(10, (typeof advancedRound !== 'undefined' && advancedRound) || 1));
     const m = (typeof game !== 'undefined' && game && game._levelMistakes) || 0;
+    if (MISTAKE_RULE) return Math.min(MISTAKE_CAP_SEC, base + MISTAKE_STEP_SEC * m);   // [101026m] +5 s a mistake, 30 s at most
     return Math.round(base * (1 + PENALTY_RAMP * (L - 1) / 9) * (1 + PENALTY_RATCHET * m));
 }
 // [300726as] What a completed level GRANTS. It used to be the full ring
@@ -13355,7 +13416,12 @@ function composeSetByBudget(budget, round) {
            one level later; level 3 asks what level 2 asked, under the tighter
            clock — a consolidation level, not a repeat. Counts now run
            3,3,3,4,5,5,6,6,6,6. One line to put it back. */
-        case 3:  picks = [St(), P('H'), P('V')]; break;
+        /* [101026l] FOUR AT LEVEL 3 AGAIN — Jake, 10 Oct, 10:13: "how is level 3 different to level 2, they seem to be
+           identical, the difficulty levels need to be different at least or what is the point?" They asked for the same
+           three pieces. Level 3 now asks for four: a single, a tricky single, and a pair each way — one of the pairs on
+           an island. This puts back the step the 25 Sep call above took out; counts run 3,3,4,4,5,5,6,6,6,6.
+           [St(), P('H'), P('V')] is the line to put it back. */
+        case 3:  picks = [S(), St(), P('H'), P('V')]; break;
         case 4:  picks = [S(), St(), P(), D()]; break;
         case 5:  picks = [S(), St(), P('H'), P('V'), D()]; break;
         case 6:  picks = [S(), St(), P(), D(), J()]; break;
@@ -15586,7 +15652,7 @@ const WALLS_AS_HOLES = true;
 const NO_REDS = true;
 const RED_TOOL_LEVEL = 6;   // [280926u] from this level the red comes back as a tool
 const RED_PAYS_SEC = 5;     // [280926u] what a red pays for each cube it takes
-const RED_TOLL_SEC = timePrice(5);   // [081026d] what a red takes from a single instead — a price, so it bites; the pay above does not
+const RED_TOLL_SEC = MISTAKE_RULE ? MISTAKE_SEC : timePrice(5);   // [081026d] · [101026m] what a red takes from a single instead — a price, so it bites; the pay above does not
 function redToolOn() { return !RED_POPULATION && !dailyMode && advancedRound >= RED_TOOL_LEVEL; }   // [290926i] superseded by the population
 /* ══ [290926i] REDS, AT EVERY LEVEL, ONE OR TWO ON SCREEN ════════════════════
    Designer's call, agreed 29 Sep: reds stay, present on every level, one or two
@@ -17726,12 +17792,27 @@ function startLevelIsland() {
     for (const sl of slots) if (!sl.claimed && !sl.retiring && sl.id === id && !sl.onIsland) sl.retiring = performance.now();   // one left over from level 2 bows out: this piece is the island's
     levelIslandTick(true);
 }
+/* ══ [101026j] AN ISLAND THAT HAS GONE PAST IS REPLACED THAT SECOND — Jake, 10 Oct, 10:13: "it took a long time for the 2nd
+   pair 'set to collect' to appear on the grid on level 3, why?" The island's piece is dealt to its island and nowhere else,
+   and a new island was only built once the old set had left the board — two rows BELOW the screen, where nobody can reach
+   it — and then as far as eight rows above the view. In this morning's run (0718) the first island was made as level 3
+   opened and the second 144 s later; the pair was taken 4 minutes into the level. A set is out of reach the moment any of
+   its cells is below the bottom row, so that is when it now bows out and the next island is built — over ground not yet
+   seen, as before. ISLE_REBUILD_BELOW = false puts back the wait. */
+const ISLE_REBUILD_BELOW = true;
 function levelIslandTick(force) {
     const R = game._isle3;
     if (!R) return;
     if (advancedRound !== ISLAND_SET_LEVEL || !setNeeded.includes(R.id)) { game._isle3 = null; return; }
     if (!force && (!game.running || game.paused || game.celebrating || game.introHold)) return;
-    if (slots.some(s => s.id === R.id && !s.claimed && !s.retiring && s.onIsland)) return;   // it is out there
+    const _live = slots.find(s => s.id === R.id && !s.claimed && !s.retiring && s.onIsland);
+    if (_live) {
+        const _bot = Math.floor(game.cameraY) + VIEW_H - 1;   // the last row a cube can stand on
+        if (!(ISLE_REBUILD_BELOW && _live.cells.some(c => c.y > _bot))) return;   // it is out there
+        _live.retiring = performance.now();   // gone past: it bows out...
+        rec('island', { k: 'behind', r: advancedRound, id: R.id });
+        R.since = nowPlay(); R.lastTry = -1e9; force = true;   // ...and the next is built now
+    }
     const now = nowPlay();
     if (!force && now - R.lastTry < 1000) return;
     R.lastTry = now;
@@ -18687,6 +18768,35 @@ function breachSealedPockets(fromY, toY) {
 function ensureWorldGenerated(cameraY) {
     const needed = Math.floor(cameraY) - 50;
     if (worldGenY > needed) generateChunk(worldGenY, needed);
+}
+/* ══ [101026k] A LEVEL'S GROUND ARRIVES WITH THE LEVEL — Jake, 10 Oct, 10:13: "how is level 3 different to level 2, they
+   seem to be identical, the difficulty levels need to be different". One reason they were: the board is built 50 rows
+   ahead of the view, and each row is built to the settings of the level being played WHEN IT IS BUILT. At about 8 s a row
+   a level lasts 11–20 rows, so a level's own ground — its caverns and tunnels, barriers, islands, reds — reached the
+   screen three or four levels after it began. At each new level the rows nobody has seen yet are built again to that
+   level's settings: everything more than two rows above the view, except level 1's hand-built opening (its first 40
+   rows), which is kept (the seam row may be tidied, as when the next row was first built). Nothing on screen changes.
+   The coverage count for the level is left as it was.
+   LEVEL_TERRAIN_NOW = false puts back the old delay. */
+const LEVEL_TERRAIN_NOW = true;
+function regenUnseenTerrain() {
+    if (!LEVEL_TERRAIN_NOW || dailyMode || game.testDrive) return 0;
+    const cut = Math.min(Math.floor(game.cameraY) - 3, -OPENING_ROWS.length - 1);   // the first row rebuilt
+    if (!(worldGenY < cut)) return 0;   // nothing built above it yet
+    const gone = k => +k.slice(k.indexOf(',') + 1) <= cut;
+    for (const o of [world, shifterMeta, hazardBorn, hazardGone]) for (const k of Object.keys(o)) if (gone(k)) delete o[k];
+    for (const S of [islandCells, edgeWalls, pendingWalls, bridgeRemainders]) for (const k of [...S]) if (gone(k)) S.delete(k);
+    for (const k of [...voidPending.keys()]) if (gone(k)) voidPending.delete(k);
+    for (let i = slots.length - 1; i >= 0; i--) if ([...slots[i].keys].some(gone)) slots.splice(i, 1);
+    rowPay = rowPay.filter(e => !(e.y <= cut));
+    const rows = cut - worldGenY;
+    const _cg = game.cellsGenerated, _rr = game._rowsThisRound;
+    worldGenY = cut;
+    genMode = 'barrier'; genRowsRemaining = 0; genIslandCooldown = 0;   // the next section is a cavern, dealt by this level
+    ensureWorldGenerated(game.cameraY);
+    game.cellsGenerated = _cg; game._rowsThisRound = _rr;
+    rec('terrain', { r: advancedRound, from: cut, rows });
+    return rows;
 }
 
 // ============ THEME (day / night) ============
@@ -21516,6 +21626,8 @@ const ROUND_NEW = (() => {
     // type, so the diff above cannot see it. Set explicitly, and last, so it
     // wins if round 9 ever also debuts a type.
     out[9] = 'NEW: TWO HARD SINGLES';
+    if (!out[ISLAND_SET_LEVEL]) out[ISLAND_SET_LEVEL] = 'NEW: A SET ON AN ISLAND';   // [101026l] the level's own new thing, said
+    if (typeof MISTAKE_RULE !== 'undefined' && MISTAKE_RULE && !out[2]) out[2] = `LOSE YOUR LAST CUBE \u00b7 \u2212${FALL_COST_SEC}s`;   // [101026m] from level 2 it costs
     return out;
 })();
 
@@ -22845,7 +22957,7 @@ function updateOverlayMission() {
    and keep their overlaps. */
 const CELEBRATION_POOLS = {
     1:  ['A FLIPPING, FLYING START!', 'OFF AND ROLLING', 'FIRST ONE DOWN'],
-    2:  ['EVOLVING AND REVOLVING', 'GROWING INTO IT', 'TWO AND CLIMBING'],
+    2:  ['EVOLVING AND REVOLVING', 'TWO AND CLIMBING'],   // [101026i] GROWING INTO IT cut — designer's call, 10 Oct
     3:  ['FLIPPING FABULOUS', 'SMOOTH MOVES'],   // [071026u] NOT A WASTED TURN cut — designer's call, 7 Oct: it did not say anything a player could read
     4:  ['IN GREAT SHAPE', 'SHAPING UP NICELY', 'FOUR DOWN, STILL FLIPPING', 'FLIPPING GOOD FORM'],
     5:  ['THE SHAPE OF THINGS TO COME', 'HALFWAY AND FLYING', 'FIVE DOWN, STILL TURNING'],
@@ -22899,7 +23011,11 @@ function dealLine(key, pool) {
    loses its own. The tagline keeps its full stops: FLIP. TURN. FIT. is the brand line as written. */
 for (let r = 1; r <= 10; r++) if (CELEBRATION_POOLS[r]) CELEBRATION_POOLS[r] = CELEBRATION_POOLS[r].map(l => /[!?.]$/.test(l) ? l : l + '!');
 const BRAND_LINE = 'FLIP. TURN. FIT.';
-for (let r = 1; r <= 9; r++) if (CELEBRATION_POOLS[r] && !CELEBRATION_POOLS[r].includes(BRAND_LINE)) CELEBRATION_POOLS[r].push(BRAND_LINE);
+/* [101026i] OFF THE LEVEL CARD — designer's call, 10 Oct, 10:13: "Remove 'growing into it' and the game's 3 word summary
+   positioning as an inter level encouragement." The tagline stays the game's own line (welcome page, share card); it is no
+   longer dealt as praise. BRAND_ON_CARD = true puts it back in the pools. */
+const BRAND_ON_CARD = false;
+if (BRAND_ON_CARD) for (let r = 1; r <= 9; r++) if (CELEBRATION_POOLS[r] && !CELEBRATION_POOLS[r].includes(BRAND_LINE)) CELEBRATION_POOLS[r].push(BRAND_LINE);
 let _lastCelebration = null;
 /* ══ [091026b] THAT WAS CLOSE — designer's call, 9 Oct, 10:43 ═════════════════════════════════════════════
    "when the player narrowly misses death by getting the final set or completing the level just in time we need
@@ -23357,7 +23473,7 @@ function showRoundOverlay(roundNum, instant = false) {
        infer from the board is what losing the body costs. Stated once, on the
        door every run opens on, in the price's own variable so it cannot drift. */
     if (nu) nu.textContent = endlessDepth > 0 ? ('ENDLESS ' + endlessDepth)
-                           : roundNum === 1 ? `LOSE YOUR LAST CUBE · −${FALL_COST_SEC}s`
+                           : roundNum === 1 ? (MISTAKE_RULE ? 'LOSE YOUR LAST CUBE \u00b7 FREE ON LEVEL 1' : `LOSE YOUR LAST CUBE · −${FALL_COST_SEC}s`)   // [101026m] what is true
                            : (ROUND_NEW[roundNum] || '');
     // [220826c] THE LEVEL BONUS MOVED TO THE SCORECARD. It is now an itemised
     // row on the tally, which is where the rest of the level's earnings are
@@ -24894,6 +25010,7 @@ function completeSet() {
             game.coverage = 0;
             game._rowsThisRound = new Set();   // [160826t] fresh ledger of this round's ground
             resetSetTracker();
+            regenUnseenTerrain();   // [101026k] this level's ground, from the first row nobody has seen
             startLevelIsland();   // [300926j] the island first, so its piece is not dealt elsewhere
             seedSlotsAtTop();
             // Slots are seeded after the player is placed — make sure none landed
@@ -25810,7 +25927,7 @@ const INVULN_DURATION = 1500;       // ms of invulnerability after respawn
    is the cue — a single's flip into a hole is refused: shaken, tipped,
    recorded as refuse:hole with grace:1. One window, one look, and the rule
    itself is untouched once the ghosting ends. */
-const RESPAWN_TIME_PENALTY = 10;    // seconds added to speedTimer on death
+// [101026m] RESPAWN_TIME_PENALTY (10 s) was declared here and charged nowhere; gone. A lost last cube pays FALL_COST_SEC.
 let lives = MAX_LIVES;
 let invulnTimer = 0;                // ms remaining
 
@@ -26970,12 +27087,12 @@ function handleDeath(reason = 'death') {
         why: reason,
         s: game.shapeType,
         lv: lives,
-        g: game.spinUp ? 1 : 0,
+        g: (MISTAKE_RULE ? advancedRound <= 1 : game.spinUp) ? 1 : 0,   // [101026m]
         r: advancedRound,
         cov: Math.round(game.coverage || 0),
         y: Math.round(game.playerY - game.cameraY)   // height on screen: top-out vs bottom-out
     });
-    if (game.spinUp) {
+    if (MISTAKE_RULE ? advancedRound <= 1 : game.spinUp) {   // [101026m] level 1, as the door says (was: until the clock first reached 90)
         game._rotorStumble = performance.now();
         /* [250926ad] THE FORGIVEN FALL SAYS SO. The level-1 door states the
            price (−10s), and then a level-1 fall costs nothing, silently: four of
@@ -26984,7 +27101,7 @@ function handleDeath(reason = 'death') {
            charged fall's float — what happened, then what it cost. */
         if (CLOCK_ONLY)
             addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34,
-                     `${DEATH_LINE[reason] || DEATH_LINE.death}\nFREE WHILE SPINNING UP`,
+                     `${DEATH_LINE[reason] || DEATH_LINE.death}\n${MISTAKE_RULE ? 'FREE ON LEVEL 1' : 'FREE WHILE SPINNING UP'}`,
                      '#f87171', true, { life: 2400, hold: 1400 });
         captureSnapshot('✧ grace');
         respawnPlayer();
@@ -27165,7 +27282,7 @@ function redBump(dir, probeCells, redIdx) {
     {
         const rc = probeCells[redIdx[0]];
         HAPTICS.fire(HAPTIC.red, 120);   // [060826m]
-        bumpCost(RED_BURN_COST_SEC, rc.x * CELL + CELL/2, (rc.y - game.cameraY) * CELL);
+        bumpCost(RED_BURN_COST_SEC, rc.x * CELL + CELL/2, (rc.y - game.cameraY) * CELL, 'penalty', 'red');   // [101026m] the red's price, as a tap pays
     }
     startFlip(dir, getPlayerCells(), game.faceParity, true);   // repel bounce
     triggerShake(3, 90);
@@ -27206,7 +27323,7 @@ function topLawfulRow() { return Math.ceil(game.cameraY); }
 // nothing is lost in information — only in permanent cost. Careless contact
 // now bleeds a couple of seconds instead: reversible, and it feeds the
 // resource the game is actually about.
-const BUMP_COST_SEC = 2;
+const BUMP_COST_SEC = MISTAKE_RULE ? REFUSAL_SEC : 2;   // [101026m] a refused flip: 5 s, once a second at most
 /* ── [100926g] THE CLOCK PAYS FIRST ─────────────────────────────────────────
    Field note: time should be a currency in both directions, and "everything
    should happen automatically rather than an extra option for the player to
@@ -27389,14 +27506,15 @@ function shedOnLanding(landing, hitIdx, label, dir) {
 // charge, because that is a thing the player did once and deliberately.
 function refusalCost() {
     const now = performance.now();
-    if (now - (game._refusalChargedT || 0) < DENY_REPEAT_MS) return;
+    if (now - (game._refusalChargedT || 0) < (MISTAKE_RULE ? REFUSAL_EVERY_MS : DENY_REPEAT_MS)) return;   // [101026m] 5 s, once a second
     game._refusalChargedT = now;
-    bumpCost();
+    bumpCost(BUMP_COST_SEC, null, null, 'penalty', 'bump');
 }
 // [300726bb] A step shifter that shoves you over the edge. Sits between the
 // 2s frame bump and the 15s red: worse than brushing a wall, not as bad as
 // meeting the damage object, and foreseeable — the arrow is on the cell.
-const SHIFT_OOB_COST_SEC = timePrice(10);   // [081026d]
+const SHIFT_OOB_COST_SEC = MISTAKE_RULE ? MISTAKE_SEC : timePrice(10);   // [081026d] · [101026m]
+const SET_PUSH_SEC = SHIFT_OOB_COST_SEC;   // [101026m] a single pushed onto a set it does not fit
 // [300726bc] A single BURNS through a red: the red is destroyed and the move
 // completes, for 10s. Replaces the old 15s bounce, which left the red standing
 // and the board more blocked than before the player touched it.
@@ -27427,7 +27545,7 @@ const SHIFT_OOB_COST_SEC = timePrice(10);   // [081026d]
    help. And a red is not a punishment: the trim pays 3, and the supply system
    plants one NEXT TO YOU when you need to shed cubes. You do not guarantee a
    supply of punishments. ───────────────────────────────────────────────────── */
-const TRIM_COST_SEC = timePrice(12);   // [081026d] the red burn's price (RED_BURN_COST_SEC)
+const TRIM_COST_SEC = MISTAKE_RULE ? MISTAKE_SEC : timePrice(12);   // [081026d] the red burn's price (RED_BURN_COST_SEC) · [101026m] a red is 15, tapped or dragged
 const RED_BURN_COST_SEC = TRIM_COST_SEC;
 /* [HOLES] Now the same constant as a red — see TRIM_COST_SEC above. It briefly
    had its own value, set by feel rather than by any argument, which is how the
@@ -27473,7 +27591,7 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty',
     const _base = sec;   // [081026P] what kind of cost it is is read off its base price, before any step
     {
         const k = src ? src : sec === TRIM_COST_SEC ? 'trim' : (typeof SHIFT_OOB_COST_SEC !== 'undefined' && sec === SHIFT_OOB_COST_SEC) ? 'push' : sec === FALL_COST_SEC ? 'fall' : null;
-        if (kind === 'penalty' && (k === 'fall' || k === 'red' || k === 'trim' || k === 'push')) {   // a mistake: it steps
+        if (kind === 'penalty' && (k === 'fall' || k === 'red' || k === 'trim' || k === 'push' || k === 'set')) {   // a mistake: it steps · [101026m] 'set'
             sec = penaltyNext(sec);
             game._levelMistakes = (game._levelMistakes || 0) + 1;
             if (sec > _base) showTip('ratchet');
@@ -27499,7 +27617,7 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty',
                   : _base === BUMP_COST_SEC ? 'bump' : 'other';
     rec('cost', { sec, src: costSrc, m: Math.round(momentumRemaining()) });
     // [100926f] the replay's caption for this move — a trade states its own line at the caller
-    if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'RESTART  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : costSrc === 'red' ? 'NO CUBE TO SPARE  ' : ''}−${sec}s`, '#f87171');   // [061026h]
+    if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'RESTART  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : costSrc === 'set' ? 'WRONG SET  ' : costSrc === 'red' ? 'NO CUBE TO SPARE  ' : ''}−${sec}s`, '#f87171');   // [061026h]
     // [300726s] Announce a heavy loss the same way a gain is announced, but
     // inverted: hazard red instead of mint, FALLING instead of rising. No new
     // glyph to learn — it reads as the visible opposite of "+ 20 SECONDS".
@@ -28013,7 +28131,7 @@ function move(dir) {
                    paid and what came back. */
                 bumpCost(VOID_BURN_COST_SEC,
                          probeCells[vIdx[0]].x * CELL + CELL/2,
-                         (probeCells[vIdx[0]].y - game.cameraY) * CELL, 'trade');
+                         (probeCells[vIdx[0]].y - game.cameraY) * CELL, 'trade', 'ground');
                 addFloat(probeCells[vIdx[0]].x * CELL + CELL/2, (probeCells[vIdx[0]].y - game.cameraY) * CELL - 14,
                          `−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
                 tapeNote(`−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
@@ -28042,7 +28160,7 @@ function move(dir) {
                     addBurst(rc.x * CELL + CELL/2, (rc.y - game.cameraY) * CELL + CELL/2, '#ef4444');
                 }
                 const at = probeCells[redIdx[0]];
-                bumpCost(RED_BURN_COST_SEC, at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL);
+                bumpCost(RED_BURN_COST_SEC, at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL, 'penalty', 'red');
                 triggerShake(5, 200);
                 if (sfx.devolve) sfx.devolve();
                 // The move itself proceeds: the cell is floor now.
@@ -28935,10 +29053,10 @@ function checkCollisions() {
                         burned++; at = c;
                     }
                     if (burned && !game.testDrive)
-                        bumpCost(RED_BURN_COST_SEC, at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL);
+                        bumpCost(RED_BURN_COST_SEC, at.x * CELL + CELL/2, (at.y - game.cameraY) * CELL, 'penalty', 'red');
                     else if (hitWall && !game.testDrive)
                         bumpCost(SHIFT_OOB_COST_SEC, wallAt.x * CELL + CELL/2,
-                                 (wallAt.y - game.cameraY) * CELL);
+                                 (wallAt.y - game.cameraY) * CELL, 'penalty', 'push');
                 }
                 denialRecoil(null);
                 scoreGain(2, false);   // engaged a mechanism
@@ -28967,7 +29085,7 @@ function checkCollisions() {
             // takes and lands the rest — classifyShiftPush, see slotOffenders.
             if (game.shapeType === 'single' && slotMisfitAt(newCells)) {
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
-                if (PUSH_SET_SHEDS && !game.testDrive) bumpCost(SHIFT_OOB_COST_SEC, triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL);   // [091026g] no cube to give: the push price
+                if (PUSH_SET_SHEDS && !game.testDrive) bumpCost(SET_PUSH_SEC, triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL, 'penalty', 'set');   // [091026g] no cube to give: the push price · [101026m] named
                 denialRecoil({ dx: v.dx, dy: v.dy });   // [270726x] v = this slip's vector
                 triggerShake(3, 90);
                 HAPTICS.fire(HAPTIC.bump);   // [060826m]
@@ -28999,7 +29117,7 @@ function checkCollisions() {
                         HAPTICS.fire(HAPTIC.oob);   // [060826m] pushed off the board
                         bumpCost(SHIFT_OOB_COST_SEC,
                                  triggerCell.x * CELL + CELL/2,
-                                 (triggerCell.y - game.cameraY) * CELL);
+                                 (triggerCell.y - game.cameraY) * CELL, 'penalty', 'push');
                     }
                 }
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
@@ -30521,7 +30639,7 @@ function applyImpactDevolve(hitIndices, label) {
         if (momentumRemaining() - cost >= CLOCK_SHIELD_FLOOR) {
             const c0 = pc[hitIndices[0]] || pc[0];
             const sx = c0.x * CELL + CELL / 2, sy = (c0.y - game.cameraY) * CELL;
-            bumpCost(cost, sx, sy, 'trade');                 // the exchange chime; no red fall, no shake
+            bumpCost(cost, sx, sy, 'trade', 'shield');       // the exchange chime; no red fall, no shake
             game._refusalChargedT = performance.now();       // the shield IS the charge — no 2s bump on top
             addFloat(sx, sy - 6, `−${cost}s`, '#f87171');
             game._keptFlash = { cells: hitIndices.map(i => pc[i]).filter(Boolean), t0: performance.now() };
@@ -32006,7 +32124,7 @@ function computeShifterPreviewFor(aim) {
     // stops exactly where the real resolution would: denial, trim, or five.
     const poses = [], swept = [];   // [SWEEP] holes the turn links will lay
     const spent = new Set();        // [SWEEP] machines this walk has fired
-    let lost = [], denial = false, oob = false;
+    let lost = [], denial = false, oob = false, setCost = false;
     let bodyCells = landed, cfg = landedConfig, trg = trigger;
     for (let link = 0; link < 5 && trg; link++) {
         const mKey = `${trg.x},${trg.y}`;
@@ -32044,7 +32162,7 @@ function computeShifterPreviewFor(aim) {
             const v = slipVectorOf(meta);
             const hop = slipHop(bodyCells, v, meta);  // [120926i] · [081026J]
             const pushed = bodyCells.map(c => ({ x: c.x + v.dx * hop, y: c.y + v.dy * hop }));
-            if (game.shapeType === 'single' && slotMisfitAt(pushed)) { if (!poses.length) denial = true; break; }   // [260926n]
+            if (game.shapeType === 'single' && slotMisfitAt(pushed)) { if (!poses.length) { denial = true; setCost = !!PUSH_SET_SHEDS; } break; }   // [260926n] · [101026m] the price it will cost
             const push = classifyShiftPush(pushed);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
             if (push.trim) {
@@ -32083,7 +32201,7 @@ function computeShifterPreviewFor(aim) {
         gold = slots.some(sl => !sl.claimed && !sl.retiring &&
             sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
     }
-    return { poses, lost, swept, denial, oob, shifterKey: tKey, shifterCell: trigger, gold,
+    return { poses, lost, swept, denial, oob, setCost, shifterKey: tKey, shifterCell: trigger, gold,
              firstKind: item };   // [180826u] what the first machine was — the tricky-move filter needs it
 }
 
@@ -32118,6 +32236,11 @@ function drawShifterPreview() {
             // The socket gate would refuse: the tool is spent, nothing moves. A
             // red ring on the shifter itself — same refusal language as bad flips.
             drawRouteGhost([p.shifterCell], '#ef4444', 0.55 * pulse, false);
+            if (p.setCost) {   // [101026m] a single pushed onto the wrong set pays this — said before it happens
+                ctx.save(); ctx.globalAlpha = pulse; ctx.fillStyle = '#ef4444'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText(`\u2212${penaltyNext(SET_PUSH_SEC)}s`, p.shifterCell.x * CELL + CELL / 2, (p.shifterCell.y - game.cameraY) * CELL - 6);
+                ctx.restore();
+            }
             continue;
         }
         // [170826e] Intermediate poses faint, the final pose full — a train
@@ -32131,7 +32254,7 @@ function drawShifterPreview() {
         if (p.lost.length)
             drawRouteGhost(p.lost, '#ef4444', 0.5 * pulse, false);
         if (p.swept && p.swept.length) drawSweptPreview(p.swept, pulse);   // [SWEEP]
-        if (p.oob) {
+        if (p.oob && !MISTAKE_RULE) {   // [101026m] cubes over the side cost cubes, not seconds: the red ghosts say it
             ctx.save();
             ctx.globalAlpha = pulse;
             ctx.fillStyle = '#ef4444';
@@ -33556,8 +33679,8 @@ const TIPS = {
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
     trim:      'Too big? Cover the whole set \u2014 the cubes on it go in.',   // [100926h] · [290926q]
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
-    ratchet:   'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P]
+    onecube:   MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
+    ratchet:   MISTAKE_RULE ? `A mistake costs ${MISTAKE_SEC} seconds (your last cube ${MISTAKE_LAST_CUBE_SEC}), and ${MISTAKE_STEP_SEC} more for each one before it in the level \u2014 never more than ${MISTAKE_CAP_SEC}.` : 'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P] · [101026m]
     redtoll:   `A red can\u2019t take your last cube, so it takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [061026h]
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
     misfit:    'Land on part of a set and it takes the cube that touched it. Cover all of it, or match it.',   // [260926k] · [290926q]
@@ -34960,7 +35083,23 @@ function heartBeat(dz) {
    edge line and the body's red glow still read dangerLevel() as before. */
 const HEART_EDGE_ONLY = true;
 const HEART_ROWS = 2;
-function heartDanger() {
+/* ══ [101026h] AND THE LAST TEN SECONDS — designer's call, 10 Oct, 10:13: "I think imminent death sound ('jaws' sound a
+   like) should also include the last 10 seconds on the clock as well." The beat now hears the clock as well as the edge:
+   while the clock is running and shows 10 s or less it plays as it does two rows from the bottom — slow at 10 s (about
+   1.3 s between beats), quickening, and running together as the clock reaches 0, louder all the way. The nearer danger
+   sets the pace when both are live. It is silent while the clock stands still (a level door, a set landing, the death
+   replay, a pause) and when the clock climbs back over 10. The 10-second klaxon and the ticks are unchanged.
+   HEART_CLOCK_SEC = 0 puts the beat back on the edge alone. */
+const HEART_CLOCK_SEC = 10;
+function heartClockDanger() {
+    if (!HEART_CLOCK_SEC || !CLOCK_ONLY || !game.running || game.paused || game.testDrive || game.introHold || game._deathHold || game._replay || game.celebrating) return 0;
+    if (!(game._drainAt && performance.now() - game._drainAt < 200)) return 0;   // the clock is standing still
+    const r = LEVEL_TIME_LIMIT - game.speedTimer;
+    if (!(r > 0 && r <= HEART_CLOCK_SEC)) return 0;
+    return Math.max(0.12, Math.min(1, 0.12 + 0.88 * (HEART_CLOCK_SEC - r) / HEART_CLOCK_SEC));
+}
+function heartDanger() { return Math.max(heartEdgeDanger(), heartClockDanger()); }
+function heartEdgeDanger() {
     if (!game.running || game.paused || game.testDrive) return 0;
     const cells = getPlayerCells();
     if (!cells.length) return 0;
@@ -37456,6 +37595,7 @@ function loop(time, gen) {
     // the LEVEL 1 door is opaque for 4400ms and the clock used to run behind it.
     if (!game.testDrive && !game.introHold && !(game._hitstopUntil && performance.now() < game._hitstopUntil)) {   // [090926d] the clock holds with the world
         game.speedTimer += (dt / 1000) * timerMul * CLOCK_DRAIN;   // [081026I] the clock runs 1.2 to the second
+        game._drainAt = performance.now();   // [101026h] the clock is running — the last-10-seconds beat listens for it
         // [070926d] Seconds the clock has actually DRAINED this run. Wall-clock
         // is not it: level doors, tally cards, pauses and bullet time all stop or
         // slow the clock, and in playdata22 that gap was 53 of 146 seconds — the

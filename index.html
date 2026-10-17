@@ -4068,6 +4068,10 @@ body.x3d .set-band-icons .set-slot svg { filter: drop-shadow(0 2px 0 var(--x3d-s
    the text ... i dont like it"). Every text-shadow in the game is off, glows included; the clock and the words keep
    their colours and their flashes of colour. Delete this block (and set TEXT_GLOWS = true) to put the glows back. */
 *, *::before, *::after { text-shadow: none !important; }
+/* [171026c] no page pull, bounce or zoom during a run — on the root as well as the body (Safari reads the root's) */
+html, body { overscroll-behavior: none; }
+body.in-play { touch-action: none; }
+body.in-play .settings-card, body.in-play .level-tally, body.in-play .screen-overlay { touch-action: pan-y; }
 /* ══ [101026g] NO CARD — designer's call, 10 Oct, 10:13: "remove the white box that houses the hud, the game play grid and
    the joystick, keep these assets as they are position wise just remove the white box and then enlarge the gameplay grid
    as much as you can keeping just the thinnest of white canvas between the grid edge and the edge of the screen."
@@ -7839,6 +7843,42 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 171026-1447: CLEAN SWEEP. Jake, 17 Oct, 09:28, with playdata 80–82 (three runs on 1200, levels 5, 6 and 8): one rule for a wrong set; shifters
+// destroy sets too, with a destroy animation; a last cube into a hole pays; the rebirth in colour; new ground earns shifters; a
+// step coming back aims at the nearest hole; the day rings see-through.
+// · [171026d] ONE RULE FOR A WRONG SET: the cubes that land on a set they do not fit are destroyed and the rest carry on — and
+//   now when none are left (a single, always) that is the last cube lost, priced as one (20 s, free on level 1), where the
+//   flip used to be refused for nothing. The set stays. The tips that still said "cover all of it" now say exact fit.
+// · [171026e] A SHIFTER DESTROYS SETS TOO: a set the body is carried over or onto goes, even one it fits exactly (Jake: "destroy
+//   it too"); its piece is dealt again further up. No push claims a set, no step is planted to push into one, the guide never
+//   routes a push through one, and a double neither aims at nor stops for one.
+// · [171026f] THE DESTROY ANIMATION: what a shifter destroys flashes white, rings out and breaks into eight shards of its own
+//   colour that spin and drop as they fade (600 ms), with a glassy crack.
+// · [171026g] YOUR LAST CUBE INTO A HOLE MAKES GROUND AND PAYS: 3 s a hole, a free restart on it, not counted as a mistake
+//   (Jake: "Earn, and no penalty"). 3 s because a bot diving as fast as it can loses 4.4 s of clock a dive: at 3 it cannot farm.
+// · [171026h] THE REBIRTH IN EVERY COLOUR: the ring, the rays, the countdown (with five motes circling) and the GO rings are
+//   the five bodies' colours run round a turning wheel.
+// · [171026i] NEW GROUND EARNS SHIFTERS: every 3 cells of new ground earn one, laid on the newest of them once the body is two
+//   cells clear — a step at the nearest hole on its lines, or a turn — within the board's ceiling, at most 2 owed.
+// · [171026j] A STEP COMING BACK AIMS AT THE NEAREST HOLE, two arrows whenever a double can travel there.
+// · [171026k] THE DAY RINGS: the white alternates by section, 80% / 50% / 72% edge inward, so the depths show between the
+//   rings again; the cube still stands out from the ground (ΔE 17.4; 12.8 on 1200).
+// 171026-0903: CLEAR PATH. Jake, 15 and 17 Oct: shifters destroy what they touch; the day board whiter than the cube; the
+// game restarting, mostly on level 4.
+// · [171026a] A SHIFTER CLEARS ITS PATH: every hourglass, shifter, green and red a step or a turn moves the body over or onto
+//   is destroyed as the body reaches it — nothing paid, nothing grown, no second shifter fired. Holes are still laid as ground.
+//   The tile that did the moving is untouched, and so is anything the body already stood on. Each thing is still drawn
+//   until the body reaches it, then bursts. So a push no longer starts a train, and an hourglass on a turn's arc is no
+//   longer collected. A double step is no longer stopped after one by an asset on its way: it carries the body through
+//   (a hole, a wall, a set or the edge still stop it). The move guide and the push preview plan one shifter at a time.
+// · [171026b] THE DAY GROUND, WHITER: an empty day cell is filled white at 80% inside its ring (it was open onto the blue
+//   depths). Measured on one frozen board: the cell's lightness L* 75 → 93, its colour 27 → 7; the cube against it ΔE 12.8 → 17.6;
+//   a hole (L* 88) now reads deeper than the ground round it, where before it was the lighter of the two.
+// · [171026c] THE PLAY SCREEN IS THE GAME'S: during a run no swipe can scroll, pull or zoom the page (a swipe that began on
+//   the HUD or the margin could pull Safari's page down to reload it), and a run that vanishes without ending — the page
+//   reloaded, closed or killed — is written into its own record at the next load: its level, its clock, whether the page
+//   was hidden, and how the page came back (reload, fresh open, back). The run is saved whenever the page goes out of sight,
+//   so what was played up to then is kept too.
 // 101026-1200: THE ISLAND IN REACH. playdata79 (Jake, 11:57, on 1049: "i am pleased with this version of the game"): level 3
 // took 322 s, and its fourth piece came 263 s after the third — 1049's own rebuild of the unseen rows put it there.
 // · [101026n] REBUILT GROUND DEALS NO SETS: the rows rebuilt for a new level ([101026k]) were built after the new set was
@@ -8656,7 +8696,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101026-1200 ROTOЯ · THE ISLAND IN REACH';
+const BUILD_VERSION = '171026-1447 ROTOЯ · CLEAN SWEEP';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -9273,6 +9313,63 @@ function drawSparks() {
     });
 }
 
+/* ══ [171026f] A DESTROYED THING SHATTERS — designer's call, 17 Oct: "A suitable 'destroy animation' needs to be created
+   to represent this" (a shifter destroying what it touches). Three rings of a burst said "something happened here"; they did
+   not say "this was smashed". Now, as the body reaches it, the thing flashes white and swells, a ring of its colour runs out,
+   and it breaks into eight shards of its own colour that fly out, spin and drop as they fade, with four white glints thrown
+   faster — 600 ms, with a short glassy crack (once a landing, however many go). Every asset a shifter destroys goes this way:
+   an hourglass in its orange, a green, a red, a shifter in steel blue, and every cell of a set in the set's colour. The
+   shards ride the board as it scrolls. SHATTER_FX = false puts back the bursts. */
+const SHATTER_FX = true, SHATTER_MS = 600;
+let shatters = [];
+function addShatter(x, y, col, kind) {   // x, y: board cells
+    const shards = [], n = 8, base = Math.random() * Math.PI * 2;
+    for (let i = 0; i < n; i++) {
+        const a = base + i * Math.PI * 2 / n + (Math.random() - 0.5) * 0.5, sp = 1.5 + Math.random() * 1.6;
+        shards.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.8, r0: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 14,
+                      s: 0.13 + Math.random() * 0.12, p: [Math.random() * 0.4, Math.random() * 0.4, Math.random() * 0.4] });
+    }
+    const glints = [];
+    for (let i = 0; i < 4; i++) { const a = Math.random() * Math.PI * 2, sp = 2.6 + Math.random() * 1.6; glints.push({ vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1 }); }
+    shatters.push({ x, y, col, kind, t0: performance.now(), shards, glints });
+}
+let _shatterSoundAt = -1e9;
+function shatterSound() {
+    const now = performance.now();
+    if (now - _shatterSoundAt < 70) return;
+    _shatterSoundAt = now;
+    if (sfx.shatter) sfx.shatter();
+}
+function drawShatters() {
+    if (!shatters.length) return;
+    const now = performance.now();
+    shatters = shatters.filter(s => now - s.t0 < SHATTER_MS);
+    for (const s of shatters) {
+        const el = now - s.t0; if (el < 0) continue;
+        const k = el / SHATTER_MS, t = el / 1000;
+        const cx = s.x * CELL + CELL / 2, cy = (s.y - game.cameraY) * CELL + CELL / 2;
+        ctx.save();
+        if (k < 0.22) {   // the flash: white, swelling
+            const z = CELL * (0.72 + 0.5 * k);
+            ctx.globalAlpha = 0.9 * (1 - k / 0.22);
+            roundedSq(cx - z / 2, cy - z / 2, z, '#ffffff', null);
+        }
+        ctx.globalAlpha = 0.75 * (1 - k); ctx.strokeStyle = s.col; ctx.lineWidth = 3 * (1 - k) + 0.6;   // the ring
+        ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.3 + 0.95 * (1 - Math.pow(1 - k, 3))), 0, Math.PI * 2); ctx.stroke();
+        const fade = Math.max(0, 1 - k * k);
+        for (const p of s.shards) {   // the shards: out, spinning, dropping
+            const px = cx + p.vx * t * CELL, py = cy + (p.vy * t + 2.2 * t * t) * CELL, z = p.s * CELL * (1 - 0.35 * k);
+            ctx.save(); ctx.translate(px, py); ctx.rotate(p.r0 + p.vr * t);
+            ctx.globalAlpha = fade; ctx.fillStyle = s.col;
+            ctx.beginPath(); ctx.moveTo(-z, -z * (0.6 + p.p[0])); ctx.lineTo(z * (0.7 + p.p[1]), -z * 0.3); ctx.lineTo(z * 0.2, z * (0.7 + p.p[2])); ctx.closePath(); ctx.fill();
+            ctx.globalAlpha = fade * 0.55; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.restore();
+        }
+        ctx.fillStyle = '#ffffff';
+        for (const g of s.glints) { ctx.globalAlpha = Math.max(0, 1 - k * 1.4); ctx.fillRect(cx + g.vx * t * CELL - 1.5, cy + (g.vy * t + 2.2 * t * t) * CELL - 1.5, 3, 3); }
+        ctx.restore();
+    }
+}
 function drawBursts() {
     const now = Date.now();
     bursts = bursts.filter(b => {
@@ -9806,7 +9903,18 @@ function timePrice(sec) { return TIME_PRICES_BITE ? Math.round(sec * TIME_PRICE_
    prices and the dials. */
 const MISTAKE_RULE = true;
 const MISTAKE_SEC = 15, MISTAKE_LAST_CUBE_SEC = 20, MISTAKE_STEP_SEC = 5, MISTAKE_CAP_SEC = 30, REFUSAL_SEC = 5, REFUSAL_EVERY_MS = 1000;
-const FALL_COST_SEC = MISTAKE_RULE ? MISTAKE_LAST_CUBE_SEC : timePrice(10);   // [081026d] 10 × the price dial · [101026m] 20
+const FALL_COST_SEC = MISTAKE_RULE ? MISTAKE_LAST_CUBE_SEC : timePrice(10);
+/* ══ [171026g] YOUR LAST CUBE INTO A HOLE MAKES GROUND, AND IT PAYS — designer's call, 17 Oct: "Check what a single cube pays
+   for landing in the void area, it needs to pay something for doing this". It paid nothing and cost the most: the hole
+   became ground, the piece started again on it, and the clock was charged a lost last cube — 20 s, then 25 and 30 for later
+   mistakes in the level (free on level 1). In playdata 82 that happened five times, 20 or 25 s each. Asked whether it should
+   earn, earn with no penalty, or cost more: "Earn, and no penalty". THE RULE: a last cube (or a whole body) that goes into a
+   hole is not a mistake. Each hole it fills pays GROUND_PAY_SEC, the restart is free, and it does not count toward the next
+   mistake's price. Why 3 s and not more: measured with a bot that does nothing but dive a single into holes as fast as the
+   game allows (soak/farm.js), each dive and restart takes 4.4 s off the clock; at 3 s a dive still loses about 1.4 s, so a
+   single cannot farm a hole for time, and at 5 s it could. Losing your last cube any other way (the wrong set, the bottom of
+   the board, trapped) is priced as before. HOLE_LAST_PAYS = false puts back the charge. */
+const HOLE_LAST_PAYS = true, GROUND_PAY_SEC = 3;   // [081026d] 10 × the price dial · [101026m] 20
 /* ══ [081026P] THE PRICE OF A MISTAKE STEPS UP — designer's call, 8 Oct, 17:51 ════════════════════════════════════
    "use time penalties to be the reason for running out of time and therefore the game ending; review the time
    penalties and ratchet them up with a logical-sounding formula." THE FORMULA:
@@ -10637,6 +10745,8 @@ function bestSlipDir(x, y, prefer, live = true) {
    offer or a join that has to deliver, a lesson) is a single — the plan counted one. It is drawn as two arrows, one after the other ([081026K]); it
    shuffles through both when it changes ([081026w]); two ratchet clicks, rising, as it travels; the first double on
    the board brings a tip. STEP_GEARS = false: every step pushes one, as before. */
+const SHIFTER_CLEARS = true;   // [171026a] a shifter clears its path — the rule is written where it acts, at sweepLay
+const SHIFTER_CLEARS_SETS = true;   // [171026e] ...sets to collect too — see shifterDestroySet
 const STEP_GEARS = true; let STEP_GEAR2_SHARE = 0.6;   // a let, so a test can set the share
 function gearOf(meta) { return (STEP_GEARS && meta && meta.gear === 2) ? 2 : 1; }
 function stepGearHop(cells, v) {   // 2 if the way is clear for every cube, else 1
@@ -10646,11 +10756,11 @@ function stepGearHop(cells, v) {   // 2 if the way is clear for every cube, else
         const a = { x: c.x + v.dx, y: c.y + v.dy }, ka = `${a.x},${a.y}`;
         if (!own.has(ka)) {   // the cell it passes over: clear floor, nothing on it
             if (a.x < 0 || a.x >= VIEW_W || a.y < top || a.y > bot) return 1;
-            if (world[ka]) return 1;
-            if (slots.some(sl => sl.keys && sl.keys.has(ka))) return 1;
+            if (world[ka] && !(SHIFTER_CLEARS && clearableAsset(world[ka]))) return 1;   // [171026a] an asset there goes; a hole or a wall stops it
+            if (slots.some(sl => sl.keys && sl.keys.has(ka) && !(SHIFTER_CLEARS_SETS && !sl.claimed && !sl.retiring))) return 1;   // [171026e] a live set there goes
         }
         const sb = slipBlockedAt({ x: c.x + 2 * v.dx, y: c.y + 2 * v.dy }, top, bot);
-        if (sb === 'edge' || sb === 'solid') return 1;   // the far cell: a wall, a red or the edge stops it after one
+        if (sb === 'edge' || (sb === 'solid' && !(SHIFTER_CLEARS && world[`${c.x + 2 * v.dx},${c.y + 2 * v.dy}`] === 'hazard'))) return 1;   // the far cell: a wall or the edge stops it after one · [171026a] a red goes
     }
     return 2;
 }
@@ -10664,7 +10774,7 @@ const DOUBLE_NEEDS_AIM = true, DOUBLE_REACH = 6;
 function doubleAims(x, y, dir) {
     const v = SLIP_VECTORS[dir] || SLIP_VECTORS[0];
     const live = new Set();
-    for (const sl of (typeof slots !== 'undefined' ? slots : [])) if (!sl.claimed && !sl.retiring && (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) for (const k of sl.keys) live.add(k);
+    if (!SHIFTER_CLEARS_SETS) for (const sl of (typeof slots !== 'undefined' ? slots : [])) if (!sl.claimed && !sl.retiring && (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) for (const k of sl.keys) live.add(k);   // [171026e] holes only
     for (let d = 1; d <= DOUBLE_REACH; d++) { const k = `${x + v.dx * d},${y + v.dy * d}`; if (live.has(k) || world[k] === 'void') return true; }
     return false;
 }
@@ -12491,6 +12601,11 @@ const sfx = {
         [N.C5, N.E5, N.G5, N.C6, N.E6].forEach((n, i) => t(n, 8500 + i * 40, 1.4, i === 4 ? M : E));
         t(N.C4, 8500, 1.5, E * 0.8, WAVE.ui);
     },
+    shatter: () => {   // [171026f] glass going: a bright falling scrape and two tinkles
+        playSweep(2400, 700, 0.09, 'square', VOL.ui * 0.28);
+        playTone(NOTE.E6, 0.05, WAVE.peril, VOL.ui * 0.45);
+        setTimeout(() => playTone(NOTE.A6, 0.04, 'sine', VOL.ui * 0.35), 45);
+    },
     crack: () => {
         playTone(NOTE.C6, 0.03, WAVE.peril, VOL.ui * 0.9);
         setTimeout(() => playTone(NOTE.G5, 0.035, WAVE.peril, VOL.ui), 55);
@@ -12545,10 +12660,10 @@ const sfx = {
         setTimeout(() => { bell(b, 0.62, VOL.event * G); playTone(b / 4, 0.5, 'sine', VOL.ui * 0.9 * G); }, 210);   // "done", with its root under it
     },
     // [peril → reward · event] [091026h] THE RESPAWN, TOLD — lost, paid, another chance; the go ends the hold.
-    respawnTale: () => {
+    respawnTale: (free) => {
         const B = RESPAWN_TALE;
         if (sfx.lifeLoss) sfx.lifeLoss();                                                   // LOST: the stumble, A4 → E4
-        [NOTE.E5, NOTE.D5, NOTE.C5, NOTE.A4].forEach((f, i) => setTimeout(() => {           // PAID: the clock counted out
+        (free ? [NOTE.A4, NOTE.C5, NOTE.D5, NOTE.E5] : [NOTE.E5, NOTE.D5, NOTE.C5, NOTE.A4]).forEach((f, i) => setTimeout(() => {           // PAID: the clock counted out · [171026g] or, free, counted in
             playTone(f, 0.05, WAVE.ui, VOL.ui * 0.95); playTone(f / 2, 0.04, 'triangle', VOL.ui * 0.35); }, B.paid + i * 85));
         [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6].forEach((f, i) => setTimeout(() => {           // ANOTHER CHANCE: up, into a shimmer
             playTone(f, i === 3 ? 0.55 : 0.16, WAVE.reward, VOL.event * (0.55 + 0.1 * i)); playTone(f * 2, 0.1, 'sine', VOL.ui * 0.22); }, B.chance + i * 60));
@@ -14096,6 +14211,7 @@ function maroonBridgePlan(region) {
                 if (!pose) continue;
                 const land = pose.land.map(o => ({ x: T.x + o.dx, y: T.y + o.dy }));
                 if (land.some(c => bad(c.x, c.y)) || slotMisfitAt(land)) continue;
+                if (SHIFTER_CLEARS_SETS && (cellsTouchSet(land) || pose.swept.some(o => cellsTouchSet([{ x: T.x + o.dx, y: T.y + o.dy }])))) continue;   // [171026e] a bridge that would sweep a set away is no bridge
                 let lays = 0, north = 0;
                 for (const o of pose.swept) {
                     const x = T.x + o.dx, y = T.y + o.dy;
@@ -14584,7 +14700,7 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // shape beside the slot gets pushed home — the preview shows it
             // gold, the claim pays the x1.5 combo. Once per level, ~40% of
             // eligible placements, so it stays an event rather than a routine.
-            if (!game._comboSeeded && type !== 'single' &&
+            if (!SHIFTER_CLEARS_SETS && !game._comboSeeded && type !== 'single' &&   // [171026e] no step planted to push into a set
                 target.difficulty !== 'tricky' && Math.random() < 0.4) {
                 const vs = [...SLIP_VECTORS.keys()];
                 shuffleInPlace(vs);
@@ -14933,6 +15049,7 @@ function exitToWelcome() {
                      cov: Math.round(game.coverage || 0), tr: game.transforms,
                      rv: game.revolves || 0 });   // [210826u]
         recPersist();
+        aliveClear();   // [171026c]
     }
     hideLevelCard();
     if (scrubbing) exitScrub();
@@ -16715,6 +16832,61 @@ function drawUnderworld(camInt, camFrac) {
 let persistentFills = new Set();
 let bridgeRemainders = new Set();   // [090926b] void cells beside a fill — a half-built bridge, exempt from the 2×2 tidy
 let voidsFilled = 0;
+/* ══ [171026i] NEW GROUND EARNS SHIFTERS — designer's call, 17 Oct: "Where new occupied ground has been created new shifters
+   should be allowed to spawn, please come with a logical formula for how this might work." Ground made from a hole never
+   got a shifter: the ambient spawns keep three cells clear of the body, and the body is always beside the ground it has just
+   made. THE FORMULA: every GROUND_PER_SHIFTER (3) cells of new ground — a hole filled by anything: a cube shed into it, a
+   last cube, a step's push, a turn's sweep, the green store — earn one shifter, laid on the newest of those cells still on
+   the board once the body is two cells clear of it (the row payout's distance) and no other shifter or green is beside it.
+   It is a STEP aimed at the nearest hole on one of its eight lines, two arrows when it can travel there ([171026j]); with
+   no hole on a line, a TURN. It counts toward the board's shifters and takes one place of headroom over the ceiling of
+   three, like the island's question; with the board full it waits. At most GROUND_OWED_MAX (2) are owed at once, so the
+   credit cannot pile up. Why 3: the three runs of playdata 82 made 2.5 to 4.3 cells of new ground a minute, so this adds
+   about one shifter a minute to the three a minute the rows and offers already lay — and a shifter that fills a hole makes
+   one cell or two, so the ground it makes earns less than a shifter back: the loop dies away rather than feeding itself.
+   GROUND_SHIFTERS = false: none. */
+const GROUND_SHIFTERS = true, GROUND_PER_SHIFTER = 3, GROUND_OWED_MAX = 2;
+let groundCells = 0, groundOwed = 0;
+const groundQueue = [];
+function noteNewGround(x, y) {
+    if (!GROUND_SHIFTERS || typeof game === 'undefined' || !game.running || game.testDrive || game._replay) return;
+    groundQueue.push({ x, y }); if (groundQueue.length > 16) groundQueue.shift();
+    if (++groundCells >= GROUND_PER_SHIFTER) { groundCells -= GROUND_PER_SHIFTER; groundOwed = Math.min(GROUND_OWED_MAX, groundOwed + 1); }
+}
+function groundShifterTick(nowT) {
+    if (!GROUND_SHIFTERS || !groundOwed || game.testDrive || game._replay || !game.running || game.paused || game.celebrating || game.introHold) return;
+    if (nowT < (game._nextGroundForge || 0)) return;
+    game._nextGroundForge = nowT + 700;
+    if (countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING + 1) return;   // the board is full: it waits
+    const ci = Math.floor(game.cameraY);
+    for (let i = groundQueue.length - 1; i >= 0; i--) {
+        const g = groundQueue[i], k = `${g.x},${g.y}`;
+        if (g.y < ci || g.y > ci + VIEW_H - 1 || world[k] || !machineCellOk(g.x, g.y)) { groundQueue.splice(i, 1); continue; }   // gone past, built on, or on the frame
+        if (voidPending.has(k) && voidPending.get(k) > nowT) continue;                  // not surfaced yet
+        if (slots.some(sl => !sl.claimed && !sl.retiring && sl.keys.has(k))) continue;
+        if (!clearOfPlayer(g.x, g.y, 1) || nearAnyShifter(g.x, g.y)) continue;        // two cells clear of the body; nothing on top of another
+        const nv = nearestVoidDir(g.x, g.y);
+        let kind;
+        if (nv && !nv.off) {
+            kind = 'slip';
+            world[k] = 'slip'; shifterMeta[k] = { spawnTime: nowT, dir: nv.dir, gear: 1, ground: true };
+            if (!regenAimStep(shifterMeta[k], g.x, g.y)) shifterMeta[k].dir = bestSlipDir(g.x, g.y, nv.dir);
+            if (shifterMeta[k].gear === 2) showTip('gear');
+        } else {
+            kind = 'pivot';
+            const tn = rollTurnSize(), sp = nextTurnSpin(tn);
+            world[k] = 'pivot'; shifterMeta[k] = { spawnTime: nowT, dir: sp, turns: tn, ground: true };
+            noteTurnSpin(sp, tn);
+        }
+        groundQueue.splice(i, 1); groundOwed--;
+        game._lastShifterAt = nowT;
+        const fx = g.x * CELL + CELL / 2, fy = (g.y - game.cameraY) * CELL + CELL / 2;
+        addSparks(fx, fy, 8, '#7dd3fc'); addBurst(fx, fy, SHIFTER_FAMILY_COLOR);
+        rec('spawn', { k: kind, src: 'ground', ...(kind === 'slip' ? { d: shifterMeta[k].dir, g: shifterMeta[k].gear } : { tn: shifterMeta[k].turns }), owed: groundOwed, v: countMachinesInView() });
+        try { _routeField.sig = null; routeCache.sig = null; } catch (e) {}
+        return;
+    }
+}
 function fillVoid(x, y, showIn = 0, plugColor = null) {   // [280926t] plugColor: a stone surfaces green   // [280926d] showIn: the hole stays drawn this long — the cube has to be seen to go in first
     const k = `${x},${y}`;
     if (world[k] !== 'void') return false;
@@ -16722,6 +16894,7 @@ function fillVoid(x, y, showIn = 0, plugColor = null) {   // [280926t] plugColor
     if (showIn > 0) voidPending.set(k, performance.now() + showIn);
     persistentFills.add(k);
     voidsFilled++;
+    noteNewGround(x, y);   // [171026i]
     /* [090926b] ONE CUBE, ONE CELL — the 2×2 tidy must not finish your bridge.
        Field note: a single shed cube covered more than one void cell. That was
        the per-frame minimum-hole rule closing over the remainder of a hole once
@@ -19544,6 +19717,52 @@ function stepUsefulDirs(x, y) {
     for (let i = 0; i < SLIP_VECTORS.length; i++) { const v = SLIP_VECTORS[i]; if (!slipBlockedAt({ x: x + v.dx, y: y + v.dy }, top, bot)) out.push(i); }
     return out;
 }
+/* ══ [171026j] A STEP COMING BACK AIMS AT THE NEAREST HOLE, TWO ARROWS WHEN IT CAN — designer's call, 17 Oct: "When shifters
+   are regenerating, any arrow / move shifters should be in the direction of the nearest void and use more double arrows than
+   single arrows." When a used tile recharges and comes back as a step (its kind is still dealt by the tile's tally,
+   [091026n]), it points at the nearest hole: along its eight lines first — the nearest hole a push can reach, straight in
+   before a corner — or, with none on a line, toward the nearest hole on the board. It comes back DOUBLE whenever a double
+   can travel there: the hole two or more cells away and the way to it clear (an asset on the way does not count — it would
+   be destroyed). Only a hole right beside it, or a way a double cannot travel, gives a single. With no hole on the board it
+   keeps the tally's aim. Steps laid on new ground ([171026i]) are aimed the same way. REGEN_STEPS_AIM = false puts back
+   the tally's aim and the ordinary gear deal. */
+const REGEN_STEPS_AIM = true;
+function nearestVoidDir(x, y) {   // { dir, d, off }: off = no hole on any of the eight lines, so the nearest hole's bearing
+    const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    let best = null;
+    for (let i = 0; i < SLIP_VECTORS.length; i++) {
+        const v = SLIP_VECTORS[i];
+        for (let d = 1; d <= VIEW_H; d++) {
+            const cx = x + v.dx * d, cy = y + v.dy * d;
+            if (cx < 0 || cx >= VIEW_W || cy < top || cy > bot) break;
+            const w = world[`${cx},${cy}`];
+            if (w === 'void') { if (!best || d < best.d || (d === best.d && i % 2 === 0 && best.dir % 2 === 1)) best = { dir: i, d }; break; }
+            if (w === 'wall') break;
+        }
+    }
+    if (best) return best;
+    let nb = null;
+    for (let yy = top; yy <= bot; yy++) for (let xx = 0; xx < VIEW_W; xx++)
+        if (world[`${xx},${yy}`] === 'void') { const d = Math.max(Math.abs(xx - x), Math.abs(yy - y)); if (!nb || d < nb.d) nb = { x: xx, y: yy, d }; }
+    if (!nb) return null;
+    const ang = Math.atan2(nb.y - y, nb.x - x);
+    let bi = 0, bd = 1e9;
+    for (let i = 0; i < SLIP_VECTORS.length; i++) {
+        const v = SLIP_VECTORS[i], a = Math.atan2(v.dy, v.dx);
+        const dd = Math.abs(((ang - a + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+        if (dd < bd) { bd = dd; bi = i; }
+    }
+    return { dir: bi, d: nb.d, off: true };
+}
+function regenAimStep(m, x, y) {   // true when it was aimed
+    const nv = nearestVoidDir(x, y);
+    if (!nv) return false;
+    const v = SLIP_VECTORS[nv.dir];
+    if (slipBlockedAt({ x: x + v.dx, y: y + v.dy }, topLawfulRow(), Math.floor(game.cameraY) + VIEW_H - 1) === 'edge') return false;   // never at the frame
+    m.dir = nv.dir;
+    if (STEP_GEARS) m.gear = (STEP_GEAR2_SHARE > 0 && nv.d >= 2 && stepGearHop([{ x, y }], v) === 2) ? 2 : 1;   // the doubles dial at 0: none
+    return true;
+}
 function redealStep(m, x, y) {
     const ok = stepUsefulDirs(x, y), cur = m.dir;
     if (!Array.isArray(m.seen)) m.seen = [];
@@ -19592,6 +19811,7 @@ function shifterRotationTick() {   // every frame: a tile whose ring has just fi
         let w2 = w;
         if (SHIFTER_SWAP) { w2 = redealShifter(m, x, y, w); if (w2 !== w) world[k] = w2; if (w2 === 'slip' && m.gear === 2) showTip('gear'); }   // [091026n]
         else if (w === 'pivot') redealTurn(m); else { redealStep(m, x, y); if (STEP_GEARS) { m.gear = dealGear(x, y, m.dir); if (m.gear === 2) showTip('gear'); } }   // [081026J] the gear is dealt again too
+        if (REGEN_STEPS_AIM && w2 === 'slip' && regenAimStep(m, x, y) && m.gear === 2) showTip('gear');   // [171026j] at the nearest hole, two arrows when it can
         const after = w2 === 'pivot' ? turnCardOf(m) : m.dir + '/' + gearOf(m);
         if (after !== before || w2 !== w) { m.redealtAt = now; m.redealFrom = w; try { rec('rotate', { k: w, nk: w2, from: before, to: after, xy: k }); } catch (e) {} }
     }
@@ -20360,6 +20580,7 @@ function bridgePlan() {
                 // arm that dropped lays nothing (see the handler's trim branch).
                 const land = pose.land.map(o => ({ x: T.x + o.dx, y: T.y + o.dy }));
                 if (land.some(c => bad(c.x, c.y)) || slotMisfitAt(land)) continue;
+                if (SHIFTER_CLEARS_SETS && (cellsTouchSet(land) || pose.swept.some(o => cellsTouchSet([{ x: T.x + o.dx, y: T.y + o.dy }])))) continue;   // [171026e] a bridge that would sweep a set away is no bridge
                 let lays = 0;
                 for (const o of pose.swept) {
                     const x = T.x + o.dx, y = T.y + o.dy;
@@ -20825,6 +21046,7 @@ function spawnShifter(src, atKey) {
         for (const key of sample) {
             const parts = key.split(','), cx = +parts[0], cy = +parts[1];
             if (kind === 'slip') {
+                const _nv = SHIFTER_CLEARS_SETS ? nearestVoidDir(cx, cy) : null;   // [171026e] at the nearest hole, never into a set
                 for (let vi = 0; vi < 8; vi++) {
                     if (!stepAimOk(cx, cy, vi)) continue;   // [071026p] beside a hole, only the aims at it
                     const v = SLIP_VECTORS[vi];
@@ -20843,7 +21065,8 @@ function spawnShifter(src, atKey) {
                            one that would simply drop you in is close to the
                            worst. */
                         if (w2 === 'void') s += vaultAhead(cx, cy, v) ? 55 : -60;   // [120926j] the vault is off: -60
-                        if (distTo(tx, ty) < distTo(cx, cy)) s += 40;
+                        if (SHIFTER_CLEARS_SETS) { if (_nv && _nv.dir === vi) s += 40; if (stepTouchesSet([{ x: cx, y: cy }], v, 1)) s -= 60; }   // [171026e]
+                        else if (distTo(tx, ty) < distTo(cx, cy)) s += 40;
                         if (w2 === 'slip' || w2 === 'pivot') s += 18;
                     }
                     if (vi % 2 === 0 && parityLocked) s += 25;
@@ -20852,7 +21075,7 @@ function spawnShifter(src, atKey) {
                 }
             } else if (kind === 'pivot') {
                 let s = Math.random() * 12;
-                if (distTo(cx, cy) <= 3) s += 30;
+                if (!SHIFTER_CLEARS_SETS && distTo(cx, cy) <= 3) s += 30;   // [171026e] a turn beside a set would sweep it away
                 s += Math.min(30, turnNeed * 10);
                 if (game.shapeType === 'square') s += 15;
                 if (turnNeed === 0 && game.shapeType !== 'square') s -= 25;
@@ -26255,9 +26478,97 @@ function payHourglass(x, y, by) {
     if (clockEl) { clockEl.classList.remove('clock-boost'); void clockEl.offsetWidth; clockEl.classList.add('clock-boost'); setTimeout(() => clockEl.classList.remove('clock-boost'), 800); }
     return sec;
 }
-const MACHINE_TAKES_HOURGLASSES = true;
+/* ══ [171026a] A SHIFTER CLEARS ITS PATH — designer's call, 17 Oct: "A player landing on a move or turn shifter must destroy
+   all game assets (hourglasses, shifters, green cells and red cells) it touches on the grid when it sweeps or moves. It
+   still creates occupied cells that are in voids." THE RULE: when a step or a turn moves the body, every cell the body is
+   carried over or onto loses whatever stands on it — an hourglass, a shifter, a green or a red — as the body reaches it.
+   Nothing is paid or grown by it, and a shifter it lands on does not fire (so a push never starts a train). A hole on the
+   way is still laid as ground. The tile that did the moving is untouched: it recharges as before, and so is anything the
+   body was already standing on. Sets are not assets: the set rules stand. A destroyed thing is still drawn until the body
+   reaches it, then bursts in its own colour. A DOUBLE STEP follows: an asset on the cell it passes over, or a red on the
+   far cell, no longer stops it after one — it carries the body through and they go. A hole, a wall, a set or the edge
+   still stop it after one.
+   SHIFTER_CLEARS (set beside STEP_GEARS, which reads it first) = false puts back the old ways (hourglasses collected on a
+   sweep, trains, landings paid, a double stopped by anything on its way). */
+const _clearGhosts = new Map();   // key -> { kind, until, x, y }: drawn until the body arrives
+const CLEAR_COLOUR = { pickup: '#a3e635', hazard: '#ef4444', pivot: '#38bdf8', slip: '#38bdf8' };
+function clearableAsset(v) { return v === 'pickup' || v === 'hazard' || v === 'pivot' || v === 'slip' || isTimeCell(v); }
+function shifterClearCell(x, y, inMs, src, skip) {   // skip: the tile that moved it and the cells the body stood on
+    const k = `${x},${y}`;
+    if ((skip && skip.has(k)) || x < 0 || x >= VIEW_W) return 0;
+    if (SHIFTER_CLEARS_SETS) { const sl = slots.find(q => !q.claimed && !q.retiring && q.keys.has(k)); if (sl) { shifterDestroySet(sl, inMs, src); return 1; } }   // [171026e]
+    const v = world[k];
+    if (!clearableAsset(v)) return 0;
+    delete world[k];
+    if (v === 'hazard') hazardGone[k] = 'clear@' + (replayMoveCount + 1);
+    _clearGhosts.set(k, { kind: v, until: performance.now() + Math.max(0, inMs || 0), x, y });
+    rec('clear', { k: v, src });
+    return 1;
+}
+function shifterClearPath(fromCells, v, hop, skipKey) {   // a step: every cell the body is carried over and onto
+    const base = animQueueDelay() + MACHINE_ENGAGE_MS, dur = slideMs(hop), skip = new Set([skipKey, ...fromCells.map(c => `${c.x},${c.y}`)]);
+    let n = 0;
+    const reach = h => (STEP_STEPPED && hop > 1) ? (h - 1) * (STEP2_MOVE_MS + STEP2_BEAT_MS) + STEP2_MOVE_MS * 0.6 : dur * 0.6;   // [171026f] as the body reaches it, not after
+    for (let h = 1; h <= hop; h++) for (const c of fromCells) n += shifterClearCell(c.x + v.dx * h, c.y + v.dy * h, base + reach(h), 'step', skip);
+    return n;
+}
+/* ══ [171026e] ...AND A SET TO COLLECT IS AN ASSET TOO — designer's call, 17 Oct: "A player landing on a move or turn
+   shifter must destroy all game assets (hourglasses, shifters, green cells and red cells and 'sets to collect') it touches
+   on the grid when it sweeps or moves." Asked, "when a shifter carries your piece exactly into a set it fits?", the answer
+   was "destroy it too": one rule. So a set any cell of which the body is carried over or onto is destroyed — every cell of
+   it shatters in its colour as the body reaches it, and it fades from the board. It is never collected by a shifter. The
+   level still needs that piece, so it is dealt again further up the board straight away (level 3's island piece is dealt
+   to a new island, as when its island goes past). What follows from it: a push no longer claims a set (no gold preview, no
+   combo into a set); a single pushed onto a set it does not fit is no longer refused and charged — the set goes; the steps
+   that were planted to push a piece into a set (the combo seed, the joining tile's push, a double's aim at a set, a step
+   spawned pointing at a set) are no longer laid, and the move guide never routes a push through a set. */
+function cellsTouchSet(cells) {
+    for (const c of cells) { const k = `${c.x},${c.y}`; if (slots.some(sl => !sl.claimed && !sl.retiring && sl.keys.has(k))) return true; }
+    return false;
+}
+function stepTouchesSet(cells, v, hop) {   // the cells a step carries the body over and onto
+    const path = [];
+    for (let h = 1; h <= hop; h++) for (const c of cells) path.push({ x: c.x + v.dx * h, y: c.y + v.dy * h });
+    return cellsTouchSet(path);
+}
+function turnTouchesSet(cells, pv, tx, ty, ccw, turns) {   // where a turn lands the body, and its arc
+    if (cellsTouchSet(pv.newCells)) return true;
+    try { return cellsTouchSet(sweptCells(cells, pv.rotated, tx, ty, ccw, turns)); } catch (e) { return false; }
+}
+function shifterDestroySet(sl, inMs, src) {
+    const at = Math.max(0, inMs || 0);
+    sl.retiring = performance.now() + at; sl.destroyed = true;   // out of play now (no claim, no misfit); drawn until the body reaches it
+    rec('clear', { k: 'set', id: sl.id, src });
+    later(at, () => { if (SHATTER_FX) { for (const c of sl.cells) addShatter(c.x, c.y, sl.color, 'set'); shatterSound(); } else for (const c of sl.cells) addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, sl.color); });
+    const isle = game._isle3 && game._isle3.id === sl.id;   // the island's piece: levelIslandTick builds the next island
+    if (!isle && setNeeded.includes(sl.id))
+        later(at + 650, () => {
+            if (!game.running || !setNeeded.includes(sl.id) || slots.some(q => q.id === sl.id && !q.claimed && !q.retiring)) return;
+            if (trySpawnSlot(null, sl.id)) rec('spawn', { k: 'slot', src: 'redeal', id: sl.id });
+        });
+}
+function ghostItem(key) { const g = _clearGhosts.get(key); return g ? g.kind : undefined; }
+function tickClearGhosts() {
+    if (!_clearGhosts.size) return;
+    const now = performance.now();
+    for (const [k, g] of _clearGhosts) {
+        if (now < g.until) continue;
+        _clearGhosts.delete(k);
+        if ((g.kind === 'pivot' || g.kind === 'slip') && world[k] === undefined) delete shifterMeta[k];
+        const col = CLEAR_COLOUR[g.kind] || '#fb8b1e';   // an hourglass: its orange
+        const sx = g.x * CELL + CELL / 2, sy = (g.y - game.cameraY) * CELL + CELL / 2;
+        if (SHATTER_FX) { addShatter(g.x, g.y, col, g.kind); shatterSound(); }   // [171026f]
+        else if (!g.quiet) { addBurst(sx, sy, col); addBurst(sx + 6, sy - 4, col); addBurst(sx - 5, sy + 5, col); }   // (a red cleared by the free lay bursts there)
+    }
+}
+const MACHINE_TAKES_HOURGLASSES = !SHIFTER_CLEARS;   // [300926b] a sweep collected the hourglasses on its arc · [171026a] now it clears them
 function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
     if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
+    if (SHIFTER_CLEARS) {   // [171026a] what the arm passes over, as it passes, and what it lands on, as it lands
+        const tk = new Set([`${triggerCell.x},${triggerCell.y}`, ...oldCells.map(c => `${c.x},${c.y}`)]), in0 = transformAnim.startTime - performance.now(), dur = transformAnim.duration;
+        for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) shifterClearCell(c.x, c.y, in0 + dur * turnTimeForArc(c.k), 'turn', tk);
+        for (const c of rotated) shifterClearCell(c.x, c.y, in0 + dur, 'turn', tk);
+    }
     if (MACHINE_TAKES_HOURGLASSES) {   // [300926b] hourglasses on the arm's path, each as the cube crosses it
         const topH = topLawfulRow(), botH = Math.floor(game.cameraY) + VIEW_H - 1;
         for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) {
@@ -26597,7 +26908,7 @@ function stoneRestartSpot(st) {
     try { if (!bodyRegion([{ x: st.x, y: st.y }]).touchesTop) return null; } catch (e) { return null; }
     return { x: st.x, y: st.y };
 }
-function stageDeathDrop(cas, arrive, prevType) {
+function stageDeathDrop(cas, arrive, prevType, reason = 'dissolved') {   // [171026d] reason: 'setlost' when a set took the last cube
     const hold = BREAK_HOLD_MS, dur = V_DROP_MS, tail = 140;
     game.inputLocked = true;
     stopDrag(); game._queuedMove = null;
@@ -26609,8 +26920,9 @@ function stageDeathDrop(cas, arrive, prevType) {
         game._bodyHidden = false;
         if (!game.running) return;
         game.inputLocked = false;
-        game._restartOn = (prevType === 'single' && cas.length === 1) ? { x: cas[0].x, y: cas[0].y } : null;   // [071026m] where the stone is
-        handleDeath('dissolved');
+        game._restartOn = (prevType === 'single' && cas.length === 1 && reason === 'dissolved') ? { x: cas[0].x, y: cas[0].y } : null;   // [071026m] where the stone is
+        game._dropVoids = cas.filter(c => c.v).length;   // [171026g] the holes it filled, each paid
+        handleDeath(reason);
         game._restartOn = null;
     });
 }
@@ -26690,6 +27002,32 @@ const RESPAWN_MOMENT = true;
      2400 ms  GOOD LUCK — the bright two-note "go", the ring bursting outward, play resumes.
    The countdown ring that filled over the whole hold (3.2 s, "needs to be quicker") now runs only from the spark
    to the go: 1.35 s. The hold is 2.4 s — longer than the 1.6 s before 8 Oct, shorter than the 3.2 s since. */
+/* ══ [171026h] THE REBIRTH IN EVERY COLOUR — designer's call, 17 Oct: "The rebirth circle that appears is white, can it be a
+   bit more exciting and magical, how about a multicoloured rainbow of all our player colours, open to ideas." Every white
+   line of the tale is now the five bodies' colours run round a wheel — amber, green, cyan, blue, magenta and back — and
+   the wheel turns: the ring that closes in on the piece (LOST), the twelve rays of the spark (ANOTHER CHANCE), and the
+   countdown, whose arc is drawn in the wheel's colours with a bright head and five motes, one per colour, circling the
+   piece as it fills. On GO three rings burst outward, a colour apart. The timings and the sound are as [091026h] set them.
+   REBIRTH_RAINBOW = false puts back the white. */
+const REBIRTH_RAINBOW = true;
+const REBIRTH_COLS = ['#ffb238', '#3dee8f', '#18daf8', '#4a7dff', '#f22caf'];   // diagonal, J, single, square, pair — round the wheel
+function _hexRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+const _REBIRTH_RGB = REBIRTH_COLS.map(_hexRgb);
+function rebirthCol(t, a = 1) {   // t: once round the wheel per 1
+    const n = _REBIRTH_RGB.length, f = (((t % 1) + 1) % 1) * n, i = Math.floor(f) % n, u = f - Math.floor(f);
+    const A = _REBIRTH_RGB[i], B = _REBIRTH_RGB[(i + 1) % n];
+    return `rgba(${Math.round(A[0] + (B[0] - A[0]) * u)}, ${Math.round(A[1] + (B[1] - A[1]) * u)}, ${Math.round(A[2] + (B[2] - A[2]) * u)}, ${a})`;
+}
+function rainbowArc(cx, cy, r, a0, a1, lw, rot, alpha = 1) {   // an arc whose colour runs round the wheel; rot turns the wheel
+    const span = a1 - a0, segs = Math.max(4, Math.ceil(Math.abs(span) / (Math.PI * 2) * 64));
+    ctx.save(); ctx.lineWidth = lw; ctx.lineCap = 'butt';
+    for (let i = 0; i < segs; i++) {
+        const s0 = a0 + span * i / segs, s1 = a0 + span * (i + 1) / segs + (i < segs - 1 ? 0.012 : 0);
+        ctx.strokeStyle = rebirthCol((s0 + Math.PI / 2) / (Math.PI * 2) + rot, alpha);
+        ctx.beginPath(); ctx.arc(cx, cy, r, s0, s1); ctx.stroke();
+    }
+    ctx.restore();
+}
 let RESPAWN_HOLD_MS = 2400;   // a let, so a test suite can set it · [091026h] (3200 since 081026N, 1600 before)
 const RESPAWN_TALE = { paid: 520, chance: 1050 }, RESPAWN_FIND_MS = 400;
 function respawnMoment() {
@@ -26697,7 +27035,7 @@ function respawnMoment() {
     const now = performance.now();
     game._respawnHoldUntil = now + RESPAWN_HOLD_MS;
     game._hitstopUntil = Math.max(game._hitstopUntil || 0, now + RESPAWN_HOLD_MS);
-    game._respawnMoment = { t0: now, went: false };
+    game._respawnMoment = { t0: now, went: false, free: !!game._respawnFree };   // [171026g] a free restart is told as a gain
     invulnTimer = Math.max(invulnTimer, INVULN_DURATION + RESPAWN_HOLD_MS);
     // [091026h] the sound is the tale, played where the loss sound was (respawnPlayer)
 }
@@ -26710,7 +27048,8 @@ function drawRespawnMoment() {
     if (el >= RESPAWN_TALE.paid && !M.paid) {   // [091026h] PAID: the clock flashes red with the ticks
         M.paid = true;
         const ce = document.getElementById('rotorSecs');
-        if (ce) { ce.classList.remove('clock-lurch'); void ce.offsetWidth; ce.classList.add('clock-lurch'); setTimeout(() => ce.classList.remove('clock-lurch'), 700); }
+        const _cls = M.free ? 'clock-boost' : 'clock-lurch';   // [171026g] paid in: the clock lifts, not lurches
+        if (ce) { ce.classList.remove(_cls); void ce.offsetWidth; ce.classList.add(_cls); setTimeout(() => ce.classList.remove(_cls), 700); }
     }
     const cells = getPlayerCells();
     if (!cells.length) return;
@@ -26719,7 +27058,8 @@ function drawRespawnMoment() {
     cx /= cells.length; cy /= cells.length;
     if (el >= C && !M.sparked) {   // [091026h] ANOTHER CHANCE: the spark
         M.sparked = true;
-        for (const c of cells) { const bx = c.x * CELL + CELL / 2, by = (c.y - game.cameraY) * CELL + CELL / 2; addBurst(bx, by, '#ffffff'); addBurst(bx, by, '#fde68a'); }
+        for (const c of cells) { const bx = c.x * CELL + CELL / 2, by = (c.y - game.cameraY) * CELL + CELL / 2; addBurst(bx, by, '#ffffff'); addBurst(bx, by, REBIRTH_RAINBOW ? REBIRTH_COLS[(c.x + c.y) % REBIRTH_COLS.length] : '#fde68a');
+            if (REBIRTH_RAINBOW) for (const col of REBIRTH_COLS) addSparks(bx, by, 2, col); }   // [171026h] a spray in every colour
     }
     const day = currentTheme === 'day';
     ctx.save();
@@ -26730,7 +27070,11 @@ function drawRespawnMoment() {
         ctx.fillStyle = day ? `rgba(2, 44, 84, ${0.38 * env})` : `rgba(0, 0, 0, ${0.55 * env})`;
         ctx.fill('evenodd');
         const k = Math.min(1, el / RESPAWN_FIND_MS), e = 1 - Math.pow(1 - k, 3);   // LOST: the ring closing in — here you are
-        if (k < 1 || el < C) {
+        if ((k < 1 || el < C) && REBIRTH_RAINBOW) {   // [171026h] the ring closing in, every colour, turning
+            const rr = CELL * (3.4 - 2.55 * e), a = 0.9 * env * (el < C ? 1 : 0);
+            rainbowArc(cx, cy, rr, 0, Math.PI * 2, 9, el / 900, 0.22 * a);
+            rainbowArc(cx, cy, rr, 0, Math.PI * 2, 3, el / 900, a);
+        } else if (k < 1 || el < C) {
             ctx.globalAlpha = 0.85 * env * (el < C ? 1 : 0); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
             ctx.beginPath(); ctx.arc(cx, cy, CELL * (3.4 - 2.55 * e), 0, Math.PI * 2); ctx.stroke();
         }
@@ -26742,7 +27086,7 @@ function drawRespawnMoment() {
             ctx.lineCap = 'round';
             for (let i = 0; i < 12; i++) {
                 const a = i * Math.PI / 6 + (i % 2 ? 0.12 : -0.12), r0 = CELL * (0.55 + 1.1 * e2), r1 = r0 + CELL * (0.5 - 0.35 * sk);
-                ctx.globalAlpha = 0.95 * (1 - sk); ctx.strokeStyle = i % 2 ? '#fde68a' : '#ffffff'; ctx.lineWidth = 3.2 * (1 - sk) + 0.8;
+                ctx.globalAlpha = 0.95 * (1 - sk); ctx.strokeStyle = REBIRTH_RAINBOW ? REBIRTH_COLS[i % REBIRTH_COLS.length] : (i % 2 ? '#fde68a' : '#ffffff'); ctx.lineWidth = (3.2 * (1 - sk) + 0.8) * (REBIRTH_RAINBOW ? 1.25 : 1);   // [171026h]
                 ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
             }
         }
@@ -26751,13 +27095,35 @@ function drawRespawnMoment() {
             ctx.globalAlpha = env; ctx.lineCap = 'round';
             ctx.strokeStyle = day ? 'rgba(2, 44, 84, 0.45)' : 'rgba(0, 0, 0, 0.6)'; ctx.lineWidth = 5;
             ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); ctx.stroke();
+            if (REBIRTH_RAINBOW) {   // [171026h] the countdown in every colour, a bright head, five motes circling
+                const a1 = -Math.PI / 2 + f * Math.PI * 2, rot = (el - C) / 1400;
+                rainbowArc(cx, cy, R, -Math.PI / 2, a1, 3.2, rot, 1);
+                const hx = cx + Math.cos(a1) * R, hy = cy + Math.sin(a1) * R;
+                ctx.globalAlpha = env * 0.35; ctx.fillStyle = rebirthCol(f + rot); ctx.beginPath(); ctx.arc(hx, hy, 6.5, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = env; ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(hx, hy, 2.8, 0, Math.PI * 2); ctx.fill();
+                for (let i = 0; i < REBIRTH_COLS.length; i++) {
+                    const am = (el - C) / 380 + i * Math.PI * 2 / REBIRTH_COLS.length, rm = R + 7 + 2.5 * Math.sin((el - C) / 140 + i);
+                    ctx.globalAlpha = env * 0.95; ctx.fillStyle = REBIRTH_COLS[i];
+                    ctx.beginPath(); ctx.arc(cx + Math.cos(am) * rm, cy + Math.sin(am) * rm, 2.4, 0, Math.PI * 2); ctx.fill();
+                }
+            } else {
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.6;
             ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, -Math.PI / 2 + f * Math.PI * 2); ctx.stroke();
+            }
         }
     } else {   // GOOD LUCK: go
         const k = (el - H) / 480;
+        if (REBIRTH_RAINBOW) {   // [171026h] GO: three rings burst outward, a colour apart
+            for (let i = 0; i < 3; i++) {
+                const ki = Math.max(0, Math.min(1, k * 1.25 - i * 0.12));
+                if (ki <= 0) continue;
+                ctx.globalAlpha = 0.9 * (1 - ki); ctx.strokeStyle = REBIRTH_COLS[(i * 2) % REBIRTH_COLS.length]; ctx.lineWidth = 3.5 * (1 - ki) + 1;
+                ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.9 + (1.6 + 0.35 * i) * ki), 0, Math.PI * 2); ctx.stroke();
+            }
+        } else {
         ctx.globalAlpha = 0.9 * (1 - k); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5 * (1 - k) + 1;
         ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.9 + 1.6 * k), 0, Math.PI * 2); ctx.stroke();
+        }
     }
     ctx.restore();
 }
@@ -26852,8 +27218,8 @@ function respawnPlayer() {
     // Feedback — deliberately strong so the player can't miss that they lost
     // a life and that they have respawned (rather than thinking they died).
     triggerShake(12, 500);
-    triggerEdgeGlow('#ff6b9d', 1100);
-    if (game._respawnMoment && sfx.respawnTale) sfx.respawnTale();   // [091026h] lost, paid, another chance — the go is the hold's end
+    triggerEdgeGlow(game._respawnFree ? '#38bdf8' : '#ff6b9d', 1100);   // [171026g]
+    if (game._respawnMoment && sfx.respawnTale) sfx.respawnTale(game._respawnMoment.free);   // [091026h] lost, paid, another chance — the go is the hold's end
     else if (sfx.lifeLoss) sfx.lifeLoss();
     // Big two-line banner: top line names the event, bottom line shows
     // remaining lives clearly. The float renderer respects \n.
@@ -27106,6 +27472,17 @@ function handleDeath(reason = 'death') {
         cov: Math.round(game.coverage || 0),
         y: Math.round(game.playerY - game.cameraY)   // height on screen: top-out vs bottom-out
     });
+    if (HOLE_LAST_PAYS && reason === 'dissolved' && !game.testDrive) {   // [171026g] the ground it made pays, and the restart is free
+        const n = Math.max(1, game._dropVoids || 1); game._dropVoids = 0;
+        const sec = CLOCK_ONLY ? clockCredit(GROUND_PAY_SEC * n) : 0;
+        if (sec > 0) { momentumAddSeconds(sec); game.roundTimeSecs = (game.roundTimeSecs || 0) + sec; rec('time', { sec, src: 'ground', n, m: Math.round(momentumRemaining()) }); }
+        if (CLOCK_ONLY) addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `${DEATH_LINE.dissolved}\n${sec > 0 ? '+' + sec + 's' : 'FREE'}`, '#38bdf8', true, { life: 2400, hold: 1400 });
+        captureSnapshot('\u2727 ground');
+        game._respawnFree = true;
+        respawnPlayer();
+        game._respawnFree = false;
+        return;
+    }
     if (MISTAKE_RULE ? advancedRound <= 1 : game.spinUp) {   // [101026m] level 1, as the door says (was: until the clock first reached 90)
         game._rotorStumble = performance.now();
         /* [250926ad] THE FORGIVEN FALL SAYS SO. The level-1 door states the
@@ -27403,6 +27780,29 @@ const SHED_ON_LANDING = true;
    single, or every cube taken) is the move refused as before. The one rule
    [100926h] wanted — a cube leaves the body only at a boundary — now holds
    at every boundary, and the same approach always gets the same answer. */
+/* ══ [171026d] ONE RULE FOR A WRONG LANDING ON A SET — designer's call, 17 Oct: "There needs to be a consistent rule of player
+   shapes landing incorrectly on a 'set to collect' and the rule for all shapes is if it is not correct the cubes that land on
+   the set directly are destroyed leaving the remaining and the new shape to continue play." A bigger shape already lost the
+   cubes that touched a set it did not fit and carried on as the rest ([260926r]); but when every cube was on the set — a
+   single, always — the flip was refused and nothing happened, so a single could press against a set for free while a pair
+   paid a cube. THE RULE NOW, for every shape: the cubes that land on a set they do not fit are destroyed, the rest carry on
+   as the shape they make; if none are left, that is your last cube lost — flown in, taken by the set, and the restart,
+   priced as any lost last cube (20 s, free on level 1). The set stays. A piece in its first 1.5 s after a restart is
+   refused as before, so a restart is never lost straight away. (A shifter never lands you on a set now: it destroys the
+   set, [171026e].) WRONG_SET_TAKES_ALL = false puts back the single's refusal. */
+const WRONG_SET_TAKES_ALL = true;
+function stageSetLoss(landing, dir, newX, newY, newConfig) {
+    const v = HINT_DIR_VEC[dir] || [0, 0], col = playerColor(), prevType = game.shapeType;
+    const from = getPlayerCells().map(c => ({ x: c.x, y: c.y })), fromPar = game.faceParity;
+    const cas = landing.map(c => ({ x: c.x, y: c.y, col, s: { dx: -v[0], dy: -v[1] }, slot: slotCellsAt(c.x, c.y) }));
+    game.playerX = newX; game.playerY = newY; game.shapeConfig = newConfig; game.faceParity ^= 1;
+    startFlip(dir, from, fromPar, false, landing.map(c => ({ x: c.x, y: c.y })));
+    const arrive = flightRemaining();
+    later(arrive + BREAK_HOLD_MS + SET_TAKE_MS * 0.3, () => { if (sfx.hit) sfx.hit(); triggerShake(3, 120); });   // the crunch
+    showTip('misfit');
+    rec('hurt', { from: prevType, to: 'none', ch: 'slot', n: landing.length, landed: 0 });
+    stageDeathDrop(cas, arrive, prevType, 'setlost');
+}
 function shedOnLanding(landing, hitIdx, label, dir) {
     if (!SHED_ON_LANDING || game.testDrive || game.shapeType === 'single') return false;
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
@@ -27921,6 +28321,7 @@ function move(dir) {
                    sound. Nothing is charged. */
                 if (SLOT_REFUSES) {
                     if (shedOnLanding(probeCells, touch, 'slot', dir)) return;   // [260926k] the cube that does not fit is lost; the rest land; the set is untouched
+                    if (WRONG_SET_TAKES_ALL && !game.testDrive && invulnTimer <= 0 && slotOffenders(probeCells, true).size === probeCells.length) { stageSetLoss(probeCells, dir, newX, newY, newConfig); return; }   // [171026d] every cube on it: all destroyed
                     startFlip(dir, getPlayerCells(), game.faceParity, true);   // the bounce — never on the tape
                     showMoveGhost(newX, newY, newConfig, 'wrong', dir);
                     if (sfx.wrongShape) sfx.wrongShape();
@@ -28950,7 +29351,7 @@ function checkCollisions() {
             // the pivot fires and is spent, but the world resists; no movement.
             // [260926n] ...for a SINGLE. A bigger body loses the cubes the set
             // takes and lands the rest — classifyShiftPush, see slotOffenders.
-            if (game.shapeType === 'single' && slotMisfitAt(newCells)) {
+            if (!SHIFTER_CLEARS_SETS && game.shapeType === 'single' && slotMisfitAt(newCells)) {   // [171026e] the set goes instead
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 denialRecoil(null);                   // [270726x] recoil + wall at impact
                 triggerShake(3, 90);
@@ -29097,7 +29498,7 @@ function checkCollisions() {
             // territory is refused — slip spent, no movement.
             // [260926n] ...for a SINGLE. A bigger body loses the cubes the set
             // takes and lands the rest — classifyShiftPush, see slotOffenders.
-            if (game.shapeType === 'single' && slotMisfitAt(newCells)) {
+            if (!SHIFTER_CLEARS_SETS && game.shapeType === 'single' && slotMisfitAt(newCells)) {   // [171026e] the set goes instead
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 if (PUSH_SET_SHEDS && !game.testDrive) bumpCost(SET_PUSH_SEC, triggerCell.x * CELL + CELL/2, (triggerCell.y - game.cameraY) * CELL, 'penalty', 'set');   // [091026g] no cube to give: the push price · [101026m] named
                 denialRecoil({ dx: v.dx, dy: v.dy });   // [270726x] v = this slip's vector
@@ -29137,6 +29538,7 @@ function checkCollisions() {
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 game.playerX = newX;
                 game.playerY = newY;
+                if (SHIFTER_CLEARS) shifterClearPath(oldCellsForAnim, v, hop, triggerKey);   // [171026a] what it is carried over and onto goes
                 // Shifter cell becomes a visited-floor trace (no walls).
                 consumeTool(triggerCell, triggerKey);   // [180826ae] lingers until touch-down
                 scoreGain(2, false);   // engaged a mechanism
@@ -29176,6 +29578,7 @@ function checkCollisions() {
                 const oldCellsForAnim = cells.map(c => ({ x: c.x, y: c.y }));
                 const keep = i => !push.trim.redIndices.includes(i);
                 if (push.free && push.free.length) machineFreeLay(newCells, push.free.filter(i => !push.trim.redIndices.includes(i)), animQueueDelay() + MACHINE_ENGAGE_MS + slideMs(hop));   // [091026g] what the rest land on is laid free, as on a clean push
+                if (SHIFTER_CLEARS) shifterClearPath(oldCellsForAnim, v, hop, triggerKey);   // [171026a]
                 applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { vec: v, from: oldCellsForAnim, arrive: animQueueDelay() + MACHINE_ENGAGE_MS + slideMs(hop) });   // [260926n] the push's direction, for the shatter · [280926d] the break waits for the slide · [280926e]
                 cells = getPlayerCells();
                 { const _ta = transformAnim; startSlipAnim(oldCellsForAnim, newCells, { x: triggerCell.x, y: triggerCell.y, vec: v, hop }); if (transformAnim !== _ta) rechargeFromStroke(triggerKey); }   // [280926d] the whole body slides; the doomed cube is marked where it arrives · [280926e] · [091026l]
@@ -31025,7 +31428,7 @@ function classifyShiftPush(newCells) {
     const topB = topLawfulRow(), botB = Math.floor(game.cameraY) + VIEW_H - 1;
     // [260926n] the cubes a set would take — see slotOffenders. A single is
     // never here: its handlers refuse a misfit before classifying.
-    const setIdx = newCells.length > 1 ? slotOffenders(newCells) : new Set();
+    const setIdx = (newCells.length > 1 && !SHIFTER_CLEARS_SETS) ? slotOffenders(newCells) : new Set();   // [171026e] a set the push touches is destroyed, not judged
     if (MACHINE_NO_SHED) {   // [280926n] holes and reds are free; the edge and a wall block the move · [091026g] a wrong set takes what touches it
         const free = [], blocked = [], shed = [];
         for (let i = 0; i < newCells.length; i++) {
@@ -31087,9 +31490,10 @@ function machineFreeLay(cells, idx, showIn) {
         else if (world[k] === 'hazard') {
             delete world[k];
             hazardGone[k] = 'shift@' + (replayMoveCount + 1);
+            if (SHIFTER_CLEARS) _clearGhosts.set(k, { kind: 'hazard', until: performance.now() + Math.max(0, showIn || 0), x: c.x, y: c.y, quiet: 1 });   // [171026a] drawn until the body reaches it
             markCovered(k, true);
             cleared++; at = at || c;
-            later(showIn, () => addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#ef4444'));
+            if (!(SHIFTER_CLEARS && SHATTER_FX)) later(showIn, () => addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#ef4444'));   // [171026f] its ghost shatters instead
         }
     }
     if (laid) {
@@ -31516,7 +31920,7 @@ function routeLanding(type, nConfig, nx, ny, fuseIsGoal, rawOnly) {
        classifyShiftPush is the handler's own judge, and is read-only. */
     let cur = { config: nConfig, x: nx, y: ny, cells: cells }, via = null;
     const usedTiles = new Set(), tiles = [];   // [300926n] which shifters, in order, and what each does
-    for (let link = 0; link < 5; link++) {
+    for (let link = 0; link < (SHIFTER_CLEARS ? 1 : 5); link++) {   // [171026a] a push clears the next shifter: no trains
         let next = null, tileKey = null;
         for (let i = 0; i < cur.cells.length && !next; i++) {
             const c = cur.cells[i], k = c.x + ',' + c.y, item = world[k];
@@ -31527,12 +31931,14 @@ function routeLanding(type, nConfig, nx, ny, fuseIsGoal, rawOnly) {
                 const meta = shifterMeta[k];
                 const pv = turnAroundTrigger(cur.cells, c.x, c.y, meta && meta.dir === 'ccw', type, cur.config, turnsOf(meta));
                 if (!pv) return null;
+                if (SHIFTER_CLEARS_SETS && turnTouchesSet(cur.cells, pv, c.x, c.y, meta && meta.dir === 'ccw', turnsOf(meta))) return null;   // [171026e] the guide never routes through a set
                 next = { config: pv.newConfig, x: pv.anchorX, y: pv.anchorY, cells: pv.newCells };
                 tiles.push({ x: c.x, y: c.y, kind: 'pivot', ccw: !!(meta && meta.dir === 'ccw'), turns: turnsOf(meta), from: cur.cells, to: pv.newCells });
             } else if (item === 'slip') {
                 const v = slipVectorOf(shifterMeta[k]);
                 tiles.push({ x: c.x, y: c.y, kind: 'slip', vx: v.dx, vy: v.dy, from: cur.cells });
                 const hop = slipHop(cur.cells, v, shifterMeta[k]);   // [081026J]
+                if (SHIFTER_CLEARS_SETS && stepTouchesSet(cur.cells, v, hop)) return null;   // [171026e]
                 const sx = cur.x + v.dx * hop, sy = cur.y + v.dy * hop;
                 next = { config: cur.config, x: sx, y: sy,
                          cells: SHAPES[type].cells[cur.config].map(function (p) { return { x: sx + p[0], y: sy - p[1] }; }) };
@@ -31780,6 +32186,7 @@ function planJoiningTileInner(type, F) {
                     if (!pv || tn === 4) continue;                     // a full turn orients nothing
                     if (pv.newCells.some(q => q.x < 0 || q.x >= VIEW_W)) continue;
                     if (classifyShiftPush(pv.newCells).trim || (routeGreenNear(pv.newCells) && findFusionAt(pv.newCells))) continue;
+                    if (SHIFTER_CLEARS_SETS && turnTouchesSet(L.cells, pv, c.x, c.y, ccw, tn)) continue;   // [171026e] a joining turn must not touch a set
                     const dd = routeExactClaim(pv.newCells) ? 0 : poseDist(pv.newConfig, pv.anchorX, pv.anchorY);
                     consider(dn + 1 + dd, { kind: 'pivot', x: c.x, y: c.y, ccw, tn, land: L.cells, to: pv.newCells });
                 }
@@ -31790,6 +32197,7 @@ function planJoiningTileInner(type, F) {
                     const cells = SHAPES[type].cells[L.config].map(([dx, dy]) => ({ x: sx + dx, y: sy - dy }));
                     if (cells.some(q => q.x < 0 || q.x >= VIEW_W)) continue;
                     if (classifyShiftPush(cells).trim || (routeGreenNear(cells) && findFusionAt(cells))) continue;
+                    if (SHIFTER_CLEARS_SETS && stepTouchesSet(L.cells, v, hop)) continue;   // [171026e] nor a joining step
                     const dd = routeExactClaim(cells) ? 0 : poseDist(L.config, sx, sy);
                     consider(dn + 1 + dd, { kind: 'slip', x: c.x, y: c.y, vi, land: L.cells, to: cells });
                 }
@@ -32140,7 +32548,7 @@ function computeShifterPreviewFor(aim) {
     const spent = new Set();        // [SWEEP] machines this walk has fired
     let lost = [], denial = false, oob = false, setCost = false;
     let bodyCells = landed, cfg = landedConfig, trg = trigger;
-    for (let link = 0; link < 5 && trg; link++) {
+    for (let link = 0; link < (SHIFTER_CLEARS ? 1 : 5) && trg; link++) {   // [171026a]
         const mKey = `${trg.x},${trg.y}`;
         const meta = shifterMeta[mKey];
         const it = world[mKey];
@@ -32151,7 +32559,7 @@ function computeShifterPreviewFor(aim) {
             const pv = turnAroundTrigger(bodyCells, trg.x, trg.y, ccw, game.shapeType, cfg, tn);
             if (!pv) break;
             const rotConfig = pv.newConfig;
-            if (game.shapeType === 'single' && slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }   // [260926n] a bigger body sheds instead
+            if (!SHIFTER_CLEARS_SETS && game.shapeType === 'single' && slotMisfitAt(pv.newCells)) { if (!poses.length) denial = true; break; }   // [260926n] a bigger body sheds instead
             const push = classifyShiftPush(pv.newCells);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
             if (push.trim) {
@@ -32176,7 +32584,7 @@ function computeShifterPreviewFor(aim) {
             const v = slipVectorOf(meta);
             const hop = slipHop(bodyCells, v, meta);  // [120926i] · [081026J]
             const pushed = bodyCells.map(c => ({ x: c.x + v.dx * hop, y: c.y + v.dy * hop }));
-            if (game.shapeType === 'single' && slotMisfitAt(pushed)) { if (!poses.length) { denial = true; setCost = !!PUSH_SET_SHEDS; } break; }   // [260926n] · [101026m] the price it will cost
+            if (!SHIFTER_CLEARS_SETS && game.shapeType === 'single' && slotMisfitAt(pushed)) { if (!poses.length) { denial = true; setCost = !!PUSH_SET_SHEDS; } break; }   // [260926n] · [101026m] the price it will cost
             const push = classifyShiftPush(pushed);
             if (push.trim && push.trim.held) { if (!poses.length) denial = true; break; }
             if (push.trim) {
@@ -32212,7 +32620,7 @@ function computeShifterPreviewFor(aim) {
     if (poses.length) {
         const fin = poses[poses.length - 1];
         const keys = fin.map(c => `${c.x},${c.y}`);
-        gold = slots.some(sl => !sl.claimed && !sl.retiring &&
+        gold = !SHIFTER_CLEARS_SETS && slots.some(sl => !sl.claimed && !sl.retiring &&
             sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
     }
     return { poses, lost, swept, denial, oob, setCost, shifterKey: tKey, shifterCell: trigger, gold,
@@ -33662,12 +34070,12 @@ const TIPS = {
     start:     'Swipe to flip. Keep climbing.',
     fresh:     'Fresh ground attracts gear shifters.',
     green:     'A green evolves you \u2014 land beside it.',   // [290926v]
-    slot:      'Land exactly on the set to claim it \u2014 or cover all of it with a bigger shape.',   // [290926q]
+    slot:      'Land exactly on the set to claim it \u2014 the same shape, the same way round.',   // [290926q] · [171026d] exact fit only (COVER_CLAIM is off)
     cover:     'Bigger than the set: the cubes on it go into the set, the rest of you carries on.',   // [290926q]
     rose:      'Ringed single: the hard one.',
     shave:     'Blocked? Come at it THROUGH the red.',
     gear:      'Two arrowheads on a step: it pushes you two cells, if the way is clear.',   // [081026J]
-    shifter:   'Stand on a shifter while its ring fills and it turns you or pushes you on. Move before it closes and nothing happens.',   // [091026q] · [081026F]   // [071026x] · [081026v]
+    shifter:   'Stand on a shifter while its ring fills and it turns you or pushes you on, destroying whatever is in the way. Move before it closes and nothing happens.',   // [171026a]   // [091026q] · [081026F]   // [071026x] · [081026v]
     // [100926h] The slot refuses now and reds are gone, so the cures are the
     // green and the hole \u2014 say so.
     wrong:     'Wrong shape for that set. Evolve on a green, or devolve on a hole.',   // [290926v]
@@ -33691,13 +34099,13 @@ const TIPS = {
     // a completed row tops up the tank the player can see on the HUD. That is a
     // reward they can watch arrive, where points disappear into a total.
     rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
-    trim:      'Too big? Cover the whole set \u2014 the cubes on it go in.',   // [100926h] · [290926q]
+    trim:      'Too big for the set? Bridge a hole \u2014 a cube for a cell.',   // [100926h] · [290926q] · [171026d] covering is not a claim
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
+    onecube:   HOLE_LAST_PAYS ? `Your last cube can go into a hole: it becomes ground, pays ${GROUND_PAY_SEC} seconds, and you start again on it.` : MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
     ratchet:   MISTAKE_RULE ? `A mistake costs ${MISTAKE_SEC} seconds (your last cube ${MISTAKE_LAST_CUBE_SEC}), and ${MISTAKE_STEP_SEC} more for each one before it in the level \u2014 never more than ${MISTAKE_CAP_SEC}.` : 'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P] · [101026m]
     redtoll:   `A red can\u2019t take your last cube, so it takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [061026h]
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
-    misfit:    'Land on part of a set and it takes the cube that touched it. Cover all of it, or match it.',   // [260926k] · [290926q]
+    misfit:    'The wrong shape on a set: the cubes on it are destroyed and the rest of you carries on. A single is lost.',   // [260926k] · [290926q] · [171026d]
     diag:      'Swipe diagonally \u2014 corners count.',
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -34152,6 +34560,21 @@ function _appendScaledSq(sx, sy, size, k) {   // roundedSq's path, scaled about 
    (their colour stays true), the trail and the tiles are untouched, and night is unchanged.
    DAY_BANDS = false puts back the single lid. */
 const DAY_BANDS = true;
+/* ══ [171026b] THE DAY GROUND, WHITER — designer's call, 15 Oct: "In daylight mode, the blue background is too close to the blue
+   player cube colour make the background whiter for contrast." An empty day cell had no fill at all — its bold white ring
+   round an opening onto the blue depths — so the ground read as sky blue, and the cube (cyan) sat on a colour near its own.
+   Each empty cell is now filled white at DAY_GROUND_WHITE inside its ring; the depths still show faintly through, and the
+   holes (the depths at full strength) now read deeper than the ground, as a hole should. Measured on one frozen board:
+   the cell's lightness L* 75 → 93 and its colour (chroma) 27 → 7; the cube against the ground ΔE 12.8 → 17.6. Walked cells,
+   tiles and sets are untouched; night is unchanged. DAY_GROUND_WHITE = 0 puts back the open cell. */
+const DAY_GROUND_WHITE = 0.8;
+/* ══ [171026k] THE DAY CELL'S RINGS, SEE-THROUGH AGAIN — designer's call, 17 Oct: "I like the whiter look but increase the
+   transparency of the alternating rings on the grid cells to let a little more of the underworld come through." The white of
+   [171026b] lay evenly over the whole cell, so the cell's three sections (its edge to the ring at 3/4, the ring to the ring
+   at 1/2, and the centre) read as one flat white. The white now alternates by section, cut on the cell's own rings: the
+   outer section and the centre stay white, the section between the rings lets the depths through. DAY_GROUND_BANDS is
+   that white per section, edge inward; null puts back the even white of [171026b]. */
+let DAY_GROUND_BANDS = [0.8, 0.5, 0.72];
 const DAY_BAND_WHITE = 1;
 /* ══ [071026aa] THE DAY CELL WEARS NIGHT'S RINGS — designer's call, 7 Oct, 23:20 ══════════════
    "can the white rings of the day light cell copy the white rings of night time mode?" (with a grab
@@ -34227,6 +34650,21 @@ if (TRAIL_RINGS_WHITE) CELL_RING_STYLE.dayTrail = { col: 'rgba(255,255,255,', a:
 if (DAY_RINGS_THREE) CELL_RING_STYLE.dayRings = { col: 'rgba(226,232,240,', a: [0.78, 0.55], w: 1.1, k: [0.75, 0.5] };
 function drawDayBands(sx, sy, size) {
     if (DAY_RINGS_NIGHT && DAY_EDGE_BOLD) {   // [081026e] twice the weight, grown inward; full white
+        if (DAY_GROUND_WHITE > 0 && DAY_GROUND_BANDS) {   // [171026k] white by section, cut on the cell's own rings
+            const kw = (typeof CELL_WELL !== 'undefined' && CELL_WELL) ? CELL_WELL_K : 1, ks = [1, 0.75 * kw, 0.5 * kw, 0];
+            ctx.save();
+            for (let i = 0; i < 3; i++) {
+                const a = DAY_GROUND_BANDS[i];
+                if (!(a > 0)) continue;
+                ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+                ctx.beginPath(); _appendScaledSq(sx, sy, size, ks[i]); if (ks[i + 1] > 0) _appendScaledSq(sx, sy, size, ks[i + 1]);
+                ctx.fill('evenodd');
+            }
+            ctx.restore();
+        } else if (DAY_GROUND_WHITE > 0) {   // [171026b] the ground is white ice, not the blue depths
+            ctx.save(); ctx.fillStyle = `rgba(255, 255, 255, ${DAY_GROUND_WHITE})`;
+            ctx.beginPath(); _appendScaledSq(sx, sy, size, 1); ctx.fill(); ctx.restore();
+        }
         const w = CELL_OUTLINE_W * 2, ins = (w - CELL_OUTLINE_W) / 2;
         roundedSq(sx + ins, sy + ins, size - 2 * ins, null, DAY_EDGE_BOLD_INK, w);
         return;
@@ -35385,7 +35823,7 @@ function draw() {
             const key = `${col},${worldY}`;
             const sx = col * CELL + CELL_INSET;
             const sy = (row - camFrac) * CELL + CELL_INSET;
-            const item = world[key];
+            const item = world[key] !== undefined ? world[key] : (_clearGhosts.size ? ghostItem(key) : undefined);   // [171026a] a cleared thing is seen until the body reaches it
             // Skip cells the player is currently on — the player tile is drawn
             // over them in a later pass, so drawing floor here only lets the
             // visited/empty fill bleed around the player's edges.
@@ -35928,7 +36366,7 @@ function draw() {
         const worldY = camInt + row;
         for (let col = 0; col < VIEW_W; col++) {
             const key = `${col},${worldY}`;
-            const item = world[key];
+            const item = world[key] !== undefined ? world[key] : (_clearGhosts.size ? ghostItem(key) : undefined);   // [171026a]
             if (item !== 'pickup') continue;          // hazards handled in main pass
 
             const sx = col * CELL + INSET;
@@ -36590,6 +37028,7 @@ function draw() {
     drawPlugs();            // [HOLES] the cube landing as the ground it bought
     drawJoins();            // [070926h] ...and joining the ground beside it
     drawBursts();
+    drawShatters();   // [171026f]
     drawSparks();
     
     // Non-fusion pulses (green considered but didn't fit)
@@ -37290,6 +37729,8 @@ function loop(time, gen) {
     try {
     // [SWEEP] stitches keep time with the swing — frozen, celebrating or not
     if (!game.paused || game.celebrating) tickSweepQueue();
+    tickClearGhosts();   // [171026a]
+    groundShifterTick(performance.now());   // [171026i]
     if (!scrubbing) shifterRotationTick();   // [071026x] a tile whose ring has filled comes back with its next setting
     if (!scrubbing) holdStepsFaceHoles(Math.floor(game.cameraY));   // [071026p] every frame — frozen, paused or celebrating too
     // Paused — keep frame alive, redraw, but skip all updates
@@ -38340,6 +38781,42 @@ function recPersist() {
         }
     } catch (e) {}
 }
+/* ══ [171026c] A RUN THAT VANISHES IS WRITTEN DOWN — Jake, 15 and 17 Oct: "check if there's a bug in the game that restarts a
+   game again ... most of the restarts happen when the player is on level 4". Measured first: an 8-minute soak climbing
+   levels 1→9 in a real browser kept a flat memory (heap 9 → 12 MB, 12 canvases, no frame errors), and 8 minutes of fresh
+   level-4 runs with the move guide on threw nothing either. Nothing in the game itself ends a run except the clock, HOME
+   and QUIT, all recorded. A run that disappears without an `end` is the PAGE going — reloaded (Safari's pull-down, or the
+   phone reloading a page it had to stop), closed, or navigated away — and until now that left no trace but a missing end.
+   So while a run is on, a small note is kept (every 5 s and whenever the page is hidden); a run that ends properly clears
+   it. If the page next loads and finds the note, the vanished run gets a `lost` event in its own record: the level, the
+   clock, whether the page was hidden at the time, how long since the last note, and how the page came back (`nav`:
+   reload, navigate or back_forward). The next export will say which it is. */
+const ALIVE_KEY = 'rotor_alive';
+function aliveBeat() {
+    if (typeof game === 'undefined' || !game.running || game.testDrive || !recRunId) return;
+    try { localStorage.setItem(ALIVE_KEY, JSON.stringify({ id: recRunId, lv: advancedRound, t: Date.now(), at: recRunStart ? Math.round(performance.now() - recRunStart) : 0,
+                                                       hid: document.hidden ? 1 : 0, clock: Math.round(momentumRemaining()) })); } catch (e) {}
+}
+function aliveClear() { try { localStorage.removeItem(ALIVE_KEY); } catch (e) {} }
+(function lostRunCheck() {
+    let a = null;
+    try { a = JSON.parse(localStorage.getItem(ALIVE_KEY) || 'null'); } catch (e) {}
+    if (!a || !a.id) return;
+    aliveClear();
+    let nav = '?';
+    try { const n = performance.getEntriesByType && performance.getEntriesByType('navigation')[0]; nav = n ? n.type : (performance.navigation ? ['navigate', 'reload', 'back_forward'][performance.navigation.type] || '?' : '?'); } catch (e) {}
+    try {
+        const arch = recLoadArchive(); let r = arch.find(x => x && x.id === a.id);
+        if (!r) { r = { id: a.id, build: BUILD_VERSION, events: [{ t: 'run', at: 0, when: a.id, build: BUILD_VERSION }] }; arch.push(r); }   // never saved before it went: file it anyway
+        (r.events = r.events || []).push({ t: 'lost', at: a.at || 0, lv: a.lv, clock: a.clock, hid: a.hid, nav, gap: Date.now() - (a.t || Date.now()) });
+        localStorage.setItem(REC_RUNS_KEY, JSON.stringify(arch));
+    } catch (e) {}
+})();
+setInterval(aliveBeat, 5000);
+// the page going out of sight saves the run as it stands (a checkpoint), so a page that is then reloaded or dropped loses nothing
+function aliveAway() { aliveBeat(); if (document.hidden && typeof game !== 'undefined' && game.running && !game.testDrive && recRunId) recPersist(); }
+document.addEventListener('visibilitychange', aliveAway);
+window.addEventListener('pagehide', () => { aliveBeat(); if (typeof game !== 'undefined' && game.running && !game.testDrive && recRunId) recPersist(); });
 function recStartRun() {
     recRunStart = performance.now();
     // Identity for this run, so the mid-run checkpoints above can find their
@@ -39840,6 +40317,7 @@ function startGame(testDrive = false, daily = false) {
     // every run dealt level 1's set twice (two 'level' records, the first thrown away)
     bullet.active = false; bullet.timer = 0; bullet.charge = 0; bullet.stock = 0;
     shifterProgress = 0; slotProgress = 0; shifterMeta = {}; pendingWalls = new Set();
+    groundCells = 0; groundOwed = 0; groundQueue.length = 0;   // [171026i]
     invulnTimer = 0;
     lives = MAX_LIVES; updateLivesHUD();
     lastTickSecond = 999;
@@ -39986,7 +40464,8 @@ const DEATH_LINE = {
     stall:     'OUT OF TIME',
     /* [170926d] There is no falling in ROTOЯ — the grid runs out beneath you. */
     void:      'YOU RAN OUT OF GRID',
-    dissolved: 'LAST CUBE LOST TO A HOLE',
+    dissolved: HOLE_LAST_PAYS ? 'YOUR LAST CUBE MADE GROUND' : 'LAST CUBE LOST TO A HOLE',   // [171026g]
+    setlost:   'WRONG SET \u2014 LAST CUBE LOST',   // [171026d]
     trapped:   'TRAPPED — NO MOVE LEFT',      // [250926ad] was falling through to THE RUN ENDED on a fall the run survives
     impact:    'THE LAST CUBE WAS HIT',
     quit:      'YOU CALLED TIME',   // [061026o]
@@ -40039,6 +40518,7 @@ function endGameNow(reason = 'death') {
     // A high count against a key is a lesson that is not sticking.
     rec('tips', Object.assign({}, tipWant));
     recPersist();
+    aliveClear();   // [171026c] it ended properly
     // [060826e] Release the duck and kill the drone — otherwise the game-over
     // screen inherits a muffled mix and a hum from the run that just ended.
     if (typeof updateDangerAudio === 'function') updateDangerAudio(0);
@@ -41007,6 +41487,16 @@ function addStickAware(type, fn, opts) {
         game.isTouching = false;
     });
 })();
+/* [171026c] THE PLAY SCREEN IS THE GAME'S. Touches are the board's and the stick's; a swipe that began anywhere else on the
+   play screen (the HUD, the margin round the board, the gap above the stick) was the browser's — and on a phone a downward
+   one could pull the whole page down and reload it, a restart with no game-over. During a run nothing on the play screen
+   scrolls, pulls or zooms the page; panels that scroll (settings, the level tally, the overlays) keep their own scrolling. */
+document.addEventListener('touchmove', e => {
+    if (!document.body.classList.contains('in-play') || !game.running) return;
+    const t = e.target;
+    if (t && t.closest && t.closest('.screen-overlay, .settings-card, .level-tally')) return;
+    if (e.cancelable) e.preventDefault();
+}, { passive: false });
 addStickAware('touchstart', e => {
     // iOS Safari requires the audio context to be created/resumed from a
     // user gesture. Touchstart is the earliest reliable hook.
@@ -41972,7 +42462,7 @@ const TUT = [
     init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green' }, clock: 30 },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'stomp', g: [3, 2], sec: 5, say: '+5s' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
-  { ch: 'FLIP', title: 'HOLES COST A CUBE', line: 'The cube over a hole goes in and becomes ground — you devolve by one cube.',
+  { ch: 'FLIP', title: 'HOLES COST A CUBE', line: HOLE_LAST_PAYS ? `The cube over a hole goes in and becomes ground — you devolve by one cube. Your last cube can too: it pays ${GROUND_PAY_SEC} seconds and you start again on it.` : 'The cube over a hole goes in and becomes ground — you devolve by one cube.',   // [171026g]
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' } },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'sink', cube: [4, 2], to: [[3, 2]], type: 'single', say: '−1 CUBE → +1 GROUND' },
             { k: 'flip', dir: 'S', to: [[3, 3]] } ] },
@@ -41985,7 +42475,7 @@ const TUT = [
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,2': 'red', '4,1': 'red' }, clock: 40 },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'red', cube: [4, 2], to: [[3, 2]], type: 'single', sec: 5, say: '−1 CUBE → +5s' },
             { k: 'flip', dir: 'NE', to: [[4, 1]] }, { k: 'redtoll', cube: [4, 1], toll: 5, say: 'NO CUBE TO SPARE · −5s' } ] },
-  { ch: 'TURN', title: 'SHIFTERS', line: 'Stand on a shifter while its ring fills and it fires: a step pushes you, a turn swings you. Move before the ring closes and nothing happens. Once used, each recharges and comes back as something new, a turn or a step \u2014 step off and land on it again to use it again.',   // [101026d] · [091026q] · [081026F]   // [071026x] · [081026v]
+  { ch: 'TURN', title: 'SHIFTERS', line: 'Stand on a shifter while its ring fills and it fires: a step pushes you, a turn swings you. Move before the ring closes and nothing happens. Once used, each recharges and comes back as something new, a turn or a step \u2014 step off and land on it again to use it again. Whatever it carries you over or onto is destroyed: hourglasses, greens, reds, shifters, even sets.',   // [171026a][171026e]   // [101026d] · [091026q] · [081026F]   // [071026x] · [081026v]
     init: { body: { cells: [[0, 3], [1, 3]], type: 'pair', par: 0 }, tiles: { '1,2': 'slip', '4,2': 'pivot' } },
     acts: [ { k: 'flip', dir: 'N', to: [[0, 2], [1, 2]] }, { k: 'wait', d: 400 }, { k: 'push', trig: [1, 2], vec: [1, 0], to: [[1, 2], [2, 2]] },
             { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'wait', d: 400 }, { k: 'turn', trig: [4, 2], ccw: false, to: [[4, 1], [4, 2]] }, { k: 'wait' } ] },   // [081026v] a second on each before it fires
@@ -42005,7 +42495,7 @@ const TUT = [
     init: { body: { cells: [[1, 3], [2, 3]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [4, 1]] }] },
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
-  { ch: 'FIT', title: 'WRONG SETS', line: 'Land the wrong shape on a set — even a bigger one over all of it — and the set takes the cubes that touch it. Only the right shape, exactly, is yours.',   // [290926n] · [300926m] exact fit again
+  { ch: 'FIT', title: 'WRONG SETS', line: 'Land the wrong shape on a set — even a bigger one over all of it — and the cubes on it are destroyed; the rest of you carries on. Only the right shape, exactly, is yours.',   // [171026d]   // [290926n] · [300926m] exact fit again
     init: { body: { cells: [[0, 1], [1, 1]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },

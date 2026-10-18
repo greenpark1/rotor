@@ -2676,6 +2676,19 @@ body.theme-day .scores-best { background: rgba(148, 163, 184, 0.16); }
 }
 body.theme-day .scores-life-label { color: #64748b; }
 body.theme-day .scores-life-value { color: var(--wm-c0); text-shadow: none; }
+/* [181026e] HOW TO SCORE — label left, the number right; points in the points' gold, penalties in the penalty red */
+.scores-howto { text-align: left; }
+.scores-howto-sub { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; color: var(--text-steel, #8fa3b8); margin: 14px 0 2px; }
+.scores-howto-sub:first-child { margin-top: 0; }
+.scores-howto-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 7px 2px;
+    border-bottom: 1px solid rgba(143, 163, 184, 0.10); font-size: 13px; line-height: 1.3; color: #cbd5e1; }
+.scores-howto-row b { font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; color: #ffd60a; }
+.scores-howto-row.pen b { color: #f87171; }
+.scores-howto-note { font-size: 11px; line-height: 1.4; color: #94a3b8; margin-top: 8px; }
+body.theme-day .scores-howto-row { color: #334155; border-bottom-color: rgba(137, 207, 240, 0.45); }
+body.theme-day .scores-howto-row b { color: #0369a1; }
+body.theme-day .scores-howto-row.pen b { color: #dc2626; }
+body.theme-day .scores-howto-note { color: #64748b; }
 .scores-best-label {
     display: block;
     font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
@@ -3650,6 +3663,8 @@ body.theme-day .tally-note { color: #0369a1; opacity: 0.8; }
 }
 body.theme-day .tally-title { color: #ff2d95; text-shadow: none; }   /* [260926r] hot pink, as the level card's title */
 .tally-rows { width: min(420px, 92%); }
+/* [181026l] 16 px from the screen's edge: the card reaches 16 px past the frame each side, so its lines leave 28 px of it */
+.level-tally .tally-rows, .level-tally .tally-total, .level-tally .tally-grand, .level-tally .tally-note, .level-tally .tally-start, .level-tally .tally-continue { width: min(420px, calc(100% - 56px)); }
 .tally-row {
     display: flex; align-items: baseline; justify-content: space-between;
     gap: 10px; padding: clamp(7px, 2cqw, 14px) 0; font-size: clamp(14px, 4.4cqw, 21px); color: #cbd5e1;
@@ -4269,6 +4284,10 @@ body:not(.layout-land):not(.layout-beside) .game-container {
              and without its own section head — a head would make one number
              look like the start of a list that does not exist. -->
         <div class="scores-lifetime" id="scoresLifetime"></div>
+
+        <!-- [181026e] how points are earned and what the penalties are, from the game's own numbers -->
+        <div class="scores-section-head">HOW TO SCORE</div>
+        <div class="scores-howto" id="scoresHowto"></div>
 
         <div class="welcome-row full">
             <button class="start-btn" onclick="hideScores(); startGame();">▶ PLAY</button>
@@ -7843,6 +7862,24 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 181026-2133: SQUARE FIRST. Jake, 18 Oct, 21:09: "slots that need to be filled are what makes up the sets to collect. Go with 40 seconds starting time for each level. level 7 should be difficult but not impossible, ensure that the 2 x 2 cube appears from the outset of the level to ensure that players have every chance to collect it. keep the same shape for the rows in a run. go with all of your other suggestions". FORTY [181026k]: every level starts the clock on 0:40 (LEVEL_START_SEC; ?start= still sets it). THE SQUARE FIRST [181026n]: a level whose set needs the 2x2 square (level 7 on) deals the square's slot first, as the level opens, with the opening slots; if no place will take it there, it is owed and dealt at the next chance, before anything else. SLOTS [181026l]: a set is made of slots; what the player lands on is a slot, never a "set" or a "piece" — the tips, the lessons (COLLECT THE SET, WRONG SLOTS), HOW TO SCORE, the floats (WRONG SHAPE FOR THE SLOT, WRONG SLOT — LAST CUBE LOST), the level-3 door (NEW: A SLOT ON AN ISLAND) and the level card (SLOTS). COMBOS PAY [181026m]: every COMBO! pays 3 s (COMBO_SEC, ?combo=) and says so (COMBO!  +3s) — a shifter landing you exactly on a slot (now counted as a combo too, and the landing's only one), a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit. Rows in a run keep their set amount of time. THE LEVEL CARD [181026l]: SET COMPLETE · SLOTS ×n · +Ns (the time they paid) · ROWS ×n · COMBOS ×n · +Ns (a count: their points are already in the lines above) · GRADE (the coverage grade, out of BOARD, when it pays) · BOARD · PENALTIES −Ns (the time the level's charges took, when there were any) · TIME OVER · TIME LEFT; and it keeps 16 px from the screen's edge. TOP SCORES START AGAIN [181026o]: the table and the best score were made under other rules and do not compare; the first load of this build files them (rotor_runs_before_181026, rotor_best_before_181026) and starts both afresh — nothing is deleted.
+// 181026-1951: ROW RUNS. Jake, 18 Oct, 19:33: "completing a row pays a set amount of time, multiple rows can reach a high score but 'multiple rows' scores can only be achieved using the same shape any transition, penalty, set collecting ends the multiple rows score capability and resets back to one, can the building of multiple rows scores be indicated with 1 x row, 2 x rows, 3 x rows, 4 rows etc on screen with text". ROWS IN A RUN [181026j]: every row pays 6 s (ROW_RUN_SEC; what rows paid on the five 17 Oct runs, so the clock is no richer) — no chain second, no share for ground the board laid. Its points are its place in the run: the first row 25 × level, the second 50 × level, the third 75 … (ROW_RUN_PTS × place × level), and nothing else multiplies a row and nothing caps it (the 500 cap is gone; a set is still the biggest single payment until a run of 40). The run carries on while you keep the same shape, and goes back to one when the shape changes (evolve, devolve, a trim, a cube lost or shed), at any penalty, when a slot is filled, at a respawn and at a new level. The row says its place where it was finished: 1 × ROW +6s, 2 × ROWS +6s, 3 × ROWS +6s …, bigger from 2, its colour climbing the rainbow with the run. Replaces the 6-second chain of adjacent rows (its COMBO ×n label and its hold); ?econ=old keeps the 1815 rows; ?rowsec= and ?rowpts= set the numbers.
+// 181026-1853: BRIDGED. Jake, 18 Oct, 18:30: "when a bridge is created a congratulatory text of encouragement needs to pop up. "You've bridged the gap!" and 4 other similar versions with a rotor theme." A BRIDGE, PRAISED [181026i]: when new ground — a cube into a hole, or a shifter laying a hole on its way — spans the gap (ground on both sides of it, in a row or a column; the first cube into a hole only starts a bridge, the one that closes the line is the bridge), one of five lines pops up a beat after the cube goes in, dealt from a shuffled deck: YOU'VE BRIDGED THE GAP! · GAP CLOSED — KEEP THE ROTOR TURNING! · BRIDGE BUILT — FULL REVOLUTION AHEAD! · GEARS ENGAGED — GAP SPANNED! · SPANNED IN A SPIN! It is praise, so it speaks only into silence (the chatter rule: not over another message, not within 8 s of the last). Your last cube into a hole and the restart stone are not bridges.
+// 181026-1830: QUICKER SWOOSH. Jake, 18 Oct, 18:25: "can you make the swooshes 33% faster". [181026h] Every shifter swoosh plays at 1.33× its speed — each lasts three quarters as long (a step 0.30 s, was 0.40; a double's two 0.20 s and 0.26 s; turns 0.42, 0.59 and 0.74 s, were 0.56, 0.78 and 0.98). They still start at the grab, so each ends ahead of the move rather than with it. ?swoosh= (0.5–3, the speed) tunes it without a build: ?swoosh=1.5 is a third shorter, ?swoosh=1 the 1814 length.
+// 181026-1814: SWOOSH. Jake, 18 Oct, 18:00: "for the shifters can you swap out the sound effects for swooshes instead of beeps. Depending on the size of the shifter determines the type of swoosh". THE SHIFTERS SWOOSH [181026g]: a shifter firing played the evolve arpeggio (three beeps), and a double step two ratchet clicks; now each plays a swoosh of air (filtered noise, panned the way it carries you), sized by the shifter. A step: one light rising swoosh over its slide. A double step: two, one for each cell, the second bigger and with body. A turn: a curved swoosh that rises and falls over the swing and travels across, longer and deeper the further it turns (a quarter, a half, three quarters). A push that trims cubes swooshes too. SHIFTER_SWOOSH = false puts back the beeps.
+// 181026-1530: ONE PRICE. Jake, 18 Oct, 15:18–15:20: "consider 20 seconds as a penalty" for losing your last cube, then "okay implement all amends and update". ONE PRICE FOR A MISTAKE [181026f]: every mistake costs MISTAKE_PRICE (20 s) — losing your last cube (was 30), a red with no cube to spare, a push off the board, a push onto a set it does not fit — and 5 more for each mistake already made in the level, never more than 40; losing your last cube is still free on level 1. The tip, the level-2 door and HOW TO SCORE say it as one line. ?mistake= (5–40) sets the price without a build.
+// 181026-1506: HOW TO SCORE. Jake, 18 Oct, 14:52: re "Landing on a slot with a shifter: this can't happen any more" — "reinstate the previous rule. Update the points leader board for how to earn points and for penalties". A SHIFTER THAT LANDS YOU EXACTLY ON A SET COLLECTS IT [181026d]: a step or a turn that carries the body exactly onto a set it fits fills it as a COMBO — the slot's 15 s, its points ×1.5 for the shifter — instead of destroying it; the landing preview turns gold for it again, the move guide may route through it, a double may aim at a set again, and once a level a step may be planted to push a shape home (the combo seed). Any other set a shifter carries the body over or onto is still destroyed and dealt again (17 Oct). HOW TO SCORE [181026e]: TOP SCORES now ends with how points are earned and what the penalties are, read from the game's own numbers.
+// 181026-1418: FRESH CLOCK. Jake, 18 Oct, 11:09–13:45: less time to start, no cap but no huge safety net, filling a slot pays the most time, completing a set the most points, time left at the end of a level becomes points and the next level starts afresh, penalties cranked up, and every cube lost pays something. THE FRESH CLOCK [181026a]: every level starts on 45 s (no checkpoint grant, nothing carried); the clock holds 1:39 and anything paid over it becomes points as it is paid; time left at the set becomes points, 5 a second × the level. Time, highest first: a set piece 15 s, a big hourglass 10 (small 5), a row 8, 9 in a chain (never more than 9), a green 5, a red's trim 5, a last cube into a hole 3. Penalties: every cube lost to an edge, the bottom or a set it does not fit 3 s; a red with no cube to spare 20; your last cube 30 (free on level 1); +5 for each mistake already made in the level, 40 at most. Points: completing a set 1,000 × the level; the speed bonus is gone; a row never more than 500. THE LEVEL TALLY [181026b]: between levels the level's score is added up line by line — set, pieces, rows, board, time over 1:39, time left — the seconds left spin down to nothing as their points spin up, and the run's score climbs with them; it moves on by itself (a tap fast-forwards, CONTINUE goes at once). Dials: ?start= ?limit= ?slot= ?hourglass= ?cube= ?bonus=; ?econ=old puts back the 1815 economy. The tally's sum can no longer lose a line on a slow frame (it could on the ROTOЯ COMPLETE card too) [181026c].
+// 171026-1815: SOFT CORNERS. Jake, 17 Oct, 18:11, with a close-up of a day cell: the row's seconds hard to read by day; the shaded
+// corners at top right and bottom left "look like nipples sticking out"; the outer white ring 5% see-through; the underworld blue
+// 10% greyer.
+// · [171026l] THE ROW'S SECONDS, READABLE BY DAY: the quote on a row's last gap is deep green (deep amber on a chain) over a
+//   white halo, 85–100%: a contrast of 4.8 to 6.6 against the cell, where the pale mint was 1.1 to 1.2.
+// · [171026m] THE RIM'S SHADE HAS NO ENDS: the slab's shade was half the rim stroked with round ends, a grey dot at each of
+//   the two corners where it stopped; it now has square ends and fades to nothing along the diagonal.
+// · [171026n] THE OUTER RING, 95% WHITE by day: the empty cell's bold ring and the occupied cells' rims.
+// · [171026o] THE DEPTHS A TENTH GREYER by day: a 10% saturation blend over everything under the cells. Measured: in a hole
+//   colour (chroma) 14.6 → 13.2, in the seams 26.5 → 24.3; lightness unchanged.
 // 171026-1447: CLEAN SWEEP. Jake, 17 Oct, 09:28, with playdata 80–82 (three runs on 1200, levels 5, 6 and 8): one rule for a wrong set; shifters
 // destroy sets too, with a destroy animation; a last cube into a hole pays; the rebirth in colour; new ground earns shifters; a
 // step coming back aims at the nearest hole; the day rings see-through.
@@ -8574,7 +8611,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 //   3-set, a square across two sets) cannot land and is absorbed — the
 //   recoil, tile spent, nothing lost. The set's cubes shatter as they do on
 //   a flip ([260926k]); a cube the same push drops in a hole still buys it,
-//   one pushed over the edge tumbles. The float says WRONG SHAPE FOR THE SET
+//   one pushed over the edge tumbles. The float says WRONG SHAPE FOR THE SLOT
 //   and the tape records ns. The ghost preview mirrors the rule. Tests O–S.
 // · "A download option for the replay — a keepsake, or bragging rights on
 //   social media." The death replay is recorded as it plays: the board with
@@ -8696,7 +8733,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '171026-1447 ROTOЯ · CLEAN SWEEP';
+const BUILD_VERSION = '181026-2133 ROTOЯ · SQUARE FIRST';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -9901,8 +9938,96 @@ function timePrice(sec) { return TIME_PRICES_BITE ? Math.round(sec * TIME_PRICE_
    45, 60 s at level 1 and 60, 90, 120 s at level 10. Replayed on the nine recorded runs since those prices (8 Oct, 17:51
    to this morning): 968 s of mistakes become 470 s; the dearest was 73 s, now 30. MISTAKE_RULE = false puts back the old
    prices and the dials. */
+/* ══ [181026a] THE FRESH CLOCK — designer's calls, 18 Oct, 11:09 to 13:45 ═══════════════════════════════════════════
+   "the game starts with less time, players then have more incentive to clear the rows ... get rid of the cap on the
+   clock all together but dont want huge amounts of time to build up"; "filling a slot to be the highest amount of time
+   and completing a set to be the highest amount of points"; "the time at the end of the level should convert to points
+   and the next level time is reset to starting value"; "if theres an excess of time then crank up the penalties, the
+   player can pay more"; "losing a cube whether its banging into a wall, fitting incorrectly into a slot, filling a slot
+   must pay something" (asked: the player pays, 3 s a cube, all three).
+   THE RULES:
+     · every level starts the clock on LEVEL_START_SEC (45 s): nothing carries over and the checkpoint grant is gone;
+     · time left when the set is complete becomes points, TIME_PTS_PER_SEC (5) × the level for every second;
+     · the clock holds CLOCK_CEILING (99 s, 1:39); time paid over it becomes points at the same rate the moment it is
+       paid, so nothing earned is thrown away and no more than 1:39 of safety is ever held;
+     · TIME, highest first: a set piece 15 s (SLOT_PAY_SEC) · a big hourglass 10 s, a small one 5 · a row 8 s, 9 in a
+       chain (rows ×2, never more than 9) · a green landed on 5 · a red trimming a spare cube 5 · your last cube into a
+       hole 3 a hole;
+     · PENALTIES: every cube lost to an edge, the bottom of the board, a wall or a set it does not fit costs
+       CUBE_LOST_SEC (3 s); a red with no cube to spare 20 s; losing your last cube 30 s (free on level 1); 5 s more for
+       each mistake already made in the level, never more than 40. Cube losses are not counted as mistakes;
+     · POINTS: completing a set 1,000 × the level (was 50 ×); the speed bonus is gone (time left pays for speed now); a
+       row never pays more than ROW_PTS_MAX (500).
+   Replayed on the five 17 Oct runs (econ/pen.py: the same moves under these rules): the win finishes, its lowest 7 s
+   and its penalties 188 s (35 s under 1815); the runs that ran out on levels 3 and 8 run out there again; the ones that
+   ran out on 5 and 6 survive. Mistakes were rare (0–2 a run); cube losses were not (13–46 cubes a run), which is why
+   the cube price is the one that bites. THE DIALS, no new build: ?start= (20–90) ?limit= (60–600, 0 = no limit)
+   ?slot= (5–30) ?hourglass= (5–45) ?cube= (0–10) ?bonus= (0–20, points a second per level). ?econ=old puts back the
+   1815 economy: the carried clock, the 90 s ceiling, the checkpoint, the ladder, the old prices and no tally. */
+function econDial(name, def, lo, hi) {
+    try { const m = new RegExp('[?&]' + name + '=([0-9.]+)').exec((typeof location !== 'undefined' && location.search) || ''); const v = m ? parseFloat(m[1]) : NaN; if (v >= lo && v <= hi) return v; } catch (e) {}
+    return def;
+}
+const CLOCK_RESETS = (() => { try { return !/[?&]econ=old\b/.test((typeof location !== 'undefined' && location.search) || ''); } catch (e) { return true; } })();
+const LEVEL_START_SEC = Math.round(econDial('start', 40, 20, 90));   // [181026k] Jake, 21:09: 40 (was 45; 30 ended both recorded runs early)
+const CLOCK_LIMIT_SEC = (() => { const v = econDial('limit', 99, 0, 600); return v === 0 ? Infinity : Math.max(60, Math.round(v)); })();
+const SLOT_PAY_SEC = Math.round(econDial('slot', 15, 5, 30));
+const CUBE_LOST_SEC = CLOCK_RESETS ? Math.round(econDial('cube', 3, 0, 10)) : 0;
+const TIME_PTS_PER_SEC = econDial('bonus', 5, 0, 20);
+/* ══ [181026f] ONE PRICE FOR A MISTAKE — designer's call, 18 Oct, 15:18: "consider 20 seconds as a penalty" (for losing your
+   last cube, which [181026a] had raised to 30), then "implement all amends". Replayed on the five 17 Oct runs, 30 → 20
+   changes no outcome (the win's lowest 7 → 9 s, its penalties 188 → 178 s: these mistakes are rare, 0–2 a run; the 3 s
+   cube price is what holds the clock), and with every level starting on 0:45 a 30 s loss left 15 s — a run-ender on its
+   own. At 20 the red and the last cube cost the same, so the rule is one line: A MISTAKE COSTS 20 SECONDS, 5 more for each
+   one before it in the level, never more than 40; losing your last cube is free on level 1. The restart still costs the
+   body — you go back to a single — so the last cube stays the worst thing that can happen. ?mistake= sets the price. */
+const MISTAKE_PRICE = Math.round(econDial('mistake', 20, 5, 40));
+const ROW_SEC_MUL = 2, ROW_SEC_MAX = 9;           // a row's seconds: twice the old curve, never more than 9
+const SET_DONE_PTS = 1000, ROW_PTS_MAX = 500;     // × the level; a row's points, at most
+/* ══ [181026j] ROWS IN A RUN — designer's call, 18 Oct, 19:33: "completing a row pays a set amount of time, multiple rows can
+   reach a high score but 'multiple rows' scores can only be achieved using the same shape any transition, penalty, set
+   collecting ends the multiple rows score capability and resets back to one". Every row pays ROW_RUN_SEC — 6 s, what rows
+   paid on the five 17 Oct runs replayed, so the clock is no richer (8 would have saved both runs that ran out). Its points
+   are its place in the run × ROW_RUN_PTS × level: 25, 50, 75 … at level 1. Nothing else multiplies a row and nothing caps
+   it — a set (1,000 × level) is still the biggest single payment until a run of 40. The run goes back to one when the
+   shape changes (any change, even one undone before the next row), at any penalty, when a slot is filled, at a respawn
+   and at a new level. The row says its place: 1 × ROW, 2 × ROWS, 3 × ROWS … Replaces the chain of adjacent rows. */
+const ROW_RUNS = CLOCK_RESETS;
+const ROW_RUN_SEC = Math.round(econDial('rowsec', 6, 1, 15)), ROW_RUN_PTS = Math.round(econDial('rowpts', 25, 5, 200));
+/* [181026m] COMBOS PAY TIME — Jake, 19:19: "combos should pay time"; 21:09, the suggestion taken: every COMBO! pays 3 s. */
+const COMBO_SEC = CLOCK_RESETS ? Math.round(econDial('combo', 3, 0, 10)) : 0;
+function endRowRun(why) {
+    if (!ROW_RUNS || typeof game === 'undefined' || !game || !game._rowRun) return;
+    rec('runend', { n: game._rowRun, why: why || '?', r: advancedRound });
+    game._rowRun = 0;
+}
+function watchRowRunShape() {   // any change of shape ends the run
+    if (!ROW_RUNS || !game || !game.running) return;
+    if (game._rowRunSeen !== game.shapeType) { if (game._rowRunSeen) endRowRun('shape'); game._rowRunSeen = game.shapeType; }
+}
+function newLevelLedger() { return { set: 0, slot: 0, row: 0, over: 0, overSecs: 0, time: 0, timeSecs: 0, slotSecs: 0, comboSecs: 0, penSecs: 0, cov: 0, grade: '' }; }   // [181026l] + the slots' and combos' seconds, the charges, the grade   // [181026b] what the level's score was made of
+function clockFmt(s) { const v = Math.max(0, Math.round(s)); return Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0'); }
+function timeOverToPoints(over) {   // [181026a] the clock is full: what it cannot hold is paid in points, now
+    const pts = Math.round(over * TIME_PTS_PER_SEC * Math.max(1, advancedRound || 1));
+    if (game._lv) { game._lv.over += pts; game._lv.overSecs += over; }
+    rec('over', { sec: Math.round(over * 10) / 10, pts, r: advancedRound });
+    if (pts <= 0) return;
+    scoreGain(pts, false, 0);
+    addFloat(LOGICAL_W / 2, LOGICAL_H * 0.12, `${clockFmt(CLOCK_CEILING)} FULL \u00b7 +${pts.toLocaleString()}`, '#ffd60a', false, { life: 1500 });
+    tapeNote(`CLOCK FULL  +${pts.toLocaleString()}`, '#ffd60a');
+    showTip('overtime');
+}
+function chargeCubesLost(n, cell, delay) {   // [181026a] every cube the board takes costs CUBE_LOST_SEC — charged at the break
+    if (!CLOCK_RESETS || !CUBE_LOST_SEC || !(n > 0) || !CLOCK_ONLY || game.testDrive || game._replay) return;
+    const go = () => {
+        if (!game.running) return;
+        const cx = cell ? Math.min(VIEW_W - 1, Math.max(0, cell.x)) : null;
+        bumpCost(CUBE_LOST_SEC * n, cell ? cx * CELL + CELL / 2 : null, cell ? (cell.y - game.cameraY) * CELL + CELL * 1.2 : null, 'penalty', 'cube');
+    };
+    if (delay > 0) later(delay, go); else go();
+}
 const MISTAKE_RULE = true;
-const MISTAKE_SEC = 15, MISTAKE_LAST_CUBE_SEC = 20, MISTAKE_STEP_SEC = 5, MISTAKE_CAP_SEC = 30, REFUSAL_SEC = 5, REFUSAL_EVERY_MS = 1000;
+const MISTAKE_SEC = CLOCK_RESETS ? MISTAKE_PRICE : 15, MISTAKE_LAST_CUBE_SEC = CLOCK_RESETS ? MISTAKE_PRICE : 20, MISTAKE_STEP_SEC = 5, MISTAKE_CAP_SEC = CLOCK_RESETS ? 40 : 30, REFUSAL_SEC = 5, REFUSAL_EVERY_MS = 1000;   // [181026a] · [181026f] one price, 20 · +5 · 40 (were 15 · 20 · +5 · 30)
 const FALL_COST_SEC = MISTAKE_RULE ? MISTAKE_LAST_CUBE_SEC : timePrice(10);
 /* ══ [171026g] YOUR LAST CUBE INTO A HOLE MAKES GROUND, AND IT PAYS — designer's call, 17 Oct: "Check what a single cube pays
    for landing in the void area, it needs to pay something for doing this". It paid nothing and cost the most: the hole
@@ -10070,6 +10195,7 @@ const BANK_TIME_SEC = 0;   // [070926c] was 3 — see the note at the claim site
    game is unchanged and the loosening lands where the runs are dying. */
 const SET_LADDER = [2, 3, 4, 5, 6];   // seconds for the 1st, 2nd, 3rd ... piece
 function setPieceSeconds(nth) {       // nth is 1-based
+    if (CLOCK_RESETS) return SLOT_PAY_SEC;   // [181026a] every piece pays the most time of anything: 15 s
     const i = Math.max(1, Math.min(SET_LADDER.length, nth | 0));
     return SET_LADDER[i - 1];
 }
@@ -10106,14 +10232,14 @@ const TIME_PICKUP_MUL = 1;
    with no new build. ?hourglass=30&drain=1 puts back the old. (?glass= was taken: the glass board.) */
 const HOURGLASS_SEC = (() => {
     try { const m = /[?&]hourglass=([0-9.]+)/.exec((typeof location !== 'undefined' && location.search) || ''); const v = m ? parseFloat(m[1]) : NaN; if (v >= 5 && v <= 45) return Math.round(v); } catch (e) {}
-    return 20;
+    return CLOCK_RESETS ? 10 : 20;   // [181026a] second to the set piece: 10 s (was 20)
 })();
 const CLOCK_DRAIN = (() => {
     try { const m = /[?&]drain=([0-9.]+)/.exec((typeof location !== 'undefined' && location.search) || ''); const v = m ? parseFloat(m[1]) : NaN; if (v >= 0.5 && v <= 2.5) return v; } catch (e) {}
     return 1.2;
 })();
 function hourglassFace(w) {   // what an hourglass is worth, before the ceiling — one place for every payer
-    return w === 't30' ? HOURGLASS_SEC : w === 't10' ? 10 : w === 't45' ? Math.round(HOURGLASS_SEC * 1.5) : 15;
+    return w === 't30' ? HOURGLASS_SEC : w === 't10' ? (CLOCK_RESETS ? Math.max(1, Math.round(HOURGLASS_SEC / 2)) : 10) : w === 't45' ? Math.round(HOURGLASS_SEC * 1.5) : 15;   // [181026a] the small one is half the big
 }
 // [300726aq] Was "surplus points once the ring is full" — which almost never
 // fired, since filling a 600s ring is rare. Now it is the DIRECT reward for
@@ -10178,11 +10304,15 @@ function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedT
    at or above 90; of 819 time credits 40 would have been trimmed and 18 paid
    nothing, 216s of 5,432s earned. It touches the top of the clock and nothing
    else. Set it to Infinity and [070826i] is back exactly. */
-const CLOCK_CEILING = 90;
+const CLOCK_CEILING = CLOCK_RESETS ? CLOCK_LIMIT_SEC : 90;   // [181026a] 1:39, and nothing over it is lost
 function momentumRoom()   { return Math.max(0, CLOCK_CEILING - momentumRemaining()); }
-function clockCredit(sec) { return Math.max(0, Math.min(sec, Math.ceil(momentumRoom()))); }
+function clockCredit(sec) { if (CLOCK_RESETS) return Math.max(0, sec); return Math.max(0, Math.min(sec, Math.ceil(momentumRoom()))); }   // [181026a] every payer says its full number: the clock takes what it can and the rest is points
 function secsLabel(sec)   { return sec > 0 ? `+${sec}s` : 'FULL'; }   // what the clock was paid, in one word when it was nothing
 function momentumAddSeconds(sec) {
+    if (CLOCK_RESETS && sec > 0 && game.running && !game.testDrive) {   // [181026a] over the top: points, at the moment it is paid
+        const over = Math.max(0, sec - Math.max(0, CLOCK_CEILING - momentumRemaining()));
+        if (over > 0) timeOverToPoints(over);
+    }
     // The clamp: never above the ceiling, never raising speedTimer (which
     // would CUT the clock) if the ceiling were ever lowered under a live run.
     const floor = LEVEL_TIME_LIMIT - CLOCK_CEILING;
@@ -10747,6 +10877,22 @@ function bestSlipDir(x, y, prefer, live = true) {
    the board brings a tip. STEP_GEARS = false: every step pushes one, as before. */
 const SHIFTER_CLEARS = true;   // [171026a] a shifter clears its path — the rule is written where it acts, at sweepLay
 const SHIFTER_CLEARS_SETS = true;   // [171026e] ...sets to collect too — see shifterDestroySet
+/* ══ [181026d] ...EXCEPT THE ONE IT LANDS YOU EXACTLY ON — designer's call, 18 Oct, 14:52. Told that since [171026e] a shifter
+   could no longer deliver a piece ("Landing on a slot with a shifter: this can't happen any more"): "reinstate the previous
+   rule". THE RULE: a step or a turn that carries the body EXACTLY onto a set it fits — every cube on the set, the same shape
+   the same way round, a piece the set still needs — fills it, and it is a COMBO: the slot pays its 15 s and its points ×1.5
+   for the shifter (the [170826e] ladder, ×2 and ×3 for longer trains, though a push no longer starts a train). Every other
+   set a shifter carries the body over or onto is still destroyed and dealt again, as [171026e] says. With it come back
+   the things [171026e] switched off because a shifter could not deliver: the landing preview's gold for an exact
+   delivery, the move guide routing through one, a double aiming at a set as well as a hole ([091026m]), and the combo seed
+   (a step planted once a level to push a shape home, [170826d]). SHIFTER_FIT_CLAIMS = false puts back [171026e] whole. */
+const SHIFTER_FIT_CLAIMS = true;
+function exactFitSet(cells) {   // the set these cells fill exactly, if the level still needs it
+    if (!SHIFTER_FIT_CLAIMS || !cells || !cells.length || typeof slots === 'undefined') return null;
+    const ks = cells.map(c => `${c.x},${c.y}`);
+    return slots.find(sl => !sl.claimed && !sl.retiring && sl.keys && sl.keys.size === ks.length && ks.every(k => sl.keys.has(k)) &&
+                            (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) || null;
+}
 const STEP_GEARS = true; let STEP_GEAR2_SHARE = 0.6;   // a let, so a test can set the share
 function gearOf(meta) { return (STEP_GEARS && meta && meta.gear === 2) ? 2 : 1; }
 function stepGearHop(cells, v) {   // 2 if the way is clear for every cube, else 1
@@ -10774,7 +10920,7 @@ const DOUBLE_NEEDS_AIM = true, DOUBLE_REACH = 6;
 function doubleAims(x, y, dir) {
     const v = SLIP_VECTORS[dir] || SLIP_VECTORS[0];
     const live = new Set();
-    if (!SHIFTER_CLEARS_SETS) for (const sl of (typeof slots !== 'undefined' ? slots : [])) if (!sl.claimed && !sl.retiring && (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) for (const k of sl.keys) live.add(k);   // [171026e] holes only
+    if (!SHIFTER_CLEARS_SETS || SHIFTER_FIT_CLAIMS) for (const sl of (typeof slots !== 'undefined' ? slots : [])) if (!sl.claimed && !sl.retiring && (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) for (const k of sl.keys) live.add(k);   // [171026e] holes only
     for (let d = 1; d <= DOUBLE_REACH; d++) { const k = `${x + v.dx * d},${y + v.dy * d}`; if (live.has(k) || world[k] === 'void') return true; }
     return false;
 }
@@ -12214,6 +12360,47 @@ function playSweep(startFreq, endFreq, dur, type = 'sine', vol = 0.2, pan = 0, i
     gain.gain.exponentialRampToValueAtTime(0.01, t0 + dur);
     osc.stop(t0 + dur + 0.1);
 }
+/* ══ [181026g] A SWOOSH — moving air, not a note. White noise through a bandpass whose centre glides (up, or up and down
+   for a curve), under an envelope that swells to its peak and dies away, panned across the way the thing travels.
+   Noise reads quieter than a tone at the same gain, so the peak is lifted, as mSnare's is. */
+const SHIFTER_SWOOSH = true;
+const SWOOSH_LIFT = 2.4;
+/* [181026h] "make the swooshes 33% faster" (Jake, 18 Oct, 18:25): every swoosh plays at SWOOSH_SPEED — 1.33× — so each lasts
+   three quarters as long; its start stays on the stroke. ?swoosh= sets the speed (1 = the 1814 length). */
+const SWOOSH_SPEED = econDial('swoosh', 1.33, 0.5, 3);   // noise against a tone of the same gain (measured against the evolve arpeggio it replaces)
+let _swooshBuf = null;
+function swooshNoise() {
+    if (!_swooshBuf) {
+        const len = Math.floor(audioCtx.sampleRate * 2);
+        _swooshBuf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const d = _swooshBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    }
+    return _swooshBuf;
+}
+function playSwoosh(o) {
+    if (!document.getElementById('soundCheck').checked || !audioCtx) return;
+    resumeAudio();
+    const t0 = audioCtx.currentTime + Math.max(0, o.delay || 0), dur = Math.max(0.05, (o.dur || 0.3) / SWOOSH_SPEED);   // [181026h]
+    const src = audioCtx.createBufferSource(); src.buffer = swooshNoise();
+    const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass';
+    bp.Q.setValueAtTime(o.q || 1.2, t0);
+    bp.frequency.setValueAtTime(o.f0, t0);
+    if (o.fMid) { bp.frequency.exponentialRampToValueAtTime(o.fMid, t0 + dur * (o.peakAt || 0.5)); bp.frequency.exponentialRampToValueAtTime(o.f1, t0 + dur); }
+    else bp.frequency.exponentialRampToValueAtTime(o.f1, t0 + dur);
+    const g = audioCtx.createGain(), peak = Math.max(0.0002, (o.vol || VOL.event) * sfxVolume * (o.lift || SWOOSH_LIFT));
+    {   // a smooth swell: half a sine up to the peak at `attack`, half a sine down to nothing — audible the whole way
+        const N = 64, a = Math.max(0.1, Math.min(0.9, o.attack || 0.45)), curve = new Float32Array(N);
+        for (let i = 0; i < N; i++) { const x = i / (N - 1); curve[i] = peak * Math.pow(Math.sin(Math.PI / 2 * (x < a ? x / a : (1 - x) / (1 - a))), 1.4); }
+        g.gain.setValueAtTime(0, t0);
+        if (g.gain.setValueCurveAtTime) g.gain.setValueCurveAtTime(curve, t0, dur); else { g.gain.linearRampToValueAtTime(peak, t0 + dur * a); g.gain.linearRampToValueAtTime(0, t0 + dur); }
+    }
+    const pn = audioCtx.createStereoPanner(), cl = v => Math.max(-1, Math.min(1, v || 0));
+    if (pn.pan) { pn.pan.setValueAtTime(cl(o.pan0), t0); pn.pan.linearRampToValueAtTime(cl(o.pan1 !== undefined ? o.pan1 : o.pan0), t0 + dur); }
+    src.connect(bp); bp.connect(g); g.connect(pn); pn.connect(duckBus());
+    src.start(t0, Math.random() * 0.8); src.stop(t0 + dur + 0.05);
+    audioBusyUntil = Math.max(audioBusyUntil, t0 + dur);
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // SOUND FORMULA — every effect is a coordinate in ONE system so they can't
@@ -12519,6 +12706,28 @@ const sfx = {
        board at 30 and 20 (at 10 the board already says FIELD FAILING) and a buzz on a phone. No glow round the edge:
        that was switched off game-wide on 27 Jul as more distraction than signal ([270726f]). The ticks below 20 are
        louder and longer, a sharper tick below 10, the loudest in the last five. CLOCK_ALARMS = false puts back the old. */
+    // [machine · event] [181026g] THE SHIFTERS SWOOSH — sized by the shifter, timed to its stroke (the grab, then the move).
+    // A STEP: one light rising swoosh over the slide, panned the way it pushes. A DOUBLE: one per cell, as each is reached —
+    // the second bigger, with a low layer for body. A TURN: a curve — rising to the middle of the swing and falling away —
+    // travelling across the way it turns; the further it turns, the longer and deeper (a low layer from the half turn on).
+    swooshStep: (hop, dx) => {
+        const E = VOL.event, sd = dx > 0 ? 1 : dx < 0 ? -1 : 0, eng = MACHINE_ENGAGE_MS / 1000;
+        if (hop > 1 && STEP_STEPPED) {
+            const m = STEP2_MOVE_MS / 1000, gap = (STEP2_MOVE_MS + STEP2_BEAT_MS) / 1000;
+            playSwoosh({ delay: eng, dur: m + 0.06, f0: 520, f1: 2300, q: 1.3, vol: E * 0.95, attack: 0.5, pan0: -0.35 * sd, pan1: 0 });
+            playSwoosh({ delay: eng + gap, dur: m + 0.14, f0: 420, f1: 3200, q: 1.1, vol: E * 1.2, attack: 0.5, pan0: 0, pan1: 0.45 * sd });
+            playSwoosh({ delay: eng + gap, dur: m + 0.14, f0: 160, f1: 560, q: 0.8, vol: E * 0.7, attack: 0.5, pan0: 0, pan1: 0.45 * sd });
+        } else if (hop > 1) {
+            playSwoosh({ delay: eng, dur: STEP_MS / 1000 + 0.1, f0: 360, f1: 3200, q: 1.1, vol: E * 1.2, attack: 0.5, pan0: -0.45 * sd, pan1: 0.45 * sd });
+            playSwoosh({ delay: eng, dur: STEP_MS / 1000 + 0.1, f0: 150, f1: 560, q: 0.8, vol: E * 0.7, attack: 0.5, pan0: -0.45 * sd, pan1: 0.45 * sd });
+        } else playSwoosh({ delay: eng, dur: STEP_MS / 1000, f0: 480, f1: 2600, q: 1.2, vol: E, attack: 0.45, pan0: -0.3 * sd, pan1: 0.3 * sd });
+    },
+    swooshTurn: (turns, ccw) => {
+        const E = VOL.event, n = Math.max(1, Math.min(4, turns || 1)), dur = ((typeof TURN_MS !== 'undefined' && TURN_MS[n]) || 560) / 1000;
+        const sd = ccw ? -1 : 1, eng = MACHINE_ENGAGE_MS / 1000;
+        playSwoosh({ delay: eng, dur, f0: 300, fMid: 1200 + 350 * n, f1: 420, peakAt: 0.5, q: 0.9, vol: E * (0.85 + 0.15 * n), attack: 0.5, pan0: -0.45 * sd, pan1: 0.45 * sd });
+        if (n >= 2) playSwoosh({ delay: eng, dur, f0: 110, fMid: 260 + 60 * n, f1: 120, peakAt: 0.5, q: 0.7, vol: E * 0.25 * n, attack: 0.5, pan0: 0.3 * sd, pan1: -0.3 * sd });
+    },
     // [machine · event] [081026J] A DOUBLE STEP — two ratchet clicks, the second higher, a cell apart in the slide.
     // [091026c] ...and now one click as EACH cell is reached, the double being two steps (called at the grab)
     stepGear: () => {
@@ -13843,11 +14052,26 @@ function stampGuardMaze(slot) {
     }
 }
 
+const SQUARE_FIRST = true;   // [181026n]
 function seedSlotsAtTop() {
     const mission = currentMission();
     if (!mission) return;
     const targetCount = setNeeded.length || 1;
-    const seedCount = Math.min(3, targetCount);
+    let seedCount = Math.min(3, targetCount);
+    /* [181026n] THE SQUARE FIRST — Jake, 21:09: "level 7 should be difficult but not impossible, ensure that the 2 x 2 cube
+       appears from the outset of the level to ensure that players have every chance to collect it". Both long runs of the day
+       ran out on level 7, the first level that asks for the square, and in the 17 Oct win the square was the last piece in
+       every level from 7 to 10. A level whose set needs it deals the square's slot first, as the level opens; if no place
+       will take it here it is owed, and dealt at the next chance before anything else (spendSlotCredit). */
+    if (SQUARE_FIRST) {
+        const sq = setNeeded.find(id => { const q = parseRequirement(id); return q && q.type === 'square'; });
+        game._squareOwed = null;
+        if (sq && !slots.some(sl => sl.id === sq && !sl.claimed && !sl.retiring)) {
+            const ys = []; for (let d = 3; d <= 9; d++) ys.push(game.playerY - d);
+            if (trySpawnSlot(ys, sq)) { seedCount = Math.max(0, seedCount - 1); rec('spawn', { k: 'slot', src: 'square', id: sq }); }
+            else game._squareOwed = sq;
+        }
+    }
     // [300726an] WAS 10-13 rows ahead, which is where the 10-second-plus
     // opening wait came from: a slot seeded 13 rows up needs 13 rows of
     // climbing before it is even visible. Now 3-7 — still off the top edge, so
@@ -14555,6 +14779,11 @@ function runFitter() {
 
 function spendSlotCredit() {
     if (game.testDrive || !setNeeded.length) return;
+    if (SQUARE_FIRST && game._squareOwed) {   // [181026n] the square, owed since the level opened, before anything else
+        const sq = game._squareOwed;
+        if (!setNeeded.includes(sq) || slots.some(sl => sl.id === sq && !sl.claimed && !sl.retiring)) game._squareOwed = null;
+        else if (trySpawnSlot(viewAheadBand(), sq)) { game._squareOwed = null; rec('spawn', { k: 'slot', src: 'square', id: sq, owed: 1 }); return; }
+    }
     const live = new Set(slots.filter(s => !s.claimed && !s.retiring).map(s => s.id));
     // Age the drought counters; anything on the board is served.
     for (const id of setNeeded) {
@@ -14700,7 +14929,7 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
             // shape beside the slot gets pushed home — the preview shows it
             // gold, the claim pays the x1.5 combo. Once per level, ~40% of
             // eligible placements, so it stays an event rather than a routine.
-            if (!SHIFTER_CLEARS_SETS && !game._comboSeeded && type !== 'single' &&   // [171026e] no step planted to push into a set
+            if ((!SHIFTER_CLEARS_SETS || SHIFTER_FIT_CLAIMS) && !game._comboSeeded && type !== 'single' &&   // [171026e] no step planted to push into a set · [181026d] it delivers again
                 target.difficulty !== 'tricky' && Math.random() < 0.4) {
                 const vs = [...SLIP_VECTORS.keys()];
                 shuffleInPlace(vs);
@@ -16511,6 +16740,13 @@ function tileShadowSprite(size) {
 /* Under every tile in view — everything that is not an opening. Drawn after
    the depths and the openings' own shading, before the tiles. */
 let TOP_WASH_DAY = 0.06;   // [081026M]
+/* ══ [171026o] THE DEPTHS A TENTH GREYER — designer's call, 17 Oct, 18:11: "make the underworld blue 10% greyer." By day,
+   once everything under the cells is drawn — the depths, their washes, the seams' veil, the holes' rims, the tiles'
+   shadows — a tenth of the colour is taken out of it (a saturation blend toward grey at 10%): the same lightness, the same
+   hue, a tenth less colour. It shows wherever the depths do — the seams, the holes, the open section between a cell's
+   rings. Measured in a hole and in the seams below. The cells, the objects and night are unchanged.
+   DEPTHS_GREY_DAY = 0 puts back the blue. */
+let DEPTHS_GREY_DAY = 0.10;
 function drawTopWashDay(camInt, camFrac) {   // a sheet of white over every cell that is not a hole: above the shade, under the rings
     if (currentTheme !== 'day' || !(TOP_WASH_DAY > 0)) return;
     ctx.save();
@@ -16887,7 +17123,36 @@ function groundShifterTick(nowT) {
         return;
     }
 }
-function fillVoid(x, y, showIn = 0, plugColor = null) {   // [280926t] plugColor: a stone surfaces green   // [280926d] showIn: the hole stays drawn this long — the cube has to be seen to go in first
+/* ══ [181026i] A BRIDGE, PRAISED — designer's call, 18 Oct, 18:30: "when a bridge is created a congratulatory text of
+   encouragement needs to pop up. "You've bridged the gap!" and 4 other similar versions with a rotor theme."
+   WHAT IS A BRIDGE: new ground that SPANS the gap — ground on both sides of it, left and right or above and below — so
+   a line of ground now crosses where the hole was. Holes are at least two cells across (the 2x2 rule), so the first cube
+   into one only starts a bridge; the cube that closes the line is the bridge. (Tried first: "joins two pieces of ground
+   that were apart", judged over the view. On generated boards it never happened — 0 of 111 fills in 21 minutes of a
+   walker's play: the board is too well connected round the edges of any hole. Spanning: 0.6 a minute for the same
+   walker.) Any fill counts — a cube shed into a hole, a push, a step or a turn laying a hole on its way — but not your last
+   cube into a hole (that is a restart, with its own line) or the restart stone. THE WORDS: dealt from a shuffled deck, a
+   beat after the cube goes in, in the bridge's own blue, and only into silence (chatter: not over a message still being
+   read, not within CHATTER_GAP_MS of the last). BRIDGE_PRAISE_ON = false takes them away. */
+const BRIDGE_PRAISE_ON = true, BRIDGE_PRAISE_BEAT_MS = 900;
+const BRIDGE_PRAISE = ['YOU\u2019VE BRIDGED THE GAP!', 'GAP CLOSED \u2014\nKEEP THE ROTOR TURNING!', 'BRIDGE BUILT \u2014\nFULL REVOLUTION AHEAD!',
+                       'GEARS ENGAGED \u2014\nGAP SPANNED!', 'SPANNED IN A SPIN!'];
+function spansGap(x, y) {   // [181026i] the new ground has ground on both sides of it, in a row or a column: the gap is spanned there
+    const g = (cx, cy) => cx >= 0 && cx < VIEW_W && world[`${cx},${cy}`] !== 'void' && world[`${cx},${cy}`] !== 'wall';
+    return (g(x - 1, y) && g(x + 1, y)) || (g(x, y - 1) && g(x, y + 1));
+}
+function praiseBridge(showIn) {
+    if (!BRIDGE_PRAISE_ON || !game.running || game._replay || game.testDrive || game.celebrating) return;
+    const now = performance.now();
+    if (now - (game._bridgeSeenAt || 0) < 300) return;   // one landing, one word
+    game._bridgeSeenAt = now;
+    rec('bridge', { r: advancedRound });
+    later(Math.max(0, showIn || 0) + BRIDGE_PRAISE_BEAT_MS, () => {
+        if (!game.running) return;
+        addFloat(LOGICAL_W / 2, LOGICAL_H * 0.3, dealLine('bridge', BRIDGE_PRAISE), '#7dd3fc', true, { life: 1800, hold: 900, chatter: true });
+    });
+}
+function fillVoid(x, y, showIn = 0, plugColor = null, quiet = false) {   // [181026i] quiet: not a bridge (your last cube, the restart stone)   // [280926t] plugColor: a stone surfaces green   // [280926d] showIn: the hole stays drawn this long — the cube has to be seen to go in first
     const k = `${x},${y}`;
     if (world[k] !== 'void') return false;
     delete world[k];
@@ -16907,6 +17172,7 @@ function fillVoid(x, y, showIn = 0, plugColor = null) {   // [280926t] plugColor
         const nk = `${x + dx},${y + dy}`;
         if (world[nk] === 'void') bridgeRemainders.add(nk);
     }
+    if (BRIDGE_PRAISE_ON && !quiet && plugColor !== 'stone' && spansGap(x, y)) praiseBridge(showIn);   // [181026i]
     if (plugColor !== 'stone') addPlug(x, y, showIn > 0 ? performance.now() + showIn : 0, plugColor);   // a stone is its own landing   // [280926d] the ground surfaces once the cube is in · [280926t]
     /* [080926a] A BRIDGE IS OCCUPIED GROUND. Designer's call, reversing the
        port's "you buy it, you still have to walk it": the cube that went in
@@ -21417,8 +21683,9 @@ function checkSlotClaims() {
             game._ringPrevType = game.shapeType;                  // and no shrink ring: this is a claim, not damage
             const n = given.length, gc = given.reduce((a, c) => ({ x: a.x + c.x / n, y: a.y + c.y / n }), { x: 0, y: 0 });
             later(arrive + 120, () => addFloat(gc.x * CELL + CELL / 2, (gc.y - game.cameraY) * CELL + CELL + 14,
-                n > 1 ? `\u2212${n} CUBES \u2192 SET` : '\u22121 CUBE \u2192 SET', slot.color));
+                n > 1 ? `\u2212${n} CUBES \u2192 SLOT` : '\u22121 CUBE \u2192 SLOT', slot.color));
             rec('cover', { id: slot.id, from: prevType, to: game.shapeType, n });
+            chargeCubesLost(n, given[0], arrive + 120);   // [181026a] cubes handed to a set cost 3 s each too (only while COVER_CLAIM is on)
             showTip('cover');
         }
         // SEAT (V9): the key slides into the lock — settle animation + click
@@ -21427,6 +21694,7 @@ function checkSlotClaims() {
         if (sfx.seat) sfx.seat();
         if ((game.roundClaims || 0) === 0 && slot.id.endsWith('#t')) game.roundRoseFirst = true;
         game.roundClaims = (game.roundClaims || 0) + 1;
+        endRowRun('slot');   // [181026j] filling a slot ends a run of rows
         // Base claim value, then weighted by shape difficulty so a diagonal
         // pays more than an orthogonal pair at the same cell count.
         let claimPts = (slot.type === 'single' && slot.id.endsWith('#t'))
@@ -21522,6 +21790,7 @@ function checkSlotClaims() {
                           left: setNeeded.length, m: Math.round(momentumRemaining()),
                           ...(_sec !== _raw ? { raw: _raw } : {}) });
             game.roundTimeSecs = (game.roundTimeSecs || 0) + _sec;
+            if (game._lv) game._lv.slotSecs += _sec;   // [181026l]
             const _bc = (slot.cells && slot.cells[0]) || { x: game.playerX, y: game.playerY };
             addFloat(_bc.x * CELL + CELL / 2, (_bc.y - game.cameraY) * CELL - 22,
                      secsLabel(_sec), '#86efac');
@@ -21545,6 +21814,7 @@ function checkSlotClaims() {
         {
             const _tk = game._moveToken;
             game._claimAtToken = _tk;
+            if (COMBO_SEC && viaShifter) game._comboFiredToken = _tk;   // [181026m] a shifter's delivery is this landing's one combo
             const _at = (slot.cells && slot.cells[0]) || { x: game.playerX, y: game.playerY };
             const _cx = _at.x * CELL + CELL / 2, _cy = (_at.y - game.cameraY) * CELL;
             // Priority, rarest first. A landing can qualify as more than one —
@@ -21628,8 +21898,12 @@ function checkSlotClaims() {
         setTimeout(() => {
             if (!game.running) return;
             scoreGain(claimPts, true, _claimForge);   // [230826b]
+            if (game._lv) game._lv.slot += claimPts;   // [181026b]
             if (viaShifter) {
                 game._lastComboT = performance.now();   // this IS the combo — suppress a duplicate line-combo this beat
+                let _cs = 0;   // [181026m] counted as a combo now, and paid as one
+                if (COMBO_SEC) { game.roundCombos = (game.roundCombos || 0) + 1; game.runCombos = (game.runCombos || 0) + 1;
+                                 _cs = payCombo('shifter'); rec('combo2', { k: 'shifter', n: game.roundCombos, r: advancedRound }); }
                 // [170826e] THE LADDER HAS NAMES. One link is a nice combo; two
                 // machines meshing is a GEAR TRAIN; three or more is the FULL
                 // TRANSMISSION — the game's machine fiction, earned in play.
@@ -21653,7 +21927,7 @@ function checkSlotClaims() {
                                 : chainLinks === 2 ? 'DOUBLE COMBO!' : 'COMBO!';
                 const chainCol  = chainLinks >= 2 ? '#ffd60a' : '#f8fafc';
                 addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
-                    `${chainName}\n+${claimPts}`, chainCol, true);
+                    _cs ? `${chainName}  ${secsLabel(_cs)}` : `${chainName}\n+${claimPts}`, chainCol, true);   // [181026m]
                 triggerEdgeGlow(chainLinks >= 2 ? '#ffd60a' : SHIFTER_FAMILY_COLOR,
                                 chainLinks >= 2 ? 1400 : 900);
                 // ── [210826al] SHAKE IS FOR DAMAGE NOW ──────────────────────
@@ -21863,7 +22137,7 @@ const ROUND_NEW = (() => {
     // type, so the diff above cannot see it. Set explicitly, and last, so it
     // wins if round 9 ever also debuts a type.
     out[9] = 'NEW: TWO HARD SINGLES';
-    if (!out[ISLAND_SET_LEVEL]) out[ISLAND_SET_LEVEL] = 'NEW: A SET ON AN ISLAND';   // [101026l] the level's own new thing, said
+    if (!out[ISLAND_SET_LEVEL]) out[ISLAND_SET_LEVEL] = 'NEW: A SLOT ON AN ISLAND';   // [181026l]   // [101026l] the level's own new thing, said
     if (typeof MISTAKE_RULE !== 'undefined' && MISTAKE_RULE && !out[2]) out[2] = `LOSE YOUR LAST CUBE \u00b7 \u2212${FALL_COST_SEC}s`;   // [101026m] from level 2 it costs
     return out;
 })();
@@ -24032,6 +24306,16 @@ function bumpChain() {
    with its count and the seconds it paid (COMBO ×3  +7s). One name for the
    family, and the only variant is the one carrying a number. */
 const COMBO_LABEL = {};
+function payCombo(kind) {   // [181026m] a combo's seconds, paid like any other: credited, recorded, on the level's ledger
+    if (!COMBO_SEC || !game || game.testDrive || game._replay || !game.running) return 0;
+    const sec = clockCredit(COMBO_SEC);
+    if (!(sec > 0)) return 0;
+    momentumAddSeconds(sec);
+    game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
+    if (game._lv) game._lv.comboSecs += sec;
+    rec('time', { sec, src: 'combo', k: kind, m: Math.round(momentumRemaining()) });
+    return sec;
+}
 function registerCombo(kind, x, y, extra) {
     if (!game || game.testDrive) return;
     game.roundCombos = (game.roundCombos || 0) + 1;
@@ -24044,6 +24328,7 @@ function registerCombo(kind, x, y, extra) {
     // streak multiplier, which was also called combo; that system is retired,
     // so the word every arcade player already knows is free again.
     if (kind === 'band') label = `COMBO ×${extra}  ${secsLabel(game._lastRowSecs || 0)}`;
+    { const _cs = payCombo(kind); if (_cs > 0 && kind !== 'band') label = `${label}  ${secsLabel(_cs)}`; }   // [181026m] COMBO!  +3s
     // Positioned at the event where one is given, centre-board otherwise. A
     // combo is a thing that happened somewhere; naming it over the spot is what
     // connects the word to the move that earned it.
@@ -24287,6 +24572,14 @@ function checkRowMilestones() {
 // tidying urge aimed at its most satisfiable moment. Gaps occupied by
 // active slots are skipped (slots signpost themselves), as are cells
 // under the player.
+/* ══ [171026l] THE ROW'S SECONDS, READABLE BY DAY — designer's call, 17 Oct, 18:11: "the number of seconds displayed on
+   each row of occupied cells need to contrast more with the background in day mode, at present they are not clear to see."
+   The quote on a row's last gap ([080926b]) was pale mint (#86efac), or amber when it extends a chain, breathing between
+   55% and 100%: against the white day cell that is a contrast of 1.1 to 1.2 to 1 (amber 1.2 to 1.4) — night's colours on
+   day's ground. By day it is now deep green (#065f46), or deep amber (#92400e) on a chain, over a white halo, breathing
+   between 85% and 100%: 4.8 to 6.6 to 1 against the cell (amber 4.6 to 6.1). Night is unchanged.
+   ROW_QUOTE_DAY_INK = false puts back the pale ink. */
+const ROW_QUOTE_DAY_INK = true;
 function drawRowGapPulses() {
     const camInt = Math.floor(game.cameraY);
     const pulse = 0.22 + 0.18 * Math.sin(performance.now() / 300);
@@ -24337,6 +24630,12 @@ function drawRowGapPulses() {
         ctx.font = `bold ${Math.round(CELL * 0.34)}px sans-serif`;   // same face the floats use
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillStyle = q.continues ? '#fbbf24' : '#86efac';   // amber when it extends a chain
+        if (ROW_QUOTE_DAY_INK && currentTheme === 'day') {   // [171026l] by day: deep ink on a white halo, held near full strength
+            ctx.globalAlpha = 0.85 + 0.15 * ((pulse - 0.22) / 0.36);
+            ctx.fillStyle = q.continues ? '#92400e' : '#065f46';
+            ctx.lineJoin = 'round'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
+        }
         if (TEXT_SHADOW) { ctx.shadowColor = 'rgba(6,20,45,0.6)'; ctx.shadowBlur = 4; }   // [091026p]
         ctx.fillText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
         ctx.restore();
@@ -24466,7 +24765,40 @@ function countUp(to, ms, onFrame, onDone) {
     return () => { cancelled = true; cancelAnimationFrame(raf); onFrame(to); if (onDone) onDone(); };
 }
 
+/* ══ [181026b] THE LEVEL, ADDED UP — designer's call, 18 Oct, 13:44: "i want to see the final scores for each completed
+   level to be added up, numbers spinning round as the excess time is converted to points and then added to the final
+   inter level score." The scorecard ([080926k] retired it between levels; it stayed for ROTOЯ COMPLETE) comes back
+   between levels, with the lines the new economy is made of: SET COMPLETE (1,000 × the level), SET PIECES, ROWS, BOARD
+   (everything else — new ground, greens, hourglasses, shifters, the coverage bonus), TIME OVER 1:39 if any was, and TIME
+   LEFT, whose seconds spin down to nothing while their points spin up. The lines are the sum: LEVEL TOTAL is built from
+   them, and the run's score below it climbs as they land ([210826ab]'s rule, kept). Between levels it moves on by itself
+   once the count has landed (TALLY_AUTO_MS); a tap fast-forwards, CONTINUE goes at once. Every point on it was paid
+   when it happened (the time left at completeSet), so the card reports and never awards ([220826c]). */
+const TALLY_AUTO_MS = 1800, TALLY_AUTO_SKIP_MS = 1400;
+function tallySpinMs(secs) { return Math.min(2600, 700 + 22 * Math.max(0, secs)); }
+function buildLevelTallyRows() {
+    const L = game._lv, lvl = advancedRound;
+    const delta = game.score - (game._levelStartScore || 0);
+    const cov = L.cov || 0;   // [181026l] the grade's points have their own line now, out of BOARD
+    const known = L.set + L.slot + L.row + L.over + L.time + cov;
+    const rows = [], plusS = n => `+${Math.round(n)}s`;
+    rows.push({ icon: 'set', label: 'Set complete', count: 'LEVEL ' + lvl, pts: L.set });
+    // [181026l] Jake, 21:09: the set is made of slots; the line says what they paid in time as well as points
+    rows.push({ icon: 'slot', label: 'Slots', count: '×' + (game.roundClaims || 0) + (L.slotSecs ? ' · ' + plusS(L.slotSecs) : ''), pts: L.slot });
+    rows.push({ icon: 'rows', label: 'Rows', count: '×' + (game.roundRows || 0), pts: L.row });
+    // a count, and the time they paid; their points are already in the lines above, so this line adds none
+    rows.push({ icon: 'combo', label: 'Combos', count: '×' + (game.roundCombos || 0) + (L.comboSecs ? ' · ' + plusS(L.comboSecs) : ''), pts: 0 });
+    if (cov > 0) rows.push({ icon: 'covered', label: 'Grade', count: L.grade || '', pts: cov });
+    rows.push({ icon: 'play', label: 'Board', count: '', pts: Math.max(0, delta - known) });
+    // what the level's charges took off the clock — every one of those seconds was points at the set
+    if (L.penSecs > 0) rows.push({ icon: 'trim', label: 'Penalties', count: '−' + Math.round(L.penSecs) + 's', pts: 0 });
+    if (L.over > 0) rows.push({ icon: 'clock', label: 'Time over ' + clockFmt(CLOCK_CEILING), count: Math.round(L.overSecs) + 's', pts: L.over });
+    rows.push({ icon: 'clock', label: 'Time left', count: L.timeSecs + 's', pts: L.time, low: L.timeSecs < 10,
+                spin: { secs: L.timeSecs, per: TIME_PTS_PER_SEC * lvl } });
+    return rows;
+}
 function buildTallyRows() {
+    if (LEVEL_TALLY && game._lv) return buildLevelTallyRows();   // [181026b]
     // [300726ba] SIX LINES, NOT TWELVE. The card had become a spreadsheet:
     // twelve numbers, eight of which paid nothing. Rows, slots, combo and trims
     // were all DOUBLE-COUNTED — their points are already inside "Points in
@@ -24659,6 +24991,21 @@ let _tallyRunning = 0;
 // heading, which otherwise reads "LEVEL 10 COMPLETE" on the screen that ends the
 // game, and the button, which should not say CONTINUE when there is nothing to
 // continue to.
+let _tallyAuto = false;   // [181026b] between levels the card moves on by itself
+const LEVEL_TALLY = CLOCK_RESETS;
+function countSpin(to, ms, onFrame, onDone) {   // [181026b] countUp, but even: the seconds go at one pace
+    const t0 = performance.now();
+    let raf = 0, cancelled = false;
+    const step = () => {
+        if (cancelled) return;
+        const t = Math.min(1, (performance.now() - t0) / ms);
+        onFrame(Math.round(to * t));
+        if (t < 1) raf = requestAnimationFrame(step);
+        else if (onDone) onDone();
+    };
+    raf = requestAnimationFrame(step);
+    return () => { cancelled = true; cancelAnimationFrame(raf); onFrame(to); if (onDone) onDone(); };
+}
 function showLevelTally(onDone, opts) {
     opts = opts || {};
     document.body.classList.add('tally-open');   // [060826q] lobby track over the card
@@ -24668,6 +25015,7 @@ function showLevelTally(onDone, opts) {
     clearTallyTimers();
     _tallyCancels = [];
     _tallyRunning = 0;
+    _tallyAuto = !!(opts && opts.auto);   // [181026b]
 
     const title = document.getElementById('tallyTitle');
     // [080926a] Two lines, per the field note: the number on the first, the
@@ -24803,12 +25151,21 @@ function showLevelTally(onDone, opts) {
         }
     };
     paintRank(grandBase);
+    /* [181026c] THE SUM CANNOT LOSE A LINE. Each line counted up from `banked` — the total of the lines already FINISHED
+       — and a line finishes 420 ms into a 460 ms step, so on a slow frame the next line started from a total that did not
+       have its neighbour in it yet, and its finish wrote that short total back: caught on the first FRESH CLOCK capture,
+       LEVEL TOTAL 5,165 over lines adding to 5,993. Now each line starts from its fixed place in the sum (the lines above
+       it, all of them), and the total only ever climbs. */
+    let _shownTotal = -1;
     const setTotal = v => {
+        if (v < _shownTotal) return;
+        _shownTotal = v;
         if (totalVal) totalVal.textContent = v.toLocaleString();
         if (grandVal) grandVal.textContent = (grandBase + v).toLocaleString();
         paintRank(grandBase + v);
     };
     let banked = 0;   // total from rows already finished counting
+    const _place = []; { let a = 0; for (const n of nodes) { _place.push(a); a += (n.row.pts || 0); } }   // [181026c]
 
     // Each row lands, then its points spin up from zero — and the level total
     // climbs by exactly that amount at the same time, so you watch the number
@@ -24821,7 +25178,7 @@ function showLevelTally(onDone, opts) {
             // there is nothing on screen for the animation to attach to. The
             // total absorbs it and moves on.
             if (!n.node) {
-                if (n.row.pts) { banked += n.row.pts; setTotal(banked); }
+                if (n.row.pts) { banked = Math.max(banked, _place[i] + n.row.pts); setTotal(banked); }   // [181026c]
                 return;
             }
             n.node.classList.add('in');
@@ -24834,17 +25191,24 @@ function showLevelTally(onDone, opts) {
             // it does not award.
             if (!n.row.pts) return;
             const ptsEl = n.node.querySelector('.tally-pts');
-            const base = banked;
+            const base = _place[i];   // [181026c] its fixed place in the sum
             _tallyRunning++;
-            const cancel = countUp(n.row.pts, 420, v => {
-                if (ptsEl) ptsEl.textContent = '+' + v;
+            const sp = n.row.spin, cntEl = sp ? n.node.querySelector('.tally-count') : null;   // [181026b] the time left spins down as its points spin up
+            let _lastS = sp ? sp.secs : 0, _lastTick = 0;
+            const cancel = (sp ? countSpin : countUp)(n.row.pts, sp ? tallySpinMs(sp.secs) : 420, v => {
+                if (ptsEl) ptsEl.textContent = '+' + v.toLocaleString();
+                if (sp && cntEl) {
+                    const left = Math.max(0, sp.secs - Math.floor(v / Math.max(1, sp.per)));
+                    if (left !== _lastS) { _lastS = left; const t = performance.now(); if (t - _lastTick > 45 && sfx.tallyTick) { _lastTick = t; sfx.tallyTick(); } }
+                    cntEl.textContent = left + 's';
+                }
                 setTotal(base + v);
-            }, () => { banked = base + n.row.pts; _tallyRunning--; setTotal(banked); });
+            }, () => { banked = Math.max(banked, base + n.row.pts); _tallyRunning--; setTotal(banked); if (cntEl) cntEl.textContent = '0s'; });
             _tallyCancels.push(cancel);
         }, 240 + i * STEP));
     });
 
-    const endAt = 240 + nodes.length * STEP + 300;
+    const endAt = 240 + nodes.length * STEP + 300 + nodes.reduce((a, n) => a + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0), 0);   // [181026b] the spin is longer than a line
     _tallyTimers.push(setTimeout(() => {
         if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
         if (sfx.gold) sfx.gold();
@@ -24852,6 +25216,7 @@ function showLevelTally(onDone, opts) {
     // [290726k] NO auto-continue: the scorecard is a rest point. Play only
     // resumes when the player presses CONTINUE.
     _tallyTimers.push(setTimeout(() => { if (hint) hint.classList.add('in'); }, endAt + 400));
+    if (_tallyAuto) _tallyTimers.push(setTimeout(() => { if (_tallyAuto) finishLevelTally(); }, endAt + TALLY_AUTO_MS));   // [181026b]
 }
 
 // Tap handler: first tap fast-forwards every remaining row and lands the
@@ -24888,7 +25253,8 @@ function skipLevelTally() {
                 if (!r) return;
                 if (!n.classList.contains('in')) n.classList.add('in');   // [220826c] see showLevelTally
                 const ptsEl = n.querySelector('.tally-pts');
-                if (r.pts && ptsEl) ptsEl.textContent = '+' + r.pts;
+                if (r.pts && ptsEl) ptsEl.textContent = '+' + r.pts.toLocaleString();
+                if (r.spin) { const ce = n.querySelector('.tally-count'); if (ce) ce.textContent = '0s'; }   // [181026b]
             });
         }
         const totalEl = document.getElementById('tallyTotal');
@@ -24911,6 +25277,7 @@ function skipLevelTally() {
         if (grandEl2) grandEl2.classList.add('in');
         if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
         if (hint) hint.classList.add('in');
+        if (_tallyAuto) _tallyTimers.push(setTimeout(() => { if (_tallyAuto) finishLevelTally(); }, TALLY_AUTO_SKIP_MS));   // [181026b] between levels it still moves on
         return;   // [290726k] wait for CONTINUE — a body tap never dismisses
     }
     // Second body tap: still no dismiss — only the button continues.
@@ -24926,6 +25293,7 @@ function skipLevelTally() {
 // welcome screen is opaque at z-index 100 and the tally is 30 inside a container
 // that makes no stacking context — which is exactly why it went unnoticed.)
 function hideLevelTally() {
+    _tallyAuto = false;   // [181026b]
     document.body.classList.remove('tally-open');
     if (replayClip && replayClip.kind === 'level') { replayClipStop(); replayClip = null; }   // [270926b] the level's clip goes with its card
     { const _tc = document.getElementById('tallyClip'); if (_tc) _tc.hidden = true; }
@@ -24948,6 +25316,7 @@ function hideLevelTally() {
 }
 
 function finishLevelTally() {
+    _tallyAuto = false;   // [181026b]
     document.body.classList.remove('tally-open');   // [060826q] back to Drive
     clearTallyTimers();
     const el = document.getElementById('levelTally');
@@ -25030,7 +25399,7 @@ function completeSet() {
         const frac = Math.max(0, Math.min(1, (zero - t) / (zero - full)));
         game._lastSwiftSec = Math.round(t);
         game._lastSwiftWindow = Math.round(zero);        // for the card, if it ever wants it
-        game._lastSwiftBonus = Math.round(120 * advancedRound * frac);
+        game._lastSwiftBonus = CLOCK_RESETS ? 0 : Math.round(120 * advancedRound * frac);   // [181026a] time left pays for speed now
     }
     // [220826c] SNAPSHOT BEFORE THE BONUSES, NOT AFTER THE FIRST ONE. This line
     // sat below the swift payout, so "points in play" already contained the speed
@@ -25044,9 +25413,17 @@ function completeSet() {
     if (game._lastSwiftBonus > 0) scoreGain(game._lastSwiftBonus, false);
     // Proportionate level bonus: 50 × the level just cleared — announced on
     // the level overlay so the escalation is visible, not silent.
-    const bonus = 50 * advancedRound;
+    const bonus = (CLOCK_RESETS ? SET_DONE_PTS : 50) * advancedRound;   // [181026a] the most points of anything: 1,000 × the level
     game._lastLevelBonus = bonus;
     scoreGain(bonus, true);
+    if (game._lv) game._lv.set = bonus;
+    if (CLOCK_RESETS && CLOCK_ONLY && !game.testDrive) {   // [181026a] THE TIME LEFT BECOMES POINTS — the tally spins it down
+        const _left = Math.max(0, Math.floor(momentumRemaining()));
+        const _tp = Math.round(_left * TIME_PTS_PER_SEC * advancedRound);
+        if (game._lv) { game._lv.timeSecs = _left; game._lv.time = _tp; }
+        if (_tp > 0) scoreGain(_tp, true, 0);
+        rec('timebonus', { sec: _left, pts: _tp, r: advancedRound });
+    }
     // COVERAGE GRADE (D2) — judged per round, flat 70% = S ("clean slate").
     // Grade pays a scaled bonus; S gets the gold jackpot moment.
     {
@@ -25061,6 +25438,7 @@ function completeSet() {
                        : covGrade === 'B' ? 10 * advancedRound : 0;
         if (covBonus > 0) scoreGain(covBonus, true);
         game._lastCovGrade = covGrade; game._lastCovBonus = covBonus;
+        if (game._lv) { game._lv.cov = covBonus; game._lv.grade = covGrade; }   // [181026l] the grade has its own line
         // [270726r] The text moved onto the level card; the jackpot keeps
         // its audio moment.
         if (covGrade === 'S') {
@@ -25161,7 +25539,11 @@ function completeSet() {
             // clock mode it is named and shown, because a checkpoint the player
             // does not notice arriving at is not a checkpoint, it is a number
             // that went up while they were reading something else.
-            {
+            if (CLOCK_RESETS) {   // [181026a] THE CLOCK STARTS AFRESH: what was left became points when the set was done
+                game.speedTimer = LEVEL_TIME_LIMIT - LEVEL_START_SEC;
+                rec('clock', { to: LEVEL_START_SEC, r: advancedRound });
+                if (advancedRound === 2) showTip('clockreset');
+            } else {
                 const _gRaw = levelTimeGrant();
                 const _grant = clockCredit(_gRaw);   // [180926ce] the checkpoint pays what the clock can hold
                 momentumAddSeconds(_grant);
@@ -25186,6 +25568,7 @@ function completeSet() {
             // [290726d] tally counters reset with the rest of the round trackers
             game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
+    game._rowRun = 0; game._rowRunShape = null;   // [181026j] a new level, a new run
             game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
             breakCombo('level');   // [230826b] a new level starts cold
             // [300726an] A level OPENS with targets. Slots were gated behind
@@ -25198,6 +25581,7 @@ function completeSet() {
             slotProgress = getSlotEveryLandings();
             game._needSeed = true;   // [300726an] seed this level's opening slots
             game._levelStartScore = game.score;
+            game._lv = newLevelLedger();   // [181026b]
             game._piecesHome = 0; game._setDoneHold = false;   // [300926g][300926f]
             game._elapsedLevel = 0; game._lastTimeMark = 0;   // [270726za] fresh reminder clock
             game.speedOffset = 0;
@@ -25303,7 +25687,7 @@ function completeSet() {
                 // [090926a] TIGHT / STEADY / LOOSE tried for one build and removed
                 // on the designer's call. The ratio (roundRevolves / roundRows)
                 // stays in the export if it is ever wanted again.
-                game._lastLevelLine = `ROWS ${game.roundRows || 0}`;
+                game._lastLevelLine = CLOCK_RESETS ? `CLOCK BACK TO ${clockFmt(LEVEL_START_SEC)}` : `ROWS ${game.roundRows || 0}`;   // [181026a] the door says the rule
             }
             // [100926f] the card yields to the replay of the closing moves; the
             // door follows. Without a tape (or if skipped) it is the old beat.
@@ -25325,7 +25709,7 @@ function completeSet() {
                button — see levelCardThenReplay. What used to happen here was
                startBoardReplay() outright, with the title and praise riding it
                as captions. */
-            levelCardThenReplay(_lc, () => {
+            const _afterCard = () => {
                 if (_run !== _runSerial) return;   // [300926e] that run is over
                 _advanceNow();
                 setTimeout(() => {
@@ -25349,7 +25733,13 @@ function completeSet() {
                     // have held the player still for 400ms after the wash had
                     // already cleared, which reads as the game hanging.
                 }, 4400);
-            });
+            };
+            /* [181026b] the level is added up between the card and the door */
+            levelCardThenReplay(_lc, LEVEL_TALLY ? () => {
+                if (_run !== _runSerial) return;
+                hideLevelCard();
+                showLevelTally(_afterCard, { auto: true });
+            } : _afterCard);
         }, SET_TO_REPLAY_MS + _hold);   // [ACTION REPLAY] was 2200 — the card's hold; now the fireworks' first bloom · [290926g] after the landing
     } else {
         // [220826c] THE FINALE TAKES THE SAME ROUTE AS EVERY OTHER LEVEL — card,
@@ -26470,9 +26860,9 @@ function payHourglass(x, y, by) {
     scoreGain(3, false);
     momentumAddSeconds(sec);
     rec('time', { sec, src: 'hourglass', by: by || 'sweep', m: Math.round(momentumRemaining()), ...(sec !== raw ? { raw } : {}) });
-    if (sec >= 20) { if (sfx.time30) sfx.time30(); } else if (sfx.time10) sfx.time10();
-    addFloat(x * CELL + CELL / 2, (y - game.cameraY) * CELL, secsLabel(sec), sec >= 20 ? '#fb8b1e' : '#86efac');
-    tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= 20 ? '#fb8b1e' : '#86efac');
+    if (sec >= HOURGLASS_SEC) { if (sfx.time30) sfx.time30(); } else if (sfx.time10) sfx.time10();
+    addFloat(x * CELL + CELL / 2, (y - game.cameraY) * CELL, secsLabel(sec), sec >= HOURGLASS_SEC ? '#fb8b1e' : '#86efac');
+    tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= HOURGLASS_SEC ? '#fb8b1e' : '#86efac');
     addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#86efac');
     const clockEl = document.getElementById('rotorSecs');
     if (clockEl) { clockEl.classList.remove('clock-boost'); void clockEl.offsetWidth; clockEl.classList.add('clock-boost'); setTimeout(() => clockEl.classList.remove('clock-boost'), 800); }
@@ -26493,10 +26883,10 @@ function payHourglass(x, y, by) {
 const _clearGhosts = new Map();   // key -> { kind, until, x, y }: drawn until the body arrives
 const CLEAR_COLOUR = { pickup: '#a3e635', hazard: '#ef4444', pivot: '#38bdf8', slip: '#38bdf8' };
 function clearableAsset(v) { return v === 'pickup' || v === 'hazard' || v === 'pivot' || v === 'slip' || isTimeCell(v); }
-function shifterClearCell(x, y, inMs, src, skip) {   // skip: the tile that moved it and the cells the body stood on
+function shifterClearCell(x, y, inMs, src, skip, keep) {   // skip: the tile that moved it and the cells the body stood on · keep: the set it lands on exactly [181026d]
     const k = `${x},${y}`;
     if ((skip && skip.has(k)) || x < 0 || x >= VIEW_W) return 0;
-    if (SHIFTER_CLEARS_SETS) { const sl = slots.find(q => !q.claimed && !q.retiring && q.keys.has(k)); if (sl) { shifterDestroySet(sl, inMs, src); return 1; } }   // [171026e]
+    if (SHIFTER_CLEARS_SETS) { const sl = slots.find(q => q !== keep && !q.claimed && !q.retiring && q.keys.has(k)); if (sl) { shifterDestroySet(sl, inMs, src); return 1; } }   // [171026e] · [181026d] not the one it delivers to
     const v = world[k];
     if (!clearableAsset(v)) return 0;
     delete world[k];
@@ -26509,7 +26899,8 @@ function shifterClearPath(fromCells, v, hop, skipKey) {   // a step: every cell 
     const base = animQueueDelay() + MACHINE_ENGAGE_MS, dur = slideMs(hop), skip = new Set([skipKey, ...fromCells.map(c => `${c.x},${c.y}`)]);
     let n = 0;
     const reach = h => (STEP_STEPPED && hop > 1) ? (h - 1) * (STEP2_MOVE_MS + STEP2_BEAT_MS) + STEP2_MOVE_MS * 0.6 : dur * 0.6;   // [171026f] as the body reaches it, not after
-    for (let h = 1; h <= hop; h++) for (const c of fromCells) n += shifterClearCell(c.x + v.dx * h, c.y + v.dy * h, base + reach(h), 'step', skip);
+    const keep = exactFitSet(fromCells.map(c => ({ x: c.x + v.dx * hop, y: c.y + v.dy * hop })));   // [181026d] an exact delivery is collected, not destroyed
+    for (let h = 1; h <= hop; h++) for (const c of fromCells) n += shifterClearCell(c.x + v.dx * h, c.y + v.dy * h, base + reach(h), 'step', skip, keep);
     return n;
 }
 /* ══ [171026e] ...AND A SET TO COLLECT IS AN ASSET TOO — designer's call, 17 Oct: "A player landing on a move or turn
@@ -26522,18 +26913,19 @@ function shifterClearPath(fromCells, v, hop, skipKey) {   // a step: every cell 
    combo into a set); a single pushed onto a set it does not fit is no longer refused and charged — the set goes; the steps
    that were planted to push a piece into a set (the combo seed, the joining tile's push, a double's aim at a set, a step
    spawned pointing at a set) are no longer laid, and the move guide never routes a push through a set. */
-function cellsTouchSet(cells) {
-    for (const c of cells) { const k = `${c.x},${c.y}`; if (slots.some(sl => !sl.claimed && !sl.retiring && sl.keys.has(k))) return true; }
+function cellsTouchSet(cells, except) {   // [181026d] except: the set an exact delivery fills
+    for (const c of cells) { const k = `${c.x},${c.y}`; if (slots.some(sl => sl !== except && !sl.claimed && !sl.retiring && sl.keys.has(k))) return true; }
     return false;
 }
 function stepTouchesSet(cells, v, hop) {   // the cells a step carries the body over and onto
     const path = [];
     for (let h = 1; h <= hop; h++) for (const c of cells) path.push({ x: c.x + v.dx * h, y: c.y + v.dy * h });
-    return cellsTouchSet(path);
+    return cellsTouchSet(path, exactFitSet(cells.map(c => ({ x: c.x + v.dx * hop, y: c.y + v.dy * hop }))));   // [181026d]
 }
 function turnTouchesSet(cells, pv, tx, ty, ccw, turns) {   // where a turn lands the body, and its arc
-    if (cellsTouchSet(pv.newCells)) return true;
-    try { return cellsTouchSet(sweptCells(cells, pv.rotated, tx, ty, ccw, turns)); } catch (e) { return false; }
+    const fit = exactFitSet(pv.newCells);   // [181026d]
+    if (cellsTouchSet(pv.newCells, fit)) return true;
+    try { return cellsTouchSet(sweptCells(cells, pv.rotated, tx, ty, ccw, turns), fit); } catch (e) { return false; }
 }
 function shifterDestroySet(sl, inMs, src) {
     const at = Math.max(0, inMs || 0);
@@ -26566,8 +26958,9 @@ function sweepLay(oldCells, rotated, triggerCell, ccw, turns) {
     if (!transformAnim || transformAnim.type !== 'pivot') return 0;   // nothing moved (a single)
     if (SHIFTER_CLEARS) {   // [171026a] what the arm passes over, as it passes, and what it lands on, as it lands
         const tk = new Set([`${triggerCell.x},${triggerCell.y}`, ...oldCells.map(c => `${c.x},${c.y}`)]), in0 = transformAnim.startTime - performance.now(), dur = transformAnim.duration;
-        for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) shifterClearCell(c.x, c.y, in0 + dur * turnTimeForArc(c.k), 'turn', tk);
-        for (const c of rotated) shifterClearCell(c.x, c.y, in0 + dur, 'turn', tk);
+        const keep = exactFitSet(rotated);   // [181026d] a turn that lands the body exactly on a set fills it
+        for (const c of sweptCells(oldCells, rotated, triggerCell.x, triggerCell.y, ccw, turns)) shifterClearCell(c.x, c.y, in0 + dur * turnTimeForArc(c.k), 'turn', tk, keep);
+        for (const c of rotated) shifterClearCell(c.x, c.y, in0 + dur, 'turn', tk, keep);
     }
     if (MACHINE_TAKES_HOURGLASSES) {   // [300926b] hourglasses on the arm's path, each as the cube crosses it
         const topH = topLawfulRow(), botH = Math.floor(game.cameraY) + VIEW_H - 1;
@@ -27177,6 +27570,7 @@ function respawnPlayer() {
     stopDrag(); game._queuedMove = null;
     if (_stickTouch) { _stickTouch.dir = null; _stickTouch.pendDir = null; }
     rec('respawn', { spot: _moved, held: game._freshPush ? 1 : 0, stone: _stone ? 1 : 0 });   // [071026m] spot 3: on its stone
+    endRowRun('respawn');   // [181026j]
 
     // Clear anything that would instantly kill or unexpectedly trigger on the
     // respawn cells — fresh terrain generated above the player may contain
@@ -27800,6 +28194,7 @@ function stageSetLoss(landing, dir, newX, newY, newConfig) {
     const arrive = flightRemaining();
     later(arrive + BREAK_HOLD_MS + SET_TAKE_MS * 0.3, () => { if (sfx.hit) sfx.hit(); triggerShake(3, 120); });   // the crunch
     showTip('misfit');
+    if (landing.length > 1) chargeCubesLost(landing.length - 1, landing[1], arrive + BREAK_HOLD_MS);   // [181026a] the cubes besides the last: 3 s each (the last is priced as a lost last cube)
     rec('hurt', { from: prevType, to: 'none', ch: 'slot', n: landing.length, landed: 0 });
     stageDeathDrop(cas, arrive, prevType, 'setlost');
 }
@@ -27887,8 +28282,9 @@ function shedOnLanding(landing, hitIdx, label, dir) {
     if (edgeN) later(arriveIn + hold, () => flagOutOfBounds(v[0] < 0 ? 'left' : v[0] > 0 ? 'right' : v[1] < 0 ? 'top' : 'bottom', OOB_PINK));   // [071026n] a cube paid: pink
     const cubes = n > 1 ? `−${n} CUBES` : '−1 CUBE';
     const _edgeWord = Math.random() < 0.5 ? 'OVER THE EDGE' : 'OUT OF BOUNDS';   // [280926s] two ways of saying it, taken in turn at random
-    const line = setN && !edgeN ? (closeFitLine(landing) || 'WRONG SHAPE FOR THE SET') : edgeN && !setN ? _edgeWord : `${_edgeWord} · WRONG SHAPE`;   // [061026e]
+    const line = setN && !edgeN ? (closeFitLine(landing) || 'WRONG SHAPE FOR THE SLOT') : edgeN && !setN ? _edgeWord : `${_edgeWord} · WRONG SHAPE`;   // [061026e]
     later(arriveIn + hold, () => addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `${line}\n${cubes}`, '#f87171', true, { life: 2000, hold: 1100 }));   // the words at the break
+    chargeCubesLost(n, cas[0], arriveIn + hold);   // [181026a] the edge and the wrong set: 3 s a cube
     tapeNote(`${line}  ${cubes}`, '#f87171');
     showTip(setN ? 'misfit' : 'edge');
     // the sound, the shake and the denial flash fire at the break (stageBreak)
@@ -28003,6 +28399,7 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty',
     // consequence you cannot feel teaches nothing, and time is the teaching
     // currency.
     const _base = sec;   // [081026P] what kind of cost it is is read off its base price, before any step
+    if (kind !== 'trade' && sec > 0) endRowRun('penalty');   // [181026j] any penalty ends a run of rows
     {
         const k = src ? src : sec === TRIM_COST_SEC ? 'trim' : (typeof SHIFT_OOB_COST_SEC !== 'undefined' && sec === SHIFT_OOB_COST_SEC) ? 'push' : sec === FALL_COST_SEC ? 'fall' : null;
         if (kind === 'penalty' && (k === 'fall' || k === 'red' || k === 'trim' || k === 'push' || k === 'set')) {   // a mistake: it steps · [101026m] 'set'
@@ -28030,8 +28427,9 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty',
                   : _base === FALL_COST_SEC ? 'fall'
                   : _base === BUMP_COST_SEC ? 'bump' : 'other';
     rec('cost', { sec, src: costSrc, m: Math.round(momentumRemaining()) });
+    if (game._lv && kind !== 'trade' && sec > 0) game._lv.penSecs += sec;   // [181026l] the level's charges, for the card
     // [100926f] the replay's caption for this move — a trade states its own line at the caller
-    if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'RESTART  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : costSrc === 'set' ? 'WRONG SET  ' : costSrc === 'red' ? 'NO CUBE TO SPARE  ' : ''}−${sec}s`, '#f87171');   // [061026h]
+    if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'RESTART  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : costSrc === 'set' ? 'WRONG SLOT  ' : costSrc === 'red' ? 'NO CUBE TO SPARE  ' : ''}−${sec}s`, '#f87171');   // [061026h]
     // [300726s] Announce a heavy loss the same way a gain is announced, but
     // inverted: hazard red instead of mint, FALLING instead of rising. No new
     // glyph to learn — it reads as the visible opposite of "+ 20 SECONDS".
@@ -28519,11 +28917,11 @@ function move(dir) {
                     game.faceParity ^= 1;
                     startFlip(dir, from, fromPar, false, probeCells.map(c => ({ x: c.x, y: c.y })));
                     const arrive = flightRemaining();
-                    fillVoid(vc.x, vc.y, arrive + BREAK_HOLD_MS + V_DROP_MS);   // the ground surfaces once it has gone in
+                    fillVoid(vc.x, vc.y, arrive + BREAK_HOLD_MS + V_DROP_MS, null, true);   // the ground surfaces once it has gone in · [181026i] a restart, not a bridge
                     stageDeathDrop([{ x: vc.x, y: vc.y, v: true }], arrive, 'single');
                     return;
                 }
-                fillVoid(vc.x, vc.y);
+                fillVoid(vc.x, vc.y, 0, null, true);   // [181026i] a restart, not a bridge
                 addBurst(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL + CELL / 2, '#7dd3fc');
                 for (const c of getPlayerCells())
                     addBurst(c.x * CELL + CELL/2, (c.y - game.cameraY) * CELL + CELL/2, '#ef4444');
@@ -29012,7 +29410,7 @@ function checkCollisions() {
                 momentumAddSeconds(sec);
                 rec('time', { sec, src: 'hourglass', isle: islandCells.has(key) ? 1 : 0, m: Math.round(momentumRemaining()),
                               ...(sec !== raw ? { raw } : {}) });   // [070926b][070926e] isle = taken from an island platform
-                if (sec >= 20) { if (sfx.time30) sfx.time30(); }   // [030826af]
+                if (sec >= HOURGLASS_SEC) { if (sfx.time30) sfx.time30(); }   // [030826af]
                 else if (sfx.time10) sfx.time10();
                 game.roundWarps = (game.roundWarps || 0) + 1;
                 game.roundTimeSecs = (game.roundTimeSecs || 0) + sec;
@@ -29399,7 +29797,7 @@ function checkCollisions() {
                         }
                         triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
                         triggerShake(3, 150);
-                        if (sfx.evolve) sfx.evolve();
+                        if (SHIFTER_SWOOSH && sfx.swooshTurn) sfx.swooshTurn(turns, ccw); else if (sfx.evolve) sfx.evolve();   // [181026g]
                     });
                 }
                 // [270726] Animate around the trigger cube; pv.rotated keeps
@@ -29554,14 +29952,14 @@ function checkCollisions() {
                     const scx = triggerCell.x * CELL + CELL/2;
                     const scy = (triggerCell.y - game.cameraY) * CELL + CELL/2;
                     later(animQueueDelay(), () => {
-                        addBurst(scx, scy, SHIFTER_FAMILY_COLOR); if (hop > 1 && STEP_GEARS && sfx.stepGear) sfx.stepGear();   // [081026J]
+                        addBurst(scx, scy, SHIFTER_FAMILY_COLOR); if (SHIFTER_SWOOSH && sfx.swooshStep) sfx.swooshStep(hop, v.dx); else if (hop > 1 && STEP_GEARS && sfx.stepGear) sfx.stepGear();   // [081026J] · [181026g]
                         for (let i = 0; i < 5; i++) {
                             const ang = (i / 5) * Math.PI * 2;
                             addBurst(scx + Math.cos(ang) * 14, scy + Math.sin(ang) * 14, SHIFTER_FAMILY_COLOR);
                         }
                         triggerEdgeGlow(SHIFTER_FAMILY_COLOR, 700);
                         triggerShake(3, 150);
-                        if (sfx.evolve) sfx.evolve();
+                        if (!SHIFTER_SWOOSH && sfx.evolve) sfx.evolve();   // [181026g] the swoosh above is the sound now
                     });
                 }
                 { const _ta = transformAnim; startSlipAnim(oldCellsForAnim, cells, { x: triggerCell.x, y: triggerCell.y, vec: v, hop }); if (transformAnim !== _ta) rechargeFromStroke(triggerKey); }   // [280926e] the stroke, drawn · [091026l] the rest follows it
@@ -29579,7 +29977,8 @@ function checkCollisions() {
                 const keep = i => !push.trim.redIndices.includes(i);
                 if (push.free && push.free.length) machineFreeLay(newCells, push.free.filter(i => !push.trim.redIndices.includes(i)), animQueueDelay() + MACHINE_ENGAGE_MS + slideMs(hop));   // [091026g] what the rest land on is laid free, as on a clean push
                 if (SHIFTER_CLEARS) shifterClearPath(oldCellsForAnim, v, hop, triggerKey);   // [171026a]
-                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { vec: v, from: oldCellsForAnim, arrive: animQueueDelay() + MACHINE_ENGAGE_MS + slideMs(hop) });   // [260926n] the push's direction, for the shatter · [280926d] the break waits for the slide · [280926e]
+                applyShiftTrim(push.trim, newCells, triggerCell, triggerKey, { vec: v, from: oldCellsForAnim, arrive: animQueueDelay() + MACHINE_ENGAGE_MS + slideMs(hop) });
+                if (SHIFTER_SWOOSH && sfx.swooshStep) later(animQueueDelay(), () => sfx.swooshStep(hop, v.dx));   // [181026g] it still carries you   // [260926n] the push's direction, for the shatter · [280926d] the break waits for the slide · [280926e]
                 cells = getPlayerCells();
                 { const _ta = transformAnim; startSlipAnim(oldCellsForAnim, newCells, { x: triggerCell.x, y: triggerCell.y, vec: v, hop }); if (transformAnim !== _ta) rechargeFromStroke(triggerKey); }   // [280926d] the whole body slides; the doomed cube is marked where it arrives · [280926e] · [091026l]
                 stepLay(oldCellsForAnim.filter((_, i) => keep(i)), v, hop);   // [260926i] the survivors' path
@@ -29687,11 +30086,11 @@ function checkCollisions() {
                           ...(sec !== raw ? { raw } : {}) });   // [160826q]
             // [030826af] The BIG one gets the big sound. Threshold at 20 so the
             // legacy t30/t45 cells still trigger it too.
-            if (sec >= 20) { if (sfx.time30) sfx.time30(); }
+            if (sec >= HOURGLASS_SEC) { if (sfx.time30) sfx.time30(); }
             else if (sfx.time10) sfx.time10();
             addFloat(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL,
-                secsLabel(sec), sec >= 20 ? '#fb8b1e' : '#86efac');
-            tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= 20 ? '#fb8b1e' : '#86efac');
+                secsLabel(sec), sec >= HOURGLASS_SEC ? '#fb8b1e' : '#86efac');
+            tapeNote(`HOURGLASS  ${secsLabel(sec)}`, sec >= HOURGLASS_SEC ? '#fb8b1e' : '#86efac');
             addBurst(cell.x * CELL + CELL/2, (cell.y - game.cameraY) * CELL + CELL/2,
                 sec === 45 ? '#ffd60a' : '#86efac');
             // Trigger the clock-boost animation
@@ -30244,13 +30643,16 @@ function rowsBridged(a, b) {
     return true;
 }
 function rowPayQuote(rows, groundShare, now = performance.now()) {
+    if (ROW_RUNS) { const secsRaw = ROW_RUN_SEC * rows.length;   // [181026j] a set amount a row: no chain, no share
+        return { continues: false, nBefore: 0, nAfter: rows.length, secs: clockCredit(secsRaw), secsRaw }; }
     const chain = game._rowChain || { rows: [], at: 0 };
     const continues = chain.rows.length > 0 && (now - chain.at) <= BAND_WINDOW_MS &&
         rows.some(r => chain.rows.some(c => Math.abs(r - c) <= 3 && rowsBridged(r, c)));
     const nBefore = continues ? chain.rows.length : 0;
     const nAfter = nBefore + rows.length;
     const tierGain = bandSeconds(nAfter) - (nBefore > 0 ? bandSeconds(nBefore) : 0);
-    const secsRaw = Math.max(1, Math.round(tierGain * groundShare));
+    const secsRaw = CLOCK_RESETS ? Math.max(1, Math.min(ROW_SEC_MAX, Math.round(tierGain * ROW_SEC_MUL * groundShare)))   // [181026a] 8, 9 in a chain
+                                 : Math.max(1, Math.round(tierGain * groundShare));
     // [180926ce] The quote on the gap and the payout share this line, so the
     // ceiling is applied here and both read the same number — or the same FULL.
     return { continues, nBefore, nAfter, secs: clockCredit(secsRaw), secsRaw };
@@ -30348,6 +30750,12 @@ function celebrateLineBand(newRows) {
     const _rowsBefore = game.roundRows || 0;
     game.roundRows = _rowsBefore + newRows.length;
     game.runRows = (game.runRows || 0) + newRows.length;   // [080926k] for the game-over ledger
+    // [181026j] this landing's rows take the next places in the run — unless the shape is not the one that made the last row
+    if (ROW_RUNS && game._rowRunShape && game._rowRunShape !== game.shapeType) endRowRun('shape');
+    const _runFrom = ROW_RUNS ? (game._rowRun || 0) : 0;
+    if (ROW_RUNS) { game._rowRun = _runFrom + newRows.length; game._rowRunShape = game._rowRunSeen = game.shapeType;
+                    if (game._rowRun > (game.runBestRowRun || 0)) game.runBestRowRun = game._rowRun; }
+    const _runK = ROW_RUNS ? game._rowRun : 0;
     // ── [210826az] CLEAN SLATE FIRES WHEN IT IS EARNED ──────────────────────
     // It has always MEANT ten rows completed in the level — that part was
     // right — but it only ever APPEARED on the level card, which is shown when
@@ -30496,13 +30904,13 @@ function celebrateLineBand(newRows) {
         const secs = q.secs;
         game._lastRowSecs = secs;   // [080926b] read by the row label and the chain label
         momentumAddSeconds(secs);
-        tapeNote(`${newRows.length > 1 ? newRows.length + ' ROWS' : 'ROW'}${nAfter >= 2 ? '  ×' + nAfter : ''}  ${secsLabel(secs)}`, '#86efac');   // [100926f] the replay's caption
+        tapeNote(ROW_RUNS ? `${_runK} × ROW${_runK > 1 ? 'S' : ''}  ${secsLabel(secs)}` : `${newRows.length > 1 ? newRows.length + ' ROWS' : 'ROW'}${nAfter >= 2 ? '  ×' + nAfter : ''}  ${secsLabel(secs)}`, '#86efac');   // [100926f] the replay's caption
         /* [100926g] THE CHAIN, MARKED. The third row inside the window holds
            the world for CHAIN_HITSTOP_MS — scroll and clock stop with it, so it
            costs nothing — with the rows lit white. A watcher who knows none of
            the rules still sees that something big just happened. And it is
            bookmarked for the replay. */
-        if (nAfter >= 3) {
+        if (!ROW_RUNS && nAfter >= 3) {   // [181026j] the chain's hold goes with the chain
             const nowH = performance.now();
             game._hitstopUntil = Math.max(game._hitstopUntil || 0, nowH + CHAIN_HITSTOP_MS);
             game._chainMark = { t0: nowH, rows: game._rowChain.rows.slice() };
@@ -30549,8 +30957,9 @@ function celebrateLineBand(newRows) {
         rec('rowtime', { n: newRows.length, sec: secs, r: advancedRound, ...(q.secsRaw !== secs ? { raw: q.secsRaw } : {}),   // [180926ce]
                          owed: Math.round(owedAvg), full: bandSeconds(newRows.length),
                          chain: nAfter,   // [060926c] chain length after this landing
+                         ...(ROW_RUNS ? { run: _runK } : {}),   // [181026j]
                          rows: newRows.slice(0, 8) });   // [210826aq]
-        game._bandChainNow = nAfter;
+        game._bandChainNow = ROW_RUNS ? 0 : nAfter;   // [181026j] no chain: no COMBO ×n
         if (nAfter > (game.runBestChain || 0)) game.runBestChain = nAfter;   // [080926k]
     }
     // [210826ak] BAND — named so the player knows why it paid more.
@@ -30617,22 +31026,30 @@ function celebrateLineBand(newRows) {
     const _rowForge = pts;   // [230826b] the factory sees the pre-combo value
     const _rowCombo = game._comboAtMove || 1;   // [230826c] frozen at move start
     if (_rowCombo > 1) pts = Math.round(pts * (1 + (_rowCombo - 1) * COMBO_ROW_SHARE));
-    scoreGain(pts, true, _rowForge);
+    if (ROW_RUNS) { pts = 0; for (let i = 1; i <= newRows.length; i++) pts += ROW_RUN_PTS * (_runFrom + i) * advancedRound; }   // [181026j] its place in the run
+    else if (CLOCK_RESETS) pts = Math.min(ROW_PTS_MAX, pts);   // [181026a] completing a set stays the biggest number
+    if (game._lv) game._lv.row += pts;
+    scoreGain(pts, true, ROW_RUNS ? pts : _rowForge);
     // Colour climbs the rainbow with the band: single = understated white,
     // then violet → indigo → blue → green → yellow → orange, landing on RED
     // at ×10 — the spectrum walked end to end.
-    const col = size <= 1 ? '#e2e8f0'
-        : `hsl(${Math.round(270 - (Math.min(size, 10) - 2) * (270 / 8))}, 85%, 65%)`;
+    const _hueN = ROW_RUNS ? _runK : size;   // [181026j] the colour climbs with the run
+    const col = _hueN <= 1 ? '#e2e8f0'
+        : `hsl(${Math.round(270 - (Math.min(_hueN, 10) - 2) * (270 / 8))}, 85%, 65%)`;
     // The ENTIRE band glows together — one shared exhale across all its rows
     const t0 = performance.now();
-    for (let r = lo; r <= hi; r++) lineFlashes.push({ y: r, t0, col, strong: size >= 2, fx: rowFinishCol[r] });   // [170926f]
+    for (const r of (ROW_RUNS ? newRows : Array.from({ length: hi - lo + 1 }, (_, i) => lo + i)))   // [181026j] only the rows just made
+        lineFlashes.push({ y: r, t0, col, strong: _hueN >= 2, fx: rowFinishCol[r] });   // [170926f]
     /* [080926b] THE LABEL SAYS TIME, NOT POINTS. "DOUBLE LINE +50" named the
        one reward that no longer decides anything. A single row now reads
        "LINE +4s"; a chain is announced by registerCombo as "CHAIN ×n +Ns" and
        this float steps aside for it, so a chained landing shows one label,
        not two saying different things. Points are still scored and still on
        the card; they are just no longer what the board shouts. */
-    if ((game._bandChainNow || 0) < 2)
+    if (ROW_RUNS)   // [181026j] the row says its place in the run
+        addFloat(LOGICAL_W / 2, ((Math.min(...newRows) + Math.max(...newRows)) / 2 - game.cameraY) * CELL,
+            `${_runK} × ROW${_runK > 1 ? 'S' : ''}  ${secsLabel(game._lastRowSecs || 0)}`, col, _runK >= 2);
+    else if ((game._bandChainNow || 0) < 2)
         addFloat(LOGICAL_W / 2, ((lo + hi) / 2 - game.cameraY) * CELL,
             `LINE  ${secsLabel(game._lastRowSecs || 0)}`, col);
     // [300726az] THE ONLY FLOAT THIS EVENT FIRES. A triple clear with a diagonal
@@ -30643,7 +31060,7 @@ function celebrateLineBand(newRows) {
     // the colour carries the size, the flash carries the drama, the sound
     // carries the scale, so the text need only say what happened and what it
     // paid.
-    if (sfx.line) sfx.line(size, rowsUp);
+    if (sfx.line) sfx.line(_hueN, rowsUp);   // [181026j]
     // [300726az] "N ROWS" dropped — board state, not an event, and visible by
     // simply looking at the board. Tidiness is surfaced on the tally instead.
     // Combo: a shifter (pivot/slip) that lands you into a completed row, OR a
@@ -31144,6 +31561,7 @@ function applyImpactDevolve(hitIndices, label) {
         // [100926f] "SHED!" → the body ledger's own words (see applyFusionMove).
         later(_arriveIn + BREAK_HOLD_MS, () => addFloat(first.x * CELL + CELL / 2, (first.y - game.cameraY) * CELL,
             idx.length > 1 ? `−${idx.length} CUBES` : '−1 CUBE', '#94a3b8'));   // [280926d] at the break
+        chargeCubesLost(idx.length, first, _arriveIn + BREAK_HOLD_MS);   // [181026a] a wall, a set, the bottom: 3 s a cube
         tapeNote(idx.length > 1 ? `−${idx.length} CUBES` : '−1 CUBE', '#94a3b8');
         showTip('shed');
         rec('hurt', { from: prevType, to: result.shapeType, ch: label });
@@ -31318,7 +31736,7 @@ function slotOffenders(newCells, inPlayOnly) {
 function slotMisfitAt(newCells) { return slotOffenders(newCells).size > 0; }
 /* [061026e] CLOSE ISN'T A FIT. When a BIGGER shape lands over the whole of a set — the move
    that used to win it — the words say why it did not: at most once every 15 s, otherwise the
-   usual WRONG SHAPE FOR THE SET. Words only; the rule is exact fit, as before. */
+   usual WRONG SHAPE FOR THE SLOT. Words only; the rule is exact fit, as before. */
 const CLOSE_FIT_GAP_MS = 15000;
 function closeFitLine(cells) {
     const ks = new Set(cells.map(c => `${c.x},${c.y}`));
@@ -31580,6 +31998,11 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey, opts) {
                    return { x: c.x, y: c.y };
                }),
                { arriveIn: _arriveIn, dur: setLost.size ? 560 : (_bought.length ? V_DROP_MS : 340), survivors, fam: bodyCol, prevType, shake: 4, tape: !!(opts && opts.from) });
+    {   // [181026a] a push that carries cubes off the board or onto a set they do not fit: 3 s a cube (holes and reds are not losses)
+        const _offN = redIndices.filter(i => { const c = newCells[i]; return c.x < 0 || c.x >= VIEW_W || c.y < topB2 || c.y > botB2; }).length;
+        const _lostN = _offN + setLost.size;
+        if (_lostN) chargeCubesLost(_lostN, newCells[redIndices[0]], _arriveIn + BREAK_HOLD_MS);
+    }
     rec('hurt', Object.assign({ from: prevType, to: result.shapeType, ch: 'push', nv: _bought.length },   // [180826d][FORMULA] nv = cubes that bought ground
                               setLost.size ? { ns: setLost.size } : {}));                                // [260926n] ns = cubes a set took
     signalSizeChange(prevType, result.shapeType, true);
@@ -31591,9 +32014,9 @@ function applyShiftTrim(trim, newCells, triggerCell, triggerKey, opts) {
        same way. Any other casualty in the same push keeps its own line. */
     if (setLost.size) {
         const _n = setLost.size, _cubes = _n > 1 ? `−${_n} CUBES` : '−1 CUBE';
-        const _setLine = closeFitLine(newCells) || 'WRONG SHAPE FOR THE SET';   // [061026e]
+        const _setLine = closeFitLine(newCells) || 'WRONG SHAPE FOR THE SLOT';   // [061026e]
         later(_arriveIn + BREAK_HOLD_MS, () => addFloat(LOGICAL_W / 2, LOGICAL_H * 0.34, `${_setLine}\n${_cubes}`, '#f87171', true, { life: 2000, hold: 1100 }));   // [280926d] at the break
-        tapeNote(`WRONG SHAPE FOR THE SET  ${_cubes}`, '#f87171');
+        tapeNote(`WRONG SHAPE FOR THE SLOT  ${_cubes}`, '#f87171');
         showTip('misfit');
         captureSnapshot('✗ wrong fit');
     }
@@ -32620,7 +33043,7 @@ function computeShifterPreviewFor(aim) {
     if (poses.length) {
         const fin = poses[poses.length - 1];
         const keys = fin.map(c => `${c.x},${c.y}`);
-        gold = !SHIFTER_CLEARS_SETS && slots.some(sl => !sl.claimed && !sl.retiring &&
+        gold = (!SHIFTER_CLEARS_SETS || SHIFTER_FIT_CLAIMS) && slots.some(sl => !sl.claimed && !sl.retiring &&   // [181026d] gold again
             sl.keys.size === keys.length && keys.every(k => sl.keys.has(k)));
     }
     return { poses, lost, swept, denial, oob, setCost, shifterKey: tKey, shifterCell: trigger, gold,
@@ -33187,6 +33610,14 @@ function _halfEdge(sx, sy, s, tl) {   // half a rounded square's outline: the to
     if (tl) { ctx.moveTo(sx + r * 0.3, sy + s - r * 0.3); ctx.quadraticCurveTo(sx, sy + s, sx, sy + s - r); ctx.lineTo(sx, sy + r); ctx.quadraticCurveTo(sx, sy, sx + r, sy); ctx.lineTo(sx + s - r, sy); ctx.quadraticCurveTo(sx + s, sy, sx + s - r * 0.3, sy + r * 0.3); }
     else    { ctx.moveTo(sx + s - r * 0.3, sy + r * 0.3); ctx.quadraticCurveTo(sx + s, sy, sx + s, sy + r); ctx.lineTo(sx + s, sy + s - r); ctx.quadraticCurveTo(sx + s, sy + s, sx + s - r, sy + s); ctx.lineTo(sx + r, sy + s); ctx.quadraticCurveTo(sx, sy + s, sx + r * 0.3, sy + s - r * 0.3); }
 }
+/* ══ [171026m] THE RIM'S SHADE HAS NO ENDS — designer's call, 17 Oct, 18:11 (with a grab of one day cell): "top right and
+   bottom left of the square the shaded corners need to be softened as they look like nipples sticking out". The slab's
+   shade ([081026p]) is half the rim — round from the top-right corner, down the right, along the bottom, to the bottom-left
+   — stroked as wide as the rim with ROUND ends, so each end was a grey dot standing on the ring at those two corners. Now
+   the shade is laid along the same half with square ends and fades out along the diagonal: full strength across the
+   bottom-right, nothing where it stops at the two corners. Night's two halves (the shade and the light) end the same way.
+   RIM_SHADE_SOFT = false puts back the round ends. */
+const RIM_SHADE_SOFT = true;
 function drawCellBevels(camInt, camFrac, slotCells) {   // [081026p] every floor tile a slab: its rim shaded bottom-right, lit top-left
     if (!DEPTH_SLABS) return;
     const day = currentTheme === 'day', inset = cellInset(), size = CELL - inset * 2;
@@ -33214,6 +33645,25 @@ function drawCellBevels(camInt, camFrac, slotCells) {   // [081026p] every floor
     ctx.save();
     for (const [pass, ink] of day ? [['br', 'rgba(2, 62, 110, 0.15)']] : [['br', 'rgba(0, 0, 0, 0.4)'], ['tl', 'rgba(255, 255, 255, 0.3)']]) {
         for (const LW of [...new Set(br.map(b => b[3]))]) {
+            if (RIM_SHADE_SOFT) {   // [171026m] one cell at a time, the shade fading to nothing at the two corners where it ends
+                const grads = new Map();
+                for (const [x, y, z, w] of br) {
+                    if (w !== LW) continue;
+                    let g = grads.get(z);
+                    if (!g) {
+                        g = ctx.createLinearGradient(0, 0, z, z);   // cell-local, top-left to bottom-right
+                        const clear = ink.replace(/[\d.]+\)$/, '0)');
+                        if (pass === 'br') { g.addColorStop(0.5, clear); g.addColorStop(0.7, ink); g.addColorStop(1, ink); }
+                        else { g.addColorStop(0, ink); g.addColorStop(0.3, ink); g.addColorStop(0.5, clear); }
+                        grads.set(z, g);
+                    }
+                    ctx.save(); ctx.translate(x, y);
+                    ctx.beginPath(); _halfEdge(0, 0, z, pass === 'tl');
+                    ctx.strokeStyle = g; ctx.lineWidth = LW; ctx.lineCap = 'butt'; ctx.stroke();
+                    ctx.restore();
+                }
+                continue;
+            }
             ctx.beginPath();
             for (const [x, y, z, w] of br) if (w === LW) _halfEdge(x, y, z, pass === 'tl');
             ctx.strokeStyle = ink; ctx.lineWidth = LW; ctx.lineCap = 'round'; ctx.stroke();
@@ -34070,22 +34520,22 @@ const TIPS = {
     start:     'Swipe to flip. Keep climbing.',
     fresh:     'Fresh ground attracts gear shifters.',
     green:     'A green evolves you \u2014 land beside it.',   // [290926v]
-    slot:      'Land exactly on the set to claim it \u2014 the same shape, the same way round.',   // [290926q] · [171026d] exact fit only (COVER_CLAIM is off)
-    cover:     'Bigger than the set: the cubes on it go into the set, the rest of you carries on.',   // [290926q]
+    slot:      'Land exactly on a slot to fill it \u2014 the same shape, the same way round.' + (CLOCK_RESETS ? ` Each slot pays ${SLOT_PAY_SEC} seconds.` : ''),   // [181026l]   // [290926q] · [171026d] exact fit only (COVER_CLAIM is off)
+    cover:     'Bigger than the slot: the cubes on it go into the slot, the rest of you carries on.',   // [181026l]   // [290926q]
     rose:      'Ringed single: the hard one.',
     shave:     'Blocked? Come at it THROUGH the red.',
     gear:      'Two arrowheads on a step: it pushes you two cells, if the way is clear.',   // [081026J]
     shifter:   'Stand on a shifter while its ring fills and it turns you or pushes you on, destroying whatever is in the way. Move before it closes and nothing happens.',   // [171026a]   // [091026q] · [081026F]   // [071026x] · [081026v]
     // [100926h] The slot refuses now and reds are gone, so the cures are the
     // green and the hole \u2014 say so.
-    wrong:     'Wrong shape for that set. Evolve on a green, or devolve on a hole.',   // [290926v]
+    wrong:     'Wrong shape for that slot. Evolve on a green, or devolve on a hole.',   // [181026l]   // [290926v]
     devolve:   'A hole takes a cube and becomes ground. Sometimes that\u2019s the plan.',
     // [210826p] The shed path used to borrow the 'devolve' tip, so hitting a
     // wall taught the player about the minus square \u2014 an explanation for a
     // thing they had not done. Now that the two events have separate words they
     // need separate lessons, and this one carries the distinction the whole
     // split exists for: the board took it, you did not spend it.
-    shed:      'Hit something and you lose a cube. No points \u2014 that\u2019s damage, not a trim.',
+    shed:      CLOCK_RESETS ? `Hit something and you lose a cube \u2014 ${CUBE_LOST_SEC} seconds a cube.` : 'Hit something and you lose a cube. No points \u2014 that\u2019s damage, not a trim.',   // [181026a]
     // \u2500\u2500 [210826aj] THE ROW TIP \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     // There was no tip about rows at all. Rows pay well \u2014 weighted by the shape
     // that finished them, 1.5x in peril, +10% for each extra row in the band \u2014
@@ -34098,21 +34548,23 @@ const TIPS = {
     // "Fills your reserve" is the concrete half, and it is now literally true \u2014
     // a completed row tops up the tank the player can see on the HUD. That is a
     // reward they can watch arrive, where points disappear into a total.
-    rowline:   'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',
-    trim:      'Too big for the set? Bridge a hole \u2014 a cube for a cell.',   // [100926h] · [290926q] · [171026d] covering is not a claim
+    rowline:   ROW_RUNS ? `A row pays ${ROW_RUN_SEC} seconds. Keep the same shape and each row scores more — 1 × ROW, 2 × ROWS, 3 × ROWS… A new shape, a penalty or a filled slot starts again at 1.` : 'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',   // [181026j]
+    trim:      'Too big for the slot? Bridge a hole \u2014 a cube for a cell.',   // [181026l]   // [100926h] · [290926q] · [171026d] covering is not a claim
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
     onecube:   HOLE_LAST_PAYS ? `Your last cube can go into a hole: it becomes ground, pays ${GROUND_PAY_SEC} seconds, and you start again on it.` : MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
-    ratchet:   MISTAKE_RULE ? `A mistake costs ${MISTAKE_SEC} seconds (your last cube ${MISTAKE_LAST_CUBE_SEC}), and ${MISTAKE_STEP_SEC} more for each one before it in the level \u2014 never more than ${MISTAKE_CAP_SEC}.` : 'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P] · [101026m]
+    ratchet:   MISTAKE_RULE ? `A mistake costs ${MISTAKE_SEC} seconds${MISTAKE_LAST_CUBE_SEC !== MISTAKE_SEC ? ` (your last cube ${MISTAKE_LAST_CUBE_SEC})` : ''}, and ${MISTAKE_STEP_SEC} more for each one before it in the level \u2014 never more than ${MISTAKE_CAP_SEC}.` : 'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P] · [101026m]
     redtoll:   `A red can\u2019t take your last cube, so it takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [061026h]
-    edge:      'A cube that flips over the edge is lost. The rest of you carries on.',   // [260926k]
-    misfit:    'The wrong shape on a set: the cubes on it are destroyed and the rest of you carries on. A single is lost.',   // [260926k] · [290926q] · [171026d]
+    edge:      'A cube that flips over the edge is lost. The rest of you carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k]
+    misfit:    'The wrong shape on a slot: the cubes on it are destroyed and the rest of you carries on. A single is lost.' + (CLOCK_RESETS ? ` Each cube costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k] · [290926q] · [171026d]
     diag:      'Swipe diagonally \u2014 corners count.',
+    clockreset: `Every level starts the clock on ${clockFmt(LEVEL_START_SEC)}. Time left at the end of a level becomes points.`,   // [181026a]
+    overtime:  `The clock holds ${clockFmt(CLOCK_CEILING)}. Time over that becomes points.`,   // [181026a]
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
     // save pays 15 — so the one number this tip existed to give was the one
     // number the game never gives. It names both real tiers now, which is also
     // the more useful lesson: the big ones are worth a detour.
-    hourglass: 'Hourglass: 10 seconds, or ' + HOURGLASS_SEC + ' for a big one.',   // [081026I]
+    hourglass: 'Hourglass: ' + hourglassFace('t10') + ' seconds, or ' + HOURGLASS_SEC + ' for a big one.',   // [181026a] both from the one table   // [081026I]
     // [040826b] The generic line named neither the problem nor the cure — and
     // "a rotate could" is often FALSE, since a turn cannot change board colour.
     // These say what is actually wrong, which is the difference between a
@@ -34126,8 +34578,8 @@ const TIPS = {
     // is exactly the problem "right size, wrong form" describes.
     diagForm:    'Right size, wrong form. Revolve — find a TURN shifter.',
     diagBigger:  'Too small for that slot. Find a green.',
-    diagSmaller: 'Too big for that set, and no way to cover it from here. Bridge a hole \u2014 a cube for a cell.',   // [100926h] · [290926q]
-    nofit:     'No set fits you now. Evolve on a green, or devolve on a hole.'   // [290926v]     // [100926h]
+    diagSmaller: 'Too big for that slot, and no way to cover it from here. Bridge a hole \u2014 a cube for a cell.',   // [100926h] · [290926q]
+    nofit:     'No slot fits you now. Evolve on a green, or devolve on a hole.'   // [290926v]     // [100926h]
 };
 const TIP_MS = 4000;        // each tip's time on screen
 const TIP_GAP_MS = 6000;    // quiet gap between tips
@@ -34608,9 +35060,13 @@ const DAY_OCC_RIM = true;
 const DAY_OCC_RIM_W = 3.2;
 function dayOccRim(sx, sy, size) {
     const ins = (DAY_OCC_RIM_W - CELL_OUTLINE_W) / 2;
-    roundedSq(sx + ins, sy + ins, size - 2 * ins, null, '#ffffff', DAY_OCC_RIM_W);
+    roundedSq(sx + ins, sy + ins, size - 2 * ins, null, `rgba(255, 255, 255, ${typeof DAY_RING_WHITE !== 'undefined' ? DAY_RING_WHITE : 1})`, DAY_OCC_RIM_W);   // [171026n]
 }
-const DAY_EDGE_BOLD_INK = 'rgba(255, 255, 255, 1)';
+/* ══ [171026n] THE OUTER RING, A TOUCH SEE-THROUGH — designer's call, 17 Oct, 18:11: "The outer white ring of the cells need
+   to be 5% transparent." By day the bold white ring of an empty cell, and the white rim of an occupied one (the trail, a
+   green, a red, an hourglass), are white at 95% (were 100%). DAY_RING_WHITE = 1 puts back solid white. */
+const DAY_RING_WHITE = 0.95;
+const DAY_EDGE_BOLD_INK = `rgba(255, 255, 255, ${DAY_RING_WHITE})`;
 const DAY_RING_EDGE = 'rgba(255, 255, 255, 0.95)';
 CELL_RING_STYLE.dayRings = { col: 'rgba(226,232,240,', a: [0.78, 0.55, 0.46], w: 1.1, k: [0.75, 0.5, 0.25] };   // night's cool white, at night's weight
 /* [081026a] "in daylight mode remove the inner of the unoccupied cell and match the ring configuration to
@@ -35796,6 +36252,10 @@ function draw() {
     drawHoleDepth(camInt, camFrac);    // [180926a] and the openings' own depth: lip, rim, the 10% — [280926c] night keeps the 10% and the pit; the lip and rim are the tiles' own shadows now
     drawTileShadows(camInt, camFrac);  // [280926c] every tile floats: its shadow on the seams and into the openings
     drawTopWashDay(camInt, camFrac);   // [081026M] the grid, washed out a little more by day
+    if (currentTheme === 'day' && DEPTHS_GREY_DAY > 0) {   // [171026o] the depths a tenth greyer: everything under the cells so far
+        ctx.save(); ctx.globalCompositeOperation = 'saturation'; ctx.globalAlpha = DEPTHS_GREY_DAY; ctx.fillStyle = '#808080';
+        ctx.fillRect(-5, -5, LOGICAL_W + 10, LOGICAL_H + 10); ctx.restore();
+    }
 
     // Draw all cells in viewport. New visual language: every cell is a
     // discrete rounded shape. Empty walkable cells are faint outlines,
@@ -37763,6 +38223,7 @@ function loop(time, gen) {
     runDeferred(performance.now());   // [280926d]
     updateShake(dt);
     updateCombo(dt);
+    watchRowRunShape();   // [181026j]
     updateCoach(dt);   // advance/retire early-run coach tips (pauses with the game)
 
     // Tick the post-respawn invulnerability window
@@ -38655,6 +39116,26 @@ try {
 // The d:1 flag and recordRun's sweep are kept: old saves may still hold dummies
 // and must still be able to clear them.
 
+/* [181026o] TOP SCORES START AGAIN — Jake, 21:09 (the suggestion taken): the table and the best score were made under other
+   rules — 50 × level a set and a speed bonus, rows up to thousands — and do not compare with the fresh clock's. The first
+   load of a fresh-clock build files them under rotor_runs_before_181026 / rotor_best_before_181026 and starts both afresh.
+   Nothing is deleted; the lifetime revolutions carry on. A player who had runs keeps counting as one who has seen the lessons. */
+const SCORES_EPOCH = '181026';
+if (CLOCK_RESETS) try {
+    if (localStorage.getItem('rotor_scores_epoch') !== SCORES_EPOCH) {
+        let had = []; try { had = JSON.parse(localStorage.getItem('rotor_runs') || '[]'); } catch (e) {}   // as saved, not as filtered
+        const returning = Array.isArray(had) && had.length > 0;
+        if (returning || bests.score) {
+            localStorage.setItem('rotor_runs_before_' + SCORES_EPOCH, JSON.stringify(had));
+            localStorage.setItem('rotor_best_before_' + SCORES_EPOCH, String(bests.score || 0));
+            if (returning) localStorage.setItem('rotor_lessons_seen', '1');
+        }
+        runs = []; bests.score = 0;
+        localStorage.setItem('rotor_runs', '[]');
+        localStorage.setItem('rotor_bests', JSON.stringify(bests));
+        localStorage.setItem('rotor_scores_epoch', SCORES_EPOCH);
+    }
+} catch (e) {}
 function saveRuns() {
     try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch(e) {}
 }
@@ -38825,7 +39306,7 @@ function recStartRun() {
     recRunId = Date.now();
     recEvents = [];
     tipWant = {};   // [210826l] tip demand is per-run, like everything else here
-    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
+    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
 }
 function recExport() {
     try {
@@ -39927,6 +40408,52 @@ function renderScores() {
                 `<span class="scores-life-value">${n.toLocaleString()}</span>`;
         }
     }
+    renderScoreGuide();   // [181026e]
+}
+/* ══ [181026e] HOW TO SCORE — designer's call, 18 Oct, 14:52: "Update the points leader board for how to earn points and for
+   penalties". TOP SCORES ends with the two lists, highest first, every number read from the constant that pays it so the
+   page can never say one thing while the game does another. Points are never taken away; penalties are seconds, and a
+   second lost is points lost at the set. */
+function scoreGuideRows() {
+    const T = typeof TIME_PTS_PER_SEC !== 'undefined' ? TIME_PTS_PER_SEC : 5, fresh = typeof CLOCK_RESETS !== 'undefined' && CLOCK_RESETS;
+    const W = (t) => Math.round(10 * SHAPE_SIZE[t] * (CLEAR_WEIGHT[t] || 1));
+    const points = [
+        ['Completing a set', `${(fresh ? SET_DONE_PTS : 50).toLocaleString()} \u00d7 level`],
+        ...(fresh ? [['Time left when the set is complete', `${T} \u00d7 level a second`],
+                     [`Time over ${clockFmt(CLOCK_CEILING)} on the clock`, `${T} \u00d7 level a second`]] : []),
+        ...(typeof ROW_RUNS !== 'undefined' && ROW_RUNS   // [181026j]
+            ? [['A row: 1 × ROW, 2 × ROWS, 3 × ROWS… while you keep the same shape', `${ROW_RUN_PTS} × the count × level`],
+               ['… a new shape, a penalty or a filled slot starts the count again at 1', '']]
+            : [['A row', fresh ? `up to ${ROW_PTS_MAX}` : '20 and up']]),
+        ['5, 8 or every row on screen finished', '25 \u00b7 60 \u00b7 150 \u00d7 level'],
+        ['Filling a slot', `${W('single')} to ${W('square')} by shape`],
+        ['\u2026 by a shifter: a combo', '\u00d71.5'],
+        ['\u2026 next to danger, or the same shape twice running', '\u00d71.5 each'],   // [181026l]
+        ['Coverage grade B \u00b7 A \u00b7 S', '10 \u00b7 30 \u00b7 60 \u00d7 level'],
+        ['The last of a shape in the set', `${Math.round(25 * Math.min(...Object.values(CLEAR_WEIGHT)))}+`],
+        ['A green landed on, or fusing', '5'],
+        ['An hourglass, or a red trim', '3'],
+        ['Using a shifter', '2'],
+        ['Each new cell of ground', '1'] ];
+    const step = MISTAKE_STEP_SEC, cap = MISTAKE_CAP_SEC;
+    const penalties = [
+        ...(fresh && CUBE_LOST_SEC ? [['A cube lost over the edge, off the bottom, or on a slot it doesn\u2019t fit', `\u2212${CUBE_LOST_SEC}s a cube`]] : []),
+        ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
+        ...(RED_TOLL_SEC === FALL_COST_SEC   // [181026f] one price: one line
+            ? [['A mistake: a red with no cube to spare, or losing your last cube (free on level 1)', `\u2212${FALL_COST_SEC}s`]]
+            : [['A red with no cube to spare', `\u2212${RED_TOLL_SEC}s`], ['Losing your last cube (free on level 1)', `\u2212${FALL_COST_SEC}s`]]),
+        ['Each mistake already made in the level', `+${step}s, never over ${cap}s`] ];
+    const note = fresh ? `Points are never taken away. Penalties cost time, and every second lost is ${T} \u00d7 level points fewer when the set is complete.`
+                       : 'Points are never taken away. Penalties cost time.';
+    return { points, penalties, note };
+}
+function renderScoreGuide() {
+    const el = document.getElementById('scoresHowto');
+    if (!el) return;
+    const g = scoreGuideRows(), row = (cls) => ([l, v]) => `<div class="scores-howto-row${cls}"><span>${l}</span><b>${v}</b></div>`;
+    el.innerHTML = `<div class="scores-howto-sub">POINTS</div>` + g.points.map(row('')).join('') +
+                   `<div class="scores-howto-sub">PENALTIES</div>` + g.penalties.map(row(' pen')).join('') +
+                   `<div class="scores-howto-note">${g.note}</div>`;
 }
 
 /* [180926c] The table is reachable from TWO screens now, so it has to know
@@ -40097,6 +40624,7 @@ function startGame(testDrive = false, daily = false) {
     // [290726d] tally counters reset with the rest of the round trackers
     game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
+    game._rowRun = 0; game._rowRunShape = null;   // [181026j] a new level, a new run
     game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
     slotCredits = 2; slotDrought = {};                     // [300726an] open with targets
     game._reprieveGiven = false;                          // [050826n]
@@ -40268,7 +40796,7 @@ function startGame(testDrive = false, daily = false) {
         // showing the previous run's fill, because nothing else touches the bar
         // until the first fresh cell is covered.
         coverage: 0,        // percentage 0-100
-        speedTimer: LEVEL_TIME_LIMIT - SPINUP_START_SEC,   // SPIN-UP: Level 1 starts cold — build the wheel to full
+        speedTimer: LEVEL_TIME_LIMIT - (CLOCK_RESETS ? LEVEL_START_SEC : SPINUP_START_SEC),   // [181026a] 45 · SPIN-UP: Level 1 starts cold — build the wheel to full
         spinUp: true,       // suppresses panic signals until the ring first fills
         speedCountdown: 5,
         lastTick: 0,
@@ -40297,6 +40825,7 @@ function startGame(testDrive = false, daily = false) {
     // which bails on its first line if game.tipsOn is not yet true — so the one
     // tip that fires at run start was still being dropped.
     game._levelStartScore = 0;   // [220826d] moved below the reset literal, which has no key for it
+    game._lv = newLevelLedger();   // [181026b]
     game.tipsOn = _tipsPref;
     game._pendingHints = _hintsPref;
     game._pendingTips = _tipsPref;
@@ -40465,7 +40994,7 @@ const DEATH_LINE = {
     /* [170926d] There is no falling in ROTOЯ — the grid runs out beneath you. */
     void:      'YOU RAN OUT OF GRID',
     dissolved: HOLE_LAST_PAYS ? 'YOUR LAST CUBE MADE GROUND' : 'LAST CUBE LOST TO A HOLE',   // [171026g]
-    setlost:   'WRONG SET \u2014 LAST CUBE LOST',   // [171026d]
+    setlost:   'WRONG SLOT \u2014 LAST CUBE LOST',   // [171026d]
     trapped:   'TRAPPED — NO MOVE LEFT',      // [250926ad] was falling through to THE RUN ENDED on a fall the run survives
     impact:    'THE LAST CUBE WAS HIT',
     quit:      'YOU CALLED TIME',   // [061026o]
@@ -42466,7 +42995,7 @@ const TUT = [
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' } },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'sink', cube: [4, 2], to: [[3, 2]], type: 'single', say: '−1 CUBE → +1 GROUND' },
             { k: 'flip', dir: 'S', to: [[3, 3]] } ] },
-  { ch: 'FLIP', title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.',
+  { ch: 'FLIP', title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
@@ -42491,16 +43020,16 @@ const TUT = [
     acts: [ { k: 'guide', route: [[[3, 2], [4, 1]], [[5, 1], [6, 2]]], vias: { 0: { tile: [3, 2], land: [[2, 1], [3, 2]], label: '90°\u21BB' } }, d: 1000 + 1 * 450 + 350 + 1400 },
             { k: 'flip', dir: 'E', to: [[2, 1], [3, 2]] }, { k: 'turn', trig: [3, 2], ccw: false, to: [[3, 2], [4, 1]] },
             { k: 'flip', dir: 'E', to: [[5, 1], [6, 2]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
-  { ch: 'FIT', title: 'COLLECT THE SET', line: 'Land exactly on a set that matches a shape at the top of the screen to bank it.',
+  { ch: 'FIT', title: 'COLLECT THE SET', line: 'The shapes at the top of the screen are the set. Land exactly on a slot of the same shape to fill it.' + (CLOCK_RESETS ? ` Each slot pays ${SLOT_PAY_SEC} seconds.` : ''),   // [181026l]   // [181026a]
     init: { body: { cells: [[1, 3], [2, 3]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [4, 1]] }] },
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
-  { ch: 'FIT', title: 'WRONG SETS', line: 'Land the wrong shape on a set — even a bigger one over all of it — and the cubes on it are destroyed; the rest of you carries on. Only the right shape, exactly, is yours.',   // [171026d]   // [290926n] · [300926m] exact fit again
+  { ch: 'FIT', title: 'WRONG SLOTS', line: 'Land the wrong shape on a slot — even a bigger one over all of it — and the cubes on it are destroyed' + (CLOCK_RESETS ? `, ${CUBE_LOST_SEC} seconds each` : '') + '; the rest of you carries on. Only the right shape, exactly, is yours.',   // [181026a]   // [171026d]   // [290926n] · [300926m] exact fit again
     init: { body: { cells: [[0, 1], [1, 1]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
             { k: 'wait' }, { k: 'wait' } ] },
-  { ch: 'FIT', title: 'THE CLOCK', line: 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',
+  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.` : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
     showClock: true,
     init: { body: { cells: [[3, 3], [4, 3]], type: 'pair', par: 0 }, clock: 22,
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },

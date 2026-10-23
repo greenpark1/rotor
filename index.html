@@ -379,6 +379,7 @@ body.theme-day .note-bar input { color: var(--day-ink); background: #f1f5f9; }
     border: 1px solid rgba(148, 163, 184, 0.25);
     box-shadow: 0 12px 40px rgba(6,20,45, 0.45);
     animation: lcCardIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    translate: 0 -12.5%;   /* [231026d] Jake, 23 Oct: "moved upwards a quarter of its size" — its own height; apart from the card-in scale · [231026e] 21:42: "lower box by an eighth": up an eighth now */
 }
 .lc-row { opacity: 0; transform: translateY(10px); animation: lcRowIn 0.4s ease-out forwards; text-align: center; }
 .lc-row:empty { display: none; }
@@ -1994,6 +1995,7 @@ body.theme-day .opening .op-cell { border-color: #89cff0; }
     width: 1.15em; line-height: 1; transform-origin: 50% 50%; backface-visibility: visible; will-change: transform, opacity;
     color: var(--wm-c0); }
 @keyframes opFailsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+.opening .op-white { position: absolute; inset: 0; background: #ffffff; opacity: 0; pointer-events: none; }   /* [231026a] the white the opening fades through */
 .opening.running { animation: none; }
 
 /* ── [061026d] THE RЯ WATERMARK ────────────────────────────────────────────
@@ -3664,6 +3666,18 @@ body.theme-day .tally-note { color: #0369a1; opacity: 0.8; }
 body.theme-day .tally-title { color: #ff2d95; text-shadow: none; }   /* [260926r] hot pink, as the level card's title */
 .tally-rows { width: min(420px, 92%); }
 /* [181026l] 16 px from the screen's edge: the card reaches 16 px past the frame each side, so its lines leave 28 px of it */
+.level-tally .tally-row { padding: clamp(5px, 1.5cqw, 11px) 0; }   /* [231026f] ten lines, no scrolling */
+/* [231026g] bare bones: three lines, each a label and its number — no icon, no points column; COMBOS in tangerine */
+.level-tally .tally-row.bare { align-items: center; padding: clamp(10px, 3cqw, 16px) 0; }
+.tally-row.bare .tally-icon, .tally-row.bare .tally-pts { display: none; }
+.tally-row.bare .tally-label { font-size: clamp(12px, 3.6cqw, 15px); font-weight: 800; letter-spacing: 1.8px; }
+.tally-row.bare .tally-count { font-size: clamp(22px, 7cqw, 32px); font-weight: 900; line-height: 1; }
+.tally-row.bare.combo .tally-label, .tally-row.bare.combo .tally-count { color: #ff8a3d; }
+body.theme-day .tally-row.bare.combo .tally-label { color: #9a3412; }
+body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
+/* [241026a] ROWS 23 · BEST ×6 — the best run a size down; SET COMPLETE shows its points, the one line on the card that pays */
+.tally-row.bare .tally-sub { font-size: 0.52em; font-weight: 800; letter-spacing: 1px; }
+.tally-row.bare.paid .tally-pts { display: inline; min-width: 0; font-size: clamp(22px, 7cqw, 32px); font-weight: 900; line-height: 1; }
 .level-tally .tally-rows, .level-tally .tally-total, .level-tally .tally-grand, .level-tally .tally-note, .level-tally .tally-start, .level-tally .tally-continue { width: min(420px, calc(100% - 56px)); }
 .tally-row {
     display: flex; align-items: baseline; justify-content: space-between;
@@ -7862,6 +7876,11 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 241026-0014: BEST RUN. Jake, 24 Oct, 00:09–00:13: "what do you think of rows, combos, timed earned and level score and total as the only metrics" … "add "ROWS 23 · BEST ×6". add in a 'completing the set' score". THE LEVEL CARD [241026a]: ROWS shows the level's rows and its best run — 23 · BEST ×6, the longest run of rows made with one shape in the level (game.roundBestRowRun, new, reset every level; no BEST when there were no rows) — and SET COMPLETE comes back as the fourth line with its points (+1,000 × level), counted up as it lands, so the level total visibly gets the set before it climbs through the rest. The card: ROWS · COMBOS · TIME EARNED · SET COMPLETE · LEVEL TOTAL · GRAND TOTAL.
+// 231026-2309: BARE BONES. Jake, 23 Oct, 22:50: "there are too many numbers, strip back to bear bones"; 23:06: "i don think we need the slots number, remove. update the scorecard based on my prefereces". THE LEVEL CARD, BARE BONES [231026g]: three lines — ROWS, COMBOS (tangerine) and TIME EARNED — each a label and its number, no icon, no points column; then LEVEL TOTAL and GRAND TOTAL. Six numbers where there were about twenty. Every point still counts: set complete, slots, rows' points, ground covered, board, time over and time left are in the sum, off the card, and LEVEL TOTAL climbs through them (1.2 s, with the tick) once the three lines are in. A tap lands it; it waits for CONTINUE as before. Penalties still float on the board where they happen; HOW TO SCORE still lists every payment. TALLY_BARE = false puts back the 2212 card.
+// 231026-2212: TIME EARNED. Jake, 23 Oct, 22:10: "Regarding the interlevel scores, i'd like to see time earned by the player at the end of each round. the 'set complete' doesnt need the 'level + n' because the score card has the level number at the top. i dont like a lettered grade, open to other ideas. number of slots is important. number of rows cleared is good to have. The number of combos is and will be important ... the board stat is good, keep". THE LEVEL CARD [231026f]: TIME EARNED — every second the level paid in (slots, rows, hourglasses, greens, reds, combos, ground), with no points of its own — sits with the other time lines, above PENALTIES; SET COMPLETE drops its LEVEL n (the title says it); the lettered grade is gone: GROUND COVERED says the share of the level's board you walked over, as a percentage, every level, with the points it paid (the same bars as before: 38, 60 and 80% pay 10, 30 and 60 × level; level 1 20, 26 and 30%) — and HOW TO SCORE says it so, no letters. SLOTS, ROWS, COMBOS and BOARD stay; COMBOS, TIME EARNED and PENALTIES read in full ink, not greyed as lines without points. The card's lines are a little closer together so all ten fit a phone without scrolling.
+// 231026-2143: AN EIGHTH. Jake, 23 Oct, 21:42: "lower box by an eighth". [231026e] The level-complete card over the board comes down an eighth of its own height: raised an eighth above centre now (translate 0 −12.5%), not a quarter.
+// 231026-2110: WHITE FADE. Jake, 23 Oct, 21:04: "Put a white fade of one second between the 1st and second screen (welcome screen) when initiating the game. Check that the shifters are working correctly across voids, the double arrow seems to just move the player one square when it should be two. The inter level score card has a continue button but it automatically continues without the player needing to press the button, please ensure this is working correctly. Can the square box that appears between levels be moved upwards a quarter of its size". A WHITE FADE [231026a]: the opening's RЯ no longer fades straight to the welcome page — it dips to white over half a second and the white gives way to the page over the next half (OP_DIP_MS 1000); a tap skips the hold, not the fade. A DOUBLE CROSSES A HOLE [231026b]: a double step stopped after one whenever the cell it passes over was a hole (so beside a hole — where every step faces the hole — it pushed you one, into it). Now it carries you two: the hole it crosses is laid as ground as you pass over it (as [260926i] always meant), and the far cell is met as any push meets it. A wall on the cell it passes over, or a wall or the board's edge on the far cell, still stops it after one. Dealt doubles may now face a hole beside them. THE LEVEL CARD WAITS [231026c]: between levels the card no longer moves on by itself (TALLY_AUTO false): a tap lands the count, CONTINUE goes on — and Enter or Space does the same. THE LEVEL-COMPLETE CARD SITS HIGHER [231026d]: the square card over the board is raised by a quarter of its own height.
 // 181026-2133: SQUARE FIRST. Jake, 18 Oct, 21:09: "slots that need to be filled are what makes up the sets to collect. Go with 40 seconds starting time for each level. level 7 should be difficult but not impossible, ensure that the 2 x 2 cube appears from the outset of the level to ensure that players have every chance to collect it. keep the same shape for the rows in a run. go with all of your other suggestions". FORTY [181026k]: every level starts the clock on 0:40 (LEVEL_START_SEC; ?start= still sets it). THE SQUARE FIRST [181026n]: a level whose set needs the 2x2 square (level 7 on) deals the square's slot first, as the level opens, with the opening slots; if no place will take it there, it is owed and dealt at the next chance, before anything else. SLOTS [181026l]: a set is made of slots; what the player lands on is a slot, never a "set" or a "piece" — the tips, the lessons (COLLECT THE SET, WRONG SLOTS), HOW TO SCORE, the floats (WRONG SHAPE FOR THE SLOT, WRONG SLOT — LAST CUBE LOST), the level-3 door (NEW: A SLOT ON AN ISLAND) and the level card (SLOTS). COMBOS PAY [181026m]: every COMBO! pays 3 s (COMBO_SEC, ?combo=) and says so (COMBO!  +3s) — a shifter landing you exactly on a slot (now counted as a combo too, and the landing's only one), a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit. Rows in a run keep their set amount of time. THE LEVEL CARD [181026l]: SET COMPLETE · SLOTS ×n · +Ns (the time they paid) · ROWS ×n · COMBOS ×n · +Ns (a count: their points are already in the lines above) · GRADE (the coverage grade, out of BOARD, when it pays) · BOARD · PENALTIES −Ns (the time the level's charges took, when there were any) · TIME OVER · TIME LEFT; and it keeps 16 px from the screen's edge. TOP SCORES START AGAIN [181026o]: the table and the best score were made under other rules and do not compare; the first load of this build files them (rotor_runs_before_181026, rotor_best_before_181026) and starts both afresh — nothing is deleted.
 // 181026-1951: ROW RUNS. Jake, 18 Oct, 19:33: "completing a row pays a set amount of time, multiple rows can reach a high score but 'multiple rows' scores can only be achieved using the same shape any transition, penalty, set collecting ends the multiple rows score capability and resets back to one, can the building of multiple rows scores be indicated with 1 x row, 2 x rows, 3 x rows, 4 rows etc on screen with text". ROWS IN A RUN [181026j]: every row pays 6 s (ROW_RUN_SEC; what rows paid on the five 17 Oct runs, so the clock is no richer) — no chain second, no share for ground the board laid. Its points are its place in the run: the first row 25 × level, the second 50 × level, the third 75 … (ROW_RUN_PTS × place × level), and nothing else multiplies a row and nothing caps it (the 500 cap is gone; a set is still the biggest single payment until a run of 40). The run carries on while you keep the same shape, and goes back to one when the shape changes (evolve, devolve, a trim, a cube lost or shed), at any penalty, when a slot is filled, at a respawn and at a new level. The row says its place where it was finished: 1 × ROW +6s, 2 × ROWS +6s, 3 × ROWS +6s …, bigger from 2, its colour climbing the rainbow with the run. Replaces the 6-second chain of adjacent rows (its COMBO ×n label and its hold); ?econ=old keeps the 1815 rows; ?rowsec= and ?rowpts= set the numbers.
 // 181026-1853: BRIDGED. Jake, 18 Oct, 18:30: "when a bridge is created a congratulatory text of encouragement needs to pop up. "You've bridged the gap!" and 4 other similar versions with a rotor theme." A BRIDGE, PRAISED [181026i]: when new ground — a cube into a hole, or a shifter laying a hole on its way — spans the gap (ground on both sides of it, in a row or a column; the first cube into a hole only starts a bridge, the one that closes the line is the bridge), one of five lines pops up a beat after the cube goes in, dealt from a shuffled deck: YOU'VE BRIDGED THE GAP! · GAP CLOSED — KEEP THE ROTOR TURNING! · BRIDGE BUILT — FULL REVOLUTION AHEAD! · GEARS ENGAGED — GAP SPANNED! · SPANNED IN A SPIN! It is praise, so it speaks only into silence (the chatter rule: not over another message, not within 8 s of the last). Your last cube into a hole and the restart stone are not bridges.
@@ -8733,7 +8752,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '181026-2133 ROTOЯ · SQUARE FIRST';
+const BUILD_VERSION = '241026-0014 ROTOЯ · BEST RUN';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -10005,7 +10024,7 @@ function watchRowRunShape() {   // any change of shape ends the run
     if (!ROW_RUNS || !game || !game.running) return;
     if (game._rowRunSeen !== game.shapeType) { if (game._rowRunSeen) endRowRun('shape'); game._rowRunSeen = game.shapeType; }
 }
-function newLevelLedger() { return { set: 0, slot: 0, row: 0, over: 0, overSecs: 0, time: 0, timeSecs: 0, slotSecs: 0, comboSecs: 0, penSecs: 0, cov: 0, grade: '' }; }   // [181026l] + the slots' and combos' seconds, the charges, the grade   // [181026b] what the level's score was made of
+function newLevelLedger() { return { set: 0, slot: 0, row: 0, over: 0, overSecs: 0, time: 0, timeSecs: 0, slotSecs: 0, comboSecs: 0, penSecs: 0, cov: 0, grade: '', covPct: 0 }; }   // [181026l] + the slots' and combos' seconds, the charges, the grade   // [181026b] what the level's score was made of
 function clockFmt(s) { const v = Math.max(0, Math.round(s)); return Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0'); }
 function timeOverToPoints(over) {   // [181026a] the clock is full: what it cannot hold is paid in points, now
     const pts = Math.round(over * TIME_PTS_PER_SEC * Math.max(1, advancedRound || 1));
@@ -10894,6 +10913,14 @@ function exactFitSet(cells) {   // the set these cells fill exactly, if the leve
                             (typeof setNeeded === 'undefined' || setNeeded.includes(sl.id))) || null;
 }
 const STEP_GEARS = true; let STEP_GEAR2_SHARE = 0.6;   // a let, so a test can set the share
+/* [231026b] A DOUBLE CROSSES A HOLE — designer's call, 23 Oct: "Check that the shifters are working correctly across voids,
+   the double arrow seems to just move the player one square when it should be two." It did: a hole on the cell a double
+   passes over stopped it after one — and since a step beside a hole is always turned to face it ([071026p]), every double
+   beside a hole pushed you one, into the hole. Now the hole it passes over is crossed and laid as ground as the body goes
+   over it (stepLay, as [260926i] always meant for a cell crossed), and the far cell is met as any push meets it (a hole
+   there takes the cube over it). Still stopped after one: a wall on the cell it passes over; a wall or the board's edge on the
+   far cell. STEP_CROSSES_HOLES = false puts back the stop. */
+const STEP_CROSSES_HOLES = true;
 function gearOf(meta) { return (STEP_GEARS && meta && meta.gear === 2) ? 2 : 1; }
 function stepGearHop(cells, v) {   // 2 if the way is clear for every cube, else 1
     const top = topLawfulRow(), bot = Math.floor(game.cameraY) + VIEW_H - 1;
@@ -10902,7 +10929,7 @@ function stepGearHop(cells, v) {   // 2 if the way is clear for every cube, else
         const a = { x: c.x + v.dx, y: c.y + v.dy }, ka = `${a.x},${a.y}`;
         if (!own.has(ka)) {   // the cell it passes over: clear floor, nothing on it
             if (a.x < 0 || a.x >= VIEW_W || a.y < top || a.y > bot) return 1;
-            if (world[ka] && !(SHIFTER_CLEARS && clearableAsset(world[ka]))) return 1;   // [171026a] an asset there goes; a hole or a wall stops it
+            if (world[ka] && !(SHIFTER_CLEARS && clearableAsset(world[ka])) && !(STEP_CROSSES_HOLES && world[ka] === 'void')) return 1;   // [171026a] an asset there goes; a wall stops it · [231026b] a hole is crossed
             if (slots.some(sl => sl.keys && sl.keys.has(ka) && !(SHIFTER_CLEARS_SETS && !sl.claimed && !sl.retiring))) return 1;   // [171026e] a live set there goes
         }
         const sb = slipBlockedAt({ x: c.x + 2 * v.dx, y: c.y + 2 * v.dy }, top, bot);
@@ -24775,23 +24802,48 @@ function countUp(to, ms, onFrame, onDone) {
    once the count has landed (TALLY_AUTO_MS); a tap fast-forwards, CONTINUE goes at once. Every point on it was paid
    when it happened (the time left at completeSet), so the card reports and never awards ([220826c]). */
 const TALLY_AUTO_MS = 1800, TALLY_AUTO_SKIP_MS = 1400;
+/* [231026c] Jake, 23 Oct: "The inter level score card has a continue button but it automatically continues without the
+   player needing to press the button, please ensure this is working correctly." It waits for CONTINUE now: a tap lands the
+   count, CONTINUE (or Enter / Space) goes on. TALLY_AUTO = true puts back [181026b]'s moving on by itself. */
+const TALLY_AUTO = false;
+/* [231026g] Jake, 23 Oct, 22:50 and 23:06: "strip back to bare bones" … "i dont think we need the slots number, remove". The card
+   says three things — ROWS, COMBOS, TIME EARNED — then LEVEL TOTAL and GRAND TOTAL. Every other line is in the sum, off the card,
+   and the level total climbs through them (TALLY_CLIMB_MS) once the three are in. TALLY_BARE = false puts back the 2212 card. */
+const TALLY_BARE = true, TALLY_CLIMB_MS = 1200;
 function tallySpinMs(secs) { return Math.min(2600, 700 + 22 * Math.max(0, secs)); }
 function buildLevelTallyRows() {
     const L = game._lv, lvl = advancedRound;
     const delta = game.score - (game._levelStartScore || 0);
-    const cov = L.cov || 0;   // [181026l] the grade's points have their own line now, out of BOARD
+    const cov = L.cov || 0;   // [181026l] the ground's points have their own line, out of BOARD
     const known = L.set + L.slot + L.row + L.over + L.time + cov;
     const rows = [], plusS = n => `+${Math.round(n)}s`;
-    rows.push({ icon: 'set', label: 'Set complete', count: 'LEVEL ' + lvl, pts: L.set });
-    // [181026l] Jake, 21:09: the set is made of slots; the line says what they paid in time as well as points
+    /* [231026f] Jake, 23 Oct, 22:10: SET COMPLETE without its LEVEL n (the title says it); slots, rows and combos counted;
+       the lettered grade gone — GROUND COVERED as a percentage, every level, with what it paid; BOARD kept; and TIME EARNED,
+       every second the level paid in, with the other time lines. Lines with no points of their own are counts. */
+    if (TALLY_BARE) {   // [231026g] three lines on the card; the points, all of them, in the total
+        rows.push({ bare: true, bright: true, label: 'Rows', count: String(game.roundRows || 0),   // [241026a] ROWS 23 · BEST ×6
+                    sub: (game.roundRows || 0) && game.roundBestRowRun ? ' · BEST ×' + game.roundBestRowRun : '', pts: 0 });
+        rows.push({ bare: true, bright: true, combo: true, label: 'Combos', count: String(game.roundCombos || 0), pts: 0 });
+        rows.push({ bare: true, bright: true, label: 'Time earned', count: plusS(game.roundTimeSecs || 0), pts: 0 });
+        rows.push({ bare: true, paid: true, label: 'Set complete', count: '', pts: L.set });   // [241026a] completing the set, with its points
+        const h = (label, count, pts, more) => rows.push(Object.assign({ hide: true, label, count, pts }, more || {}));
+        h('Slots', '×' + (game.roundClaims || 0), L.slot);
+        h('Row points', '×' + (game.roundRows || 0), L.row);
+        h('Ground covered', Math.round(L.covPct || 0) + '%', cov);
+        h('Board', '', Math.max(0, delta - known));
+        if (L.over > 0) h('Time over ' + clockFmt(CLOCK_CEILING), Math.round(L.overSecs) + 's', L.over);
+        h('Time left', L.timeSecs + 's', L.time, { spin: { secs: L.timeSecs, per: TIME_PTS_PER_SEC * lvl } });
+        return rows;
+    }
+    rows.push({ icon: 'set', label: 'Set complete', count: '', pts: L.set });
     rows.push({ icon: 'slot', label: 'Slots', count: '×' + (game.roundClaims || 0) + (L.slotSecs ? ' · ' + plusS(L.slotSecs) : ''), pts: L.slot });
     rows.push({ icon: 'rows', label: 'Rows', count: '×' + (game.roundRows || 0), pts: L.row });
-    // a count, and the time they paid; their points are already in the lines above, so this line adds none
-    rows.push({ icon: 'combo', label: 'Combos', count: '×' + (game.roundCombos || 0) + (L.comboSecs ? ' · ' + plusS(L.comboSecs) : ''), pts: 0 });
-    if (cov > 0) rows.push({ icon: 'covered', label: 'Grade', count: L.grade || '', pts: cov });
+    rows.push({ icon: 'combo', bright: true, label: 'Combos', count: '×' + (game.roundCombos || 0) + (L.comboSecs ? ' · ' + plusS(L.comboSecs) : ''), pts: 0 });
+    rows.push({ icon: 'covered', label: 'Ground covered', count: Math.round(L.covPct || 0) + '%', pts: cov });
     rows.push({ icon: 'play', label: 'Board', count: '', pts: Math.max(0, delta - known) });
+    rows.push({ icon: 'clock', bright: true, label: 'Time earned', count: plusS(game.roundTimeSecs || 0), pts: 0 });
     // what the level's charges took off the clock — every one of those seconds was points at the set
-    if (L.penSecs > 0) rows.push({ icon: 'trim', label: 'Penalties', count: '−' + Math.round(L.penSecs) + 's', pts: 0 });
+    if (L.penSecs > 0) rows.push({ icon: 'trim', bright: true, label: 'Penalties', count: '−' + Math.round(L.penSecs) + 's', pts: 0 });
     if (L.over > 0) rows.push({ icon: 'clock', label: 'Time over ' + clockFmt(CLOCK_CEILING), count: Math.round(L.overSecs) + 's', pts: L.over });
     rows.push({ icon: 'clock', label: 'Time left', count: L.timeSecs + 's', pts: L.time, low: L.timeSecs < 10,
                 spin: { secs: L.timeSecs, per: TIME_PTS_PER_SEC * lvl } });
@@ -25074,7 +25126,7 @@ function showLevelTally(onDone, opts) {
     // bonus be counted twice and the level bonus not at all, before [220826c]
     // and [220826d] tied them back together. One source of truth is worth more
     // than the convenience of deleting a line.
-    const nodes = [];
+    let nodes = [];   // [231026g] let: bare bones folds the hidden lines into one climb
     for (const r of rows) {
         if (r.hide) { nodes.push({ node: null, row: r }); continue; }
         const d = document.createElement('div');
@@ -25082,7 +25134,7 @@ function showLevelTally(onDone, opts) {
         // Applied after nopay deliberately, so the amber wins over the dimming:
         // a zero-point row that is trying to warn you must not be the faintest
         // thing on the card.
-        d.className = 'tally-row' + (r.gold ? ' gold' : '') + (r.pts ? '' : ' nopay') + (r.low ? ' low' : '');
+        d.className = 'tally-row' + (r.gold ? ' gold' : '') + (r.pts || r.bright ? '' : ' nopay') + (r.low ? ' low' : '') + (r.bare ? ' bare' : '') + (r.combo ? ' combo' : '') + (r.paid ? ' paid' : '');
         d.innerHTML = '<span class="tally-left"><span class="tally-icon"></span>' +
                       '<span class="tally-label"></span></span>' +
                       '<span class="tally-count"></span>' +
@@ -25096,10 +25148,16 @@ function showLevelTally(onDone, opts) {
                 '<span class="tally-hearts">' + heart.repeat(Math.min(5, r.hearts)) + '</span>';
         } else {
             d.querySelector('.tally-count').textContent = r.count;
+            if (r.sub) { const sb = document.createElement('span'); sb.className = 'tally-sub'; sb.textContent = r.sub; d.querySelector('.tally-count').appendChild(sb); }   // [241026a]
         }
         d.querySelector('.tally-pts').textContent = r.pts ? '+0' : '';
         if (host) host.appendChild(d);
         nodes.push({ node: d, row: r });
+    }
+    // [231026g] bare bones: the lines off the card become one climb of the level total, after the three on it
+    if (rows.some(r => r.bare)) {
+        const sum = nodes.filter(n => !n.node).reduce((a, n) => a + (n.row.pts || 0), 0);
+        nodes = nodes.filter(n => n.node).concat(sum ? [{ node: null, row: { label: 'Level points', pts: sum, hide: true, climb: true } }] : []);
     }
 
     el.classList.remove('hidden');
@@ -25178,6 +25236,15 @@ function showLevelTally(onDone, opts) {
             // there is nothing on screen for the animation to attach to. The
             // total absorbs it and moves on.
             if (!n.node) {
+                if (n.row.pts && n.row.climb) {   // [231026g] the level total climbs through every point off the card, with the tick
+                    const base = _place[i]; let _lastTick = 0; _tallyRunning++;
+                    const cancel = countUp(n.row.pts, TALLY_CLIMB_MS, v => {
+                        const t = performance.now(); if (v < n.row.pts && t - _lastTick > 60 && sfx.tallyTick) { _lastTick = t; sfx.tallyTick(); }
+                        setTotal(base + v);
+                    }, () => { banked = Math.max(banked, base + n.row.pts); _tallyRunning--; setTotal(banked); });
+                    _tallyCancels.push(cancel);
+                    return;
+                }
                 if (n.row.pts) { banked = Math.max(banked, _place[i] + n.row.pts); setTotal(banked); }   // [181026c]
                 return;
             }
@@ -25208,7 +25275,7 @@ function showLevelTally(onDone, opts) {
         }, 240 + i * STEP));
     });
 
-    const endAt = 240 + nodes.length * STEP + 300 + nodes.reduce((a, n) => a + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0), 0);   // [181026b] the spin is longer than a line
+    const endAt = 240 + nodes.length * STEP + 300 + nodes.reduce((a, n) => a + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0), 0) + (nodes.some(n => n.row.climb) ? Math.max(0, TALLY_CLIMB_MS - 420) : 0);   // [181026b] the spin is longer than a line · [231026g] and so is the climb
     _tallyTimers.push(setTimeout(() => {
         if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
         if (sfx.gold) sfx.gold();
@@ -25438,7 +25505,7 @@ function completeSet() {
                        : covGrade === 'B' ? 10 * advancedRound : 0;
         if (covBonus > 0) scoreGain(covBonus, true);
         game._lastCovGrade = covGrade; game._lastCovBonus = covBonus;
-        if (game._lv) { game._lv.cov = covBonus; game._lv.grade = covGrade; }   // [181026l] the grade has its own line
+        if (game._lv) { game._lv.cov = covBonus; game._lv.grade = covGrade; game._lv.covPct = cov; }   // [181026l] the ground's own line · [231026f] as a percentage
         // [270726r] The text moved onto the level card; the jackpot keeps
         // its audio moment.
         if (covGrade === 'S') {
@@ -25566,7 +25633,7 @@ function completeSet() {
             overflowPts = 0;
             game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
             // [290726d] tally counters reset with the rest of the round trackers
-            game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+            game.roundGreens = 0; game.roundRows = 0; game.roundBestRowRun = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
     game._rowRun = 0; game._rowRunShape = null;   // [181026j] a new level, a new run
             game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
@@ -25738,7 +25805,7 @@ function completeSet() {
             levelCardThenReplay(_lc, LEVEL_TALLY ? () => {
                 if (_run !== _runSerial) return;
                 hideLevelCard();
-                showLevelTally(_afterCard, { auto: true });
+                showLevelTally(_afterCard, { auto: TALLY_AUTO });   // [231026c] it waits for CONTINUE
             } : _afterCard);
         }, SET_TO_REPLAY_MS + _hold);   // [ACTION REPLAY] was 2200 — the card's hold; now the fireworks' first bloom · [290926g] after the landing
     } else {
@@ -26832,8 +26899,9 @@ function stepLay(oldCells, v, hop) {
         const x = c.x + v.dx * h, y = c.y + v.dy * h;
         if (x < 0 || x >= VIEW_W || y < topB || y > botB) continue;
         const k = `${x},${y}`;
-        if (world[k] === 'void') {
-            if (fillVoid(x, y)) { laid++; addBurst(x * CELL + CELL / 2, (y - game.cameraY) * CELL + CELL / 2, '#7dd3fc'); }
+        if (world[k] === 'void') {   // [231026b] laid as the body is seen to cross it, not before
+            const at = h > 0 ? animQueueDelay() + MACHINE_ENGAGE_MS + (STEP_STEPPED && hop > 1 ? STEP2_MOVE_MS * h : STEP_MS * 0.5) : 0;
+            if (fillVoid(x, y, at)) { laid++; const bx = x * CELL + CELL / 2, by = y; later(at, () => addBurst(bx, (by - game.cameraY) * CELL + CELL / 2, '#7dd3fc')); }
             continue;
         }
         if (MACHINE_TAKES_HOURGLASSES && isTimeCell(world[k])) {   // [300926b] vaulted over: collected as it is crossed
@@ -30754,7 +30822,8 @@ function celebrateLineBand(newRows) {
     if (ROW_RUNS && game._rowRunShape && game._rowRunShape !== game.shapeType) endRowRun('shape');
     const _runFrom = ROW_RUNS ? (game._rowRun || 0) : 0;
     if (ROW_RUNS) { game._rowRun = _runFrom + newRows.length; game._rowRunShape = game._rowRunSeen = game.shapeType;
-                    if (game._rowRun > (game.runBestRowRun || 0)) game.runBestRowRun = game._rowRun; }
+                    if (game._rowRun > (game.runBestRowRun || 0)) game.runBestRowRun = game._rowRun;
+                    if (game._rowRun > (game.roundBestRowRun || 0)) game.roundBestRowRun = game._rowRun; }   // [241026a] the level's best run, for the card
     const _runK = ROW_RUNS ? game._rowRun : 0;
     // ── [210826az] CLEAN SLATE FIRES WHEN IT IS EARNED ──────────────────────
     // It has always MEANT ten rows completed in the level — that part was
@@ -40429,7 +40498,7 @@ function scoreGuideRows() {
         ['Filling a slot', `${W('single')} to ${W('square')} by shape`],
         ['\u2026 by a shifter: a combo', '\u00d71.5'],
         ['\u2026 next to danger, or the same shape twice running', '\u00d71.5 each'],   // [181026l]
-        ['Coverage grade B \u00b7 A \u00b7 S', '10 \u00b7 30 \u00b7 60 \u00d7 level'],
+        [`Ground covered: ${COVERAGE_BARS.default[2]}, ${COVERAGE_BARS.default[1]} or ${COVERAGE_BARS.default[0]}% of the level's board (level 1: ${COVERAGE_BARS[1][2]}, ${COVERAGE_BARS[1][1]}, ${COVERAGE_BARS[1][0]}%)`, '10 · 30 · 60 × level'],   // [231026f] no letters
         ['The last of a shape in the set', `${Math.round(25 * Math.min(...Object.values(CLEAR_WEIGHT)))}+`],
         ['A green landed on, or fusing', '5'],
         ['An hourglass, or a red trim', '3'],
@@ -40622,7 +40691,7 @@ function startGame(testDrive = false, daily = false) {
     game.flipCount = 0; game.diagCount = 0;
     game.roundLivesLost = 0; game.roundTrims = 0; game.roundClaims = 0; game.roundRoseFirst = false; game.roundChains = 0;
     // [290726d] tally counters reset with the rest of the round trackers
-    game.roundGreens = 0; game.roundRows = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
+    game.roundGreens = 0; game.roundRows = 0; game.roundBestRowRun = 0; game.roundBestCombo = 0; game.roundWarps = 0; game.roundImpacts = 0;
             game.roundRevolves = 0; game.roundCombos = 0;   // [210826ab] per-level, reset with the rest
     game._rowRun = 0; game._rowRunShape = null;   // [181026j] a new level, a new run
     game.roundTimeSecs = 0; mercyGivenThisLevel = false;   // [300726n]
@@ -41711,6 +41780,14 @@ document.addEventListener('keydown', e => {
     }
     if (typeof keepOfferLive === 'function' && keepOfferLive() && !e.repeat) {   // [270926d]
         if (e.key === ' ' || e.code === 'Space' || e.key === 'Escape' || e.key === 'Enter') { keepOfferPass('key'); e.preventDefault(); return; }
+    }
+    {   // [231026c] the level card: Enter or Space does what a tap and CONTINUE do — the first lands the count, the next goes on
+        const lt = document.getElementById('levelTally');
+        if (lt && lt.classList.contains('show') && !e.repeat && (e.key === 'Enter' || e.key === ' ' || e.code === 'Space')) {
+            const cont = document.getElementById('tallyContinue');
+            if (cont && cont.classList.contains('in')) finishLevelTally(); else skipLevelTally();
+            e.preventDefault(); return;
+        }
     }
     // Move hints — H toggles the landing-preview overlay
     if (e.key === 'h' || e.key === 'H') {
@@ -43717,6 +43794,12 @@ const OPENING_ON = true;
    Any tap or key still skips it; still once a session. Reduced motion: RЯ held, then the
    fade. OP_HOLD_MS = 0 puts back the old opening (RЯ opens into ROTOЯ). */
 const OP_HOLD_MS = 3000, OP_FADE_MS = 600;
+/* [231026a] A WHITE FADE — designer's call, 23 Oct: "Put a white fade of one second between the 1st and second screen
+   (welcome screen) when initiating the game." After the hold the cover dips to white (OP_DIP_MS / 2) and the white gives
+   way to the welcome page (the other half). White in both themes, as asked. A tap skips to the fade, not past it.
+   OP_DIP_MS = 0 puts back the 600 ms fade straight to the page. */
+const OP_DIP_MS = 1000;
+function opFadeAt() { return (_op.reduced ? 0 : 1400) + OP_HOLD_MS; }
 const _op = { el: null, t0: 0, raf: 0, done: true, reduced: false, ls: [], tgt: null, title: null, swallowUntil: 0 };
 function openingEase(k) { k = Math.max(0, Math.min(1, k)); return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; }
 function openingMeasure() {
@@ -43741,6 +43824,12 @@ function openingSkip(e) {
     if (_op.done) return;
     e.stopPropagation(); if (e.cancelable) e.preventDefault();
     _op.swallowUntil = performance.now() + 450;   // the rest of this tap must not land on the page
+    if (OP_HOLD_MS > 0 && OP_DIP_MS > 0 && _op.el) {   // [231026a] a tap skips the hold, not the white fade
+        const now = performance.now(), at = opFadeAt();
+        if (now - _op.t0 < at) _op.t0 = now - at;   // already fading: let it finish
+        _op.swallowUntil = now + OP_DIP_MS + 300;
+        return;
+    }
     openingEnd();
 }
 for (const t of ['pointerup', 'touchend', 'mouseup', 'click']) window.addEventListener(t, openingSwallow, true);
@@ -43776,6 +43865,15 @@ function openingFrame(now) {
             openingPlace(ls[0], cx - dxm, cy, sc, 180 + 180 * turn, rx, op);   // Я → R
             openingPlace(ls[4], cx + dxm, cy, sc, 360 + 180 * turn, rx, op);   // R → Я
             if (T > 1330 && !_op.clicked) { _op.clicked = true; try { if (audioCtx && audioCtx.state === 'running' && sfx.move) sfx.move(); } catch (e) {} }
+        }
+        if (OP_DIP_MS > 0) {   // [231026a] to white, then white to the page
+            const k = (T - fadeAt) / OP_DIP_MS, w = _op.el.querySelector('.op-white');
+            if (k >= 0) {
+                if (w) w.style.opacity = String(Math.min(1, k * 2));
+                _op.el.style.opacity = k <= 0.5 ? '1' : String(Math.max(0, 1 - (k - 0.5) * 2));
+            }
+            if (k >= 1) openingEnd();
+            return;
         }
         if (T >= fadeAt) _op.el.style.opacity = String(Math.max(0, 1 - (T - fadeAt) / OP_FADE_MS));   // the whole cover fades: the page is underneath, whole
         if (T >= fadeAt + OP_FADE_MS) openingEnd();
@@ -43825,6 +43923,7 @@ function openingRun() {
     const ss = document.getElementById('startScreen');
     if (!OPENING_ON || seen || !ss || ss.classList.contains('hidden')) { el.parentNode && el.parentNode.removeChild(el); return; }
     _op.el = el; _op.done = false; _op.ls = [...el.querySelectorAll('.op-l')];
+    if (OP_DIP_MS > 0 && !el.querySelector('.op-white')) { const w = document.createElement('div'); w.className = 'op-white'; el.appendChild(w); }   // [231026a]
     try { _op.reduced = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
     el.classList.add('running');
     _op.title = document.querySelector('.welcome-box .screen-title');

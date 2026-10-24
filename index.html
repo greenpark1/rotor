@@ -3675,6 +3675,85 @@ body.theme-day .tally-title { color: #ff2d95; text-shadow: none; }   /* [260926r
 .tally-row.bare.combo .tally-label, .tally-row.bare.combo .tally-count { color: #ff8a3d; }
 body.theme-day .tally-row.bare.combo .tally-label { color: #9a3412; }
 body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
+/* ══ [241026c] DESIGN 4 — three inventories ══ */
+.level-tally.inv-card .tally-title { font-size: clamp(18px, 5.4cqw, 25px); margin: 0 0 6px; }
+.level-tally .tally-row.inv { display: block; text-align: left; padding: 0; border-top: 0 !important; margin: 0 0 clamp(8px, 2.6cqw, 14px); font-size: 13px; }
+.tally-row.inv .inv-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 4px; border-bottom: 2px solid rgba(125, 211, 252, 0.6); }
+.tally-row.inv .inv-h { font-size: 12px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7dd3fc; }
+.tally-row.inv .inv-head .tally-pts { font-size: clamp(17px, 5cqw, 21px); font-weight: 900; min-width: 0; }
+.tally-row.inv .inv-line { display: flex; align-items: center; gap: 8px; padding: clamp(4px, 1.3cqw, 7px) 0; border-bottom: 1px solid rgba(148, 163, 184, 0.14); }
+.tally-row.inv .inv-line:last-child { border-bottom: 0; }
+.tally-row.inv .inv-lab { width: 40%; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: #cbd5e1; }
+.tally-row.inv .inv-pic { flex: 1; min-width: 0; display: flex; align-items: center; gap: 3px; overflow: hidden; }
+.tally-row.inv .inv-pts { font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; color: #e2e8f0; white-space: nowrap; }
+.tally-row.inv .inv-num { margin-left: 5px; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: #7dd3fc; white-space: nowrap; }
+.tally-row.inv .inv-more { margin-left: 2px; font-size: 10px; font-weight: 800; color: #7dd3fc; }
+.tally-row.inv .inv-none { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; }
+.inv-pip { display: inline-block; flex: none; }
+.inv-pip.slot { width: 11px; height: 11px; border-radius: 3px; background: #38bdf8; }
+.inv-pip.row { width: 4px; height: 13px; border-radius: 2px; background: #7dd3fc; }
+.inv-pip.bolt, .inv-ic.ic-combo { width: 10px; height: 14px; border-radius: 0; background: #ff8a3d; clip-path: polygon(60% 0, 0 58%, 42% 58%, 34% 100%, 100% 40%, 56% 40%); }
+.inv-stack { display: inline-flex; flex-direction: column-reverse; gap: 2px; margin-right: 4px; flex: none; }
+.inv-stack i { display: block; width: 11px; height: 3px; border-radius: 1px; background: #38bdf8; }
+.inv-stack.best i { background: #e0f2fe; }
+.inv-meter { position: relative; display: inline-block; flex: none; width: 72px; height: 6px; border-radius: 3px; background: rgba(148, 163, 184, 0.25); }
+.inv-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #38bdf8; }
+.inv-tick { position: absolute; top: -3px; width: 2px; height: 12px; margin-left: -1px; background: #e2e8f0; }
+.tally-row.inv .inv-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
+.inv-tile { display: flex; flex-direction: column; gap: 2px; padding: 5px 7px; border-radius: 9px; border: 1px solid rgba(125, 211, 252, 0.28); background: rgba(255, 255, 255, 0.04); min-width: 0; }
+.inv-tlab { font-size: 9.5px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-trow { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+.inv-tn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #e2e8f0; }
+.inv-tn b { font-weight: 800; }
+.inv-ts { font-size: 14px; font-weight: 900; color: #e2e8f0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-ic { display: inline-block; flex: none; width: 11px; height: 11px; border-radius: 3px; }
+.ic-slot { border: 2px solid #38bdf8; box-sizing: border-box; }
+.ic-row { background: repeating-linear-gradient(to bottom, #7dd3fc 0 2px, transparent 2px 4px); border-radius: 0; }
+.ic-glass { background: #38bdf8; clip-path: polygon(0 0, 100% 0, 58% 50%, 100% 100%, 0 100%, 42% 50%); border-radius: 0; }
+.ic-green { background: #84cc16; }
+.ic-red { background: #ef4444; }
+.ic-hole { background: #020617; border: 1px solid #64748b; box-sizing: border-box; }
+.ic-board { background: #38bdf8; transform: rotate(45deg) scale(0.8); border-radius: 1px; }
+.ic-pen { background: #ef4444; position: relative; }
+.ic-pen::after { content: ''; position: absolute; left: 2px; right: 2px; top: 4.5px; height: 2px; background: #ffffff; }
+.inv-tile.t-combo { border-color: rgba(255, 138, 61, 0.45); }
+.inv-tile.t-combo .inv-tlab, .inv-tile.t-combo .inv-ts, .inv-tile.t-combo .inv-tn { color: #ff8a3d; }
+.inv-tile.t-pen { border-color: rgba(239, 68, 68, 0.45); }
+.inv-tile.t-pen .inv-tlab, .inv-tile.t-pen .inv-ts, .inv-tile.t-pen .inv-tn { color: #f87171; }
+.inv-tile.t-green .inv-tlab { color: #a3e635; }
+.tally-row.inv .inv-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.9px; color: #cbd5e1; }
+.tally-row.inv .inv-foot .inv-spin { display: none; }   /* the seconds still spin (and tick) as the points rise; the line keeps saying what was left */
+.tally-row.inv-combos .inv-head { border-bottom-color: rgba(255, 138, 61, 0.6); }
+.tally-row.inv-combos .inv-h, .tally-row.inv-combos .inv-head .tally-pts, .tally-row.inv .inv-line.c .inv-lab, .tally-row.inv .inv-line.c .inv-pts { color: #ff8a3d; }
+body.theme-day .tally-row.inv .inv-head { border-bottom-color: #7dd3fc; }
+body.theme-day .tally-row.inv .inv-h { color: #0369a1; }
+body.theme-day .tally-row.inv .inv-head .tally-pts { color: #0284c7; }
+body.theme-day .tally-row.inv .inv-line { border-bottom-color: #e0f2fe; }
+body.theme-day .tally-row.inv .inv-lab, body.theme-day .tally-row.inv .inv-pts, body.theme-day .inv-tn, body.theme-day .inv-ts, body.theme-day .tally-row.inv .inv-foot { color: #0c4a6e; }
+body.theme-day .tally-row.inv .inv-num, body.theme-day .tally-row.inv .inv-more, body.theme-day .inv-tlab { color: #0369a1; }
+body.theme-day .tally-row.inv .inv-none { color: #475569; }
+body.theme-day .inv-pip.slot, body.theme-day .inv-meter-fill, body.theme-day .ic-board { background: #0284c7; }
+body.theme-day .inv-pip.row { background: #38bdf8; }
+body.theme-day .inv-stack i { background: #0284c7; }
+body.theme-day .inv-stack.best i { background: #0c4a6e; }
+body.theme-day .inv-meter { background: #e0f2fe; }
+body.theme-day .inv-tick { background: #0c4a6e; }
+body.theme-day .inv-tile { background: #ffffff; border-color: #bae6fd; }
+body.theme-day .ic-slot { border-color: #0284c7; }
+body.theme-day .ic-row { background: repeating-linear-gradient(to bottom, #38bdf8 0 2px, transparent 2px 4px); }
+body.theme-day .ic-glass { background: #0284c7; }
+body.theme-day .ic-hole { background: #0c4a6e; border-color: #0c4a6e; }
+body.theme-day .inv-pip.bolt, body.theme-day .inv-ic.ic-combo { background: #ea580c; }
+body.theme-day .inv-tile.t-combo { background: #fff4ec; border-color: #fdba8c; }
+body.theme-day .inv-tile.t-combo .inv-tlab { color: #9a3412; }
+body.theme-day .inv-tile.t-combo .inv-ts, body.theme-day .inv-tile.t-combo .inv-tn { color: #c2410c; }
+body.theme-day .inv-tile.t-pen { background: #fdf0ee; border-color: #f2b8b0; }
+body.theme-day .inv-tile.t-pen .inv-tlab, body.theme-day .inv-tile.t-pen .inv-ts, body.theme-day .inv-tile.t-pen .inv-tn { color: #a93226; }
+body.theme-day .ic-pen, body.theme-day .ic-red { background: #c0392b; }
+body.theme-day .inv-tile.t-green .inv-tlab { color: #3f6212; }
+body.theme-day .tally-row.inv-combos .inv-head { border-bottom-color: #fdba8c; }
+body.theme-day .tally-row.inv-combos .inv-h, body.theme-day .tally-row.inv .inv-line.c .inv-lab { color: #9a3412; }
+body.theme-day .tally-row.inv-combos .inv-head .tally-pts, body.theme-day .tally-row.inv .inv-line.c .inv-pts { color: #c2410c; }
 /* [241026a] ROWS 23 · BEST ×6 — the best run a size down; SET COMPLETE shows its points, the one line on the card that pays */
 .tally-row.bare .tally-sub { font-size: 0.52em; font-weight: 800; letter-spacing: 1px; }
 .tally-row.bare.paid .tally-pts { display: inline; min-width: 0; font-size: clamp(22px, 7cqw, 32px); font-weight: 900; line-height: 1; }
@@ -7876,6 +7955,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 241026-0842: INVENTORIES. Jake, 24 Oct, 08:27: "in the scorecard treatments i like 3. the most. i feel there should be a points inventory and a points, a time and a combos inventory on the scorecard that get dded up to give us the score for that level ... time inventory needs to be more detaileld ... collecting rows is probably the largest source of time earned"; 08:35: "if a player flips their shape on to a shifter that then results in a slot filled thats big points, even bigger points if two or three shifters get used in the process ... Base your decison on this understanding". COMBO POINTS [241026b]: a shifter carrying you onto a slot pays 500 × level, doubled for a second shifter in the chain and doubled again for a third (×4 is the most: four or five shifters pay as three); every other combo (a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit) 100 × level. Points only — the +3 s stays, the clock is untouched, and combo points forge no shifters. The float says it: COMBO!  +3s / +3,500. HOW TO SCORE lists both. ?combopts= and ?combopts2= set them. THE LEVEL CARD, DESIGN 4 [241026c]: three inventories that add up to LEVEL TOTAL — POINTS (SET COMPLETE with a square per slot and ×n; ROWS with a bar per row, at 25 × level each; ROW COMBOS, a stack per run of two or more with the same shape, BEST ×n, the extra the runs paid; GROUND COVERED, a meter with the level's three bars marked; BOARD, the rest), TIME (a tile per source that paid: slots, rows, hourglasses, greens, combos, red trims, holes filled — each its count and seconds — and PENALTIES, then EARNED +Ns and the seconds LEFT spinning into points at 5 × level a second) and COMBOS (a line per kind, a bolt per combo, with its points; NO COMBOS THIS LEVEL when there were none). Each inventory lands in turn and its total counts up into LEVEL TOTAL; the title is one line. The level now counts the seconds from every source, the penalties, each kind of combo, and the rows' points split into plain rows and row combos. TALLY_INVENTORY = false puts back the 0014 card.
 // 241026-0014: BEST RUN. Jake, 24 Oct, 00:09–00:13: "what do you think of rows, combos, timed earned and level score and total as the only metrics" … "add "ROWS 23 · BEST ×6". add in a 'completing the set' score". THE LEVEL CARD [241026a]: ROWS shows the level's rows and its best run — 23 · BEST ×6, the longest run of rows made with one shape in the level (game.roundBestRowRun, new, reset every level; no BEST when there were no rows) — and SET COMPLETE comes back as the fourth line with its points (+1,000 × level), counted up as it lands, so the level total visibly gets the set before it climbs through the rest. The card: ROWS · COMBOS · TIME EARNED · SET COMPLETE · LEVEL TOTAL · GRAND TOTAL.
 // 231026-2309: BARE BONES. Jake, 23 Oct, 22:50: "there are too many numbers, strip back to bear bones"; 23:06: "i don think we need the slots number, remove. update the scorecard based on my prefereces". THE LEVEL CARD, BARE BONES [231026g]: three lines — ROWS, COMBOS (tangerine) and TIME EARNED — each a label and its number, no icon, no points column; then LEVEL TOTAL and GRAND TOTAL. Six numbers where there were about twenty. Every point still counts: set complete, slots, rows' points, ground covered, board, time over and time left are in the sum, off the card, and LEVEL TOTAL climbs through them (1.2 s, with the tick) once the three lines are in. A tap lands it; it waits for CONTINUE as before. Penalties still float on the board where they happen; HOW TO SCORE still lists every payment. TALLY_BARE = false puts back the 2212 card.
 // 231026-2212: TIME EARNED. Jake, 23 Oct, 22:10: "Regarding the interlevel scores, i'd like to see time earned by the player at the end of each round. the 'set complete' doesnt need the 'level + n' because the score card has the level number at the top. i dont like a lettered grade, open to other ideas. number of slots is important. number of rows cleared is good to have. The number of combos is and will be important ... the board stat is good, keep". THE LEVEL CARD [231026f]: TIME EARNED — every second the level paid in (slots, rows, hourglasses, greens, reds, combos, ground), with no points of its own — sits with the other time lines, above PENALTIES; SET COMPLETE drops its LEVEL n (the title says it); the lettered grade is gone: GROUND COVERED says the share of the level's board you walked over, as a percentage, every level, with the points it paid (the same bars as before: 38, 60 and 80% pay 10, 30 and 60 × level; level 1 20, 26 and 30%) — and HOW TO SCORE says it so, no letters. SLOTS, ROWS, COMBOS and BOARD stay; COMBOS, TIME EARNED and PENALTIES read in full ink, not greyed as lines without points. The card's lines are a little closer together so all ten fit a phone without scrolling.
@@ -8752,7 +8832,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '241026-0014 ROTOЯ · BEST RUN';
+const BUILD_VERSION = '241026-0842 ROTOЯ · INVENTORIES';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -10015,16 +10095,33 @@ const ROW_RUNS = CLOCK_RESETS;
 const ROW_RUN_SEC = Math.round(econDial('rowsec', 6, 1, 15)), ROW_RUN_PTS = Math.round(econDial('rowpts', 25, 5, 200));
 /* [181026m] COMBOS PAY TIME — Jake, 19:19: "combos should pay time"; 21:09, the suggestion taken: every COMBO! pays 3 s. */
 const COMBO_SEC = CLOCK_RESETS ? Math.round(econDial('combo', 3, 0, 10)) : 0;
+/* [241026b] Jake, 24 Oct, 08:35: "if a player flips their shape on to a shifter that then results in a slot filled thats big points,
+   even bigger points if two or three shifters get used in the process". A shifter carrying you onto a slot pays COMBO_SLOT_PTS × level,
+   doubled for each more shifter in the chain, up to COMBO_CHAIN_MULT_CAP (three shifters; four or five pay as three). Every other combo
+   — a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit — pays COMBO_OTHER_PTS × level. Points
+   only: the +3 s stays, the clock is untouched, and combo points forge no shifters. */
+const COMBO_SLOT_PTS = CLOCK_RESETS ? Math.round(econDial('combopts', 500, 0, 5000)) : 0;
+const COMBO_OTHER_PTS = CLOCK_RESETS ? Math.round(econDial('combopts2', 100, 0, 5000)) : 0;
+const COMBO_CHAIN_MULT_CAP = 4;
+function comboPtsFor(kind, links) {
+    const lv = Math.max(1, (typeof advancedRound !== 'undefined' && advancedRound) || 1);
+    if (kind === 'band') return 0;
+    return kind === 'shifter' ? COMBO_SLOT_PTS * lv * Math.min(COMBO_CHAIN_MULT_CAP, Math.pow(2, Math.max(1, links || 1) - 1)) : COMBO_OTHER_PTS * lv;
+}
 function endRowRun(why) {
     if (!ROW_RUNS || typeof game === 'undefined' || !game || !game._rowRun) return;
     rec('runend', { n: game._rowRun, why: why || '?', r: advancedRound });
+    if (game._lv && game._lv.rowRuns && game._rowRun >= 2) game._lv.rowRuns.push(game._rowRun);   // [241026c] a row combo, for the card
     game._rowRun = 0;
 }
 function watchRowRunShape() {   // any change of shape ends the run
     if (!ROW_RUNS || !game || !game.running) return;
     if (game._rowRunSeen !== game.shapeType) { if (game._rowRunSeen) endRowRun('shape'); game._rowRunSeen = game.shapeType; }
 }
-function newLevelLedger() { return { set: 0, slot: 0, row: 0, over: 0, overSecs: 0, time: 0, timeSecs: 0, slotSecs: 0, comboSecs: 0, penSecs: 0, cov: 0, grade: '', covPct: 0 }; }   // [181026l] + the slots' and combos' seconds, the charges, the grade   // [181026b] what the level's score was made of
+function newLevelLedger() { return { set: 0, slot: 0, row: 0, over: 0, overSecs: 0, time: 0, timeSecs: 0, slotSecs: 0, comboSecs: 0, penSecs: 0, cov: 0, grade: '', covPct: 0, combo: 0, comboN: {}, comboP: {}, comboLinks: 0, secBy: {}, nBy: {}, penN: 0, rowBase: 0, rowRun: 0, rowRuns: [] }; }   // [181026l] + the slots' and combos' seconds, the charges, the grade   // [181026b] what the level's score was made of
+function ledgerTime(src, sec, n) {   // [241026c] every second the level is paid, by where it came from, for the card's TIME
+    try { if (typeof game === 'undefined' || !game || !game._lv || game._replay || !game._lv.secBy) return; const L = game._lv; L.secBy[src] = (L.secBy[src] || 0) + sec; L.nBy[src] = (L.nBy[src] || 0) + (n || 1); } catch (e) {}
+}
 function clockFmt(s) { const v = Math.max(0, Math.round(s)); return Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0'); }
 function timeOverToPoints(over) {   // [181026a] the clock is full: what it cannot hold is paid in points, now
     const pts = Math.round(over * TIME_PTS_PER_SEC * Math.max(1, advancedRound || 1));
@@ -21928,9 +22025,10 @@ function checkSlotClaims() {
             if (game._lv) game._lv.slot += claimPts;   // [181026b]
             if (viaShifter) {
                 game._lastComboT = performance.now();   // this IS the combo — suppress a duplicate line-combo this beat
-                let _cs = 0;   // [181026m] counted as a combo now, and paid as one
+                let _cs = 0, _cp = 0;   // [181026m] counted as a combo now, and paid as one · [241026b] and its points
                 if (COMBO_SEC) { game.roundCombos = (game.roundCombos || 0) + 1; game.runCombos = (game.runCombos || 0) + 1;
-                                 _cs = payCombo('shifter'); rec('combo2', { k: 'shifter', n: game.roundCombos, r: advancedRound }); }
+                                 _cs = payCombo('shifter'); rec('combo2', { k: 'shifter', n: game.roundCombos, r: advancedRound });
+                                 _cp = payComboPts('shifter', chainLinks); }
                 // [170826e] THE LADDER HAS NAMES. One link is a nice combo; two
                 // machines meshing is a GEAR TRAIN; three or more is the FULL
                 // TRANSMISSION — the game's machine fiction, earned in play.
@@ -21954,7 +22052,7 @@ function checkSlotClaims() {
                                 : chainLinks === 2 ? 'DOUBLE COMBO!' : 'COMBO!';
                 const chainCol  = chainLinks >= 2 ? '#ffd60a' : '#f8fafc';
                 addFloat(LOGICAL_W / 2, LOGICAL_H / 2 - 20,
-                    _cs ? `${chainName}  ${secsLabel(_cs)}` : `${chainName}\n+${claimPts}`, chainCol, true);   // [181026m]
+                    _cs ? `${chainName}  ${secsLabel(_cs)}${_cp ? '\n+' + _cp.toLocaleString() : ''}` : `${chainName}\n+${claimPts}`, chainCol, true);   // [241026b]   // [181026m]
                 triggerEdgeGlow(chainLinks >= 2 ? '#ffd60a' : SHIFTER_FAMILY_COLOR,
                                 chainLinks >= 2 ? 1400 : 900);
                 // ── [210826al] SHAKE IS FOR DAMAGE NOW ──────────────────────
@@ -24343,6 +24441,16 @@ function payCombo(kind) {   // [181026m] a combo's seconds, paid like any other:
     rec('time', { sec, src: 'combo', k: kind, m: Math.round(momentumRemaining()) });
     return sec;
 }
+function payComboPts(kind, links) {   // [241026b] a combo's own points, on the level's ledger
+    if (!CLOCK_RESETS || !game || game.testDrive || game._replay || !game.running || kind === 'band') return 0;
+    if (game._lv) { const L = game._lv; L.comboN[kind] = (L.comboN[kind] || 0) + 1; if (kind === 'shifter') L.comboLinks = Math.max(L.comboLinks || 0, links || 1); }
+    const pts = comboPtsFor(kind, links);
+    if (!(pts > 0)) return 0;
+    scoreGain(pts, true, 0);
+    if (game._lv) { const L = game._lv; L.combo += pts; L.comboP[kind] = (L.comboP[kind] || 0) + pts; }
+    rec('combopts', { k: kind, links: links || 1, pts, r: advancedRound });
+    return pts;
+}
 function registerCombo(kind, x, y, extra) {
     if (!game || game.testDrive) return;
     game.roundCombos = (game.roundCombos || 0) + 1;
@@ -24355,7 +24463,8 @@ function registerCombo(kind, x, y, extra) {
     // streak multiplier, which was also called combo; that system is retired,
     // so the word every arcade player already knows is free again.
     if (kind === 'band') label = `COMBO ×${extra}  ${secsLabel(game._lastRowSecs || 0)}`;
-    { const _cs = payCombo(kind); if (_cs > 0 && kind !== 'band') label = `${label}  ${secsLabel(_cs)}`; }   // [181026m] COMBO!  +3s
+    { const _cs = payCombo(kind); if (_cs > 0 && kind !== 'band') label = `${label}  ${secsLabel(_cs)}`;
+      const _cp = payComboPts(kind, 1); if (_cp > 0) label = `${label}\n+${_cp.toLocaleString()}`; }   // [241026b] and its points   // [181026m] COMBO!  +3s
     // Positioned at the event where one is given, centre-board otherwise. A
     // combo is a thing that happened somewhere; naming it over the spot is what
     // connects the word to the move that earned it.
@@ -24810,6 +24919,54 @@ const TALLY_AUTO = false;
    says three things — ROWS, COMBOS, TIME EARNED — then LEVEL TOTAL and GRAND TOTAL. Every other line is in the sum, off the card,
    and the level total climbs through them (TALLY_CLIMB_MS) once the three are in. TALLY_BARE = false puts back the 2212 card. */
 const TALLY_BARE = true, TALLY_CLIMB_MS = 1200;
+/* [241026c] Jake, 24 Oct, 08:27: design 4 — the card is three inventories, POINTS, TIME and COMBOS, each with pictures for the counts and
+   its own total, and the three add up to LEVEL TOTAL. TALLY_INVENTORY = false puts back the 0014 card. */
+const TALLY_INVENTORY = true, TALLY_INV_STEP_MS = 900;
+function buildInventoryRows(L, lvl, delta) {
+    const n = v => Math.round(v || 0).toLocaleString();
+    const rowsAll = L.row || 0, rowRun = ROW_RUNS ? Math.min(rowsAll, L.rowRun || 0) : 0, rowBase = rowsAll - rowRun;
+    const cov = L.cov || 0, comboPts = L.combo || 0, timePts = (L.time || 0) + (L.over || 0);
+    const board = Math.max(0, delta - (L.set + rowsAll + cov + timePts + comboPts));
+    const pointsSub = L.set + rowsAll + cov + board;
+    const claims = game.roundClaims || 0, rowsN = game.roundRows || 0;
+    const runs = (L.rowRuns || []).slice(); if ((game._rowRun || 0) >= 2) runs.push(game._rowRun);
+    const best = runs.length ? Math.max.apply(null, runs) : 0;
+    const pips = (k, cls, cap) => { let h = ''; for (let i = 0; i < Math.min(k, cap); i++) h += `<span class="inv-pip ${cls}"></span>`; return h + (k > cap ? `<span class="inv-more">+${k - cap}</span>` : ''); };
+    const stacks = runs.slice(0, 6).map(r => { let h = `<span class="inv-stack${r === best ? ' best' : ''}">`; for (let i = 0; i < Math.min(r, 8); i++) h += '<i></i>'; return h + '</span>'; }).join('') + (runs.length > 6 ? `<span class="inv-more">+${runs.length - 6}</span>` : '');
+    const bars = COVERAGE_BARS[lvl] || COVERAGE_BARS.default, pct = Math.max(0, Math.min(100, Math.round(L.covPct || 0)));
+    const meter = `<span class="inv-meter"><span class="inv-meter-fill" style="width:${pct}%"></span>${bars.map(b => `<span class="inv-tick" style="left:${b}%"></span>`).join('')}</span><span class="inv-num">${pct}%</span>`;
+    const line = (lab, pic, pts, cls) => `<div class="inv-line${cls ? ' ' + cls : ''}"><span class="inv-lab">${lab}</span><span class="inv-pic">${pic}</span><span class="inv-pts">+${n(pts)}</span></div>`;
+    const head = lab => `<div class="inv-head"><span class="inv-h">${lab}</span><span class="tally-pts">+0</span></div>`;
+    const pHtml = head('Points') +
+        line('Set complete', pips(claims, 'slot', 10) + `<span class="inv-num">×${claims}</span>`, L.set) +
+        line('Rows', pips(rowsN, 'row', 16) + `<span class="inv-num">${rowsN}</span>`, rowBase) +
+        line('Row combos', runs.length ? stacks + `<span class="inv-num">BEST ×${best}</span>` : '<span class="inv-none">none</span>', rowRun) +
+        line('Ground covered', meter, cov) +
+        line('Board', '<span class="inv-ic ic-board"></span>', board);
+    const sb = L.secBy || {}, nb = L.nBy || {};
+    const TSRC = [['piece', 'Slots', 'slot'], ['row', 'Rows', 'row'], ['hourglass', 'Hourglasses', 'glass'], ['green', 'Greens', 'green'], ['combo', 'Combos', 'combo'], ['red', 'Red trims', 'red'], ['ground', 'Holes filled', 'hole']];
+    const tile = (lab, ic, cnt, secs, cls) => `<div class="inv-tile t-${cls || ic}"><span class="inv-tlab">${lab}</span><span class="inv-trow"><span class="inv-tn"><span class="inv-ic ic-${ic}"></span><b>${cnt}</b></span><span class="inv-ts">${secs}</span></span></div>`;
+    let tiles = '';
+    for (const [k, lab, ic] of TSRC) { const sec = Math.round(sb[k] || 0); if (!(sec > 0) && k !== 'piece' && k !== 'row') continue; tiles += tile(lab, ic, nb[k] || 0, `+${sec}s`); }
+    const named = new Set(TSRC.map(t => t[0])), other = Math.round(Object.keys(sb).filter(k => !named.has(k)).reduce((a, k) => a + sb[k], 0));
+    if (other > 0) tiles += tile('Other', 'glass', '', `+${other}s`, 'other');
+    if (L.penSecs > 0) tiles += tile('Penalties', 'pen', L.penN || 0, `−${Math.round(L.penSecs)}s`, 'pen');
+    const tHtml = head('Time') + `<div class="inv-tiles">${tiles}</div>` +
+        `<div class="inv-foot"><span>EARNED +${Math.round(game.roundTimeSecs || 0)}s</span><span>LEFT ${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span><span class="tally-count inv-spin">${L.timeSecs}s</span></div>` +
+        (L.over > 0 ? `<div class="inv-foot"><span>OVER ${clockFmt(CLOCK_CEILING)}</span><span>${Math.round(L.overSecs)}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span></div>` : '');
+    const KINDS = [['shifter', 'Shifter to slot'], ['rowclaim', 'Slot and row'], ['growclaim', 'Green and slot'], ['shave', 'Red trim to fit']];
+    const cn = L.comboN || {}, cp = L.comboP || {};
+    let cl = '';
+    for (const [k, lab] of KINDS) if (cn[k] > 0) cl += line(lab, pips(cn[k], 'bolt', 8) + (k === 'shifter' && (L.comboLinks || 0) >= 2 ? `<span class="inv-num">${Math.min(L.comboLinks, 5)} SHIFTERS</span>` : ''), cp[k] || 0, 'c');
+    if (!cl) cl = '<div class="inv-line c"><span class="inv-none">No combos this level</span></div>';
+    const cHtml = head('Combos') + cl;
+    return [
+        { inv: 'points', bright: true, label: 'Points', count: '', pts: pointsSub, html: pHtml, parts: { set: L.set, rows: rowBase, rowCombos: rowRun, cov, board, claims, rowsN, runs, best } },
+        { inv: 'time', bright: true, label: 'Time', count: L.timeSecs + 's', pts: timePts, html: tHtml, secBy: Object.assign({}, sb), nBy: Object.assign({}, nb), earned: Math.round(game.roundTimeSecs || 0),
+          spin: L.over > 0 ? null : { secs: L.timeSecs, per: TIME_PTS_PER_SEC * lvl } },
+        { inv: 'combos', bright: true, label: 'Combos', count: '', pts: comboPts, html: cHtml, kinds: Object.assign({}, cn), kindPts: Object.assign({}, cp) },
+    ];
+}
 function tallySpinMs(secs) { return Math.min(2600, 700 + 22 * Math.max(0, secs)); }
 function buildLevelTallyRows() {
     const L = game._lv, lvl = advancedRound;
@@ -24820,6 +24977,7 @@ function buildLevelTallyRows() {
     /* [231026f] Jake, 23 Oct, 22:10: SET COMPLETE without its LEVEL n (the title says it); slots, rows and combos counted;
        the lettered grade gone — GROUND COVERED as a percentage, every level, with what it paid; BOARD kept; and TIME EARNED,
        every second the level paid in, with the other time lines. Lines with no points of their own are counts. */
+    if (TALLY_INVENTORY) return buildInventoryRows(L, lvl, delta);   // [241026c] design 4
     if (TALLY_BARE) {   // [231026g] three lines on the card; the points, all of them, in the total
         rows.push({ bare: true, bright: true, label: 'Rows', count: String(game.roundRows || 0),   // [241026a] ROWS 23 · BEST ×6
                     sub: (game.roundRows || 0) && game.roundBestRowRun ? ' · BEST ×' + game.roundBestRowRun : '', pts: 0 });
@@ -25074,7 +25232,7 @@ function showLevelTally(onDone, opts) {
     // word on the second. innerHTML because the break is the point.
     if (title) {
         if (opts.title) title.textContent = opts.title;
-        else title.innerHTML = 'LEVEL ' + advancedRound + '<br>COMPLETE';
+        else title.innerHTML = 'LEVEL ' + advancedRound + (TALLY_INVENTORY && LEVEL_TALLY && game._lv ? ' COMPLETE' : '<br>COMPLETE');   // [241026c] one line over the inventories
     }
     const host = document.getElementById('tallyRows');
     const totalEl = document.getElementById('tallyTotal');
@@ -25089,6 +25247,7 @@ function showLevelTally(onDone, opts) {
 
     replayClipRefresh();   // [270926b] SAVE / SHARE, if the player watched this level's replay
     const rows = buildTallyRows();
+    el.classList.toggle('inv-card', rows.some(r => r.inv));   // [241026c]
     // [220826d] THE SCORECARD CHECKS ITS OWN ARITHMETIC. The column of +N values
     // must equal the score the level actually moved, and the grand total the card
     // animates to must equal the score the results screen will show. Those two
@@ -25129,6 +25288,14 @@ function showLevelTally(onDone, opts) {
     let nodes = [];   // [231026g] let: bare bones folds the hidden lines into one climb
     for (const r of rows) {
         if (r.hide) { nodes.push({ node: null, row: r }); continue; }
+        if (r.inv) {   // [241026c] an inventory: its own markup, one total (.tally-pts) that counts up, the time's seconds in .tally-count
+            const d = document.createElement('div');
+            d.className = 'tally-row inv inv-' + r.inv;
+            d.innerHTML = r.html;
+            if (host) host.appendChild(d);
+            nodes.push({ node: d, row: r });
+            continue;
+        }
         const d = document.createElement('div');
         // [210826ae] `low` marks a row that is a warning rather than a report.
         // Applied after nopay deliberately, so the amber wins over the dimming:
@@ -25228,7 +25395,8 @@ function showLevelTally(onDone, opts) {
     // Each row lands, then its points spin up from zero — and the level total
     // climbs by exactly that amount at the same time, so you watch the number
     // being built rather than being told it.
-    const STEP = 460;
+    const STEP = rows.some(r => r.inv) ? TALLY_INV_STEP_MS : 460;   // [241026c] an inventory is read, a line is glanced at
+    const _at = []; { let t = 240; for (const n of nodes) { _at.push(t); t += STEP + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0); } }   // [241026c] the next waits for a spin
     nodes.forEach((n, i) => {
         _tallyTimers.push(setTimeout(() => {
             // [210826ac] A hidden row has no node. It still banks its points —
@@ -25272,7 +25440,7 @@ function showLevelTally(onDone, opts) {
                 setTotal(base + v);
             }, () => { banked = Math.max(banked, base + n.row.pts); _tallyRunning--; setTotal(banked); if (cntEl) cntEl.textContent = '0s'; });
             _tallyCancels.push(cancel);
-        }, 240 + i * STEP));
+        }, _at[i]));
     });
 
     const endAt = 240 + nodes.length * STEP + 300 + nodes.reduce((a, n) => a + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0), 0) + (nodes.some(n => n.row.climb) ? Math.max(0, TALLY_CLIMB_MS - 420) : 0);   // [181026b] the spin is longer than a line · [231026g] and so is the climb
@@ -28495,7 +28663,7 @@ function bumpCost(sec = BUMP_COST_SEC, atX = null, atY = null, kind = 'penalty',
                   : _base === FALL_COST_SEC ? 'fall'
                   : _base === BUMP_COST_SEC ? 'bump' : 'other';
     rec('cost', { sec, src: costSrc, m: Math.round(momentumRemaining()) });
-    if (game._lv && kind !== 'trade' && sec > 0) game._lv.penSecs += sec;   // [181026l] the level's charges, for the card
+    if (game._lv && kind !== 'trade' && sec > 0) { game._lv.penSecs += sec; game._lv.penN = (game._lv.penN || 0) + 1; }   // [241026c] and how many   // [181026l] the level's charges, for the card
     // [100926f] the replay's caption for this move — a trade states its own line at the caller
     if (kind !== 'trade') tapeNote(`${costSrc === 'fall' ? 'RESTART  ' : costSrc === 'trim' ? 'TRIMMED  ' : costSrc === 'push' ? 'PUSHED OFF  ' : costSrc === 'set' ? 'WRONG SLOT  ' : costSrc === 'red' ? 'NO CUBE TO SPARE  ' : ''}−${sec}s`, '#f87171');   // [061026h]
     // [300726s] Announce a heavy loss the same way a gain is announced, but
@@ -31097,7 +31265,8 @@ function celebrateLineBand(newRows) {
     if (_rowCombo > 1) pts = Math.round(pts * (1 + (_rowCombo - 1) * COMBO_ROW_SHARE));
     if (ROW_RUNS) { pts = 0; for (let i = 1; i <= newRows.length; i++) pts += ROW_RUN_PTS * (_runFrom + i) * advancedRound; }   // [181026j] its place in the run
     else if (CLOCK_RESETS) pts = Math.min(ROW_PTS_MAX, pts);   // [181026a] completing a set stays the biggest number
-    if (game._lv) game._lv.row += pts;
+    if (game._lv) { game._lv.row += pts;   // [241026c] split: 25 × level a row, and what the run added on top
+        if (ROW_RUNS) { const _b = ROW_RUN_PTS * advancedRound * newRows.length; game._lv.rowBase += Math.min(pts, _b); game._lv.rowRun += Math.max(0, pts - _b); } }
     scoreGain(pts, true, ROW_RUNS ? pts : _rowForge);
     // Colour climbs the rainbow with the band: single = understated white,
     // then violet → indigo → blue → green → yellow → orange, landing on RED
@@ -39265,6 +39434,7 @@ const REC_CAP = 8000;
 let recEvents = [];
 let recRunStart = 0;
 function rec(t, d) {
+    if ((t === 'time' || t === 'rowtime') && d && d.sec > 0) ledgerTime(t === 'rowtime' ? 'row' : (d.src || 'other'), d.sec, t === 'rowtime' ? (d.n || 1) : 1);   // [241026c]
     try {
         if (recEvents.length >= REC_CAP) return;
         const e = d || {};
@@ -40497,6 +40667,8 @@ function scoreGuideRows() {
         ['5, 8 or every row on screen finished', '25 \u00b7 60 \u00b7 150 \u00d7 level'],
         ['Filling a slot', `${W('single')} to ${W('square')} by shape`],
         ['\u2026 by a shifter: a combo', '\u00d71.5'],
+        ...(COMBO_SLOT_PTS ? [['A shifter carrying you onto a slot: a combo', `${COMBO_SLOT_PTS.toLocaleString()} × level · 2 shifters ×2 · 3 shifters ×4`],
+                              ['Any other combo: a slot and a row, a green and a slot, a red trimmed into a fit', `${COMBO_OTHER_PTS.toLocaleString()} × level`]] : []),   // [241026b]
         ['\u2026 next to danger, or the same shape twice running', '\u00d71.5 each'],   // [181026l]
         [`Ground covered: ${COVERAGE_BARS.default[2]}, ${COVERAGE_BARS.default[1]} or ${COVERAGE_BARS.default[0]}% of the level's board (level 1: ${COVERAGE_BARS[1][2]}, ${COVERAGE_BARS[1][1]}, ${COVERAGE_BARS[1][0]}%)`, '10 · 30 · 60 × level'],   // [231026f] no letters
         ['The last of a shape in the set', `${Math.round(25 * Math.min(...Object.values(CLEAR_WEIGHT)))}+`],

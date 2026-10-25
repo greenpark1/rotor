@@ -3676,19 +3676,23 @@ body.theme-day .tally-title { color: #ff2d95; text-shadow: none; }   /* [260926r
 body.theme-day .tally-row.bare.combo .tally-label { color: #9a3412; }
 body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
 /* ══ [241026c] DESIGN 4 — three inventories ══ */
-.level-tally.inv-card .tally-title { font-size: clamp(18px, 5.4cqw, 25px); margin: 0 0 6px; }
+.level-tally.inv-card .tally-title { font-size: clamp(18px, 5.2cqw, 23px); margin: 0 0 6px; }
+/* [241026e] "more proportionate": the small words up, the big numbers down */
+.level-tally.inv-card .tally-total-value { font-size: clamp(26px, 8cqw, 34px); }
+.level-tally.inv-card .tally-grand-value { font-size: clamp(18px, 5.4cqw, 22px); }
+.level-tally.inv-card .tally-grand { margin-top: 4px; }
 .level-tally .tally-row.inv { display: block; text-align: left; padding: 0; border-top: 0 !important; margin: 0 0 clamp(8px, 2.6cqw, 14px); font-size: 13px; }
 .tally-row.inv .inv-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 4px; border-bottom: 2px solid rgba(125, 211, 252, 0.6); }
-.tally-row.inv .inv-h { font-size: 12px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7dd3fc; }
-.tally-row.inv .inv-head .tally-pts { font-size: clamp(17px, 5cqw, 21px); font-weight: 900; min-width: 0; }
+.tally-row.inv .inv-h { font-size: 13px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7dd3fc; }
+.tally-row.inv .inv-head .tally-pts { font-size: clamp(18px, 5.2cqw, 20px); font-weight: 900; min-width: 0; }
 .tally-row.inv .inv-line { display: flex; align-items: center; gap: 8px; padding: clamp(4px, 1.3cqw, 7px) 0; border-bottom: 1px solid rgba(148, 163, 184, 0.14); }
 .tally-row.inv .inv-line:last-child { border-bottom: 0; }
-.tally-row.inv .inv-lab { width: 40%; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; color: #cbd5e1; }
+.tally-row.inv .inv-lab { width: 42%; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: #cbd5e1; }
 .tally-row.inv .inv-pic { flex: 1; min-width: 0; display: flex; align-items: center; gap: 3px; overflow: hidden; }
-.tally-row.inv .inv-pts { font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; color: #e2e8f0; white-space: nowrap; }
-.tally-row.inv .inv-num { margin-left: 5px; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; color: #7dd3fc; white-space: nowrap; }
-.tally-row.inv .inv-more { margin-left: 2px; font-size: 10px; font-weight: 800; color: #7dd3fc; }
-.tally-row.inv .inv-none { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; }
+.tally-row.inv .inv-pts { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; color: #e2e8f0; white-space: nowrap; }
+.tally-row.inv .inv-num { margin-left: 5px; font-size: 12px; font-weight: 800; letter-spacing: 0.6px; color: #7dd3fc; white-space: nowrap; }
+.tally-row.inv .inv-more { margin-left: 2px; font-size: 11px; font-weight: 800; color: #7dd3fc; }
+.tally-row.inv .inv-none { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #94a3b8; }
 .inv-pip { display: inline-block; flex: none; }
 .inv-pip.slot { width: 11px; height: 11px; border-radius: 3px; background: #38bdf8; }
 .inv-pip.row { width: 4px; height: 13px; border-radius: 2px; background: #7dd3fc; }
@@ -3701,11 +3705,11 @@ body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
 .inv-tick { position: absolute; top: -3px; width: 2px; height: 12px; margin-left: -1px; background: #e2e8f0; }
 .tally-row.inv .inv-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
 .inv-tile { display: flex; flex-direction: column; gap: 2px; padding: 5px 7px; border-radius: 9px; border: 1px solid rgba(125, 211, 252, 0.28); background: rgba(255, 255, 255, 0.04); min-width: 0; }
-.inv-tlab { font-size: 9.5px; font-weight: 800; letter-spacing: 0.7px; text-transform: uppercase; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv-tlab { font-size: 11px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .inv-trow { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
-.inv-tn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #e2e8f0; }
+.inv-tn { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #e2e8f0; }
 .inv-tn b { font-weight: 800; }
-.inv-ts { font-size: 14px; font-weight: 900; color: #e2e8f0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-ts { font-size: 15px; font-weight: 900; color: #e2e8f0; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .inv-ic { display: inline-block; flex: none; width: 11px; height: 11px; border-radius: 3px; }
 .ic-slot { border: 2px solid #38bdf8; box-sizing: border-box; }
 .ic-row { background: repeating-linear-gradient(to bottom, #7dd3fc 0 2px, transparent 2px 4px); border-radius: 0; }
@@ -3721,7 +3725,7 @@ body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
 .inv-tile.t-pen { border-color: rgba(239, 68, 68, 0.45); }
 .inv-tile.t-pen .inv-tlab, .inv-tile.t-pen .inv-ts, .inv-tile.t-pen .inv-tn { color: #f87171; }
 .inv-tile.t-green .inv-tlab { color: #a3e635; }
-.tally-row.inv .inv-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.9px; color: #cbd5e1; }
+.tally-row.inv .inv-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; font-size: 12px; font-weight: 800; letter-spacing: 0.4px; color: #cbd5e1; }
 .tally-row.inv .inv-foot .inv-spin { display: none; }   /* the seconds still spin (and tick) as the points rise; the line keeps saying what was left */
 .tally-row.inv-combos .inv-head { border-bottom-color: rgba(255, 138, 61, 0.6); }
 .tally-row.inv-combos .inv-h, .tally-row.inv-combos .inv-head .tally-pts, .tally-row.inv .inv-line.c .inv-lab, .tally-row.inv .inv-line.c .inv-pts { color: #ff8a3d; }
@@ -7955,6 +7959,8 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 251026-0021: CARRY. Jake, 25 Oct, 00:11: "i like that the player has to build up time quickly to stay in the game so is given a low time at the beginning ... players should carry time on to the next level, this will address wasting collected time but ... everything needs to be readjusted so that players cannt build up huge reserves of time so that in later games they still have chase time ... evaluate what the new scoring time would need to be to make this work and imlement your best suggestion". THE CLOCK CARRIES [251026a]: level 1 still starts on 0:40. When a set is complete, the time left goes into the next level — up to 1:00 into level 2, 5 s less each level after (0:55, 0:50 … never below 0:30 from level 8); whatever is over that limit becomes points, 5 × level a second, as before; and no level starts below 0:20. On the last level all of it becomes points. In play nothing else changes: the clock still holds 1:39 and every payment and charge is the same — replayed on six recorded runs, cutting what rows, hourglasses or greens pay by a tenth, lowering the 1:39, or draining faster each level ran the long levels (the 8-minute ones) out of time, so the pressure is put on the door instead. The door says it (YOU CARRY 0:52, or CLOCK STARTS ON 0:20); the card's TIME says CARRY 0:50 INTO LEVEL 8 and, under it, what was over the limit and the points it paid; the tip, the clock lesson and HOW TO SCORE say the rule. CLOCK_CARRY = false (?carry=0) puts back the fresh 0:40; ?carrymax=, ?carrystep=, ?carrymin=, ?carryfloor= set the numbers.
+// 241026-1843: INNER RING. Jake, 24 Oct, 18:41: "The knuckles have an outer ring which is always visible during play. When moving, the inner ring should activate (not the outer ring) on the leading edge or corner of the direction of cube travel. The inter level text needs to be more proportionate to each, the smaller text needs to a bit larger [to read]. The swoosh sound level compared to other sound effects needs to 20% lower". THE KNUCKLE [241026d]: the outer ring stays exactly as it is at rest, all the time; on a move only an inner ring lights — white, on a hairline (deep ice by day, shadow by night) — on the knuckles the cube turns over: the leading edge, or the corner for a diagonal. It pops, holds and fades as before; the outer ring no longer thickens, recolours or rings out. And it lights on every move: holding a direction lit the first move only, the repeats now light too. KNUCKLE_INNER_ONLY = false puts back the 2909 look. THE CARD'S TEXT [241026e]: the small words up, the big numbers down — labels 11 → 13 px, the numbers beside the pictures 11 → 12, the time tiles' names 9.5 → 11 and their seconds 14 → 15, the line under the tiles 10.5 → 12, the section names 12 → 13, each line's points 15 → 16; LEVEL TOTAL 42 → 34 px at most, GRAND TOTAL 27 → 22, the title 25 → 23. Still one screen, no scrolling. THE SWOOSH [241026f]: every shifter swoosh 20% quieter (SWOOSH_LIFT 2.4 → 1.92; ?swooshvol= sets the share).
 // 241026-0842: INVENTORIES. Jake, 24 Oct, 08:27: "in the scorecard treatments i like 3. the most. i feel there should be a points inventory and a points, a time and a combos inventory on the scorecard that get dded up to give us the score for that level ... time inventory needs to be more detaileld ... collecting rows is probably the largest source of time earned"; 08:35: "if a player flips their shape on to a shifter that then results in a slot filled thats big points, even bigger points if two or three shifters get used in the process ... Base your decison on this understanding". COMBO POINTS [241026b]: a shifter carrying you onto a slot pays 500 × level, doubled for a second shifter in the chain and doubled again for a third (×4 is the most: four or five shifters pay as three); every other combo (a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit) 100 × level. Points only — the +3 s stays, the clock is untouched, and combo points forge no shifters. The float says it: COMBO!  +3s / +3,500. HOW TO SCORE lists both. ?combopts= and ?combopts2= set them. THE LEVEL CARD, DESIGN 4 [241026c]: three inventories that add up to LEVEL TOTAL — POINTS (SET COMPLETE with a square per slot and ×n; ROWS with a bar per row, at 25 × level each; ROW COMBOS, a stack per run of two or more with the same shape, BEST ×n, the extra the runs paid; GROUND COVERED, a meter with the level's three bars marked; BOARD, the rest), TIME (a tile per source that paid: slots, rows, hourglasses, greens, combos, red trims, holes filled — each its count and seconds — and PENALTIES, then EARNED +Ns and the seconds LEFT spinning into points at 5 × level a second) and COMBOS (a line per kind, a bolt per combo, with its points; NO COMBOS THIS LEVEL when there were none). Each inventory lands in turn and its total counts up into LEVEL TOTAL; the title is one line. The level now counts the seconds from every source, the penalties, each kind of combo, and the rows' points split into plain rows and row combos. TALLY_INVENTORY = false puts back the 0014 card.
 // 241026-0014: BEST RUN. Jake, 24 Oct, 00:09–00:13: "what do you think of rows, combos, timed earned and level score and total as the only metrics" … "add "ROWS 23 · BEST ×6". add in a 'completing the set' score". THE LEVEL CARD [241026a]: ROWS shows the level's rows and its best run — 23 · BEST ×6, the longest run of rows made with one shape in the level (game.roundBestRowRun, new, reset every level; no BEST when there were no rows) — and SET COMPLETE comes back as the fourth line with its points (+1,000 × level), counted up as it lands, so the level total visibly gets the set before it climbs through the rest. The card: ROWS · COMBOS · TIME EARNED · SET COMPLETE · LEVEL TOTAL · GRAND TOTAL.
 // 231026-2309: BARE BONES. Jake, 23 Oct, 22:50: "there are too many numbers, strip back to bear bones"; 23:06: "i don think we need the slots number, remove. update the scorecard based on my prefereces". THE LEVEL CARD, BARE BONES [231026g]: three lines — ROWS, COMBOS (tangerine) and TIME EARNED — each a label and its number, no icon, no points column; then LEVEL TOTAL and GRAND TOTAL. Six numbers where there were about twenty. Every point still counts: set complete, slots, rows' points, ground covered, board, time over and time left are in the sum, off the card, and LEVEL TOTAL climbs through them (1.2 s, with the tick) once the three lines are in. A tap lands it; it waits for CONTINUE as before. Penalties still float on the board where they happen; HOW TO SCORE still lists every payment. TALLY_BARE = false puts back the 2212 card.
@@ -8832,7 +8838,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '241026-0842 ROTOЯ · INVENTORIES';
+const BUILD_VERSION = '251026-0021 ROTOЯ · CARRY';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -10069,6 +10075,18 @@ function econDial(name, def, lo, hi) {
 }
 const CLOCK_RESETS = (() => { try { return !/[?&]econ=old\b/.test((typeof location !== 'undefined' && location.search) || ''); } catch (e) { return true; } })();
 const LEVEL_START_SEC = Math.round(econDial('start', 40, 20, 90));   // [181026k] Jake, 21:09: 40 (was 45; 30 ended both recorded runs early)
+/* [251026a] THE CLOCK CARRIES — Jake, 25 Oct, 00:11: "players should carry time on to the next level ... so that in later games
+   they still have chase time". Level 1 starts on LEVEL_START_SEC. At the set, the time left goes into the next level, up to
+   carryLimit(): CARRY_MAX_SEC into level 2, CARRY_STEP_SEC less each level after, never below CARRY_MIN_CAP_SEC; what is over the
+   limit becomes points (TIME_PTS_PER_SEC × level a second) as before; no level starts below CARRY_FLOOR_SEC. On the last level all
+   of it becomes points. The 1:39 ceiling, the drain and every payment are unchanged: replayed on six recorded runs, a tenth less
+   from rows, hourglasses or greens, a lower ceiling or a faster drain each level ran the long levels out of time, so the squeeze
+   is at the door. CLOCK_CARRY = false (?carry=0) puts back the fresh LEVEL_START_SEC. */
+const CLOCK_CARRY = CLOCK_RESETS && econDial('carry', 1, 0, 1) >= 1;
+const CARRY_MAX_SEC = Math.round(econDial('carrymax', 60, 20, 99)), CARRY_STEP_SEC = Math.round(econDial('carrystep', 5, 0, 20));
+const CARRY_MIN_CAP_SEC = Math.round(econDial('carrymin', 30, 10, 99)), CARRY_FLOOR_SEC = Math.round(econDial('carryfloor', 20, 0, 60));
+function carryLimit(nextLevel) { return Math.max(CARRY_MIN_CAP_SEC, CARRY_MAX_SEC - CARRY_STEP_SEC * Math.max(0, (nextLevel || 2) - 2)); }
+function carryStart(left, nextLevel) { return Math.max(CARRY_FLOOR_SEC, Math.min(carryLimit(nextLevel), Math.max(0, left))); }
 const CLOCK_LIMIT_SEC = (() => { const v = econDial('limit', 99, 0, 600); return v === 0 ? Infinity : Math.max(60, Math.round(v)); })();
 const SLOT_PAY_SEC = Math.round(econDial('slot', 15, 5, 30));
 const CUBE_LOST_SEC = CLOCK_RESETS ? Math.round(econDial('cube', 3, 0, 10)) : 0;
@@ -12488,7 +12506,7 @@ function playSweep(startFreq, endFreq, dur, type = 'sine', vol = 0.2, pan = 0, i
    for a curve), under an envelope that swells to its peak and dies away, panned across the way the thing travels.
    Noise reads quieter than a tone at the same gain, so the peak is lifted, as mSnare's is. */
 const SHIFTER_SWOOSH = true;
-const SWOOSH_LIFT = 2.4;
+const SWOOSH_LIFT = 2.4 * econDial('swooshvol', 0.8, 0, 2);   // [241026f] Jake, 24 Oct, 18:41: "20% lower" than the other sounds — 2.4 × 0.8 = 1.92
 /* [181026h] "make the swooshes 33% faster" (Jake, 18 Oct, 18:25): every swoosh plays at SWOOSH_SPEED — 1.33× — so each lasts
    three quarters as long; its start stays on the stroke. ?swoosh= sets the speed (1 = the 1814 length). */
 const SWOOSH_SPEED = econDial('swoosh', 1.33, 0.5, 3);   // noise against a tone of the same gain (measured against the evolve arpeggio it replaces)
@@ -17392,6 +17410,11 @@ function noteJointFlash(fromCells, toCells) {
 const JOINT_DUR = 900;   // [290926b] 620 -> 900: held, then faded — see drawJoints
 const KNUCKLE_W = 1.5;          // [290926b] the resting ring: the weight of the grid line
 const KNUCKLE_HEART_R = 3.1;    // [290926b] the white heart that fills it while the turn is made on it
+/* [241026d] Jake, 24 Oct, 18:41: "The knuckles have an outer ring which is always visible during play. When moving, the inner
+   ring should activate (not the outer ring) on the leading edge or corner of the direction of cube travel." The outer ring is
+   left exactly as at rest; on a move an INNER RING lights inside it — white on a hairline, like the outer ring — on the
+   knuckles the cube turns over (contactPoints: the leading edge, or the corner). KNUCKLE_INNER_ONLY = false puts back 290926b. */
+const KNUCKLE_INNER_ONLY = true, KNUCKLE_INNER_R = 2.2, KNUCKLE_INNER_W = 1.6;
 /* ── [060926c] THE SOCKET LATTICE — THREE STATES, ALWAYS ON ──────────────────
    Every grid intersection in view is marked. Three states, told apart by SHAPE
    first and colour second, because shape survives a small screen and a
@@ -17458,7 +17481,7 @@ function drawJoints() {
         if (py < -CELL || py > LOGICAL_H + CELL) continue;
         for (let gx = 0; gx <= VIEW_W; gx++) {
             const px = gx * CELL;
-            if (used.has(`${gx},${gy}`)) continue;   // drawn below, on top
+            if (used.has(`${gx},${gy}`) && !KNUCKLE_INNER_ONLY) continue;   // drawn below, on top · [241026d] the outer ring stays as it is
             /* [080926e] SWAPPED, per the field note: a socket ON LAND is a hollow
                ring — an empty joint waiting for a ball — and a socket in a VOID
                is a solid dot, the mark that fills the gap and says "not here".
@@ -17509,7 +17532,19 @@ function drawJoints() {
         const age = Math.max(0, k * JOINT_DUR);
         const pop = age < 90 ? age / 90 * 1.35 : age < 180 ? 1.35 - 0.35 * (age - 90) / 90 : 1;   // 0 -> 1.35 -> 1
         const hold = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
-        for (const [gx, gy] of jointFlash.pts) {
+        if (KNUCKLE_INNER_ONLY) for (const [gx, gy] of jointFlash.pts) {   // [241026d] only the inner ring lights
+            const px = gx * CELL, py = (gy - game.cameraY) * CELL, r = KNUCKLE_INNER_R * Math.min(1.2, pop);
+            ctx.save();
+            ctx.globalAlpha = hold * (day ? 0.85 : 0.5);
+            ctx.strokeStyle = day ? '#0369a1' : '#06142d'; ctx.lineWidth = KNUCKLE_INNER_W + 2;
+            ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.stroke();
+            ctx.globalAlpha = hold;
+            ctx.shadowColor = day ? 'rgba(3,105,161,0.6)' : 'rgba(255,255,255,0.9)'; ctx.shadowBlur = 6;
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = KNUCKLE_INNER_W;
+            ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.stroke();
+            ctx.restore();
+        }
+        else for (const [gx, gy] of jointFlash.pts) {
             const px = gx * CELL, py = (gy - game.cameraY) * CELL;
             ctx.save();
             ctx.globalAlpha = hold;
@@ -24952,7 +24987,8 @@ function buildInventoryRows(L, lvl, delta) {
     if (other > 0) tiles += tile('Other', 'glass', '', `+${other}s`, 'other');
     if (L.penSecs > 0) tiles += tile('Penalties', 'pen', L.penN || 0, `−${Math.round(L.penSecs)}s`, 'pen');
     const tHtml = head('Time') + `<div class="inv-tiles">${tiles}</div>` +
-        `<div class="inv-foot"><span>EARNED +${Math.round(game.roundTimeSecs || 0)}s</span><span>LEFT ${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span><span class="tally-count inv-spin">${L.timeSecs}s</span></div>` +
+        `<div class="inv-foot"><span>EARNED +${Math.round(game.roundTimeSecs || 0)}s</span><span>${L.carryOn ? ((L.carryStart || 0) > (L.carrySecs || 0) ? `LEVEL ${lvl + 1} STARTS ON ${clockFmt(L.carryStart)}` : `CARRY ${clockFmt(L.carrySecs)} INTO LEVEL ${lvl + 1}`) : `LEFT ${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}`}</span><span class="tally-count inv-spin">${L.timeSecs}s</span></div>` +
+        (L.carryOn && L.timeSecs > 0 ? `<div class="inv-foot"><span>OVER THE ${clockFmt(L.carryLimit)} LIMIT</span><span>${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span></div>` : '') +   // [251026a]
         (L.over > 0 ? `<div class="inv-foot"><span>OVER ${clockFmt(CLOCK_CEILING)}</span><span>${Math.round(L.overSecs)}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span></div>` : '');
     const KINDS = [['shifter', 'Shifter to slot'], ['rowclaim', 'Slot and row'], ['growclaim', 'Green and slot'], ['shave', 'Red trim to fit']];
     const cn = L.comboN || {}, cp = L.comboP || {};
@@ -25654,10 +25690,15 @@ function completeSet() {
     if (game._lv) game._lv.set = bonus;
     if (CLOCK_RESETS && CLOCK_ONLY && !game.testDrive) {   // [181026a] THE TIME LEFT BECOMES POINTS — the tally spins it down
         const _left = Math.max(0, Math.floor(momentumRemaining()));
-        const _tp = Math.round(_left * TIME_PTS_PER_SEC * advancedRound);
-        if (game._lv) { game._lv.timeSecs = _left; game._lv.time = _tp; }
+        const _lastLv = advancedRound === (dailyMode ? DAILY_ROUNDS : ADVANCED_ROUNDS.length);
+        const _carryOn = CLOCK_CARRY && !_lastLv;   // [251026a] the time left goes on, up to the next level's limit
+        const _lim = _carryOn ? carryLimit(advancedRound + 1) : 0, _carry = _carryOn ? Math.min(_lim, _left) : 0;
+        const _conv = _left - _carry;   // what is over the limit — the points, as before
+        game._carriedSec = _carry; game._nextStart = _carryOn ? carryStart(_left, advancedRound + 1) : null;
+        const _tp = Math.round(_conv * TIME_PTS_PER_SEC * advancedRound);
+        if (game._lv) { Object.assign(game._lv, { timeSecs: _conv, time: _tp, leftSecs: _left, carryOn: _carryOn, carrySecs: _carry, carryLimit: _lim, carryStart: game._nextStart }); }
         if (_tp > 0) scoreGain(_tp, true, 0);
-        rec('timebonus', { sec: _left, pts: _tp, r: advancedRound });
+        rec('timebonus', { sec: _conv, pts: _tp, r: advancedRound, left: _left, ...(_carryOn ? { carry: _carry, next: game._nextStart } : {}) });   // [251026a]
     }
     // COVERAGE GRADE (D2) — judged per round, flat 70% = S ("clean slate").
     // Grade pays a scaled bonus; S gets the gold jackpot moment.
@@ -25775,8 +25816,10 @@ function completeSet() {
             // does not notice arriving at is not a checkpoint, it is a number
             // that went up while they were reading something else.
             if (CLOCK_RESETS) {   // [181026a] THE CLOCK STARTS AFRESH: what was left became points when the set was done
-                game.speedTimer = LEVEL_TIME_LIMIT - LEVEL_START_SEC;
-                rec('clock', { to: LEVEL_START_SEC, r: advancedRound });
+                const _st = (CLOCK_CARRY && game._nextStart != null) ? game._nextStart : LEVEL_START_SEC;   // [251026a] what was carried
+                game.speedTimer = LEVEL_TIME_LIMIT - _st;
+                rec('clock', { to: _st, r: advancedRound, ...(CLOCK_CARRY ? { carried: game._carriedSec || 0 } : {}) });
+                game._nextStart = null;
                 if (advancedRound === 2) showTip('clockreset');
             } else {
                 const _gRaw = levelTimeGrant();
@@ -25922,7 +25965,7 @@ function completeSet() {
                 // [090926a] TIGHT / STEADY / LOOSE tried for one build and removed
                 // on the designer's call. The ratio (roundRevolves / roundRows)
                 // stays in the export if it is ever wanted again.
-                game._lastLevelLine = CLOCK_RESETS ? `CLOCK BACK TO ${clockFmt(LEVEL_START_SEC)}` : `ROWS ${game.roundRows || 0}`;   // [181026a] the door says the rule
+                game._lastLevelLine = CLOCK_RESETS ? ((CLOCK_CARRY && game._nextStart != null) ? (game._nextStart > (game._carriedSec || 0) ? `CLOCK STARTS ON ${clockFmt(game._nextStart)}` : `YOU CARRY ${clockFmt(game._nextStart)}`) : `CLOCK BACK TO ${clockFmt(LEVEL_START_SEC)}`) : `ROWS ${game.roundRows || 0}`;   // [251026a] the door says what you carry   // [181026a] the door says the rule
             }
             // [100926f] the card yields to the replay of the closing moves; the
             // door follows. Without a tape (or if skipped) it is the old beat.
@@ -29489,6 +29532,7 @@ function applyDrag(dt) {
             startFlip(game.dragDir, _flipFrom, _flipFromParity);
             flip.reTread = _reTread;
             game._lastMoveDir = game.dragDir;
+            noteJointFlash(_flipFrom, getPlayerCells());   // [241026d] a held direction lights the knuckle on every move, not just the first
             trackDiagonalUse(game.dragDir);
 
             // Sustained-hold speed boost: cruising in one constant direction
@@ -34795,7 +34839,8 @@ const TIPS = {
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k]
     misfit:    'The wrong shape on a slot: the cubes on it are destroyed and the rest of you carries on. A single is lost.' + (CLOCK_RESETS ? ` Each cube costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k] · [290926q] · [171026d]
     diag:      'Swipe diagonally \u2014 corners count.',
-    clockreset: `Every level starts the clock on ${clockFmt(LEVEL_START_SEC)}. Time left at the end of a level becomes points.`,   // [181026a]
+    clockreset: CLOCK_CARRY ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. The time you have left carries into the next level — up to ${clockFmt(CARRY_MAX_SEC)}, ${CARRY_STEP_SEC} seconds less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}. Any more becomes points, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`
+                       : `Every level starts the clock on ${clockFmt(LEVEL_START_SEC)}. Time left at the end of a level becomes points.`,   // [251026a]   // [181026a]
     overtime:  `The clock holds ${clockFmt(CLOCK_CEILING)}. Time over that becomes points.`,   // [181026a]
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
@@ -39545,7 +39590,7 @@ function recStartRun() {
     recRunId = Date.now();
     recEvents = [];
     tipWant = {};   // [210826l] tip demand is per-run, like everything else here
-    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
+    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, ...(CLOCK_CARRY ? { carry: [CARRY_MAX_SEC, CARRY_STEP_SEC, CARRY_MIN_CAP_SEC, CARRY_FLOOR_SEC] } : {}), limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
 }
 function recExport() {
     try {
@@ -40658,7 +40703,7 @@ function scoreGuideRows() {
     const W = (t) => Math.round(10 * SHAPE_SIZE[t] * (CLEAR_WEIGHT[t] || 1));
     const points = [
         ['Completing a set', `${(fresh ? SET_DONE_PTS : 50).toLocaleString()} \u00d7 level`],
-        ...(fresh ? [['Time left when the set is complete', `${T} \u00d7 level a second`],
+        ...(fresh ? [[typeof CLOCK_CARRY !== 'undefined' && CLOCK_CARRY ? `Time left over the carry limit when the set is complete (${clockFmt(CARRY_MAX_SEC)} into level 2, ${CARRY_STEP_SEC} s less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}; all of it on the last level)` : 'Time left when the set is complete', `${T} \u00d7 level a second`],   // [251026a]
                      [`Time over ${clockFmt(CLOCK_CEILING)} on the clock`, `${T} \u00d7 level a second`]] : []),
         ...(typeof ROW_RUNS !== 'undefined' && ROW_RUNS   // [181026j]
             ? [['A row: 1 × ROW, 2 × ROWS, 3 × ROWS… while you keep the same shape', `${ROW_RUN_PTS} × the count × level`],
@@ -43278,7 +43323,7 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
             { k: 'wait' }, { k: 'wait' } ] },
-  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.` : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
+  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
     showClock: true,
     init: { body: { cells: [[3, 3], [4, 3]], type: 'pair', par: 0 }, clock: 22,
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },

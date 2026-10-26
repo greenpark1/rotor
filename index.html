@@ -1995,7 +1995,13 @@ body.theme-day .opening .op-cell { border-color: #89cff0; }
     width: 1.15em; line-height: 1; transform-origin: 50% 50%; backface-visibility: visible; will-change: transform, opacity;
     color: var(--wm-c0); }
 @keyframes opFailsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
-.opening .op-white { position: absolute; inset: 0; background: #ffffff; opacity: 0; pointer-events: none; }   /* [231026a] the white the opening fades through */
+.opening .op-white { position: absolute; inset: 0; background: #0f172a; opacity: 0; pointer-events: none; }   /* [231026a] the colour the opening fades through */
+/* [251026g] ONE COLOUR, OPENING TO WELCOME — Jake, 25 Oct 09:04: "Full white transition for 1st and 2nd screens for daylight mode. Full Dark
+   blue transition when in night mode." The fade between the opening and the welcome page goes through the theme's own page colour: white
+   by day, the night's dark blue (#0f172a) by night — it was white in both. And the theme is put on the page before anything is drawn
+   (the gate script under the opening reads the saved theme), so a day player no longer sees the night's dark blue flash first while the
+   game loads. */
+body.theme-day .opening .op-white { background: #ffffff; }
 .opening.running { animation: none; }
 
 /* ── [061026d] THE RЯ WATERMARK ────────────────────────────────────────────
@@ -2722,6 +2728,69 @@ body.theme-day .scores-best-value { color: var(--day-ink); }
 body.theme-day .scores-back { color: #0284c7; border-color: rgba(2, 132, 199, 0.45); }
 body.theme-day .scores-back:hover { background: #0284c7; color: #ffffff; }
 body.theme-day #scoresScreen { background: #ffffff; }
+/* [251026d] the stats line under a run */
+.scores-run-stats { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: #94a3b8; margin-top: 2px; font-variant-numeric: tabular-nums; }
+body.theme-day .scores-run-stats { color: #64748b; }
+.scores-life-sub { margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; color: #64748b; }
+/* [251026e] the ROTOЯ name: a chip under TOP SCORES, and its own screen */
+.scores-name { align-self: center; display: inline-flex; align-items: baseline; gap: 8px; margin: 4px auto 0; padding: 7px 14px;
+    background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 14px; color: #e2e8f0;
+    font: inherit; cursor: pointer; }
+.scores-name-label { font-size: 9px; font-weight: 700; letter-spacing: 0.16em; color: var(--text-steel, #8fa3b8); }
+.scores-name-value { font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--wm-c0); }
+.scores-name-edit { font-size: 15px; font-weight: 800; color: var(--text-steel, #8fa3b8); }
+body.theme-day .scores-name { background: rgba(148, 163, 184, 0.14); border-color: rgba(2, 132, 199, 0.35); color: var(--day-ink); }
+body.theme-day .scores-name-value { color: #0284c7; }
+#nameScreen { z-index: 400; }
+.name-box { width: 100%; max-width: 420px; margin: 0 auto; padding: 72px 20px 40px; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: stretch; text-align: center; gap: 12px; }
+.name-title { font-family: 'Unbounded', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: 0.03em; line-height: 1.2; color: #e2e8f0; }
+.name-now { font-size: 26px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--wm-c0); }
+.name-sub { font-size: 13px; line-height: 1.45; color: #94a3b8; margin-bottom: 6px; }
+.name-picks { display: flex; flex-direction: column; gap: 8px; }
+.name-pick { padding: 14px 12px; border-radius: 14px; font: inherit; font-size: 17px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(30, 41, 59, 0.6); border: 1.5px solid rgba(148, 163, 184, 0.25); color: #e2e8f0; cursor: pointer; }
+.name-pick.on { border-color: var(--wm-c0); background: rgba(34, 211, 238, 0.16); color: #ffffff; box-shadow: inset 0 0 0 1.5px var(--wm-c0); }
+.name-more { align-self: center; padding: 8px 14px; border-radius: 12px; font: inherit; font-size: 12px; font-weight: 800; letter-spacing: 0.14em;
+    background: transparent; border: 1px solid rgba(148, 163, 184, 0.35); color: #cbd5e1; cursor: pointer; }
+.name-ok { margin: 10px auto 0; }
+.name-ok:disabled { opacity: 0.4; cursor: default; transform: none; }
+body.theme-day .name-title { color: var(--day-ink); }
+body.theme-day .name-now { color: #0284c7; }
+body.theme-day .name-sub { color: #475569; }
+body.theme-day .name-pick { background: #f1f5f9; border-color: rgba(100, 116, 139, 0.3); color: #0c4a6e; }
+body.theme-day .name-pick.on { background: rgba(2, 132, 199, 0.12); border-color: #0284c7; box-shadow: inset 0 0 0 1.5px #0284c7; color: #0c4a6e; }
+body.theme-day .name-more { color: #334155; border-color: rgba(100, 116, 139, 0.4); }
+/* [251026j] NAME DAY and the certificate */
+#certScreen { z-index: 410; }
+.name-box .hidden, .cert-box .hidden { display: none; }
+.name-kicker { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.3em; color: var(--wm-c0); }
+.name-pick { display: flex; flex-direction: column; align-items: center; gap: 3px; animation: namePickIn 360ms cubic-bezier(.2,1.4,.4,1) both; }
+.name-pick-n { font-size: 17px; font-weight: 800; letter-spacing: 0.08em; }
+.name-pick-h { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em; text-transform: none; opacity: 0.72; }
+@keyframes namePickIn { from { opacity: 0; transform: rotateX(80deg) translateY(-6px); } to { opacity: 1; transform: none; } }
+.cert-box { width: 100%; max-width: 420px; margin: 0 auto; padding: 64px 16px 36px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }
+.cert-card { background: #ffffff; color: #0f172a; border: 5px solid #0284c7; outline: 1.5px solid #0369a1; outline-offset: -11px; border-radius: 6px; padding: 26px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.cert-mark { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: 0.06em; color: #0284c7; }
+.cert-head { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 11.5px; letter-spacing: 0.24em; color: #0369a1; }
+.cert-rule { width: 84px; height: 2px; background: #0284c7; margin: 2px 0 4px; }
+.cert-line { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.55; color: #0f172a; }
+.cert-name { align-self: stretch; overflow: hidden; font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: 0.04em; text-transform: uppercase; color: #0284c7; line-height: 1.15; margin-top: 6px; white-space: nowrap; }
+.cert-honour { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 13px; color: #0369a1; margin-bottom: 4px; }
+.cert-seal { width: 84px; height: 84px; margin: 6px 0 2px; }
+.cert-seal svg { width: 100%; height: 100%; }
+.cert-seal path { fill: #0284c7; }
+.cert-seal .cert-seal-in { fill: #ffffff; }
+.cert-seal text { font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 24px; fill: #0284c7; }
+.cert-no { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; color: #0369a1; }
+.cert-next { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #475569; }
+.cert-save { margin: 8px auto 0; }
+.cert-card.issue { animation: certIssue 700ms cubic-bezier(.2,1.2,.4,1) both; }
+.cert-card.issue .cert-seal { animation: certStamp 520ms 520ms cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes certIssue { from { opacity: 0; transform: translateY(24px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes certStamp { from { opacity: 0; transform: scale(1.9) rotate(-40deg); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .name-pick, .cert-card.issue, .cert-card.issue .cert-seal { animation: none; } }
+.settings-name { text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; max-width: 60%; }
 @media (max-width: 400px) {
     .scores-bests { grid-template-columns: repeat(2, 1fr); }
     .scores-title { font-size: 24px; }
@@ -3335,7 +3404,8 @@ body.theme-day .play-home-btn:hover, body.theme-day .play-cog-btn:hover {
 body.theme-day .play-home-btn, body.theme-day .play-cog-btn {
     background: rgba(255,255,255,0.75); border-color: var(--wm-c0); color: var(--wm-c0);
 }
-body.test-drive .play-home-btn, body.test-drive .play-cog-btn { display: none; }
+body.test-drive .play-home-btn, body.test-drive .play-cog-btn, body.test-drive .play-theme-btn { display: none; }
+.theme-btn.play-theme-btn { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: auto; right: 66px; z-index: 40; }   /* [251026i] beside the cog */
 /* [290726p] Welcome-page day/night toggle — one tap, no settings trip. Sits
    top-LEFT, mirroring the cog top-right. Shows the theme you would SWITCH TO
    (sun while dark, moon while light) — the convention phones use. */
@@ -3566,6 +3636,13 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: var(--wm-c0); b
 
 /* [300726aj] Keyboard/touch reference table. */
 .keymap { display: flex; flex-direction: column; margin: 2px 0 4px; }
+/* [251026h] HOW IT WORKS in Settings */
+.settings-rules { display: flex; flex-direction: column; margin: 2px 0 4px; text-align: left; }
+.settings-rule { display: flex; flex-direction: column; gap: 2px; padding: 7px 0; font-size: 12.5px; line-height: 1.4; color: #cbd5e1; }
+.settings-rule + .settings-rule { border-top: 1px solid rgba(148,163,184,0.10); }
+.settings-rule b { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--wm-c0); }
+body.theme-day .settings-rule { color: #334155; }
+body.theme-day .settings-rule b { color: #0369a1; }
 .keymap-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 7px 0; font-size: 13px;
@@ -3681,6 +3758,23 @@ body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
 .level-tally.inv-card .tally-total-value { font-size: clamp(26px, 8cqw, 34px); }
 .level-tally.inv-card .tally-grand-value { font-size: clamp(18px, 5.4cqw, 22px); }
 .level-tally.inv-card .tally-grand { margin-top: 4px; }
+/* [251026f] four panels: points, time, combos, the score — faint, so they part the card without boxing it in */
+.level-tally .tally-row.inv { box-sizing: border-box; padding: clamp(6px, 1.8cqw, 9px) clamp(9px, 2.6cqw, 12px) clamp(4px, 1.2cqw, 6px) !important;
+    background: rgba(148, 163, 184, 0.07); border: 1px solid rgba(148, 163, 184, 0.16) !important; border-radius: 12px; margin-bottom: clamp(6px, 1.8cqw, 10px) !important; }
+.level-tally .tally-row.inv-combos { background: rgba(255, 138, 61, 0.07); border-color: rgba(255, 138, 61, 0.24) !important; }
+.level-tally.inv-card .tally-note { display: none; }
+.tally-score { display: contents; }
+.level-tally.inv-card .tally-score { display: flex; flex-direction: column; width: min(420px, calc(100% - 56px)); }
+.level-tally.inv-card .tally-score > .tally-total, .level-tally.inv-card .tally-score > .tally-grand { width: 100%; }
+.level-tally.inv-card .tally-total, .level-tally.inv-card .tally-grand { box-sizing: border-box; padding-left: clamp(9px, 2.6cqw, 12px); padding-right: clamp(9px, 2.6cqw, 12px);
+    background: rgba(255, 214, 10, 0.07); border: 1px solid rgba(255, 214, 10, 0.26); }
+.level-tally.inv-card .tally-total { margin-top: 0; padding-top: clamp(4px, 1.4cqw, 8px); border-bottom: 0; border-radius: 12px 12px 0 0; }
+.level-tally.inv-card .tally-grand { margin-top: 0; padding-bottom: clamp(5px, 1.6cqw, 9px); border-top: 0; border-radius: 0 0 12px 12px; }
+.level-tally.inv-card .tally-total.pop { animation: tallyPop 380ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes tallyPop { 0% { transform: scale(1); } 45% { transform: scale(1.05); } 100% { transform: scale(1); } }
+body.theme-day .level-tally .tally-row.inv { background: #ffffff; border-color: #d6ecfa !important; }
+body.theme-day .level-tally .tally-row.inv-combos { background: #fff7f0; border-color: #fdd5b4 !important; }
+body.theme-day .level-tally.inv-card .tally-total, body.theme-day .level-tally.inv-card .tally-grand { background: #fff4fa; border-color: #fbc8e0; }
 .level-tally .tally-row.inv { display: block; text-align: left; padding: 0; border-top: 0 !important; margin: 0 0 clamp(8px, 2.6cqw, 14px); font-size: 13px; }
 .tally-row.inv .inv-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 4px; border-bottom: 2px solid rgba(125, 211, 252, 0.6); }
 .tally-row.inv .inv-h { font-size: 13px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7dd3fc; }
@@ -3718,6 +3812,11 @@ body.theme-day .tally-row.bare.combo .tally-count { color: #c2410c; }
 .ic-red { background: #ef4444; }
 .ic-hole { background: #020617; border: 1px solid #64748b; box-sizing: border-box; }
 .ic-board { background: #38bdf8; transform: rotate(45deg) scale(0.8); border-radius: 1px; }
+.ic-isle { background: #86efac; border-radius: 50%; }
+.ic-cross { background: #7dd3fc; border-radius: 1px; box-shadow: inset 0 -3px 0 #0369a1; }
+.inv-tile.t-cross .inv-tlab, .inv-tile.t-cross .inv-ts { color: #7dd3fc; }
+body.theme-day .inv-tile.t-cross .inv-tlab, body.theme-day .inv-tile.t-cross .inv-ts { color: #0369a1; }
+body.theme-day .ic-isle { background: #4d7c0f; }
 .ic-pen { background: #ef4444; position: relative; }
 .ic-pen::after { content: ''; position: absolute; left: 2px; right: 2px; top: 4.5px; height: 2px; background: #ffffff; }
 .inv-tile.t-combo { border-color: rgba(255, 138, 61, 0.45); }
@@ -4209,7 +4308,8 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 <body>
 <!-- [061026c] THE OPENING — RЯ, before the welcome page, once a session. See openingRun(). -->
 <div class="opening" id="opening" role="img" aria-label="Rotor"><div class="op-bg"></div><div class="op-cell"></div><span class="op-l">R</span><span class="op-l">O</span><span class="op-l">T</span><span class="op-l">O</span><span class="op-l">R</span></div>
-<script id="openingGate">try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getElementById('opening'); if (_o) _o.parentNode.removeChild(_o); } } catch (e) {}</script>
+<script id="openingGate">try { var _st = JSON.parse(localStorage.getItem('rotor_settings') || 'null'); if (_st && _st.theme === 'day') document.body.classList.add('theme-day'); } catch (e) {}   /* [251026g] the theme first, before anything is drawn */
+try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getElementById('opening'); if (_o) _o.parentNode.removeChild(_o); } } catch (e) {}</script>
 
 <!-- Start Screen -->
 <div class="screen-overlay" id="startScreen">
@@ -4366,6 +4466,8 @@ body:not(.layout-land):not(.layout-beside) .game-container {
     </button>
     <div class="scores-box">
         <div class="scores-title"><span class="fitline">TOP SCORES</span></div>
+        <!-- [251026e] your ROTOЯ name; tap to pick or change it -->
+        <button type="button" class="scores-name" id="scoresName" onclick="openNameScreen()"></button>
 
         <div class="scores-section-head">YOUR RUNS</div>
         <div class="scores-runs" id="scoresRuns"></div>
@@ -4389,6 +4491,46 @@ body:not(.layout-land):not(.layout-beside) .game-container {
         <div class="welcome-row full">
             <button class="start-btn" onclick="hideScores(); startGame();">▶ PLAY</button>
         </div>
+    </div>
+</div>
+
+<!-- [251026j] NAME DAY: five names, MORE NAMES, THAT'S ME, then the certificate; once a week -->
+<div class="screen-overlay hidden" id="nameScreen" role="dialog" aria-labelledby="nameTitle">
+    <button class="scores-back" onclick="closeNameScreen()" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="name-box">
+        <div class="name-kicker">NAME DAY</div>
+        <div class="name-title" id="nameTitle">WHAT’S YOUR ROTOЯ NAME?</div>
+        <div class="name-now hidden" id="nameNow"></div>
+        <div class="name-sub" id="nameSub"></div>
+        <div class="name-picks" id="namePicks"></div>
+        <button type="button" class="name-more" id="nameMore" onclick="nameShowPicks()">↻ MORE NAMES</button>
+        <button type="button" class="start-btn name-ok" id="nameOk" onclick="nameConfirm()" disabled>THAT’S ME</button>
+    </div>
+</div>
+
+<!-- [251026j] the certificate of naming -->
+<div class="screen-overlay hidden" id="certScreen" role="dialog" aria-labelledby="certName">
+    <button class="scores-back" onclick="closeCertScreen()" aria-label="Back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="cert-box">
+        <div class="cert-card" id="certCard">
+            <div class="cert-mark">ROTOЯ</div>
+            <div class="cert-head">CERTIFICATE OF NAMING</div>
+            <div class="cert-rule"></div>
+            <div class="cert-line">This is to certify that, on<br><b id="certGiven"></b>,<br>the player of this device was named</div>
+            <div class="cert-name" id="certName"></div>
+            <div class="cert-honour" id="certHonour"></div>
+            <div class="cert-line">and is recognised by that name<br>throughout the world of ROTOЯ.</div>
+            <div class="cert-seal" aria-hidden="true"><svg viewBox="0 0 100 100"><path id="certCog" d=""/><circle cx="50" cy="50" r="31" class="cert-seal-in"/><text x="50" y="59" text-anchor="middle">RЯ</text></svg></div>
+            <div class="cert-no">REGISTER No. <span id="certNo"></span></div>
+            <div class="cert-next" id="certNext"></div>
+        </div>
+        <button type="button" class="start-btn cert-save" onclick="certSave()">SAVE CERTIFICATE</button>
+        <button type="button" class="name-more hidden" id="certChange" onclick="certChangeName()">CHANGE MY NAME</button>
+        <button type="button" class="name-more" onclick="closeCertScreen()">DONE</button>
     </div>
 </div>
 
@@ -4473,6 +4615,10 @@ body:not(.layout-land):not(.layout-beside) .game-container {
          are 2.2. Deliberate: its gear path is far denser than a circle or a
          bulb outline, so at equal weight it reads HEAVIER, not equal. This
          is optical matching, not an oversight. -->
+        <!-- [251026i] NIGHT / DAY ON THE PLAY SCREEN — Jake, 25 Oct 09:04: "Night / Day toggle should be available on play game screen".
+             [030826ab] took it off ("the theme is a setting"); it comes back as the welcome page's own button, beside the cog, and
+             switches without pausing. It wears the theme you would switch to, as on the welcome page. -->
+        <button class="theme-btn play-theme-btn" id="playThemeBtn" onclick="this.blur(); toggleThemeFromWelcome();" title="Switch theme" aria-label="Switch between day and night theme"></button>
         <button class="cog-btn play-cog-btn" onclick="openSettingsFromPlay()" title="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div class="hud set-only-hud">
         <div class="hud-row hud-row-controls">
@@ -4722,6 +4868,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
         <div class="tally-head">Level Complete</div>
         <div class="tally-title" id="tallyTitle">LEVEL 1</div>
         <div class="tally-rows" id="tallyRows"></div>
+        <div class="tally-score" id="tallyScore"><!-- [251026f] LEVEL TOTAL and GRAND TOTAL, one panel on the inventory card -->
         <div class="tally-total" id="tallyTotal">
             <span class="tally-total-label">Level total</span>
             <span class="tally-total-value" id="tallyTotalValue">0</span>
@@ -4734,6 +4881,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
         <div class="tally-grand" id="tallyGrand">
             <span class="tally-grand-label">Grand total</span>
             <span class="tally-grand-value" id="tallyGrandValue">0</span>
+        </div>
         </div>
         <!-- [030826w] What you will actually begin the next level with: what
              survived plus the level grant, already added up and clamped. -->
@@ -4782,6 +4930,13 @@ body:not(.layout-land):not(.layout-beside) .game-container {
             <div class="settings-head">
                 <span class="settings-title">SETTINGS</span>
                 <button class="settings-close" onclick="closeSettings()" aria-label="Close">&#10005;</button>
+            </div>
+
+            <!-- [251026e] -->
+            <div class="settings-section-label">Player</div>
+            <div class="settings-row">
+                <span>ROTOЯ name</span>
+                <button type="button" class="settings-seg settings-name" id="setNameBtn" onclick="openNameScreen()">Pick one</button>
             </div>
 
             <div class="settings-section-label">Display</div>
@@ -4858,6 +5013,10 @@ body:not(.layout-land):not(.layout-beside) .game-container {
             <!-- [300726aj] KEYBOARD & TOUCH REFERENCE. The utility buttons left
                  the HUD, so the shortcuts they replaced need to be discoverable
                  somewhere — and settings is where a player goes looking. -->
+            <!-- [251026h] HOW IT WORKS: the rules of the game as it stands, every number read from the constant that sets it -->
+            <div class="settings-section-label">How it works</div>
+            <div class="settings-rules" id="settingsRules"></div>
+
             <div class="settings-section-label">Keyboard</div>
             <div class="keymap">
                 <div class="keymap-row"><span class="keys"><kbd>W</kbd><kbd>A</kbd><kbd>X</kbd><kbd>D</kbd></span><span class="keymap-what">Flip — N, W, S, E</span></div>
@@ -4869,12 +5028,13 @@ body:not(.layout-land):not(.layout-beside) .game-container {
                 <div class="keymap-row"><span class="keys"><kbd>J</kbd></span><span class="keymap-what">Review — step back</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>K</kbd><span class="keys-or">or</span><kbd>Space</kbd></span><span class="keymap-what">Play / pause</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>L</kbd></span><span class="keymap-what">Review — step forward</span></div>
-                <div class="keymap-row"><span class="keys"><kbd>B</kbd></span><span class="keymap-what">Bullet time (when charged)</span></div>
-                <div class="keymap-row"><span class="keys"><kbd>H</kbd></span><span class="keymap-what">Landing previews on / off</span></div>
+                <!-- [251026h] B (bullet time) went: the key has done nothing since slo-mo became pickup-only. H is the Move Guide. -->
+                <div class="keymap-row"><span class="keys"><kbd>H</kbd></span><span class="keymap-what">Move Guide on / off</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>T</kbd></span><span class="keymap-what">Tips on / off</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>V</kbd></span><span class="keymap-what">Joystick on / off</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>&larr;</kbd><kbd>&rarr;</kbd></span><span class="keymap-what">Step through moves (while paused)</span></div>
                 <div class="keymap-row"><span class="keys"><kbd>Esc</kbd></span><span class="keymap-what">Leave review</span></div>
+                <div class="keymap-row"><span class="keys"><kbd>Enter</kbd><span class="keys-or">or</span><kbd>Space</kbd></span><span class="keymap-what">Continue from the level card · play from the welcome page</span></div>
             </div>
             <div class="settings-section-label">Touch</div>
             <div class="keymap">
@@ -7959,6 +8119,10 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 251026-2334: KEEP + NAME DAY. Two chats built from 0957 on 25 Oct: NAME DAY (1100, the naming ceremony and certificate) and KEEP (2221, the time kept). This build is both — a three-way merge over 0957 with no overlap in the code; KEEP's tag is [251026k] (both had used [251026j]).
+// 251026-2221: KEEP. Jake, 25 Oct, 21:57: "is it possible to adjust the time and points awarded so that the time earned can be kept to go to the next round"; 22:05: "build it". [251026k] What is on the clock when the set is complete carries into the next level, all of it (no limit at the door; no level starts under 0:20; the last level's time still becomes points). The clock holds 2:00 (was 1:39), a row pays 5 s (was 6), and time over the top is 10 × the level a second (was 5). Replayed on six recorded runs: half as much time turned into points instead of kept (1,069 s → 535 s), no run out of time sooner, levels start on 1:15 on average (0:47). The tip, the clock lesson (its row now pays what a row pays), Settings (and the clock running a fifth faster than real time) and HOW TO SCORE say it. ?keep=0 puts back 0957's time rules.
+// 251026-1100: NAME DAY. Jake, 25 Oct, 09:58: a rotor-themed name generator, a name day with a certificate, names changed only periodically, repeats numbered, family safe. [251026j]: five lists of rotor words (no size, colour or temperature words; titles with long forms; scientists' first names and surnames); six templates; 2–12 characters, a letter first, single spaces; every possible name checked offline as a whole string against two published profanity lists, the failures kept as numbers; blocked number tags; a taken name numbered; THAT'S ME issues the certificate (SAVE CERTIFICATE, 1080 × 1350); held 7 days; old [251026e] names lifted.
+// 251026-0957: CROSSING. Jake, 25 Oct, 09:04: "okay, implement" — PAY TO CROSS [251026b]: a single over a hole pays CROSS_SEC (5) a cell, the cell becomes ground and the single carries on (not a mistake); under 5 s on the clock it is refused, NOT ENOUGH TIME; the first landing on each island cut off by holes pays LANDFALL_SEC (10), once; bigger shapes still give a cube; the level card's TIME shows Crossings and Landfall. ?crossing=0 puts back the old rescue, ?cross= and ?landfall= set the prices. A BREATH [251026c]: the swoosh is pink noise, a quarter lower, topped at 2 kHz, wider and softer — 60% less roughness, same loudness (?swooshsmooth=0 for the old one). TOP SCORES [251026d]: each run carries rows, combos, best row run, play time and the name; PERSONAL BESTS are highest level, most rows, best row run, most combos, longest run, coverage; RUNS PLAYED; a run the page lost is filed from its note on the next load; the browser is asked to keep the record; and endGame now banks TOTAL REVOLUTIONS (it only grew on a quit). ROTOЯ NAME [251026e]: a CB handle, picked not typed — five at a time from the game's words, MORE NAMES, THAT'S ME; once a week; on TOP SCORES and in Settings. THE CARD IN TURN [251026f]: POINTS, TIME, COMBOS 560 ms apart, then the score (LEVEL TOTAL with GRAND TOTAL) counts up last; each on a faint panel. ONE COLOUR [251026g]: the opening fades through white by day, the night's dark blue by night, and the saved theme is on the page before anything is drawn. SETTINGS AND LESSONS [251026h]: HOW IT WORKS in Settings; B gone from the keys, H the Move Guide, Enter / Space listed; a CROSSING lesson; HOLES and COLLECT THE SET say what is true now; tips for crossing, landfall and combos. NIGHT / DAY ON THE PLAY SCREEN [251026i], beside the cog.
 // 251026-0021: CARRY. Jake, 25 Oct, 00:11: "i like that the player has to build up time quickly to stay in the game so is given a low time at the beginning ... players should carry time on to the next level, this will address wasting collected time but ... everything needs to be readjusted so that players cannt build up huge reserves of time so that in later games they still have chase time ... evaluate what the new scoring time would need to be to make this work and imlement your best suggestion". THE CLOCK CARRIES [251026a]: level 1 still starts on 0:40. When a set is complete, the time left goes into the next level — up to 1:00 into level 2, 5 s less each level after (0:55, 0:50 … never below 0:30 from level 8); whatever is over that limit becomes points, 5 × level a second, as before; and no level starts below 0:20. On the last level all of it becomes points. In play nothing else changes: the clock still holds 1:39 and every payment and charge is the same — replayed on six recorded runs, cutting what rows, hourglasses or greens pay by a tenth, lowering the 1:39, or draining faster each level ran the long levels (the 8-minute ones) out of time, so the pressure is put on the door instead. The door says it (YOU CARRY 0:52, or CLOCK STARTS ON 0:20); the card's TIME says CARRY 0:50 INTO LEVEL 8 and, under it, what was over the limit and the points it paid; the tip, the clock lesson and HOW TO SCORE say the rule. CLOCK_CARRY = false (?carry=0) puts back the fresh 0:40; ?carrymax=, ?carrystep=, ?carrymin=, ?carryfloor= set the numbers.
 // 241026-1843: INNER RING. Jake, 24 Oct, 18:41: "The knuckles have an outer ring which is always visible during play. When moving, the inner ring should activate (not the outer ring) on the leading edge or corner of the direction of cube travel. The inter level text needs to be more proportionate to each, the smaller text needs to a bit larger [to read]. The swoosh sound level compared to other sound effects needs to 20% lower". THE KNUCKLE [241026d]: the outer ring stays exactly as it is at rest, all the time; on a move only an inner ring lights — white, on a hairline (deep ice by day, shadow by night) — on the knuckles the cube turns over: the leading edge, or the corner for a diagonal. It pops, holds and fades as before; the outer ring no longer thickens, recolours or rings out. And it lights on every move: holding a direction lit the first move only, the repeats now light too. KNUCKLE_INNER_ONLY = false puts back the 2909 look. THE CARD'S TEXT [241026e]: the small words up, the big numbers down — labels 11 → 13 px, the numbers beside the pictures 11 → 12, the time tiles' names 9.5 → 11 and their seconds 14 → 15, the line under the tiles 10.5 → 12, the section names 12 → 13, each line's points 15 → 16; LEVEL TOTAL 42 → 34 px at most, GRAND TOTAL 27 → 22, the title 25 → 23. Still one screen, no scrolling. THE SWOOSH [241026f]: every shifter swoosh 20% quieter (SWOOSH_LIFT 2.4 → 1.92; ?swooshvol= sets the share).
 // 241026-0842: INVENTORIES. Jake, 24 Oct, 08:27: "in the scorecard treatments i like 3. the most. i feel there should be a points inventory and a points, a time and a combos inventory on the scorecard that get dded up to give us the score for that level ... time inventory needs to be more detaileld ... collecting rows is probably the largest source of time earned"; 08:35: "if a player flips their shape on to a shifter that then results in a slot filled thats big points, even bigger points if two or three shifters get used in the process ... Base your decison on this understanding". COMBO POINTS [241026b]: a shifter carrying you onto a slot pays 500 × level, doubled for a second shifter in the chain and doubled again for a third (×4 is the most: four or five shifters pay as three); every other combo (a slot and a row on one landing, a green and a slot in one move, a red trimmed into a fit) 100 × level. Points only — the +3 s stays, the clock is untouched, and combo points forge no shifters. The float says it: COMBO!  +3s / +3,500. HOW TO SCORE lists both. ?combopts= and ?combopts2= set them. THE LEVEL CARD, DESIGN 4 [241026c]: three inventories that add up to LEVEL TOTAL — POINTS (SET COMPLETE with a square per slot and ×n; ROWS with a bar per row, at 25 × level each; ROW COMBOS, a stack per run of two or more with the same shape, BEST ×n, the extra the runs paid; GROUND COVERED, a meter with the level's three bars marked; BOARD, the rest), TIME (a tile per source that paid: slots, rows, hourglasses, greens, combos, red trims, holes filled — each its count and seconds — and PENALTIES, then EARNED +Ns and the seconds LEFT spinning into points at 5 × level a second) and COMBOS (a line per kind, a bolt per combo, with its points; NO COMBOS THIS LEVEL when there were none). Each inventory lands in turn and its total counts up into LEVEL TOTAL; the title is one line. The level now counts the seconds from every source, the penalties, each kind of combo, and the rows' points split into plain rows and row combos. TALLY_INVENTORY = false puts back the 0014 card.
@@ -8838,7 +9002,7 @@ body:not(.layout-land):not(.layout-beside) .game-container {
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '251026-0021 ROTOЯ · CARRY';
+const BUILD_VERSION = '251026-2334 ROTOЯ · KEEP + NAME DAY';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -10083,14 +10247,25 @@ const LEVEL_START_SEC = Math.round(econDial('start', 40, 20, 90));   // [181026k
    from rows, hourglasses or greens, a lower ceiling or a faster drain each level ran the long levels out of time, so the squeeze
    is at the door. CLOCK_CARRY = false (?carry=0) puts back the fresh LEVEL_START_SEC. */
 const CLOCK_CARRY = CLOCK_RESETS && econDial('carry', 1, 0, 1) >= 1;
+/* [251026k] KEEP THE TIME — Jake, 25 Oct, 21:57: "is it possible to adjust the time and points awarded so that the time earned can be
+   kept to go to the next round" … 22:05: "build it". What is on the clock when the set is complete carries into the next level, all of
+   it: no limit at the door (no level starts under CARRY_FLOOR_SEC, and the last level's time still becomes points). So that the clock
+   does not simply fill and spill, it holds 2:00 (was 1:39) and a row pays 5 s (was 6); time paid over the top becomes points at
+   10 × the level a second (was 5), which keeps the points that come from time about where they were. Replayed on six recorded runs
+   (playdata 87, the same moves): time turned into points instead of kept halves (1,069 s → 535 s); no run runs out of time sooner
+   than it did (the eight-level run still runs out on level 8); levels start on 1:15 on average (0:47 under 0957), and the clock
+   still drops under 15 s in 4 of 38 levels. KEEP_TIME = false (?keep=0) puts back 0957: the carry limit, 1:39, 6 s rows, 5 a second. */
+const KEEP_TIME = CLOCK_CARRY && econDial('keep', 1, 0, 1) >= 1;
 const CARRY_MAX_SEC = Math.round(econDial('carrymax', 60, 20, 99)), CARRY_STEP_SEC = Math.round(econDial('carrystep', 5, 0, 20));
 const CARRY_MIN_CAP_SEC = Math.round(econDial('carrymin', 30, 10, 99)), CARRY_FLOOR_SEC = Math.round(econDial('carryfloor', 20, 0, 60));
-function carryLimit(nextLevel) { return Math.max(CARRY_MIN_CAP_SEC, CARRY_MAX_SEC - CARRY_STEP_SEC * Math.max(0, (nextLevel || 2) - 2)); }
+function carryLimit(nextLevel) { if (KEEP_TIME) return CLOCK_CEILING;   // [251026k] all of it, up to the top
+    return Math.max(CARRY_MIN_CAP_SEC, CARRY_MAX_SEC - CARRY_STEP_SEC * Math.max(0, (nextLevel || 2) - 2)); }
 function carryStart(left, nextLevel) { return Math.max(CARRY_FLOOR_SEC, Math.min(carryLimit(nextLevel), Math.max(0, left))); }
-const CLOCK_LIMIT_SEC = (() => { const v = econDial('limit', 99, 0, 600); return v === 0 ? Infinity : Math.max(60, Math.round(v)); })();
+const CLOCK_LIMIT_SEC = (() => { const v = econDial('limit', KEEP_TIME ? 120 : 99, 0, 600);   // [251026k] 2:00 when the time is kept
+    return v === 0 ? Infinity : Math.max(60, Math.round(v)); })();
 const SLOT_PAY_SEC = Math.round(econDial('slot', 15, 5, 30));
 const CUBE_LOST_SEC = CLOCK_RESETS ? Math.round(econDial('cube', 3, 0, 10)) : 0;
-const TIME_PTS_PER_SEC = econDial('bonus', 5, 0, 20);
+const TIME_PTS_PER_SEC = econDial('bonus', KEEP_TIME ? 10 : 5, 0, 20);   // [251026k] 10 × level a second when the time is kept
 /* ══ [181026f] ONE PRICE FOR A MISTAKE — designer's call, 18 Oct, 15:18: "consider 20 seconds as a penalty" (for losing your
    last cube, which [181026a] had raised to 30), then "implement all amends". Replayed on the five 17 Oct runs, 30 → 20
    changes no outcome (the win's lowest 7 → 9 s, its penalties 188 → 178 s: these mistakes are rare, 0–2 a run; the 3 s
@@ -10110,7 +10285,8 @@ const SET_DONE_PTS = 1000, ROW_PTS_MAX = 500;     // × the level; a row's point
    shape changes (any change, even one undone before the next row), at any penalty, when a slot is filled, at a respawn
    and at a new level. The row says its place: 1 × ROW, 2 × ROWS, 3 × ROWS … Replaces the chain of adjacent rows. */
 const ROW_RUNS = CLOCK_RESETS;
-const ROW_RUN_SEC = Math.round(econDial('rowsec', 6, 1, 15)), ROW_RUN_PTS = Math.round(econDial('rowpts', 25, 5, 200));
+const ROW_RUN_SEC = Math.round(econDial('rowsec', KEEP_TIME ? 5 : 6, 1, 15)),   // [251026k] 5 s when the time is kept
+      ROW_RUN_PTS = Math.round(econDial('rowpts', 25, 5, 200));
 /* [181026m] COMBOS PAY TIME — Jake, 19:19: "combos should pay time"; 21:09, the suggestion taken: every COMBO! pays 3 s. */
 const COMBO_SEC = CLOCK_RESETS ? Math.round(econDial('combo', 3, 0, 10)) : 0;
 /* [241026b] Jake, 24 Oct, 08:35: "if a player flips their shape on to a shifter that then results in a slot filled thats big points,
@@ -12054,6 +12230,7 @@ let musicVolume = MUSIC_VOLUME;    // live music level (0..1), seeded from the d
 
 function openSettings() {
     syncSettingsUI();
+    try { renderSettingsRules(); } catch (e) {}   // [251026h]
     const o = document.getElementById('settingsOverlay');
     if (o) o.classList.remove('hidden');
 }
@@ -12076,6 +12253,35 @@ function openSettingsFromPlay() {
     openSettings();
 }
 
+/* ══ [251026h] SETTINGS SAY HOW THE GAME WORKS NOW — Jake, 25 Oct 09:04: "Update the 'settings' page with up to date instructions."
+   The keyboard list lost B (bullet time has done nothing for months), H is named the Move Guide, and Enter / Space are listed. Above
+   the keys, HOW IT WORKS: the game in eight lines — the set, greens and reds, holes and crossing, the clock and the carry, combos,
+   mistakes — each number read from the constant that sets it, so the page cannot say one thing while the game does another. */
+function settingsRulesRows() {
+    const fresh = typeof CLOCK_RESETS !== 'undefined' && CLOCK_RESETS, rows = [];
+    rows.push(['The set', 'Flip in eight directions. Land exactly on each slot in the set at the top \u2014 the same shape, the same way round. The full set finishes the level.']);
+    rows.push(['Greens and reds', `Land beside a green to evolve, on one for ${GREEN_STOMP_SEC} seconds. A red devolves you by a cube you can spare and pays ${RED_PAYS_SEC} seconds; a single has none to spare, so it costs ${RED_TOLL_SEC}.`]);
+    rows.push(['Holes', 'The cube over a hole goes in and becomes ground \u2014 you devolve by one.' +
+        (typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? ` A single crosses instead: ${CROSS_SEC} seconds a cell, and the cell becomes ground (not enough time, and it won\u2019t go).` +
+            (LANDFALL_SEC > 0 ? ` The first landing on an island ringed by holes pays ${LANDFALL_SEC} seconds.` : '') : '')]);
+    if (fresh) {
+        rows.push(['The clock', `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. A slot pays ${SLOT_PAY_SEC} seconds, a row ${typeof ROW_RUNS !== 'undefined' && ROW_RUNS ? ROW_RUN_SEC + ' and up' : 'some'}, an hourglass ${hourglassFace('t10')} or ${HOURGLASS_SEC}` +
+            (COMBO_SEC ? `, a combo ${COMBO_SEC}` : '') + `. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points, ${TIME_PTS_PER_SEC} \u00d7 the level a second. The clock runs a fifth faster than real time.`]);   // [251026k]
+        if (typeof KEEP_TIME !== 'undefined' && KEEP_TIME)   // [251026k]
+            rows.push(['Carry', `Everything on the clock when the set is complete carries into the next level. No level starts under ${clockFmt(CARRY_FLOOR_SEC)}. On the last level, all of it becomes points.`]);
+        else if (typeof CLOCK_CARRY !== 'undefined' && CLOCK_CARRY)
+            rows.push(['Carry', `Time left when the set is complete carries into the next level \u2014 up to ${clockFmt(CARRY_MAX_SEC)} into level 2, ${CARRY_STEP_SEC} seconds less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}. The rest becomes points, and the last level turns all of it into points.`]);
+    }
+    if (COMBO_SLOT_PTS) rows.push(['Combos', `A shifter carrying you onto a slot: ${COMBO_SLOT_PTS.toLocaleString()} \u00d7 the level, doubled for a second shifter and again for a third. A slot and a row on one landing, a green and a slot in one move, or a red trimmed into a fit: ${COMBO_OTHER_PTS.toLocaleString()} \u00d7 the level.`]);
+    rows.push(['Shifters', 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Whatever it carries you over is destroyed.']);
+    rows.push(['Mistakes', (fresh && CUBE_LOST_SEC ? `A cube lost over the edge, off the bottom or on the wrong slot costs ${CUBE_LOST_SEC} seconds. ` : '') +
+        `A mistake costs ${MISTAKE_SEC} seconds, ${MISTAKE_STEP_SEC} more for each one before it in the level, never more than ${MISTAKE_CAP_SEC}. Points are never taken away.`]);
+    return rows;
+}
+function renderSettingsRules() {
+    const el = document.getElementById('settingsRules'); if (!el) return;
+    el.innerHTML = settingsRulesRows().map(([h, t]) => `<div class="settings-rule"><b>${h}</b><span>${t}</span></div>`).join('');
+}
 // Push current live state into the panel controls.
 function syncSettingsUI() {
     const setEl = (id, prop, val) => { const el = document.getElementById(id); if (el) el[prop] = val; };
@@ -12510,6 +12716,25 @@ const SWOOSH_LIFT = 2.4 * econDial('swooshvol', 0.8, 0, 2);   // [241026f] Jake,
 /* [181026h] "make the swooshes 33% faster" (Jake, 18 Oct, 18:25): every swoosh plays at SWOOSH_SPEED — 1.33× — so each lasts
    three quarters as long; its start stays on the stroke. ?swoosh= sets the speed (1 = the 1814 length). */
 const SWOOSH_SPEED = econDial('swoosh', 1.33, 0.5, 3);   // noise against a tone of the same gain (measured against the evolve arpeggio it replaces)
+/* [251026c] A BREATH, NOT SANDPAPER — Jake, 25 Oct: "The swoosh needs to sound more like a breath, at present it sounds like a coarse
+   sand paper, make it sound more like smooth sandpaper." The grit was white noise and a band gliding up to 2.6–3.2 kHz. Now: pink
+   noise (each octave a little softer than the one below, as breath is), the band a quarter lower and topped at 2 kHz, a
+   wider band (Q × 0.7), a gentle lowpass at 2.4 kHz over it, and softer edges to the swell. Measured offline on the step, the
+   double and the turn: 60% less sample-to-sample roughness; SWOOSH_SMOOTH_GAIN (1.45) brings it back to the same loudness, so
+   it stays 20% under the other sounds. SWOOSH_SMOOTH = false (?swooshsmooth=0) puts back the 1843 swoosh. */
+const SWOOSH_SMOOTH = econDial('swooshsmooth', 1, 0, 1) >= 1;
+const SWOOSH_TONE = 0.75, SWOOSH_TOP_HZ = 2000, SWOOSH_Q_K = 0.7, SWOOSH_LP_HZ = 2400, SWOOSH_EDGE = 1.8, SWOOSH_SMOOTH_GAIN = 1.45;
+let _swooshPink = null;
+function swooshPinkNoise() {
+    if (!_swooshPink) {
+        const len = Math.floor(audioCtx.sampleRate * 2);
+        _swooshPink = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const d = _swooshPink.getChannelData(0); let b0 = 0, b1 = 0, b2 = 0, m = 0;
+        for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b0 = 0.99765 * b0 + w * 0.0990460; b1 = 0.96300 * b1 + w * 0.2965164; b2 = 0.57000 * b2 + w * 1.0526913; d[i] = b0 + b1 + b2 + w * 0.1848; m = Math.max(m, Math.abs(d[i])); }
+        for (let i = 0; i < len; i++) d[i] /= (m || 1);
+    }
+    return _swooshPink;
+}
 let _swooshBuf = null;
 function swooshNoise() {
     if (!_swooshBuf) {
@@ -12524,22 +12749,25 @@ function playSwoosh(o) {
     if (!document.getElementById('soundCheck').checked || !audioCtx) return;
     resumeAudio();
     const t0 = audioCtx.currentTime + Math.max(0, o.delay || 0), dur = Math.max(0.05, (o.dur || 0.3) / SWOOSH_SPEED);   // [181026h]
-    const src = audioCtx.createBufferSource(); src.buffer = swooshNoise();
+    const sm = SWOOSH_SMOOTH, fA = f => sm ? Math.min(SWOOSH_TOP_HZ, f * SWOOSH_TONE) : f;   // [251026c]
+    const src = audioCtx.createBufferSource(); src.buffer = sm ? swooshPinkNoise() : swooshNoise();
     const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass';
-    bp.Q.setValueAtTime(o.q || 1.2, t0);
-    bp.frequency.setValueAtTime(o.f0, t0);
-    if (o.fMid) { bp.frequency.exponentialRampToValueAtTime(o.fMid, t0 + dur * (o.peakAt || 0.5)); bp.frequency.exponentialRampToValueAtTime(o.f1, t0 + dur); }
-    else bp.frequency.exponentialRampToValueAtTime(o.f1, t0 + dur);
-    const g = audioCtx.createGain(), peak = Math.max(0.0002, (o.vol || VOL.event) * sfxVolume * (o.lift || SWOOSH_LIFT));
+    bp.Q.setValueAtTime((o.q || 1.2) * (sm ? SWOOSH_Q_K : 1), t0);
+    bp.frequency.setValueAtTime(fA(o.f0), t0);
+    if (o.fMid) { bp.frequency.exponentialRampToValueAtTime(fA(o.fMid), t0 + dur * (o.peakAt || 0.5)); bp.frequency.exponentialRampToValueAtTime(fA(o.f1), t0 + dur); }
+    else bp.frequency.exponentialRampToValueAtTime(fA(o.f1), t0 + dur);
+    const g = audioCtx.createGain(), peak = Math.max(0.0002, (o.vol || VOL.event) * sfxVolume * (o.lift || SWOOSH_LIFT) * (sm ? SWOOSH_SMOOTH_GAIN : 1));
     {   // a smooth swell: half a sine up to the peak at `attack`, half a sine down to nothing — audible the whole way
         const N = 64, a = Math.max(0.1, Math.min(0.9, o.attack || 0.45)), curve = new Float32Array(N);
-        for (let i = 0; i < N; i++) { const x = i / (N - 1); curve[i] = peak * Math.pow(Math.sin(Math.PI / 2 * (x < a ? x / a : (1 - x) / (1 - a))), 1.4); }
+        for (let i = 0; i < N; i++) { const x = i / (N - 1); curve[i] = peak * Math.pow(Math.sin(Math.PI / 2 * (x < a ? x / a : (1 - x) / (1 - a))), sm ? SWOOSH_EDGE : 1.4); }
         g.gain.setValueAtTime(0, t0);
         if (g.gain.setValueCurveAtTime) g.gain.setValueCurveAtTime(curve, t0, dur); else { g.gain.linearRampToValueAtTime(peak, t0 + dur * a); g.gain.linearRampToValueAtTime(0, t0 + dur); }
     }
     const pn = audioCtx.createStereoPanner(), cl = v => Math.max(-1, Math.min(1, v || 0));
     if (pn.pan) { pn.pan.setValueAtTime(cl(o.pan0), t0); pn.pan.linearRampToValueAtTime(cl(o.pan1 !== undefined ? o.pan1 : o.pan0), t0 + dur); }
-    src.connect(bp); bp.connect(g); g.connect(pn); pn.connect(duckBus());
+    if (sm) { const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(SWOOSH_LP_HZ, t0); lp.Q.setValueAtTime(0.5, t0); src.connect(bp); bp.connect(lp); lp.connect(g); }   // [251026c] the grit taken off
+    else { src.connect(bp); bp.connect(g); }
+    g.connect(pn); pn.connect(duckBus());
     src.start(t0, Math.random() * 0.8); src.stop(t0 + dur + 0.05);
     audioBusyUntil = Math.max(audioBusyUntil, t0 + dur);
 }
@@ -14650,7 +14878,7 @@ function maroonTick() {
     rec('rescue', { k: 'maroon', with: laid.k, s: game.shapeType, x: laid.x, y: laid.y, cells: r.cells.size, r: advancedRound, m: Math.round(momentumRemaining()) });
 }
 function runSingleRescue() {
-    if (SINGLE_BUYS_GROUND || game.testDrive || !game.running || game.paused) return;
+    if ((SINGLE_BUYS_GROUND && !(CLOCK_ONLY && momentumRemaining() <= CROSS_SEC + 1)) || game.testDrive || !game.running || game.paused) return;   // [251026b] a single that can pay its way needs no hand up
     if (game.introHold || game.celebrating || game.inputLocked) return;
     if (flip.active || isTransformAnimActive() || game.frozenTimer > 0) return;
     if (game.shapeType !== 'single') return;
@@ -15403,6 +15631,7 @@ function exitToWelcome() {
         // a 30k quit while "Best score" read lower was the two records
         // disagreeing about the same run.
         bests = {
+            ...bests,   // [251026d] the run's stats, folded in by recordRun, stay
             score:      Math.max(bests.score || 0, game.score),
             time:       Math.max(bests.time || 0, Math.floor(game.speedTimer || 0)),
             transforms: Math.max(bests.transforms || 0, game.transforms || 0),
@@ -17293,6 +17522,29 @@ function praiseBridge(showIn) {
         if (!game.running) return;
         addFloat(LOGICAL_W / 2, LOGICAL_H * 0.3, dealLine('bridge', BRIDGE_PRAISE), '#7dd3fc', true, { life: 1800, hold: 900, chatter: true });
     });
+}
+function singlePaysToCross(cells) {   // [251026b] a held direction crosses a hole as a press does: 5 s a cell, or NOT ENOUGH TIME
+    if (!SINGLE_BUYS_GROUND || game.shapeType !== 'single' || game.testDrive) return null;
+    const holes = cells.filter(c => world[`${c.x},${c.y}`] === 'void');
+    if (!holes.length) return null;
+    const vc = holes[0], px = vc.x * CELL + CELL / 2, py = (vc.y - game.cameraY) * CELL;
+    if (CLOCK_ONLY && momentumRemaining() <= CROSS_SEC * holes.length) {
+        triggerShake(3, 150);
+        if (sfx.bonk) sfx.bonk(); else if (sfx.hit) sfx.hit();
+        addFloat(px, py - 6, 'NOT ENOUGH TIME', '#f87171', false, { life: 1100, hold: 400 });
+        rec('refuse', { ch: 'hole', s: 'single', why: 'time', r: advancedRound });
+        return 'refused';
+    }
+    for (const c of holes) { fillVoid(c.x, c.y); addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#7dd3fc'); }
+    const xc = CROSS_SEC * holes.length;
+    bumpCost(xc, px, py, 'trade', 'ground');
+    if (game._lv) { game._lv.crossN = (game._lv.crossN || 0) + holes.length; game._lv.crossSecs = (game._lv.crossSecs || 0) + xc; }
+    addFloat(px, py - 14, `−${xc}s  →  +${holes.length} GROUND`, '#7dd3fc');
+    tapeNote(`−${xc}s  →  +${holes.length} GROUND`, '#7dd3fc');
+    rec('fill', { n: holes.length, s: 'single', paid: 'sec' });
+    if (typeof HAPTICS !== 'undefined') HAPTICS.fire(HAPTIC.red, 90);
+    showTip('cross');
+    return 'paid';
 }
 function fillVoid(x, y, showIn = 0, plugColor = null, quiet = false) {   // [181026i] quiet: not a bridge (your last cube, the restart stone)   // [280926t] plugColor: a stone surfaces green   // [280926d] showIn: the hole stays drawn this long — the cube has to be seen to go in first
     const k = `${x},${y}`;
@@ -24517,6 +24769,7 @@ function registerCombo(kind, x, y, extra) {
     else addFloat(px, py, label, '#ffd60a', true);
     if (shown && sfx.gold) sfx.gold();
     rec('combo2', { k: kind, n: game.roundCombos, r: advancedRound });   // [210826ak]
+    showTip('combo');   // [251026h] once
 }
 function paintComboChip() {
     const chip = document.getElementById('chainChip');
@@ -24956,7 +25209,14 @@ const TALLY_AUTO = false;
 const TALLY_BARE = true, TALLY_CLIMB_MS = 1200;
 /* [241026c] Jake, 24 Oct, 08:27: design 4 — the card is three inventories, POINTS, TIME and COMBOS, each with pictures for the counts and
    its own total, and the three add up to LEVEL TOTAL. TALLY_INVENTORY = false puts back the 0014 card. */
-const TALLY_INVENTORY = true, TALLY_INV_STEP_MS = 900;
+const TALLY_INVENTORY = true, TALLY_INV_STEP_MS = 560;
+/* [251026f] IN TURN, QUICKLY, EACH IN ITS OWN PANEL — Jake, 25 Oct 09:04: "Reveal points, time, combo, score sequentially in quick
+   sequence on score card. Also, they need some subtle demarcation between the 4." POINTS, TIME, COMBOS, then the SCORE (LEVEL TOTAL
+   and GRAND TOTAL together): the three inventories come in 560 ms apart (was 900), the time left spins for at most 1.4 s (was 2.6),
+   and the score waits, hidden, until the three are in, then counts up with GRAND TOTAL beside it (TALLY_SCORE_MS) and lands with the
+   chime; the rank moves with it. Each of the four sits on its own faint panel: steel for points and time, tangerine for combos, gold
+   for the score (pink by day). A tap still lands everything at once; CONTINUE waits for the score. */
+const TALLY_INV_SPIN_MAX = 1400, TALLY_SCORE_MS = 520;
 function buildInventoryRows(L, lvl, delta) {
     const n = v => Math.round(v || 0).toLocaleString();
     const rowsAll = L.row || 0, rowRun = ROW_RUNS ? Math.min(rowsAll, L.rowRun || 0) : 0, rowBase = rowsAll - rowRun;
@@ -24979,12 +25239,13 @@ function buildInventoryRows(L, lvl, delta) {
         line('Ground covered', meter, cov) +
         line('Board', '<span class="inv-ic ic-board"></span>', board);
     const sb = L.secBy || {}, nb = L.nBy || {};
-    const TSRC = [['piece', 'Slots', 'slot'], ['row', 'Rows', 'row'], ['hourglass', 'Hourglasses', 'glass'], ['green', 'Greens', 'green'], ['combo', 'Combos', 'combo'], ['red', 'Red trims', 'red'], ['ground', 'Holes filled', 'hole']];
+    const TSRC = [['piece', 'Slots', 'slot'], ['row', 'Rows', 'row'], ['hourglass', 'Hourglasses', 'glass'], ['green', 'Greens', 'green'], ['combo', 'Combos', 'combo'], ['red', 'Red trims', 'red'], ['ground', 'Holes filled', 'hole'], ['landfall', 'Landfall', 'isle']];   // [251026b] + landfall
     const tile = (lab, ic, cnt, secs, cls) => `<div class="inv-tile t-${cls || ic}"><span class="inv-tlab">${lab}</span><span class="inv-trow"><span class="inv-tn"><span class="inv-ic ic-${ic}"></span><b>${cnt}</b></span><span class="inv-ts">${secs}</span></span></div>`;
     let tiles = '';
     for (const [k, lab, ic] of TSRC) { const sec = Math.round(sb[k] || 0); if (!(sec > 0) && k !== 'piece' && k !== 'row') continue; tiles += tile(lab, ic, nb[k] || 0, `+${sec}s`); }
     const named = new Set(TSRC.map(t => t[0])), other = Math.round(Object.keys(sb).filter(k => !named.has(k)).reduce((a, k) => a + sb[k], 0));
     if (other > 0) tiles += tile('Other', 'glass', '', `+${other}s`, 'other');
+    if (L.crossSecs > 0) tiles += tile('Crossings', 'cross', L.crossN || 0, `−${Math.round(L.crossSecs)}s`, 'cross');   // [251026b] what crossing holes cost
     if (L.penSecs > 0) tiles += tile('Penalties', 'pen', L.penN || 0, `−${Math.round(L.penSecs)}s`, 'pen');
     const tHtml = head('Time') + `<div class="inv-tiles">${tiles}</div>` +
         `<div class="inv-foot"><span>EARNED +${Math.round(game.roundTimeSecs || 0)}s</span><span>${L.carryOn ? ((L.carryStart || 0) > (L.carrySecs || 0) ? `LEVEL ${lvl + 1} STARTS ON ${clockFmt(L.carryStart)}` : `CARRY ${clockFmt(L.carrySecs)} INTO LEVEL ${lvl + 1}`) : `LEFT ${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}`}</span><span class="tally-count inv-spin">${L.timeSecs}s</span></div>` +
@@ -25003,7 +25264,7 @@ function buildInventoryRows(L, lvl, delta) {
         { inv: 'combos', bright: true, label: 'Combos', count: '', pts: comboPts, html: cHtml, kinds: Object.assign({}, cn), kindPts: Object.assign({}, cp) },
     ];
 }
-function tallySpinMs(secs) { return Math.min(2600, 700 + 22 * Math.max(0, secs)); }
+function tallySpinMs(secs) { return Math.min(TALLY_INVENTORY ? TALLY_INV_SPIN_MAX : 2600, 700 + 22 * Math.max(0, secs)); }   // [251026f]
 function buildLevelTallyRows() {
     const L = game._lv, lvl = advancedRound;
     const delta = game.score - (game._levelStartScore || 0);
@@ -25284,6 +25545,8 @@ function showLevelTally(onDone, opts) {
     replayClipRefresh();   // [270926b] SAVE / SHARE, if the player watched this level's replay
     const rows = buildTallyRows();
     el.classList.toggle('inv-card', rows.some(r => r.inv));   // [241026c]
+    const invSeq = rows.some(r => r.inv);   // [251026f] the score comes in last
+    if (invSeq && totalEl) totalEl.classList.remove('in', 'pop');
     // [220826d] THE SCORECARD CHECKS ITS OWN ARITHMETIC. The column of +N values
     // must equal the score the level actually moved, and the grand total the card
     // animates to must equal the score the results screen will show. Those two
@@ -25377,7 +25640,7 @@ function showLevelTally(onDone, opts) {
     }
     const grandEl = document.getElementById('tallyGrand');
     const grandVal = document.getElementById('tallyGrandValue');
-    if (grandEl) grandEl.classList.add('in');
+    if (grandEl) grandEl.classList.toggle('in', !invSeq);   // [251026f]
     // [300726w] Grand total = the run's score as it stands, so it climbs in
     // step with the level lines and lands on the true current number.
     const grandBase = game.score - (game.score - (game._levelStartScore || 0));
@@ -25423,7 +25686,7 @@ function showLevelTally(onDone, opts) {
         _shownTotal = v;
         if (totalVal) totalVal.textContent = v.toLocaleString();
         if (grandVal) grandVal.textContent = (grandBase + v).toLocaleString();
-        paintRank(grandBase + v);
+        if (!invSeq) paintRank(grandBase + v);   // [251026f] on the inventory card the rank moves with the score, at the end
     };
     let banked = 0;   // total from rows already finished counting
     const _place = []; { let a = 0; for (const n of nodes) { _place.push(a); a += (n.row.pts || 0); } }   // [181026c]
@@ -25481,12 +25744,30 @@ function showLevelTally(onDone, opts) {
 
     const endAt = 240 + nodes.length * STEP + 300 + nodes.reduce((a, n) => a + (n.node && n.row.spin && n.row.pts ? Math.max(0, tallySpinMs(n.row.spin.secs) - 420) : 0), 0) + (nodes.some(n => n.row.climb) ? Math.max(0, TALLY_CLIMB_MS - 420) : 0);   // [181026b] the spin is longer than a line · [231026g] and so is the climb
     _tallyTimers.push(setTimeout(() => {
+        if (invSeq) {   // [251026f] fourth: LEVEL TOTAL and GRAND TOTAL come in and count up together, then land
+            const lt = rows.reduce((a, r) => a + (r.pts || 0), 0);
+            if (totalEl) totalEl.classList.add('in');
+            if (grandEl) grandEl.classList.add('in');
+            _tallyRunning++; let _lastTick = 0;
+            const cancel = countUp(lt, TALLY_SCORE_MS, v => {
+                if (totalVal) totalVal.textContent = v.toLocaleString();
+                if (grandVal) grandVal.textContent = (grandBase + v).toLocaleString();
+                paintRank(grandBase + v);
+                const t = performance.now(); if (v < lt && t - _lastTick > 60 && sfx.tallyTick) { _lastTick = t; sfx.tallyTick(); }
+            }, () => {
+                _tallyRunning--;
+                if (totalEl) { totalEl.classList.remove('pop'); void totalEl.offsetWidth; totalEl.classList.add('pop'); }
+                if (sfx.gold) sfx.gold();
+            });
+            _tallyCancels.push(cancel);
+            return;
+        }
         if (totalEl) { totalEl.classList.remove('in'); void totalEl.offsetWidth; totalEl.classList.add('in'); }
         if (sfx.gold) sfx.gold();
     }, endAt));
     // [290726k] NO auto-continue: the scorecard is a rest point. Play only
     // resumes when the player presses CONTINUE.
-    _tallyTimers.push(setTimeout(() => { if (hint) hint.classList.add('in'); }, endAt + 400));
+    _tallyTimers.push(setTimeout(() => { if (hint) hint.classList.add('in'); }, endAt + (invSeq ? TALLY_SCORE_MS : 0) + 400));   // [251026f]
     if (_tallyAuto) _tallyTimers.push(setTimeout(() => { if (_tallyAuto) finishLevelTally(); }, endAt + TALLY_AUTO_MS));   // [181026b]
 }
 
@@ -28639,11 +28920,20 @@ const RED_BURN_COST_SEC = TRIM_COST_SEC;
 /* [HOLES] Now the same constant as a red — see TRIM_COST_SEC above. It briefly
    had its own value, set by feel rather than by any argument, which is how the
    drift starts. */
-const VOID_BURN_COST_SEC = TRIM_COST_SEC;
+/* [251026b] PAY TO CROSS — Jake, 25 Oct, 08:20–09:04: "crossing voids to get to islands is very important to access in slots and
+   bonuses. i want this to be a feature of the game. reconsider the value of paying something as a player particulalry a single
+   cube player" … "okay, implement". A single moving onto a hole buys it: CROSS_SEC a cell (5), the hole becomes ground under it and
+   it carries on — not a mistake, no restart, the run of rows goes on. With CROSS_SEC or less on the clock the hole refuses it
+   (NOT ENOUGH TIME). The first landing on each island cut off by holes pays LANDFALL_SEC (10). Bigger shapes still pay a cube.
+   (A single paid 12 s for ground until 110926c, which read as "a penalty wearing a trade's clothes" — 5 s, with the landfall to
+   pay it back, is the price of a bridge rather than a fine.) ?crossing=0 puts back the dive and restart; ?cross=, ?landfall=. */
+const VOID_BURN_COST_SEC = CLOCK_RESETS ? Math.round(econDial('cross', 5, 0, 30)) : TRIM_COST_SEC;
+const CROSS_SEC = VOID_BURN_COST_SEC;
+const LANDFALL_SEC = CLOCK_RESETS ? Math.round(econDial('landfall', 10, 0, 30)) : 0;
 /* [110926c] OFF — a single no longer buys ground with seconds; the move is
    refused instead. See the long note at the burn site in move(). One line back
    to the old rule if the exports say so. */
-const SINGLE_BUYS_GROUND = false;
+const SINGLE_BUYS_GROUND = CLOCK_RESETS && econDial('crossing', 1, 0, 1) >= 1;   // [251026b] on: a single pays to cross
 
 /* ── [HOLES] WHY THERE IS NO INTERVAL GREEN INCOME HERE ─────────────────────
    The prototype grew one: greens every N rows of open ground, because a soak
@@ -29211,6 +29501,14 @@ function move(dir) {
                 handleDeath('dissolved');
                 return;
             }
+            if (vIdx.length && CLOCK_ONLY && !game.testDrive && momentumRemaining() <= CROSS_SEC * vIdx.length) {   // [251026b] not enough on the clock: the hole refuses you
+                const vc = probeCells[vIdx[0]];
+                triggerShake(3, 150);
+                if (sfx.bonk) sfx.bonk(); else if (sfx.hit) sfx.hit();
+                addFloat(vc.x * CELL + CELL / 2, (vc.y - game.cameraY) * CELL - 6, 'NOT ENOUGH TIME', '#f87171', false, { life: 1100, hold: 400 });
+                rec('refuse', { ch: 'hole', s: 'single', why: 'time', r: advancedRound });
+                return;
+            }
             if (vIdx.length) {
                 for (const i of vIdx) {
                     const vc = probeCells[i];
@@ -29221,12 +29519,15 @@ function move(dir) {
                    TRADE, not a penalty. bumpCost is told so: no red hit, no heavy
                    loss sound; the exchange chime and one line saying what was
                    paid and what came back. */
-                bumpCost(VOID_BURN_COST_SEC,
+                const _xc = VOID_BURN_COST_SEC * vIdx.length;   // [251026b] a cell's price each
+                bumpCost(_xc,
                          probeCells[vIdx[0]].x * CELL + CELL/2,
                          (probeCells[vIdx[0]].y - game.cameraY) * CELL, 'trade', 'ground');
+                if (game._lv) { game._lv.crossN = (game._lv.crossN || 0) + vIdx.length; game._lv.crossSecs = (game._lv.crossSecs || 0) + _xc; }
                 addFloat(probeCells[vIdx[0]].x * CELL + CELL/2, (probeCells[vIdx[0]].y - game.cameraY) * CELL - 14,
-                         `−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
-                tapeNote(`−${VOID_BURN_COST_SEC}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
+                         `−${_xc}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
+                tapeNote(`−${_xc}s  →  +${vIdx.length} GROUND`, '#7dd3fc');
+                showTip('cross');
                 rec('fill', { n: vIdx.length, s: 'single', paid: 'sec' });
                 HAPTICS.fire(HAPTIC.red, 90);
             }
@@ -29510,6 +29811,7 @@ function applyDrag(dt) {
                 return;
             }
             const redIdx = [];
+            if (singlePaysToCross(stepCells) === 'refused') { stopDrag(); return; }   // [251026b] held into a hole: pay to cross, or stop
             stepCells.forEach((c, i) => { if (world[`${c.x},${c.y}`] === 'hazard') redIdx.push(i); });
             if (redIdx.length > 0 && !tryMultiDevolve(stepCells, redIdx)) {
                 redBump(game.dragDir, stepCells, redIdx);
@@ -29614,6 +29916,7 @@ function islandIsMoated(keys) {
             if (x + dx < 0 || x + dx >= VIEW_W) continue;      // the frame is not a shore
             const w = world[nk];
             if (w === 'void' || w === 'wall' || w === 'hazard') continue;
+            if (SINGLE_BUYS_GROUND && persistentFills.has(nk)) continue;   // [251026b] ground laid into a hole is the crossing, not the mainland
             return false;                                       // standing ground: you walked
         }
     }
@@ -29635,6 +29938,16 @@ function landfallCheck(cells) {
         if (_landfallOn.has(p.key)) continue;                   // already standing here
         if (!islandIsMoated(p.keys)) continue;                  // ground has grown to it
         _landfallChain++;
+        let _landPaid = 0;   // [251026b] the first landing on each island pays
+        if (LANDFALL_SEC > 0 && CLOCK_ONLY && !game.testDrive && !game._replay) {
+            game._landfallPaid = game._landfallPaid || new Set();
+            if (!game._landfallPaid.has(p.key)) {
+                game._landfallPaid.add(p.key);
+                const sec = clockCredit(LANDFALL_SEC);
+                if (sec > 0) { momentumAddSeconds(sec); game.roundTimeSecs = (game.roundTimeSecs || 0) + sec; _landPaid = sec; showTip('landfall');   // [251026h]
+                               rec('time', { sec, src: 'landfall', r: advancedRound, m: Math.round(momentumRemaining()) }); }
+            }
+        }
         const prize = p.keys.filter(k => world[k] === 't30' || world[k] === 't10' || world[k] === 'pickup').length;
         if (sfx.greenLand) sfx.greenLand();
         rec('island', { k: 'landfall', cells: p.keys.length, prize, hop: _landfallChain, r: advancedRound });
@@ -29644,7 +29957,7 @@ function landfallCheck(cells) {
         const fy = Math.min(...cells.map(c => c.y));
         setTimeout(() => {
             if (!game.running || game.paused) return;
-            addFloat(fx * CELL + CELL / 2, (fy - game.cameraY) * CELL, word, '#86efac', true,
+            addFloat(fx * CELL + CELL / 2, (fy - game.cameraY) * CELL, _landPaid ? `${word}  +${_landPaid}s` : word, '#86efac', true,   // [251026b]
                      { life: 1800, hold: 900, chatter: true });
         }, LANDFALL_BEAT_MS);
     }
@@ -34833,15 +35146,19 @@ const TIPS = {
     rowline:   ROW_RUNS ? `A row pays ${ROW_RUN_SEC} seconds. Keep the same shape and each row scores more — 1 × ROW, 2 × ROWS, 3 × ROWS… A new shape, a penalty or a filled slot starts again at 1.` : 'Land on every empty square in a row to clear it. Pays well, and fills your reserve.',   // [181026j]
     trim:      'Too big for the slot? Bridge a hole \u2014 a cube for a cell.',   // [181026l]   // [100926h] · [290926q] · [171026d] covering is not a claim
     // [110926c] the single's refusal at a hole — see SINGLE_BUYS_GROUND
-    onecube:   HOLE_LAST_PAYS ? `Your last cube can go into a hole: it becomes ground, pays ${GROUND_PAY_SEC} seconds, and you start again on it.` : MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
+    onecube:   SINGLE_BUYS_GROUND ? `A single crosses a hole: ${CROSS_SEC} seconds a cell, and the cell becomes ground. Without the time it won\u2019t go.` : HOLE_LAST_PAYS ? `Your last cube can go into a hole: it becomes ground, pays ${GROUND_PAY_SEC} seconds, and you start again on it.` : MISTAKE_RULE ? `One cube into a hole costs ${FALL_COST_SEC} seconds (free on level 1): it becomes ground and you start again on it. Evolve first, or go round.` : `One cube into a hole costs ${FALL_COST_SEC} seconds: it becomes ground and you start again on it. Evolve first, or go round.`,   // [101026m]   // [081026d] the price, read   // [071026m]   // [290926v]   // [250926m][250926s]
     ratchet:   MISTAKE_RULE ? `A mistake costs ${MISTAKE_SEC} seconds${MISTAKE_LAST_CUBE_SEC !== MISTAKE_SEC ? ` (your last cube ${MISTAKE_LAST_CUBE_SEC})` : ''}, and ${MISTAKE_STEP_SEC} more for each one before it in the level \u2014 never more than ${MISTAKE_CAP_SEC}.` : 'Mistakes add up: each one in a level costs half as much again as the first, and every level costs more.',   // [081026P] · [101026m]
+    cross:     `Crossed: ${CROSS_SEC} seconds a hole cell, and it\u2019s ground now. Cross to an island ringed by holes and the first landing pays ${LANDFALL_SEC} seconds.`,   // [251026h] showTip('cross') at every crossing (shown once)
+    landfall:  `Landfall: the first landing on an island ringed by holes pays ${LANDFALL_SEC} seconds. Slots out there are worth the crossing.`,   // [251026h]
+    combo:     COMBO_SLOT_PTS ? `A combo! A shifter carrying you onto a slot pays ${COMBO_SLOT_PTS.toLocaleString()} \u00d7 the level \u2014 two shifters double it, three \u00d74. Other combos pay ${COMBO_OTHER_PTS.toLocaleString()} \u00d7 the level.` : 'A combo! Two good things in one move.',   // [251026h]
     redtoll:   `A red can\u2019t take your last cube, so it takes ${RED_TOLL_SEC} seconds instead.`,   // [081026d]   // [061026h]
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k]
     misfit:    'The wrong shape on a slot: the cubes on it are destroyed and the rest of you carries on. A single is lost.' + (CLOCK_RESETS ? ` Each cube costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k] · [290926q] · [171026d]
     diag:      'Swipe diagonally \u2014 corners count.',
-    clockreset: CLOCK_CARRY ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. The time you have left carries into the next level — up to ${clockFmt(CARRY_MAX_SEC)}, ${CARRY_STEP_SEC} seconds less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}. Any more becomes points, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`
+    clockreset: KEEP_TIME ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. Whatever is on the clock when the set is complete carries into the next level \u2014 all of it. The clock holds ${clockFmt(CLOCK_CEILING)}, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`   // [251026k]
+              : CLOCK_CARRY ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. The time you have left carries into the next level — up to ${clockFmt(CARRY_MAX_SEC)}, ${CARRY_STEP_SEC} seconds less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}. Any more becomes points, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`
                        : `Every level starts the clock on ${clockFmt(LEVEL_START_SEC)}. Time left at the end of a level becomes points.`,   // [251026a]   // [181026a]
-    overtime:  `The clock holds ${clockFmt(CLOCK_CEILING)}. Time over that becomes points.`,   // [181026a]
+    overtime:  `The clock holds ${clockFmt(CLOCK_CEILING)}. Time over that becomes points \u2014 ${TIME_PTS_PER_SEC} \u00d7 the level a second.`,   // [251026k] what it is worth   // [181026a]
     // [240826a] WAS '+20 seconds'. No live hourglass has ever paid 20. The tiers
     // are t10 and t30 (TIME_TIERS), and only a legacy 'warp' cell from an old
     // save pays 15 — so the one number this tip existed to give was the one
@@ -39323,7 +39640,8 @@ try {
     // [210826u] `revolves` defaults to 0 for saves written before it existed,
     // so an existing player's first run sets the record rather than the load
     // throwing on a missing key.
-    bests = { score: saved.score || 0, time: saved.time || 0, transforms: saved.transforms || 0, streaks: saved.streaks || 0, coverage: saved.coverage || 0, combo: saved.combo || 1.0, revolves: saved.revolves || 0, revolvesTotal: saved.revolvesTotal || 0 };
+    bests = { score: saved.score || 0, time: saved.time || 0, transforms: saved.transforms || 0, streaks: saved.streaks || 0, coverage: saved.coverage || 0, combo: saved.combo || 1.0, revolves: saved.revolves || 0, revolvesTotal: saved.revolvesTotal || 0,
+              level: saved.level || 0, rows: saved.rows || 0, rowRun: saved.rowRun || 0, combos: saved.combos || 0, play: saved.play || 0, runsPlayed: saved.runsPlayed || 0 };   // [251026d]
 } catch(e) {}
 
 // ── [210826y] BANKING A RUNNING TOTAL, ONCE ─────────────────────────────────
@@ -39374,7 +39692,7 @@ try {
     if (Array.isArray(savedRuns)) {
         runs = savedRuns
             .filter(r => r && typeof r.s === 'number' && isFinite(r.s))
-            .map(r => ({ s: r.s, l: r.l || 1, t: r.t || 0, d: r.d || 0 }));
+            .map(r => ({ ...r, s: r.s, l: r.l || 1, t: r.t || 0, d: r.d || 0 }));   // [251026d] the run's stats (r c b p n) kept
     }
 } catch(e) {}
 // [220826a] AND ANY ALREADY WRITTEN TO A PLAYER'S DEVICE GO WITH THEM. Deleting
@@ -39422,15 +39740,48 @@ if (CLOCK_RESETS) try {
 function saveRuns() {
     try { localStorage.setItem('rotor_runs', JSON.stringify(runs)); } catch(e) {}
 }
+/* ══ [251026d] TOP SCORES CARRY THE RUN'S STATS, AND KEEP THEM — Jake, 25 Oct 09:04: "Populate the top scores with stats and keep the
+   record between sessions." Each run on the table now carries what it did: rows (r), combos (c), its best row run (b), the time
+   it was played for in seconds (p) and the ROTOЯ name it was played under (n). PERSONAL BESTS are the game's own numbers now —
+   highest level, most rows, best row run, most combos, longest run, coverage — and RUNS PLAYED counts every run.
+   The record is kept on the device as it always was (localStorage), and two holes in it are closed:
+     · a run the page lost (closed, reloaded, dropped by the phone) used to vanish from TOP SCORES; the 5-second note kept while a
+       run is on (rotor_alive) now carries the score and the stats, and the next load files that run as it stood;
+     · the browser is asked to keep the record (navigator.storage.persist), once, when the first run of a visit is filed.
+   The record is per address: a build opened from another web address starts its own table. */
+function runStats() {
+    return { r: game.runRows || 0, c: game.runCombos || 0, b: game.runBestRowRun || 0, p: Math.round((game._playMs || 0) / 1000),
+             n: (typeof rotorNameGet === 'function' && (rotorNameGet() || {}).n) || '' };
+}
+function foldRunBests(st, level) {
+    bests.level  = Math.max(bests.level || 0, level || 0);
+    bests.rows   = Math.max(bests.rows || 0, st.r || 0);
+    bests.rowRun = Math.max(bests.rowRun || 0, st.b || 0);
+    bests.combos = Math.max(bests.combos || 0, st.c || 0);
+    bests.play   = Math.max(bests.play || 0, st.p || 0);
+}
+let _askedToKeep = false;
+function askToKeep() {
+    if (_askedToKeep) return; _askedToKeep = true;
+    try { if (navigator.storage && navigator.storage.persisted && navigator.storage.persist)
+        navigator.storage.persisted().then(k => { if (!k) navigator.storage.persist().catch(() => {}); }).catch(() => {}); } catch (e) {}
+}
+// the highest level is known from the table for a player whose bests predate it
+try { for (const r of runs) bests.level = Math.max(bests.level || 0, r.l || 0); bests.runsPlayed = Math.max(bests.runsPlayed || 0, runs.length); } catch (e) {}
 
 // Returns the 1-based position this run took on the table, or 0 if it missed.
 // The caller wants that: "you placed 3rd" is a different message from "you beat
 // your best", and the game already has its own NEW HIGH SCORE moment for the
 // latter.
-function recordRun(score, level) {
+function recordRun(score, level, st) {
     if (!isFinite(score) || score <= 0) return 0;   // a no-score run is not a run
     runs = runs.filter(r => !r.d);   // [180826b] first real run sweeps the dummies out
-    const entry = { s: Math.round(score), l: level || 1, t: Date.now() };
+    st = st || runStats();   // [251026d]
+    const entry = { s: Math.round(score), l: level || 1, t: st.t || Date.now(), r: st.r || 0, c: st.c || 0, b: st.b || 0, p: st.p || 0, n: st.n || '' };
+    if (st.q) entry.q = 1;   // filed from the note a lost page left
+    bests.runsPlayed = (bests.runsPlayed || 0) + 1;
+    foldRunBests(st, level);
+    askToKeep();
     runs.push(entry);
     // Score descending; on a tie the EARLIER run keeps the higher slot, so a
     // repeat of your own number never demotes the one you got there with first.
@@ -39440,6 +39791,282 @@ function recordRun(score, level) {
     const pos = runs.indexOf(entry);
     return pos === -1 ? 0 : pos + 1;
 }
+
+/* ══ [251026j] NAME DAY — YOUR ROTOЯ NAME, GIVEN AND RECORDED — Jake, 25 Oct 09:58: "build a name / nickname generator ... think of
+   it as a name day or christening or becoming legally recognised only here it is for the world of rotor. a certificate could be
+   generated, note names should only be allowed to be changed peridically ... If there are repeats, add a number, and ensure that all
+   names are family safe ... a structured 'Adjective + Noun' or multi-part template generator, paired with a robust profanity filter
+   ... 2–12 characters, require starting with a letter, and forbid consecutive spaces ... pass the fully compiled string through a
+   local blocklist ... Remove any name tags that can relate to size or any sensitive colours or temperatures ... titles eg. Military,
+   educational, academic, but need to be 'rotor' themed ... surnames and first names so long as they cannot be turned in to rude
+   names". Replaces [251026e]'s trucker handles (its lists held size, colour and temperature words).
+
+   THE RULE:
+   1. THE WORDS (RN_WORDS) — five lists, every word rotor-themed and with one meaning only; no size, colour (metals included) or
+      temperature words; no word that rhymes with or shortens to a rude one: how it moves (Swift, Rotary, Kinetic ...) · the machine
+      (Pivot, Axle, Sprocket, Gyro ...) · ranks and degrees, each with its long form for the certificate (Prof — Professor of
+      Mechanics, Capt — Captain of the Cog Corps ...) · first names of people who made mechanics and science (Ada, Isaac, Nikola,
+      Marie ...) · their surnames (Newton, Tesla, Curie, Volta ...).
+   2. THE TEMPLATES — Adjective + Noun (Swift Axle) · Title + Noun (Prof Pivot) · First name + Noun (Ada Sprocket) · Noun +
+      Surname (Gyro Tesla) · Adjective + Surname (Brisk Volta) · Title + Surname (Capt Euler).
+   3. THE CHECKS — every compiled name, before it is shown: 2–12 characters, starts with a letter, letters, digits and single spaces
+      only. And every possible name (6,372 of them; 3,448 fit) was run, as a whole string, through two published profanity lists
+      (LDNOOBW's, via naughty-words 1.2.0, and obscenity 0.4.3's English set with its look-alike rules): lower-cased, digits read as
+      the letters they mimic, spaces removed, doubled letters squeezed, any listed word anywhere in it — so a rude word made across the
+      join of two clean words is caught. The names that failed are kept as numbers (RN_EXCLUDED), never as words, so the file prints
+      no rude word; the game deals none of them. One word failed on its own and is out of the lists. Number tags are checked the same
+      way: 13, 14, 17, 18, 64, 69 and 88 are never dealt (RN_NUM_BLOCKED). rotorNameModerateHook is where an online moderation
+      service can be asked too, once the shared scoreboard exists.
+   4. ONE OF EACH — a name already taken gets the smallest free number that keeps it to 12 characters (GYRO TESLA → GYRO TESLA2).
+      Taken: held now or before on this device (rotor_name_register), or claimed on the shared register when there is one
+      (rotorNameTakenHook — there is no server today, so on one device a clash can only be with a name this device has held).
+   THE CEREMONY — pick from five (MORE NAMES for five more), THAT'S ME, and the certificate of naming is issued: the name, its honour
+   (the title's long form, or an honour of the Rotary Society), the day it was given, its register number, and the day it can next
+   be changed. SAVE CERTIFICATE draws it as a 1080 × 1350 picture (shared on a phone, downloaded elsewhere). A name is held for
+   ROTOR_NAME_HOLD_DAYS (7): until then the screen shows the certificate, not the picks. A name given under [251026e]'s lists that
+   fails these rules is lifted — that player picks again, free. Reached from TOP SCORES and Settings, as before. */
+const ROTOR_NAME_KEY = 'rotor_name', ROTOR_NAME_REG_KEY = 'rotor_name_register';
+const ROTOR_NAME_HOLD_DAYS = 7, ROTOR_NAME_WEEK_MS = ROTOR_NAME_HOLD_DAYS * 24 * 3600 * 1000;
+const ROTOR_NAME_MIN = 2, ROTOR_NAME_MAX = 12;
+const RN_WORDS = {"adj":["Swift","Steady","Nimble","Rotary","Radial","Axial","Kinetic","Orbital","Balanced","Geared","Turning","Flipping","Pivoting","Tumbling","Whirling","Agile","Precise","Clever","Trusty","Dynamic","Spry","Brisk","Deft","Keen","Even","Level","Exact","Tidy","Lively","Quiet","Wise","Gentle","Patient","Fearless"],"noun":["Pivot","Axle","Cog","Sprocket","Gear","Spindle","Flywheel","Bearing","Rotor","Lever","Pulley","Gyro","Spoke","Hub","Torque","Vector","Orbit","Vertex","Tumbler","Flipper","Shifter","Knuckle","Ratchet","Dynamo","Winch","Gimbal","Turbine","Rivet","Clutch","Gearbox","Axis","Radius","Arc","Cube","Facet","Prism","Wheel","Spinner","Turner","Roller","Swivel","Caster","Cogwheel","Pendulum","Valve","Rotator","Momentum","Helix","Spiral","Bevel","Coil","Quadrant"],"title":[["Prof","Professor of Mechanics"],["Dr","Doctor of Dynamics"],["Dean","Dean of Kinetics"],["Capt","Captain of the Cog Corps"],["Major","Major of the Rotary Corps"],["Cmdr","Commander of Turns"],["Cadet","Cadet of the Flip Academy"],["Chief","Chief Engineer of the Grid"],["Ensign","Ensign of the Turning Fleet"],["Pilot","Pilot of the Pivot"],["Tutor","Tutor in Rotation"],["Fellow","Fellow of the Rotary Society"]],"first":["Ada","Alan","Isaac","Nikola","Marie","Grace","James","Otto","Hedy","Emmy","Lise","Mae","Ernst","Edith","Leon","Niels","Enrico","Mary","Carl","Emilie"],"surname":["Newton","Watt","Faraday","Curie","Turing","Hopper","Babbage","Volta","Ampere","Pascal","Joule","Hertz","Kepler","Euler","Tesla","Noether","Galileo","Huygens","Leibniz","Coriolis","Ohm","Mach","Boyle","Carnot","Lovelace","Meitner","Bohr","Fermi","Planck","Doppler"]};
+const RN_EXCLUDED = [[],[411,1011],[],[1,1427,1601,2201,2701,3401],[1,2201,2601,2712,2901,3201],[301,601,901]];   // [template][first word × 100 + second word], from the offline check
+const RN_NUM_BLOCKED = [13,14,17,18,64,69,88];
+const RN_HONOUR = ['Fellow of the Rotary Society', 'Graduate of the Flip Academy', 'Member of the Order of the Cog',
+    'Engineer, First Class', 'Officer of the Turning Corps', 'Scholar of Mechanics', 'Master of Dynamics', 'Bachelor of Kinetics',
+    'Licentiate in Gearing', 'Keeper of the Pivot', 'Navigator of the Grid', 'Companion of the Axle'];
+const RN_TPL_WEIGHT = [30, 20, 15, 15, 10, 10];   // Adj+Noun · Title+Noun · First+Noun · Noun+Surname · Adj+Surname · Title+Surname
+function rnLists(t) {
+    const W = RN_WORDS, ti = W.title.map(x => x[0]);
+    return [[W.adj, W.noun], [ti, W.noun], [W.first, W.noun], [W.noun, W.surname], [W.adj, W.surname], [ti, W.surname]][t];
+}
+function rnFormatOk(s) {
+    return typeof s === 'string' && s.length >= ROTOR_NAME_MIN && s.length <= ROTOR_NAME_MAX && /^[A-Za-z]/.test(s)
+        && /^[A-Za-z0-9 ]+$/.test(s) && !/ {2}/.test(s) && !/ $/.test(s);
+}
+function rnBase(t, i, j) { const L = rnLists(t); return (L && L[0][i] && L[1][j]) ? L[0][i] + ' ' + L[1][j] : ''; }
+function rnCleared(t, i, j) {   // in the lists, fits, and not one of the names the offline check failed
+    const b = rnBase(t, i, j);
+    return !!b && rnFormatOk(b) && !(RN_EXCLUDED[t] || []).includes(i * 100 + j);
+}
+function rnHash(s) { let h = 2166136261; for (let c = 0; c < s.length; c++) { h ^= s.charCodeAt(c); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rnHonour(t, i, j) {
+    if (t === 1 || t === 5) return (RN_WORDS.title[i] || [])[1] || RN_HONOUR[0];
+    return RN_HONOUR[rnHash(rnBase(t, i, j)) % RN_HONOUR.length];
+}
+function rnRegister() { try { const r = JSON.parse(localStorage.getItem(ROTOR_NAME_REG_KEY) || '[]'); return Array.isArray(r) ? r : []; } catch (e) { return []; } }
+function rnRegisterAdd(n, at) {
+    const r = rnRegister().filter(x => x && x.n !== n); r.push({ n, at });
+    try { localStorage.setItem(ROTOR_NAME_REG_KEY, JSON.stringify(r.slice(-200))); } catch (e) {}
+}
+// The shared register and moderation service, when the online scoreboard exists. No server today: nothing is taken elsewhere.
+let rotorNameTakenHook = null;      // (name) => true if someone else holds it
+let rotorNameModerateHook = null;   // (name) => false to refuse it
+function rnTaken(n) {
+    const low = n.toLowerCase();
+    if (rnRegister().some(x => x && typeof x.n === 'string' && x.n.toLowerCase() === low)) return true;
+    try { if (rotorNameTakenHook && rotorNameTakenHook(n)) return true; } catch (e) {}
+    return false;
+}
+function rnNumbered(base) {   // the base if free, else the smallest free number that keeps it to 12 and is not a blocked number
+    if (!rnTaken(base)) return { n: base, k: 0 };
+    for (let k = 2; k <= 99; k++) {
+        if (RN_NUM_BLOCKED.includes(k)) continue;
+        const n = base + k;
+        if (n.length <= ROTOR_NAME_MAX && rnFormatOk(n) && !rnTaken(n)) return { n, k };
+    }
+    return null;
+}
+function rnPickTemplate(rnd) {
+    let x = rnd() * RN_TPL_WEIGHT.reduce((a, b) => a + b, 0);
+    for (let t = 0; t < RN_TPL_WEIGHT.length; t++) { x -= RN_TPL_WEIGHT[t]; if (x < 0) return t; }
+    return 0;
+}
+function rotorNameMake(rnd) {
+    rnd = rnd || Math.random;
+    for (let tries = 0; tries < 200; tries++) {
+        const t = rnPickTemplate(rnd), L = rnLists(t);
+        const i = Math.floor(rnd() * L[0].length) % L[0].length, j = Math.floor(rnd() * L[1].length) % L[1].length;
+        if (!rnCleared(t, i, j)) continue;
+        const base = rnBase(t, i, j), num = rnNumbered(base);
+        if (!num) continue;
+        try { if (rotorNameModerateHook && rotorNameModerateHook(num.n) === false) continue; } catch (e) {}
+        return { n: num.n, base, t, i, j, k: num.k };
+    }
+    return null;
+}
+function rotorNameCheck(v) {   // a stored name is good only if it is a cleared name from these lists, as given
+    if (!v || typeof v.n !== 'string' || typeof v.t !== 'number') return false;
+    if (!rnCleared(v.t, v.i, v.j)) return false;
+    const base = rnBase(v.t, v.i, v.j);
+    if (v.k) { if (RN_NUM_BLOCKED.includes(v.k) || v.n !== base + v.k) return false; } else if (v.n !== base) return false;
+    return rnFormatOk(v.n);
+}
+function rnStored() { try { return JSON.parse(localStorage.getItem(ROTOR_NAME_KEY) || 'null'); } catch (e) { return null; } }
+function rotorNameGet() { const v = rnStored(); return rotorNameCheck(v) ? v : null; }
+function rotorNameLifted() { const v = rnStored(); return !!(v && v.n && !rotorNameCheck(v)); }   // an old [251026e] name
+function rotorNameNextChange() { const v = rotorNameGet(); return v ? (v.at || 0) + ROTOR_NAME_WEEK_MS : 0; }
+function rotorNameCanChange(now) { return (now || Date.now()) >= rotorNameNextChange(); }
+function rotorNameSet(p, now) {
+    now = now || Date.now();
+    if (!p || !rotorNameCanChange(now) || !rotorNameCheck(p)) return false;
+    const cur = rotorNameGet();
+    const v = { n: p.n, t: p.t, i: p.i, j: p.j, k: p.k || 0, at: now, h: rnHonour(p.t, p.i, p.j),
+                no: 'RЯ-' + (rnHash(p.n + '|' + now).toString(16).toUpperCase().padStart(8, '0').slice(0, 6)),
+                ...(cur ? { was: cur.n } : {}) };
+    try { localStorage.setItem(ROTOR_NAME_KEY, JSON.stringify(v)); } catch (e) { return false; }
+    rnRegisterAdd(v.n, now);
+    try { if (typeof rec === 'function') rec('name', { n: v.n, t: v.t, k: v.k }); } catch (e) {}
+    return true;
+}
+function rotorNameSuggest(k, rnd) {
+    const cur = (rotorNameGet() || {}).n, out = [], second = p => p.base.split(' ').pop(), first = p => p.base.split(' ')[0];
+    for (let tries = 0; out.length < (k || 5) && tries < 600; tries++) {
+        const p = rotorNameMake(rnd);
+        if (!p || p.n === cur || out.some(o => o.n === p.n || second(o) === second(p) || first(o) === first(p))) continue;
+        out.push(p);   // five that start and end differently
+    }
+    return out;
+}
+
+let _namePicks = [], _namePick = null;
+function nameFmtDay(t, long) {
+    try { return new Date(t).toLocaleDateString('en-GB', long ? { day: 'numeric', month: 'long', year: 'numeric' } : { weekday: 'short', day: 'numeric', month: 'short' }); } catch (e) { return ''; }
+}
+function openNameScreen() {
+    const s = document.getElementById('nameScreen'); if (!s) return;
+    s.classList.remove('hidden'); s.scrollTop = 0;
+    if (rotorNameGet() && !rotorNameCanChange()) { s.classList.add('hidden'); openCertScreen(false); return; }
+    syncNameScreen(true);
+}
+function closeNameScreen() {
+    const s = document.getElementById('nameScreen'); if (s) s.classList.add('hidden');
+    _namePick = null; syncNameUI();
+}
+function syncNameScreen(fresh) {
+    const cur = rotorNameGet();
+    const sub = document.getElementById('nameSub'), nowEl = document.getElementById('nameNow');
+    if (nowEl) { nowEl.textContent = cur ? cur.n : ''; nowEl.classList.toggle('hidden', !cur); }
+    if (sub) sub.textContent = rotorNameLifted()
+        ? 'The naming rules have changed, so your old name is lifted. Pick a new one — free. You keep it for a week.'
+        : cur ? 'Your week is up. Pick a new name, or keep yours: it is held for a week from the day it is given.'
+              : 'Every player in the world of ROTOЯ is given a name. Pick yours. It goes on your certificate and your scores, and you keep it for a week.';
+    if (fresh) nameShowPicks();
+}
+function nameShowPicks() {
+    _namePick = null;
+    _namePicks = rotorNameSuggest(5);
+    const el = document.getElementById('namePicks'); if (!el) return;
+    el.innerHTML = _namePicks.map((p, ix) => `<button type="button" class="name-pick" data-ix="${ix}" style="animation-delay:${ix * 70}ms" onclick="namePickTap(this)">`
+        + `<span class="name-pick-n">${p.n}</span><span class="name-pick-h">${rnHonour(p.t, p.i, p.j)}</span></button>`).join('');
+    const ok = document.getElementById('nameOk'); if (ok) ok.disabled = true;
+}
+function namePickTap(b) {
+    _namePick = _namePicks[+((b && b.dataset.ix) || -1)] || null;
+    document.querySelectorAll('#namePicks .name-pick').forEach(x => x.classList.toggle('on', x === b));
+    const ok = document.getElementById('nameOk'); if (ok) ok.disabled = !_namePick;
+}
+function nameConfirm() {
+    if (!rotorNameCanChange()) { closeNameScreen(); return; }
+    if (!_namePick) return;
+    if (rotorNameSet(_namePick)) {
+        const s = document.getElementById('nameScreen'); if (s) s.classList.add('hidden');
+        _namePick = null; syncNameUI();
+        openCertScreen(true);
+    }
+}
+
+/* The certificate of naming: on screen, and as a picture. */
+function certFields() {
+    const v = rotorNameGet(); if (!v) return null;
+    return { name: v.n, honour: v.h || rnHonour(v.t, v.i, v.j), given: nameFmtDay(v.at, true), no: v.no || 'RЯ-000000',
+             next: nameFmtDay((v.at || 0) + ROTOR_NAME_WEEK_MS, true), can: rotorNameCanChange() };
+}
+function openCertScreen(fresh) {
+    const s = document.getElementById('certScreen'), f = certFields(); if (!s || !f) return;
+    const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+    set('certName', f.name); set('certHonour', f.honour); set('certGiven', f.given); set('certNo', f.no);
+    set('certNext', f.can ? 'It can be changed now.' : `Held until ${f.next}. It can be changed once a week.`);
+    const ch = document.getElementById('certChange'); if (ch) ch.classList.toggle('hidden', !f.can);
+    s.classList.remove('hidden'); s.scrollTop = 0;
+    const card = document.getElementById('certCard');
+    if (card) { card.classList.remove('issue'); if (fresh) { void card.offsetWidth; card.classList.add('issue'); } }
+    if (fresh) { try { if (typeof sfx === 'object' && sfx && sfx.pieceIn) setTimeout(() => sfx.pieceIn(3), 650); } catch (e) {} }
+    const cog = document.getElementById('certCog');
+    if (cog && !cog.getAttribute('d')) {
+        let d = ''; const N = 16;
+        for (let k = 0; k < N * 4; k++) { const a = (k / (N * 4)) * Math.PI * 2, r = (k % 4 < 2) ? 49 : 42;
+            d += (k ? 'L' : 'M') + (50 + r * Math.cos(a)).toFixed(2) + ' ' + (50 + r * Math.sin(a)).toFixed(2); }
+        cog.setAttribute('d', d + 'Z');
+    }
+    const nm = document.getElementById('certName');   // one line, shrunk to the card
+    if (nm) { nm.style.fontSize = ''; let px = 30; while (nm.scrollWidth > nm.clientWidth + 1 && px > 16) { px -= 1; nm.style.fontSize = px + 'px'; } }
+}
+function closeCertScreen() { const s = document.getElementById('certScreen'); if (s) s.classList.add('hidden'); syncNameUI(); }
+function certChangeName() { closeCertScreen(); openNameScreen(); }
+function certDrawCog(g, cx, cy, r, teeth, col) {
+    g.save(); g.fillStyle = col; g.beginPath();
+    for (let k = 0; k < teeth * 2; k++) {
+        const a0 = (k / (teeth * 2)) * Math.PI * 2, a1 = ((k + 1) / (teeth * 2)) * Math.PI * 2, rr = k % 2 ? r * 0.86 : r;
+        g.arc(cx, cy, rr, a0, a1);
+    }
+    g.closePath(); g.fill(); g.restore();
+}
+function certCanvas() {
+    const f = certFields(); if (!f) return null;
+    const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d'), BLUE = '#0284c7', DEEP = '#0369a1', NIGHT = '#0f172a';
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = BLUE; g.lineWidth = 14; g.strokeRect(44, 44, W - 88, H - 88);
+    g.strokeStyle = DEEP; g.lineWidth = 3; g.strokeRect(74, 74, W - 148, H - 148);
+    const T = (txt, y, font, col, track) => {
+        g.font = font; g.fillStyle = col; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+        if ('letterSpacing' in g) g.letterSpacing = (track || 0) + 'px';
+        g.fillText(txt, W / 2, y);
+        if ('letterSpacing' in g) g.letterSpacing = '0px';
+    };
+    const fit = (txt, max, size, weight, fam) => { let s = size; g.font = `${weight} ${s}px ${fam}`; while (g.measureText(txt).width > max && s > 20) { s -= 2; g.font = `${weight} ${s}px ${fam}`; } return `${weight} ${s}px ${fam}`; };
+    T('ROTOЯ', 200, "800 88px 'Unbounded', sans-serif", BLUE, 6);
+    T('CERTIFICATE OF NAMING', 270, "700 30px 'IBM Plex Mono', monospace", DEEP, 8);
+    g.fillStyle = BLUE; g.fillRect(W / 2 - 120, 300, 240, 4);
+    T('This is to certify that, on', 390, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    T(f.given + ',', 440, "700 34px 'IBM Plex Mono', monospace", NIGHT);
+    T('the player of this device was named', 490, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    T(f.name.toUpperCase(), 620, fit(f.name.toUpperCase(), W - 220, 104, 800, "'Unbounded', sans-serif"), BLUE, 2);
+    T(f.honour, 700, fit(f.honour, W - 220, 38, 700, "'IBM Plex Mono', monospace"), DEEP);
+    T('and is recognised by that name', 790, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    T('throughout the world of ROTOЯ.', 840, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    certDrawCog(g, W / 2, 1010, 104, 16, BLUE);
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(W / 2, 1010, 70, 0, Math.PI * 2); g.fill();
+    T('RЯ', 1032, "800 60px 'Unbounded', sans-serif", BLUE);
+    T('REGISTER No. ' + f.no, 1170, "700 28px 'IBM Plex Mono', monospace", DEEP, 4);
+    T('Held until ' + f.next + '  ·  Flip. Turn. Fit.', 1220, "400 26px 'IBM Plex Mono', monospace", '#475569');
+    return c;
+}
+function certSave() {
+    const c = certCanvas(); if (!c) return;
+    const nm = 'ROTOR-name-' + (rotorNameGet().n || 'certificate').replace(/\s+/g, '-') + '.png';
+    c.toBlob(b => {
+        if (!b) return;
+        try {
+            const file = new File([b], nm, { type: 'image/png' });
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] }) && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+                navigator.share({ files: [file], title: 'ROTOЯ', text: `My ROTOЯ name is ${rotorNameGet().n}` }).catch(() => {});
+                return;
+            }
+        } catch (e) {}
+        const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = nm;
+        document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+        try { if (typeof rec === 'function') rec('namecert', {}); } catch (e) {}
+    }, 'image/png');
+}
+function syncNameUI() {
+    const cur = rotorNameGet();
+    const sc = document.getElementById('scoresName');
+    if (sc) sc.innerHTML = cur ? `<span class="scores-name-label">ROTOЯ NAME</span><span class="scores-name-value">${cur.n}</span><span class="scores-name-edit">›</span>`
+                               : `<span class="scores-name-value">${rotorNameLifted() ? 'NEW RULES — PICK A NAME' : 'GET YOUR ROTOЯ NAME'}</span><span class="scores-name-edit">›</span>`;
+    const st = document.getElementById('setNameBtn'); if (st) st.textContent = cur ? cur.n : 'Pick one';
+}
+try { syncNameUI(); } catch (e) {}
 
 // ============ [160826p] PLAY RECORDER ============
 // Instruments the game so balance formulas can be derived from RUNS THAT
@@ -39560,7 +40187,8 @@ const ALIVE_KEY = 'rotor_alive';
 function aliveBeat() {
     if (typeof game === 'undefined' || !game.running || game.testDrive || !recRunId) return;
     try { localStorage.setItem(ALIVE_KEY, JSON.stringify({ id: recRunId, lv: advancedRound, t: Date.now(), at: recRunStart ? Math.round(performance.now() - recRunStart) : 0,
-                                                       hid: document.hidden ? 1 : 0, clock: Math.round(momentumRemaining()) })); } catch (e) {}
+                                                       hid: document.hidden ? 1 : 0, clock: Math.round(momentumRemaining()),
+                                                       s: Math.round(game.score || 0), syn: syntheticRun ? 1 : 0, rv: game.revolves || 0, ...runStats() })); } catch (e) {}   // [251026d]
 }
 function aliveClear() { try { localStorage.removeItem(ALIVE_KEY); } catch (e) {} }
 (function lostRunCheck() {
@@ -39576,6 +40204,16 @@ function aliveClear() { try { localStorage.removeItem(ALIVE_KEY); } catch (e) {}
         (r.events = r.events || []).push({ t: 'lost', at: a.at || 0, lv: a.lv, clock: a.clock, hid: a.hid, nav, gap: Date.now() - (a.t || Date.now()) });
         localStorage.setItem(REC_RUNS_KEY, JSON.stringify(arch));
     } catch (e) {}
+    // [251026d] ... and it goes on TOP SCORES as it stood, once
+    try {
+        if (a.s > 0 && !a.syn && bests._bankedRun !== a.id) {
+            recordRun(a.s, a.lv || 1, { r: a.r || 0, c: a.c || 0, b: a.b || 0, p: a.p || 0, n: a.n || '', t: a.t || Date.now(), q: 1 });
+            bests.score = Math.max(bests.score || 0, a.s);
+            bests.revolves = Math.max(bests.revolves || 0, a.rv || 0);
+            bests.revolvesTotal = (bests.revolvesTotal || 0) + (a.rv || 0); bests._bankedRun = a.id;
+            saveBests();
+        }
+    } catch (e) {}
 })();
 setInterval(aliveBeat, 5000);
 // the page going out of sight saves the run as it stands (a checkpoint), so a page that is then reloaded or dropped loses nothing
@@ -39590,7 +40228,7 @@ function recStartRun() {
     recRunId = Date.now();
     recEvents = [];
     tipWant = {};   // [210826l] tip demand is per-run, like everything else here
-    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, ...(CLOCK_CARRY ? { carry: [CARRY_MAX_SEC, CARRY_STEP_SEC, CARRY_MIN_CAP_SEC, CARRY_FLOOR_SEC] } : {}), limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
+    rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: HOURGLASS_SEC, drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, ...(CLOCK_CARRY ? { carry: KEEP_TIME ? ['all', CARRY_FLOOR_SEC] : [CARRY_MAX_SEC, CARRY_STEP_SEC, CARRY_MIN_CAP_SEC, CARRY_FLOOR_SEC] } : {}), limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
 }
 function recExport() {
     try {
@@ -40553,7 +41191,15 @@ function scoresRunDate(t) {
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
+// [251026d] the stats line under a run: rows (and the best row run), combos, how long it was played
+function scoresPlayFmt(p) { p = Math.max(0, Math.round(p || 0)); return `${Math.floor(p / 60)}:${String(p % 60).padStart(2, '0')}`; }
+function scoresRunStats(r) {
+    if (!r || r.r == null) return '';   // a run filed before the stats were kept
+    const bits = [`ROWS ${r.r}${r.b > 1 ? ' \u00b7 BEST \u00d7' + r.b : ''}`, `COMBOS ${r.c || 0}`];
+    return `<span class="scores-run-stats">${bits.join(' \u00b7 ')}</span>` + (r.p ? `<span class="scores-run-stats">PLAYED ${scoresPlayFmt(r.p)}</span>` : '');   // its own line: it never splits
+}
 function renderScores() {
+    try { syncNameUI(); } catch (e) {}   // [251026e]
     const best = bests.score || 0;
     const bestRank = rankForScore(best);
 
@@ -40573,7 +41219,7 @@ function renderScores() {
                     <span class="scores-run-pos">${i + 1}</span>
                     <span class="rank-badge-sm">${rankBadgeSVG(rk.index, false)}</span>
                     <span><span class="scores-run-name">${rk.name}</span>
-                        <span class="scores-run-sub">LEVEL ${r.l}${r.t ? ' · ' + scoresRunDate(r.t) : ''}</span></span>
+                        <span class="scores-run-sub">LEVEL ${r.l}${r.t ? ' · ' + scoresRunDate(r.t) : ''}</span>${scoresRunStats(r)}</span>
                     <span class="scores-run-score">${r.s.toLocaleString()}</span>
                 </div>`;
             } else {
@@ -40632,7 +41278,16 @@ function renderScores() {
         // does the NEW BEST pill) and bests.transforms is still written on both
         // save paths, so an existing player's record survives and either cell
         // can come back as a one-line change.
-        const cells = [
+        /* [251026d] THE BESTS ARE TODAY'S GAME — Jake, 25 Oct: "Populate the top scores with stats". TIME (the old speed timer), STREAK
+           and CHARGE were the old game's counters and went; tracking for them is untouched. In their place the numbers the level
+           card counts: the highest level, the most rows, the best row run, the most combos and the longest run, beside coverage. */
+        const cells = CLOCK_RESETS ? [
+            ['HIGHEST LEVEL', bests.level ? String(bests.level) : '\u2014'],
+            ['MOST ROWS',     (bests.rows || 0).toLocaleString()],
+            ['BEST ROW RUN',  bests.rowRun > 1 ? '\u00d7' + bests.rowRun : '\u2014'],
+            ['MOST COMBOS',   (bests.combos || 0).toLocaleString()],
+            ['LONGEST RUN',   bests.play ? scoresPlayFmt(bests.play) : '\u2014'],
+            ['COVERAGE',      Math.round(bests.coverage || 0) + '%'] ] : [
             ['TIME',     mmss],
             ['STREAK',   (bests.streaks || 0).toLocaleString()],
             ['COVERAGE', Math.round(bests.coverage || 0) + '%'],
@@ -40689,7 +41344,8 @@ function renderScores() {
             const n = bests.revolvesTotal || 0;
             lifeEl.innerHTML =
                 `<span class="scores-life-label">TOTAL REVOLUTIONS</span>` +
-                `<span class="scores-life-value">${n.toLocaleString()}</span>`;
+                `<span class="scores-life-value">${n.toLocaleString()}</span>` +
+                (bests.runsPlayed ? `<span class="scores-life-sub">${bests.runsPlayed.toLocaleString()} RUN${bests.runsPlayed === 1 ? '' : 'S'} PLAYED</span>` : '');   // [251026d]
         }
     }
     renderScoreGuide();   // [181026e]
@@ -40703,7 +41359,7 @@ function scoreGuideRows() {
     const W = (t) => Math.round(10 * SHAPE_SIZE[t] * (CLEAR_WEIGHT[t] || 1));
     const points = [
         ['Completing a set', `${(fresh ? SET_DONE_PTS : 50).toLocaleString()} \u00d7 level`],
-        ...(fresh ? [[typeof CLOCK_CARRY !== 'undefined' && CLOCK_CARRY ? `Time left over the carry limit when the set is complete (${clockFmt(CARRY_MAX_SEC)} into level 2, ${CARRY_STEP_SEC} s less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}; all of it on the last level)` : 'Time left when the set is complete', `${T} \u00d7 level a second`],   // [251026a]
+        ...(fresh ? [[typeof KEEP_TIME !== 'undefined' && KEEP_TIME ? 'Time left when the last level is complete (every other level carries it all)' : typeof CLOCK_CARRY !== 'undefined' && CLOCK_CARRY ? `Time left over the carry limit when the set is complete (${clockFmt(CARRY_MAX_SEC)} into level 2, ${CARRY_STEP_SEC} s less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}; all of it on the last level)` : 'Time left when the set is complete', `${T} \u00d7 level a second`],   // [251026a]
                      [`Time over ${clockFmt(CLOCK_CEILING)} on the clock`, `${T} \u00d7 level a second`]] : []),
         ...(typeof ROW_RUNS !== 'undefined' && ROW_RUNS   // [181026j]
             ? [['A row: 1 × ROW, 2 × ROWS, 3 × ROWS… while you keep the same shape', `${ROW_RUN_PTS} × the count × level`],
@@ -40724,12 +41380,14 @@ function scoreGuideRows() {
     const step = MISTAKE_STEP_SEC, cap = MISTAKE_CAP_SEC;
     const penalties = [
         ...(fresh && CUBE_LOST_SEC ? [['A cube lost over the edge, off the bottom, or on a slot it doesn\u2019t fit', `\u2212${CUBE_LOST_SEC}s a cube`]] : []),
+        ...(typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? [['A single crossing a hole (the cell becomes ground)', `\u2212${CROSS_SEC}s a cell`]] : []),   // [251026h]
         ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
         ...(RED_TOLL_SEC === FALL_COST_SEC   // [181026f] one price: one line
             ? [['A mistake: a red with no cube to spare, or losing your last cube (free on level 1)', `\u2212${FALL_COST_SEC}s`]]
             : [['A red with no cube to spare', `\u2212${RED_TOLL_SEC}s`], ['Losing your last cube (free on level 1)', `\u2212${FALL_COST_SEC}s`]]),
         ['Each mistake already made in the level', `+${step}s, never over ${cap}s`] ];
-    const note = fresh ? `Points are never taken away. Penalties cost time, and every second lost is ${T} \u00d7 level points fewer when the set is complete.`
+    const note = (fresh && typeof KEEP_TIME !== 'undefined' && KEEP_TIME) ? `Points are never taken away. Penalties cost time \u2014 the time you carry into the next level.`   // [251026k]
+               : fresh ? `Points are never taken away. Penalties cost time, and every second lost is ${T} \u00d7 level points fewer when the set is complete.`
                        : 'Points are never taken away. Penalties cost time.';
     return { points, penalties, note };
 }
@@ -40935,7 +41593,7 @@ function startGame(testDrive = false, daily = false) {
     game._drained = 0;                               // [070926d] the ledger's drain, per run
     moveTape = []; highlights = []; joins = []; game._ratchet = null; game._replay = null; game._chainMark = null; game._keptFlash = null;  // [070926h] replay tape, join fx, ratchet state — per run
     game._queuedMove = null;                           // [100926e] no press carries across runs
-    game.runRows = 0; game.runBestChain = 0; game.runFalls = 0; game._lastLevelLine = '';   // [080926k] game-over ledger, per run
+    game.runRows = 0; game.runBestChain = 0; game.runFalls = 0; game._lastLevelLine = ''; _landfallBody = ''; _landfallOn = new Set(); _landfallChain = 0;   // [251026b] a new run lands afresh   // [080926k] game-over ledger, per run
     game._startBest = bests.score || 0;
     { const sEl = document.getElementById('scoreDisplay');
       if (sEl) { sEl.textContent = '0'; sEl.classList.remove('record', 'gain', 'gain-big'); } }
@@ -41437,6 +42095,7 @@ function endGameNow(reason = 'death') {
 
     // Update personal bests
     const newBests = {
+        ...bests,   // [251026d]
         score:      Math.max(bests.score, game.score),
         time:       Math.max(bests.time, time),
         transforms: Math.max(bests.transforms, game.transforms),
@@ -41446,7 +42105,7 @@ function endGameNow(reason = 'death') {
         revolves:   Math.max(bests.revolves || 0, game.revolves || 0),   // [210826u]
         revolvesTotal: bests.revolvesTotal || 0   // [210826y] summed by bankRevolves()
     };
-    bankRevolves();
+    // [251026d] bankRevolves() moved below: run here it banked into the object about to be replaced
     
     /* [180926c] setBestEl() DELETED. It was the last of the old number stats:
        defined here, never called, and writing into ids (finalScore, bestScore…)
@@ -41454,7 +42113,7 @@ function endGameNow(reason = 'death') {
        part worth keeping. */
     // (All number stats removed from the end screen — taunt only.)
     
-    if (!syntheticRun) { bests = newBests; saveBests(); }
+    if (!syntheticRun) { bests = newBests; bankRevolves(); saveBests(); }   // [251026d] banked into the record that is kept
     
     // End-screen taunt — clean win/lose copy
     const tauntEl = document.getElementById('tauntBox');
@@ -43266,7 +43925,7 @@ const TUT_COLS = 7, TUT_ROWS = 4, TUT_STICK_H = 1.6;   // [290926w] the strip un
 const TUT_FLIP = 320, TUT_GAP = 430, TUT_TAIL = 1500;
 const TUT_ACT_MS = { flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820, stomp: 620, settake: 1150,
                      cover: 1400, guide: 3000, tipon: 700, tip: 800, tipoff: 700,   // [290926r]
-                     claim: 900, rowclear: 900, red: 900, redtoll: 1000, hourglass: 700, spin: 950, wait: 400 };
+                     claim: 900, rowclear: 900, red: 900, redtoll: 1000, hourglass: 700, spin: 950, wait: 400, cross: 900, landfall: 900 };   // [251026h]
 const TUT = [
   { ch: 'FLIP', title: 'STEER', line: 'Eight directions — your shape flips over its edge, it never slides.', compass: true,
     init: { body: { cells: [[1, 2]], type: 'single', par: 0 } },
@@ -43285,10 +43944,21 @@ const TUT = [
     init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 }, tiles: { '3,2': 'green' }, clock: 30 },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'stomp', g: [3, 2], sec: 5, say: '+5s' },
             { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] } ] },
-  { ch: 'FLIP', title: 'HOLES COST A CUBE', line: HOLE_LAST_PAYS ? `The cube over a hole goes in and becomes ground — you devolve by one cube. Your last cube can too: it pays ${GROUND_PAY_SEC} seconds and you start again on it.` : 'The cube over a hole goes in and becomes ground — you devolve by one cube.',   // [171026g]
+  { ch: 'FLIP', title: 'HOLES COST A CUBE', line: SINGLE_BUYS_GROUND ? 'The cube over a hole goes in and becomes ground \u2014 you devolve by one cube. A single crosses instead (next).' : HOLE_LAST_PAYS ? `The cube over a hole goes in and becomes ground — you devolve by one cube. Your last cube can too: it pays ${GROUND_PAY_SEC} seconds and you start again on it.` : 'The cube over a hole goes in and becomes ground — you devolve by one cube.',   // [171026g]
     init: { body: { cells: [[1, 2], [2, 2]], type: 'pair', par: 0 }, tiles: { '4,1': 'void', '5,1': 'void', '4,2': 'void', '5,2': 'void' } },
     acts: [ { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'sink', cube: [4, 2], to: [[3, 2]], type: 'single', say: '−1 CUBE → +1 GROUND' },
             { k: 'flip', dir: 'S', to: [[3, 3]] } ] },
+  /* [251026h] CROSSING, TAUGHT — Jake, 25 Oct 09:04: "Update the how to play and tips toggles based on updated game settings and
+     capabilities." The single pays to cross: 5 s a cell, the cell becomes ground, and it carries on; the first landing on the far side,
+     an island ringed by holes, pays 10 s. */
+  ...(SINGLE_BUYS_GROUND ? [{ ch: 'FLIP', title: 'CROSSING', line: `A single crosses a hole: ${CROSS_SEC} seconds a cell, and the cell becomes ground. Without the time it won\u2019t go.` + (LANDFALL_SEC > 0 ? ` The first landing on an island ringed by holes pays ${LANDFALL_SEC} seconds.` : ''),
+    showClock: true,
+    init: { body: { cells: [[1, 2]], type: 'single', par: 0 }, tiles: { '3,0': 'void', '3,1': 'void', '3,2': 'void', '3,3': 'void' }, clock: 30 },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2]] },
+            { k: 'cross', cube: [3, 2], toll: CROSS_SEC, say: `\u2212${CROSS_SEC}s \u2192 +1 GROUND` },
+            { k: 'flip', dir: 'E', to: [[4, 2]] },
+            ...(LANDFALL_SEC > 0 ? [{ k: 'landfall', to: [[4, 2]], sec: LANDFALL_SEC, say: `LANDFALL +${LANDFALL_SEC}s` }] : []),
+            { k: 'flip', dir: 'E', to: [[5, 2]] } ] }] : []),
   { ch: 'FLIP', title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
@@ -43314,7 +43984,7 @@ const TUT = [
     acts: [ { k: 'guide', route: [[[3, 2], [4, 1]], [[5, 1], [6, 2]]], vias: { 0: { tile: [3, 2], land: [[2, 1], [3, 2]], label: '90°\u21BB' } }, d: 1000 + 1 * 450 + 350 + 1400 },
             { k: 'flip', dir: 'E', to: [[2, 1], [3, 2]] }, { k: 'turn', trig: [3, 2], ccw: false, to: [[3, 2], [4, 1]] },
             { k: 'flip', dir: 'E', to: [[5, 1], [6, 2]] }, { k: 'claim', set: 0, say: 'SET!' } ] },
-  { ch: 'FIT', title: 'COLLECT THE SET', line: 'The shapes at the top of the screen are the set. Land exactly on a slot of the same shape to fill it.' + (CLOCK_RESETS ? ` Each slot pays ${SLOT_PAY_SEC} seconds.` : ''),   // [181026l]   // [181026a]
+  { ch: 'FIT', title: 'COLLECT THE SET', line: 'The shapes at the top of the screen are the set. Land exactly on a slot of the same shape to fill it.' + (CLOCK_RESETS ? ` Each slot pays ${SLOT_PAY_SEC} seconds.` : '') + (COMBO_SLOT_PTS ? ` A shifter that carries you onto a slot is a combo: ${COMBO_SLOT_PTS.toLocaleString()} \u00d7 the level.` : ''),   // [251026h]   // [181026l]   // [181026a]
     init: { body: { cells: [[1, 3], [2, 3]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [4, 1]] }] },
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
@@ -43323,11 +43993,11 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
             { k: 'wait' }, { k: 'wait' } ] },
-  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
+  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (KEEP_TIME ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}, and whatever is left when the set is complete carries into the next level. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points.` : CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
     showClock: true,
     init: { body: { cells: [[3, 3], [4, 3]], type: 'pair', par: 0 }, clock: 22,
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },
-    acts: [ { k: 'flip', dir: 'N', to: [[3, 2], [4, 2]] }, { k: 'rowclear', row: 2, sec: 4, say: 'ROW +4s' },
+    acts: [ { k: 'flip', dir: 'N', to: [[3, 2], [4, 2]] }, { k: 'rowclear', row: 2, sec: ROW_RUN_SEC, say: `ROW +${ROW_RUN_SEC}s` },
             { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] }, { k: 'hourglass', h: [4, 1], sec: HOURGLASS_SEC, say: '+' + HOURGLASS_SEC + 's' } ] },
   { ch: 'FIT', title: 'TIPS', line: 'Tap the bulb, bottom right. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]
     tipsBtn: true,
@@ -43399,6 +44069,8 @@ function tutApply(S, a, tEnd) {
     else if (a.k === 'settake') { S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }   // [290926n] the set is untouched
     else if (a.k === 'red') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; S.clock += a.sec; }
     else if (a.k === 'redtoll') { delete S.tiles[a.cube.join(',')]; S.clock -= a.toll; }   // [061026h]
+    else if (a.k === 'cross') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.clock -= a.toll; }   // [251026h] the hole under the single becomes ground
+    else if (a.k === 'landfall') S.clock += a.sec;   // [251026h]
 }
 // ── the painter: draws a lesson frame at the game canvas's corner ────────────
 function tutPaintBody(cells, type, par, extra, slab) {
@@ -43908,6 +44580,14 @@ function tutPaintActive(S, t) {
         ctx.save(); ctx.globalAlpha = 1 - p; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3;
         for (const c of st.cells) roundedSq(c[0] * CELL + 4 - p * 8, c[1] * CELL + 4 - p * 8, CELL - 8 + p * 16, null, '#ffffff', 3);
         ctx.restore();
+        return;
+    }
+    if (a.k === 'cross') {   // [251026h] the hole fills under the single: ground rises into it
+        const [hx, hy] = a.cube;
+        ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.5);
+        roundedSq(hx * CELL + 4, hy * CELL + 4, CELL - 8, currentTheme === 'day' ? '#bae6fd' : '#1e3a5f', currentTheme === 'day' ? '#7dd3fc' : '#38bdf8', 1.5);
+        ctx.restore();
+        tutPaintBody(B.cells, B.type, B.par);
         return;
     }
     if (a.k === 'rowclear') {

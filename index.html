@@ -2592,6 +2592,9 @@ body.theme-day .scores-link:hover { background: #0284c7; color: #ffffff; border-
     margin-bottom: 6px;
 }
 body.theme-day .scores-title { color: var(--day-ink); }
+.scores-daily { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }   /* [051126ac] */
+.scores-daily[hidden], .scores-section-head[hidden] { display: none; }
+.scores-daily-mine, .scores-daily-world { font-size: 13px; letter-spacing: 0.04em; opacity: 0.9; }
 .scores-section-head {
     font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
     color: var(--text-steel, #8fa3b8);
@@ -4651,6 +4654,10 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
         <div class="scores-title"><span class="fitline">TOP SCORES</span></div>
         <!-- [251026e] your ROTOЯ name; tap to pick or change it -->
         <button type="button" class="scores-name" id="scoresName" onclick="openNameScreen()"></button>
+
+        <!-- [051126ac] today's puzzle and its world table (shown with DAILY_SHOWN or ?daily=1) -->
+        <div class="scores-section-head" id="scoresDailyHead" hidden>TODAY’S PUZZLE</div>
+        <div class="scores-daily" id="scoresDaily" hidden></div>
 
         <div class="scores-section-head">YOUR RUNS</div>
         <div class="scores-runs" id="scoresRuns"></div>
@@ -8351,6 +8358,10 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 051126-1619: ONE DAY. [051126ad] Jake, 16:16–16:18: the daily turns over at the same moment worldwide, 00:00 UTC (the day and its result line are the UTC date; TODAY'S PUZZLE says so); it stays five levels, the demo's shapes. ?dailylocal=1 the device's date.
+// 051126-1610: STOCK TAKEN. Jake's answers, 5 Nov, 15:48–16:01 ("make all necessary changes and with your suggestions unless stated"). [051126v] AN ISLAND IS NEVER MORE THAN 4 SQUARES FROM LAND OR ANOTHER ISLAND: every island (generated, level, gold) is measured when made and twice more as it comes into view — the fewest hole squares from the land below that joins the way up, or another island — and over 4 stepping ground is laid from the far end until it is 4; the moat stays (?islereach=). [051126w] the square kit on every level's first square (?squarekit=1 the debut only), found a cell more often (the slot is dealt above the view); the 45 s help and first-landing help for the J too when the J and the square are what is left. [051126x] THE CLEAR APRON: no hole or red within 2 squares of a square or J slot (cleared when dealt, none put there while it lives; not on an island) — 'lose the shape through own mistake' (?apron=0). [051126y] level 3's island pair in a one-deep moat (?isle3moat=2). [051126z] the level card plays Lantern, Tide and Carousel in turn. [051126aa] ×2 gold runs 40 s (was 20; ?goldwin=). [051126ab] A SURPRISE UNDER A FILLED HOLE: 1 in 6 a cell, one every 8 s at most — a gold glint turning in the new ground, a ring, stars and the sound, then +5s, +10s or 250 × level points (?surprise=0, ?surpriseodds=). [051126ac] THE DAILY, READY FOR WORLD RANKINGS: RANKINGS takes a platform's own board (Steam: one a day) or a server address (ROTOR_BOARD_URL, ?board=), one entry a player a day; TOP SCORES has TODAY'S PUZZLE (your result, PLAY TODAY'S PUZZLE, the world's top ten) behind ?daily=1 until the server is up.
+// 051126-1506: TWENTY LEFT. [051126u] Jake, 5 Nov, 15:06: "after paying 20 secs for the gold there should be 20 secs on the clock": the gold needs its price plus 20 s (0:40, was 1:00), so taking it leaves at least 0:20. ?goldleft=.
+// 051126-1500: LUCKY GROUND. Jake, 5 Nov, 14:57: "newly swept land created by the turn shifter should randomly create more shifters, same with newly filled voids and holes ... i dont want it to happen all the time there needs to be an element of jeopardy". [051126t] Every cell of new ground (a cube into a hole, a crossing, a perfect fit, a step's push, a turn's sweep) rolls: 1 in 2 for a cell that closes a gap, 1 in 4 otherwise; at most one a move or sweep (the die rests 2 s after a win), two waiting, each lapsing after 10 s; never on level 1, a slot, beside a shifter or a green, or under or beside the body (it surfaces once you are two cells clear). What comes up is not chosen for you: half the time a step aimed at the nearest hole, otherwise a step any way or a turn of any size. Measured before: the old one-in-three-cells rule laid 0–1 shifters for 77 cells in playdata 101 and 102. ?groundluck=0 the old rule; ?groundodds=, ?bridgeodds= (%). Recorder: groundroll, spawn src ground luck/aim, lapsed.
 // 051126-1436: GENTLE START. Playdata 101 and Jake, 5 Nov, 14:00–14:29 ("yes to all your suggestions"). [051126o] LEVEL 1 FREE, LEVEL 2 GENTLER: on level 1 every hole and slot is free (a single's crossing, with no NOT ENOUGH TIME; a cube into a hole; the wrong shape on a slot); on level 2 the wrong slot costs 5 s (?l1free=0, ?slotmiss2=). [051126q] A PERFECT FIT IS BUILDING: all of you into holes at once is 3 s a cube (a pair 6, a J 9, a square 12; it was 20/30/40 and a mistake), the holes become ground, and you start again as a single, told in blue; not a mistake; free on level 1 (?divebuild=0). [051126p] THE SQUARE KIT: the run's first square slot comes with a 90° turn and two greens below it; the helper acts on the first landing with no route for a square, and counts a grind after 45 s when only squares are left (?squarekit=0, =2 every level, ?squaregrind=). [051126r] the recorder marks an hourglass the rows paid for (bank: 1) and where the bank laid it. [051126s] THE GOLD STAYS ("the gold cube should stay on the grid and not disappear unless it runs off the bottom of the screen"): no fade; a coin left when the set is done carries into the next level as its first (?goldfade=1). A restart after building shakes gently.
 // 051126-1407: SOUND OFF. Jake, 5 Nov, 13:56–13:57. [051126m] A SOUND BUTTON ON EVERY SCREEN ("add a mute button on all screens"): every sound now goes through one bus and SOUND mutes it in one tap — the welcome page's row of round buttons (five now: MOVE GUIDE, TIPS, LIGHT, SOUND, SETTINGS; the names a little smaller on a narrow phone), the play row at the foot (six: home, day/night, Move Guide, Tips, sound, settings; a panel too narrow for six gets a row wider than it, centred), a round button top right on HOW TO PLAY, TOP SCORES, the name screens and the end of a run, and Sound, Audio's first row in Settings. Muted: the speaker crossed and dimmed; remembered on the device (rotor_muted); Music, Sound effects and the volumes kept as set; vibration not muted. [051126n] CHANGE NAME IN SETTINGS ("in the rotor name section of 'settings' there should be an option to change the name"): a Change name row under the name; CHANGE opens the names, and while a name is held for its week the row says from when and CHANGE shows the certificate. The week stays.
 // 051126-1247: SQUARE KNOB. Jake, 5 Nov, 12:40–12:43. [051126k] THE KNOB STAYS SQUARE TO THE PAD ("the joystick shouldnt rotate when moving to a diagonal position, in the real world this wouldnt happen"): pushed on a diagonal the knob turned to face the push and was squashed along it, so it went in as a slanted lozenge; now it is squashed along the pad's own sides only, a little each way on a diagonal, and keeps its square edges (KNOB_UPRIGHT; ?knobturn=1 puts back the turn). [051126l] the dots in FLIP · TURN · FIT slightly bigger: 0.875 of the full stop (was 0.75; ?tgdot= sets it).
@@ -9269,7 +9280,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '051126-1436 ROTOЯ · GENTLE START';
+const BUILD_VERSION = '051126-1619 ROTOЯ · ONE DAY';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -12548,7 +12559,7 @@ const GAME_TRACKS = ['Tarantella', 'Baroque', 'Waltz', 'Chiptune', 'Pizzicato', 
 const CALM_TRACKS = [MENU_TRACK]
     .concat(['Harp', 'Ambient', 'Bossa', 'Music Box', 'Nocturne', 'Kalimba', 'Lofi'].map(n => MUSIC_SUITE.find(t => t.name === n)));   // [290926c] four more
 // [031126d] the level card's own rotation: the three new pieces first, then the brighter of the calm set. ?card=Tide picks one.
-const CARD_TRACKS = ['Lantern', 'Tide', 'Carousel', 'Kalimba', 'Harp', 'Music Box'].map(n => MUSIC_SUITE.find(t => t.name === n)).filter(Boolean);
+/* [051126z] Jake, 15:48: "yes, to all scorecard music, rotate around" — the three, in turn */ const CARD_TRACKS = ['Lantern', 'Tide', 'Carousel'].map(n => MUSIC_SUITE.find(t => t.name === n)).filter(Boolean);
 const CARD_TRACK_PICK = (() => { try { const m = /[?&]card=([A-Za-z ]+)/.exec(location.search || ''); return m ? MUSIC_SUITE.find(t => t.name.toLowerCase() === decodeURIComponent(m[1]).toLowerCase()) || null : null; } catch (e) { return null; } })();
 
 // A shuffled BAG rather than an index. Straight rotation means a player always
@@ -15566,7 +15577,33 @@ function runReprieve() {
    steps in sooner for a square: with the body a square it acts on the first landing with no route (was three), and with only squares left
    in the set it counts a grind after SQUARE_GRIND_MS (45 s, was two minutes). SQUARE_KIT = 0, or ?squarekit=0, puts back 1407;
    ?squarekit=2 gives the kit to every level's first square. */
-const SQUARE_KIT = Math.round(econDial('squarekit', 1, 0, 2)), SQUARE_GRIND_MS = Math.round(econDial('squaregrind', 45, 10, 120)) * 1000;
+const SQUARE_KIT = Math.round(econDial('squarekit', 2, 0, 2)), /* [051126w] every level's first square (1: the debut only) */ SQUARE_GRIND_MS = Math.round(econDial('squaregrind', 45, 10, 120)) * 1000;
+/* ══ [051126x] THE CLEAR APRON — Jake, 16:00: "lose the shape through own mistake". Playdata 103: on level 8 holes took 30 cubes while
+   the J and the square were being built near their slots. Now no hole and no red lies within SLOT_APRON (2) squares of a square or a J
+   slot: when the slot is dealt the holes there become ground and the reds go, and no red, hole or carved hole is put there while the slot
+   is live. A slot on an island keeps its moat. The edge, a wrong slot, a red you walk onto further out: still yours. SLOT_APRON = 0, or
+   ?apron=0, puts back 1506. */
+const SLOT_APRON = Math.round(econDial('apron', 2, 0, 4));
+function inSlotApron(x, y) {
+    if (!SLOT_APRON || typeof slots === 'undefined') return false;
+    for (const sl of slots) { if (sl.claimed || sl.retiring || sl.onIsland || (sl.type !== 'square' && sl.type !== 'jshape')) continue;
+        for (const c of sl.cells) if (Math.max(Math.abs(c.x - x), Math.abs(c.y - y)) <= SLOT_APRON) return true; }
+    return false;
+}
+function clearSlotApron(sl) {
+    if (!SLOT_APRON || !sl || sl.onIsland || (sl.type !== 'square' && sl.type !== 'jshape')) return 0;
+    let n = 0; const seen = new Set();
+    for (const c of sl.cells) for (let dy = -SLOT_APRON; dy <= SLOT_APRON; dy++) for (let dx = -SLOT_APRON; dx <= SLOT_APRON; dx++) {
+        const x = c.x + dx, y = c.y + dy, k = `${x},${y}`;
+        if (x < 0 || x >= VIEW_W || seen.has(k) || sl.keys.has(k) || islandCells.has(k)) continue; seen.add(k);
+        if (world[k] === 'void' || world[k] === 'hazard') {
+            if (world[k] === 'void') { persistentFills.add(k); for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (world[`${x + ex},${y + ey}`] === 'void') bridgeRemainders.add(`${x + ex},${y + ey}`); }
+            delete world[k]; delete shifterMeta[k]; n++;
+        }
+    }
+    if (n) { rec('apron', { id: sl.id, n }); try { _routeField.sig = null; _routeFieldWet.sig = null; routeCache.sig = null; } catch (e) {} }
+    return n;
+}
 function squareKit(cells) {
     if (!SQUARE_KIT || game.testDrive || game._replay) return;
     if (SQUARE_KIT === 1 ? game._squareKitDone : game._squareKitLevel === advancedRound) return;
@@ -15580,7 +15617,7 @@ function squareKit(cells) {
     }
     if (cands.length < 3) return;
     cands.sort((a, b) => a.d - b.d);
-    const turn = cands.find(c => machineCellOk(c.x, c.y));
+    const turn = cands.find(c => machineCellOk(c.x, c.y, false));   // [051126w] the slot is dealt above the view: only the columns are fixed there (it often found no cell at all)
     if (!turn) return;
     const dir = nextTurnSpin(1);
     world[turn.k] = 'pivot'; shifterMeta[turn.k] = { spawnTime: performance.now(), dir, turns: 1, kit: true }; noteTurnSpin(dir, 1);
@@ -15600,7 +15637,7 @@ function runFitter() {
     // requirement never lands is caught too (the old gate could only see a
     // player who was trapped, never one who was simply getting nowhere).
     const sinceBank = nowPlay() - (game._lastBankAt || game._recLevelStart || 0);
-    const _sqLeft = SQUARE_KIT && setNeeded.length && setNeeded.every(id => /^square/.test(id));   // [051126p] only squares left
+    const _sqLeft = SQUARE_KIT && setNeeded.length && setNeeded.every(id => /^(square|jshape)/.test(id));   // [051126p] only squares left · [051126w] or the J and the square
     const grinding = sinceBank > (_sqLeft ? Math.min(FITTER_GRIND_MS, SQUARE_GRIND_MS) : FITTER_GRIND_MS);
     if (r.reachable && !grinding) { game._stuckFor = 0; return; }
     game._stuckFor = (game._stuckFor || 0) + 1;
@@ -15608,7 +15645,7 @@ function runFitter() {
     // so it does not also have to accumulate three unreachable landings. That
     // second gate exists to stop the acute case firing on a momentary block,
     // which is not a risk here.
-    if (!grinding && game._stuckFor < ((turnWantsQuarter() || (SQUARE_KIT && game.shapeType === 'square')) ? 1 : FITTER_STUCK_LANDINGS)) return;   // [051126p] a square: at once   // [051126f] the wrong colour: at once
+    if (!grinding && game._stuckFor < ((turnWantsQuarter() || (SQUARE_KIT && (game.shapeType === 'square' || (game.shapeType === 'jshape' && _sqLeft)))) ? 1 : FITTER_STUCK_LANDINGS)) return;   // [051126w] the J too, when it is what is left   // [051126p] a square: at once   // [051126f] the wrong colour: at once
     const now = performance.now();
     if (game._fitterAt && now - game._fitterAt < FITTER_COOLDOWN_MS) return;
     const want = diagnoseMissingTool(r.reachable);
@@ -15681,7 +15718,7 @@ function runFitter() {
             if (x < 0 || x + 1 >= VIEW_W || y < camI || y + 1 >= camI + VIEW_H) return false;
             for (const [bx, by] of [[x, y], [x + 1, y], [x, y + 1], [x + 1, y + 1]]) {
                 const k = `${bx},${by}`;
-                if (!holeCellFree(bx, by) || visited.has(k) || body.has(k)) return false;
+                if (!holeCellFree(bx, by) || visited.has(k) || body.has(k) || inSlotApron(bx, by)) return false;   // [051126x]
                 if (slots.some(sl => sl.keys.has(k))) return false;
             }
             return true;
@@ -15870,6 +15907,7 @@ function trySpawnSlot(forceCandidateYs = null, forceId = null) {
                          color: slotColorFor(type, config, target.difficulty), cells,
                          keys: new Set(cells.map(c => `${c.x},${c.y}`)),
                          claimed: false, traced: new Set() });
+            if (type === 'square' || type === 'jshape') try { clearSlotApron(slots[slots.length - 1]); } catch (e) {}   // [051126x]
             if (type === 'square') try { squareKit(cells); } catch (e) {}   // [051126p]
             // ── [160826w] COMBO SEEDING ─────────────────────────────────────
             // The gold ghost (a shifter resolution that exactly claims a slot)
@@ -17011,6 +17049,7 @@ const RED_POP_CHANCE = 0.35;   // per fresh row, while there are fewer than two
 function redCellOk(x, y) {
     const k = `${x},${y}`;
     if (x < 0 || x >= VIEW_W || world[k]) return false;
+    if (inSlotApron(x, y)) return false;   // [051126x]
     for (const sl of slots) { if (sl.claimed || sl.retiring) continue;
         for (const c of sl.cells) if (Math.max(Math.abs(c.x - x), Math.abs(c.y - y)) <= 1) return false; }
     if (typeof rowPay !== 'undefined' && rowPay.some(e => e.x === x && e.y === y)) return false;
@@ -18037,8 +18076,39 @@ let voidsFilled = 0;
 const GROUND_SHIFTERS = true, GROUND_PER_SHIFTER = 3, GROUND_OWED_MAX = 2;
 let groundCells = 0, groundOwed = 0;
 const groundQueue = [];
+/* ══ [051126t] NEW GROUND MAY TURN UP A SHIFTER — BY CHANCE — Jake, 5 Nov, 14:57: "newly swept land created by the turn shifter should
+   randomly create more shifters, same with newly filled voids and holes, consider a rule for when this could happen and when it might not
+   happen, i dont want it to happen all the time there needs to be an element of jeopardy". Measured: the [171026i] rule (one shifter
+   for every three cells, laid on the newest of them once you were two cells clear) almost never paid out — 0 and 1 shifters for 77 cells
+   of new ground in the long runs of playdata 101 and 102 — because by the time you were clear the cells had gone, or the board was full.
+   THE RULE NOW. Every cell of new ground — a cube into a hole, a crossing, a perfect fit, a step's push, a turn's sweep — rolls a die:
+     · a cell that closes a gap (a bridge: ground both sides of it) turns one up GROUND_BRIDGE_ODDS (1 in 2); any other cell GROUND_ODDS (1 in 4);
+     · at most one a move or a sweep (after a win the die rests GROUND_REST_MS, 2 s), at most two waiting, each waiting no more than
+       GROUND_WAIT_MS (10 s) for its cell;
+   and it does NOT happen: on level 1; on a slot or a cell scrolled off; beside another shifter or a green; with the body on the cell
+   or beside it (it surfaces once you are two cells clear — so it is laid behind you or in your way, not under you).
+   THE JEOPARDY: it is luck, not a reward — a long bridge can turn up nothing and one cube can turn up a shifter — and what comes up is not
+   chosen for you: half the time a step aimed at the nearest hole, otherwise a step any way or a turn of any size (the 90° colour rule
+   still holds). A shifter you did not want can be in your path. GROUND_LUCK = false, or ?groundluck=0, puts back [171026i];
+   ?groundodds= and ?bridgeodds= set the chances (in %). */
+const GROUND_LUCK = !/[?&]groundluck=0(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
+const GROUND_ODDS = econDial('groundodds', 25, 0, 100) / 100, GROUND_BRIDGE_ODDS = econDial('bridgeodds', 50, 0, 100) / 100;
+const GROUND_REST_MS = 2000, GROUND_WAIT_MS = 10000;
 function noteNewGround(x, y) {
     if (!GROUND_SHIFTERS || typeof game === 'undefined' || !game.running || game.testDrive || game._replay) return;
+    if (GROUND_LUCK) {
+        if (typeof advancedRound !== 'undefined' && advancedRound <= 1) return;   // not on level 1
+        const now = performance.now();
+        if (now < (game._groundRestUntil || 0) || groundOwed >= GROUND_OWED_MAX) return;
+        let span = false; try { span = spansGap(x, y); } catch (e) {}
+        const odds = span ? GROUND_BRIDGE_ODDS : GROUND_ODDS, win = Math.random() < odds;
+        rec('groundroll', { x, y, span: span ? 1 : 0, win: win ? 1 : 0, r: advancedRound });
+        if (!win) return;
+        game._groundRestUntil = now + GROUND_REST_MS;
+        groundQueue.push({ x, y, until: now + GROUND_WAIT_MS, luck: 1 }); if (groundQueue.length > 16) groundQueue.shift();
+        groundOwed = Math.min(GROUND_OWED_MAX, groundOwed + 1);
+        return;
+    }
     groundQueue.push({ x, y }); if (groundQueue.length > 16) groundQueue.shift();
     if (++groundCells >= GROUND_PER_SHIFTER) { groundCells -= GROUND_PER_SHIFTER; groundOwed = Math.min(GROUND_OWED_MAX, groundOwed + 1); }
 }
@@ -18046,17 +18116,24 @@ function groundShifterTick(nowT) {
     if (!GROUND_SHIFTERS || !groundOwed || game.testDrive || game._replay || !game.running || game.paused || game.celebrating || game.introHold) return;
     if (nowT < (game._nextGroundForge || 0)) return;
     game._nextGroundForge = nowT + 700;
+    for (let i = groundQueue.length - 1; i >= 0; i--) { const g = groundQueue[i]; if (g.until && nowT > g.until) { groundQueue.splice(i, 1); groundOwed = Math.max(0, groundOwed - 1); rec('spawn', { k: 'none', src: 'ground', why: 'lapsed' }); } }   // [051126t] a chance lapses, even with the board full
+    if (!groundOwed) return;
     if (countMachinesInView() >= SHIFTERS_IN_VIEW_CEILING + 1) return;   // the board is full: it waits
     const ci = Math.floor(game.cameraY);
     for (let i = groundQueue.length - 1; i >= 0; i--) {
         const g = groundQueue[i], k = `${g.x},${g.y}`;
-        if (g.y < ci || g.y > ci + VIEW_H - 1 || world[k] || !machineCellOk(g.x, g.y)) { groundQueue.splice(i, 1); continue; }   // gone past, built on, or on the frame
+        if (g.y < ci || g.y > ci + VIEW_H - 1 || world[k] || !machineCellOk(g.x, g.y) || (g.until && nowT > g.until)) {   // gone past, built on, on the frame · [051126t] or waited too long
+            groundQueue.splice(i, 1); if (g.luck) { groundOwed = Math.max(0, groundOwed - 1); rec('spawn', { k: 'none', src: 'ground', why: 'lapsed' }); } continue; }
         if (voidPending.has(k) && voidPending.get(k) > nowT) continue;                  // not surfaced yet
         if (slots.some(sl => !sl.claimed && !sl.retiring && sl.keys.has(k))) continue;
         if (!clearOfPlayer(g.x, g.y, 1) || nearAnyShifter(g.x, g.y)) continue;        // two cells clear of the body; nothing on top of another
         const nv = nearestVoidDir(g.x, g.y);
         let kind;
-        if (nv && !nv.off) {
+        const _luck = GROUND_LUCK && g.luck, _aim = !_luck || Math.random() < 0.5;   // [051126t] half the time aimed; otherwise what comes up comes up
+        if (_luck && !_aim) {
+            if (Math.random() < 0.5) { kind = 'slip'; world[k] = 'slip'; shifterMeta[k] = { spawnTime: nowT, dir: (Math.random() * 8) | 0, gear: Math.random() < 0.3 ? 2 : 1, ground: true }; if (shifterMeta[k].gear === 2) showTip('gear'); }
+            else { kind = 'pivot'; const tn = rollTurnSize(), sp = Math.random() < 0.5 ? 'cw' : 'ccw'; world[k] = 'pivot'; shifterMeta[k] = { spawnTime: nowT, dir: sp, turns: tn, ground: true }; noteTurnSpin(sp, tn); }
+        } else if (nv && !nv.off) {
             kind = 'slip';
             world[k] = 'slip'; shifterMeta[k] = { spawnTime: nowT, dir: nv.dir, gear: 1, ground: true };
             if (!regenAimStep(shifterMeta[k], g.x, g.y)) shifterMeta[k].dir = bestSlipDir(g.x, g.y, nv.dir);
@@ -18071,7 +18148,7 @@ function groundShifterTick(nowT) {
         game._lastShifterAt = nowT;
         const fx = g.x * CELL + CELL / 2, fy = (g.y - game.cameraY) * CELL + CELL / 2;
         addSparks(fx, fy, 8, '#7dd3fc'); addBurst(fx, fy, SHIFTER_FAMILY_COLOR);
-        rec('spawn', { k: kind, src: 'ground', ...(kind === 'slip' ? { d: shifterMeta[k].dir, g: shifterMeta[k].gear } : { tn: shifterMeta[k].turns }), owed: groundOwed, v: countMachinesInView() });
+        rec('spawn', { k: kind, src: 'ground', luck: _luck ? 1 : 0, aim: _aim ? 1 : 0, ...(kind === 'slip' ? { d: shifterMeta[k].dir, g: shifterMeta[k].gear } : { tn: shifterMeta[k].turns }), owed: groundOwed, v: countMachinesInView() });
         try { _routeField.sig = null; _routeFieldWet.sig = null; routeCache.sig = null; } catch (e) {}
         return;
     }
@@ -18210,6 +18287,60 @@ function singlePaysToCross(cells) {   // [251026b] a held direction crosses a ho
     showTip('cross');
     return 'paid';
 }
+/* ══ [051126ab] A SURPRISE UNDER A FILLED HOLE — Jake, 5 Nov, 11:52: "the cleared voids need to reveal a treat / reward of some sort";
+   15:48: "a surprise with suitable animation". A filled hole sometimes holds something: SURPRISE_ODDS (1 in 6) a cell, at most one
+   every SURPRISE_REST_MS (8 s), any hole you fill (a cube, a crossing, a perfect fit, a shifter's push or sweep). As the ground sets the
+   cell glints gold, then bursts: stars, the sound, and what it held, in words — +5s (four in ten), +10s (one in ten), or points,
+   250 × the level (half; doubled under ×2 gold). Not your last cube or the restart stone. SURPRISE_ON = false, or ?surprise=0, takes
+   it away; ?surpriseodds= in %. */
+const SURPRISE_ON = !/[?&]surprise=0(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
+const SURPRISE_ODDS = econDial('surpriseodds', 16.7, 0, 100) / 100, SURPRISE_REST_MS = 8000;
+let surpriseFX = [];
+function maybeSurprise(x, y, showIn) {
+    if (!SURPRISE_ON || typeof game === 'undefined' || !game.running || game.testDrive || game._replay) return;
+    const now = performance.now();
+    if (now < (game._surpriseRestUntil || 0) || Math.random() >= SURPRISE_ODDS) return;
+    game._surpriseRestUntil = now + SURPRISE_REST_MS;
+    const r = Math.random(), kind = r < 0.4 ? 't5' : r < 0.5 ? 't10' : 'pts';
+    const at = Math.max(0, showIn || 0) + 260;
+    surpriseFX.push({ x, y, t0: now + at, kind });
+    later(at + 520, () => openSurprise(x, y, kind));
+}
+function openSurprise(x, y, kind) {
+    if (!game.running) return;
+    const sx = x * CELL + CELL / 2, sy = (y - game.cameraY) * CELL + CELL / 2;
+    let words = '', paid = 0;
+    if (kind === 'pts') { const pts = 250 * Math.max(1, advancedRound); scoreGain(pts, true); words = `SURPRISE!\n+${pts * (typeof x2Active === 'function' && x2Active() ? 2 : 1)}`; }
+    else { const raw = kind === 't10' ? 10 : 5; paid = clockCredit(raw); momentumAddSeconds(paid); game.roundTimeSecs = (game.roundTimeSecs || 0) + paid; words = `SURPRISE!\n+${paid}s`; }
+    addSparks(sx, sy, 16, '#fde68a'); addBurst(sx, sy, '#fcd34d'); addBurst(sx, sy, '#a78bfa');
+    addFloat(sx, sy - 10, words, kind === 'pts' ? INK.points : INK.gain, true, { life: 1600, hold: 600 });
+    try { if (sfx.gold) sfx.gold(); else if (sfx.time10) sfx.time10(); } catch (e) {}
+    try { HAPTICS.fire(HAPTIC.claim, 60); } catch (e) {}
+    rec('surprise', { kind, sec: paid, r: advancedRound });
+    if (paid) rec('time', { sec: paid, src: 'surprise', m: Math.round(momentumRemaining()) });
+}
+function drawSurpriseFX(now) {   // the glint before it opens: a gold diamond turning in the new ground, a ring
+    if (!surpriseFX.length) return;
+    for (let i = surpriseFX.length - 1; i >= 0; i--) {
+        const f = surpriseFX[i], age = now - f.t0;
+        if (age > 1300) { surpriseFX.splice(i, 1); continue; }
+        if (age < 0) continue;
+        const cx = f.x * CELL + CELL / 2, cy = (f.y - game.cameraY) * CELL + CELL / 2;
+        ctx.save();
+        if (age < 520) {   // the glint
+            const k = age / 520, a = Math.sin(k * Math.PI);
+            ctx.globalAlpha = 0.35 + 0.65 * a; ctx.translate(cx, cy); ctx.rotate(k * Math.PI * 1.5);
+            const r = CELL * (0.16 + 0.12 * a);
+            ctx.fillStyle = '#fde68a'; ctx.shadowColor = '#fbbf24'; ctx.shadowBlur = 14;
+            ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r * 0.6, 0); ctx.lineTo(0, r); ctx.lineTo(-r * 0.6, 0); ctx.closePath(); ctx.fill();
+        } else {   // it opens: a ring of light
+            const k = (age - 520) / 780;
+            ctx.globalAlpha = Math.max(0, 1 - k); ctx.strokeStyle = '#fcd34d'; ctx.lineWidth = 3 * (1 - k) + 1;
+            ctx.beginPath(); ctx.arc(cx, cy, CELL * (0.3 + 0.9 * k), 0, Math.PI * 2); ctx.stroke();
+        }
+        ctx.restore();
+    }
+}
 function fillVoid(x, y, showIn = 0, plugColor = null, quiet = false) {   // [181026i] quiet: not a bridge (your last cube, the restart stone)   // [280926t] plugColor: a stone surfaces green   // [280926d] showIn: the hole stays drawn this long — the cube has to be seen to go in first
     const k = `${x},${y}`;
     if (world[k] !== 'void') return false;
@@ -18232,6 +18363,7 @@ function fillVoid(x, y, showIn = 0, plugColor = null, quiet = false) {   // [181
         if (world[nk] === 'void') bridgeRemainders.add(nk);
     }
     if (BRIDGE_PRAISE_ON && !quiet && plugColor !== 'stone' && spansGap(x, y)) praiseBridge(showIn, x, y);   // [181026i]
+    if (!quiet && plugColor !== 'stone') try { maybeSurprise(x, y, showIn); } catch (e) {}   // [051126ab]
     if (plugColor !== 'stone') addPlug(x, y, showIn > 0 ? performance.now() + showIn : 0, plugColor);   // a stone is its own landing   // [280926d] the ground surfaces once the cube is in · [280926t]
     /* [080926a] A BRIDGE IS OCCUPIED GROUND. Designer's call, reversing the
        port's "you buy it, you still have to walk it": the cube that went in
@@ -19278,9 +19410,85 @@ function levelHasIsle(round) { return round === ISLAND_SET_LEVEL || (HARD_ISLE &
    own island (3×2) and the opening's (2×2). Now: random islands 3–5 wide and 3–4 tall, each with the deeper moat a big island
    always had (3 rows above and below; 2 at the sides, 1 for the widest); level 3's 3×3 in its two-deep moat; the opening's 3×3. */
 const ISLAND_MIN = 3;
+/* ══ [051126v] AN ISLAND IS NEVER MORE THAN 4 SQUARES FROM LAND — Jake, 5 Nov, 15:24 / 15:48: "ensure that islands are not more than 4
+   squares away from another block of land" · "island never more than 4 squares away from land or another island". Measured on 1506
+   (124 islands made by the generator, the level islands and the gold): every one was within 2 squares of SOME land, but that land was
+   often a patch cut off itself — from the land you come up on, 1 in 14 were 6 to 10 squares away and a few could not be reached at all.
+   Now every island, once made, is measured from the land below it that joins the way up (or from another island): the fewest hole
+   squares a body must cross, a step in any of the eight directions. Over ISLE_REACH (4) and stepping ground is laid along that line,
+   from the far end, until the crossing is 4; ground walls are not broken through unless there is no other way. The moat round the
+   island itself is never filled. ISLE_REACH_ON = false, or ?islereach=0, puts back 1506; ?islereach= sets the most. */
+const ISLE_REACH = Math.round(econDial('islereach', 4, 0, 12)), ISLE_REACH_ON = ISLE_REACH > 0;
+function islandReach(plat, src, deep) {
+    if (!ISLE_REACH_ON || !plat || !plat.length) return 0;
+    try {
+        const isle = new Set(plat), ys = plat.map(k => +k.split(',')[1]), lo = Math.min(...ys) - 14, hi = Math.max(...ys) + (deep ? 26 : 12);
+        const land = k => { const v = world[k]; return v !== 'void' && v !== 'wall'; };
+        const main = new Set(), q = [];   // the land you come up on: joined to the band's bottom row
+        for (let x = 0; x < VIEW_W; x++) { const k = `${x},${hi}`; if (land(k) && !isle.has(k)) { main.add(k); q.push(k); } }
+        while (q.length) { const c = q.pop(), [x, y] = c.split(',').map(Number);
+            for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, n = `${nx},${ny}`;
+                if (nx < 0 || nx >= VIEW_W || ny < lo || ny > hi || main.has(n) || isle.has(n) || !land(n)) continue; main.add(n); q.push(n); } }
+        const target = k => main.has(k) || (islandCells.has(k) && !isle.has(k) && land(k));   // or another island
+        const N8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+        const search = walls => { const par = new Map(), dist = new Map(); let fr = [];
+            for (const k of plat) { dist.set(k, 0); fr.push(k); }
+            while (fr.length) { const nf = [];
+                for (const c of fr) { const [x, y] = c.split(',').map(Number), d = dist.get(c);
+                    for (const [dx, dy] of N8) { const nx = x + dx, ny = y + dy, n = `${nx},${ny}`;
+                        if (nx < 0 || nx >= VIEW_W || ny < lo || ny > hi || dist.has(n) || isle.has(n)) continue;
+                        if (target(n)) { const path = []; let p = c; while (!isle.has(p)) { path.push(p); p = par.get(p); } return path; }   // from the far end in
+                        const v = world[n]; if (v === 'void' || (walls && v === 'wall')) { dist.set(n, d + 1); par.set(n, c); nf.push(n); } } }
+                fr = nf; }
+            return null; };
+        let path = search(false), walls = false;
+        if (!path) { path = search(true); walls = true; }
+        if (!path && !deep) return islandReach(plat, src, true);   // the land below is further down: look again, deeper
+        if (!path || path.length <= ISLE_REACH) return 0;
+        const moat = new Set(); for (const k of plat) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of N8) moat.add(`${x + dx},${y + dy}`); }
+        let laid = 0;
+        for (const k of path) {   // path runs from the land end to the island: lay from the land end
+            if (path.length - laid <= ISLE_REACH) break;
+            if (moat.has(k)) break;
+            delete world[k]; delete shifterMeta[k]; persistentFills.add(k); laid++;
+            const [x, y] = k.split(',').map(Number);
+            for (const [dx, dy] of N8) if (world[`${x + dx},${y + dy}`] === 'void') bridgeRemainders.add(`${x + dx},${y + dy}`);
+        }
+        if (laid) { rec('island', { k: 'reach', src: src || '', was: path.length, laid, walls: walls ? 1 : 0 }); try { _routeField.sig = null; _routeFieldWet.sig = null; routeCache.sig = null; } catch (e) {} }
+        return laid;
+    } catch (e) { return 0; }
+}
+/* [051126v] ...AND AGAIN AS IT COMES INTO VIEW: holes carved and ground spent after an island is made can widen its crossing, so each island
+   is measured once more as its lowest row comes within three rows of the top of the screen. */
+const _isleChecked = new Set(); let _isleCheckAt = 0;
+function islandReachTick(nowT) {
+    if (!ISLE_REACH_ON || !game.running || game.testDrive || game._replay || nowT < _isleCheckAt) return;
+    _isleCheckAt = nowT + 500;
+    const cam = Math.floor(game.cameraY), seen = new Set();
+    for (const k of islandCells) {
+        if (seen.has(k)) continue;
+        const y0 = +k.split(',')[1]; if (y0 < cam - 6 || y0 > cam + 6) continue;
+        const v0 = world[k]; if (v0 === 'void' || v0 === 'wall') continue;
+        const comp = [], q = [k]; seen.add(k);
+        while (q.length) { const c = q.pop(); comp.push(c); const [x, y] = c.split(',').map(Number);
+            for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const n = `${x + dx},${y + dy}`; const v = world[n];
+                if (islandCells.has(n) && !seen.has(n) && v !== 'void' && v !== 'wall') { seen.add(n); q.push(n); } } }
+        const ys = comp.map(c => +c.split(',')[1]), low = Math.max(...ys);
+        const stage = low >= cam + 1 ? 2 : low >= cam - 3 ? 1 : 0;   // twice: three rows above the screen, and as it comes on
+        if (!stage) continue;
+        const id = comp.slice().sort()[0] + '#' + stage;
+        if (_isleChecked.has(id)) continue;
+        _isleChecked.add(id); if (_isleChecked.size > 400) _isleChecked.clear();
+        islandReach(comp, 'view');
+    }
+}
 function carveLevelIsland(target) {
     const cam = Math.floor(game.cameraY);
-    const pw = ISLAND_MIN, ph = ISLAND_MIN, side = 2, vm = 2, w = pw + side * 2, rows = ph + vm * 2;   // 7 x 7 · [311026l] the platform 3x3 (was 3x2)
+    /* [051126y] LEVEL 3'S ISLAND, EASIER — playdata 103 and 104 (Jake, 15:48: yes): the pair on level 3's island took 212 s (its slot out of
+       reach for 213 s, the clock down to 0:07) and 104's run ended on it. On level 3 the moat is one square deep (two from level 7 for the
+       hard single): a pair stood up crosses it in one flip, a single for one cell's price. ?isle3moat=2 puts back 1506. */
+    const _m = (advancedRound === ISLAND_SET_LEVEL) ? Math.round(econDial('isle3moat', 1, 1, 3)) : 2;
+    const pw = ISLAND_MIN, ph = ISLAND_MIN, side = _m, vm = _m, w = pw + side * 2, rows = ph + vm * 2;   // 7 x 7 · [311026l] the platform 3x3 (was 3x2) · [051126y] 5 x 5 on level 3
     // what the island may be built over: ground, holes, walls, and loose things not yet seen (above the view);
     // never a set, another island, ground the player bought, or a row's reward square
     const TOOLS = { pickup: 1, hazard: 1, t10: 1, t30: 1, pivot: 1, slip: 1, warp: 1 };
@@ -19326,6 +19534,7 @@ function carveLevelIsland(target) {
             rec('spawn', { k: 'slot', src: 'isle3', id: target.id });
             if (target.type === 'single') showTip('hardisle');   // [051126c]
             rec('island', { k: 'made', r: advancedRound, id: target.id, rowsUp: cam - y });
+            islandReach(plat, 'level');   // [051126v]
             return true;
         }
     }
@@ -19351,7 +19560,14 @@ const GOLD_ON = econDial('gold', 1, 0, 1) >= 1;
 /* [011126l] CHEAPER, AND ONLY WHEN YOU CAN AFFORD IT — playdata 90 and 92: 11 takes, 10,176 points for 330 s, about 31 points a second
    paid, less than the 30–80 a second the same time pays over the top; one take with 0:47 on the clock left 0:17 and the run ended
    early. The price is GOLD_PRICE_SEC 20 (was 30) and it needs GOLD_MIN_CLOCK 60 (was 40) on the clock. */
-const GOLD_FROM = 3, GOLD_PER_LEVEL = 2, GOLD_PRICE_SEC = 20, GOLD_MIN_CLOCK = 60, GOLD_WINDOW_SEC = 20, GOLD_LIFE_SEC = 20;
+/* [051126u] Jake, 5 Nov, 15:06: "after paying 20 secs for the gold there should be 20 secs on the clock". It needed 1:00 (40 left after the
+   price); now the price plus GOLD_LEFT_SEC (20): 0:40 takes it and leaves 0:20. ?goldleft= sets what must be left. */
+const GOLD_LEFT_SEC = Math.round(econDial('goldleft', 20, 0, 120));
+/* [051126aa] THE GOLD, WORTH ITS COST — Jake, 15:48: "the gold option need to be worth the cost to justify its existence". Taken once in
+   playdata 102: 20 s for 319 points. Points in a run come at about 50 a second by level 6, and 20 s on the clock is worth about as much
+   again at the end — so 20 s of ×2 only broke even. Now ×2 runs GOLD_WINDOW_SEC 40 s (?goldwin=): every point in it twice, a piece's
+   1,000 × level included, about twice what the 20 s would have been worth. */
+const GOLD_FROM = 3, GOLD_PER_LEVEL = 2, GOLD_PRICE_SEC = 20, GOLD_MIN_CLOCK = GOLD_PRICE_SEC + GOLD_LEFT_SEC, GOLD_WINDOW_SEC = Math.round(econDial('goldwin', 40, 5, 120)), GOLD_LIFE_SEC = 20;   // [051126u] 40 (was 60)
 /* [051126s] THE GOLD STAYS — Jake, 5 Nov, 14:29: "the gold cube should stay on the grid and not disappear unless it runs off the bottom of
    the screen". It faded GOLD_LIFE_SEC (20) after it came fully into view, and went with the level when the set was done. Now it stays
    until it leaves the bottom of the board; one left when the set is done carries into the next level as that level's first coin.
@@ -19585,6 +19801,7 @@ function carveGoldIsland() {   // a 3x3 platform in a two-deep moat above the vi
             const free = plat.filter(k => k !== mid); shuffleInPlace(free);
             if (free.length) world[free.shift()] = 'pickup';   // the fare home
             rec('gold', { k: 'made', n: (game._gold ? game._gold.made : 0) + 1, r: advancedRound, rowsUp: cam - y });
+            islandReach(plat, 'gold');   // [051126v]
             return mid;
         }
     }
@@ -19931,6 +20148,7 @@ function carveIslandSet(y, safeZoneEnd) {
             // a trap (see ISLANDS ARE PLACES above).
     }
     islandCooldown = 12;   // [060926] was 40, then 20 — see ISLAND_CHANCE [070926f]
+    islandReach(plat, 'random');   // [051126v]
 }
 
 /* ══ [060926] CHASMS — BIGGER HOLES, AND SWITCHED BACK ON ═══════════════════
@@ -20134,7 +20352,12 @@ function mulberry32(a) {
         return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
 }
+/* [051126ad] ONE DAY FOR THE WORLD — Jake, 5 Nov, 16:16–16:18: the daily turns over at the same moment everywhere: 00:00 UTC (midnight in
+   London in winter, 1 am in summer). The day was each device's own date; now it is the UTC date, so the world plays one board a day and one
+   table. DAILY_UTC = false, or ?dailylocal=1, puts back the device's date. */
+const DAILY_UTC = !/[?&]dailylocal=1(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
 function dailyKey(d = new Date()) {
+    if (DAILY_UTC) return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 function dailySeed(key) { let h = 2166136261; for (const ch of key) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -22959,7 +23182,7 @@ function spawnShifter(src, atKey) {
         const needTrim = SHAPES[game.shapeType].mult > minNeed;
         /* [180926b] never on an earned square: a finished row is a reward, and a
            reward is not paid in reds. Trim supply still rides the other paths. */
-        if ((!NO_REDS || redToolOn()) && !_named && needTrim && vis < 2) {   // [280926u] from level 6, on demand only (the square is no longer handed a red for being a square)   // [090926g] the slot trims you now
+        if ((!NO_REDS || redToolOn()) && !_named && needTrim && vis < 2 && !inSlotApron(gx, gy)) {   // [051126x]   // [280926u] from level 6, on demand only (the square is no longer handed a red for being a square)   // [090926g] the slot trims you now
             world[k] = 'hazard';
             hazardBorn[k] = 'supply@' + replayMoveCount;
             addBurst(gx * CELL + CELL/2, (gy - game.cameraY) * CELL + CELL/2, '#ef4444');
@@ -40211,6 +40434,7 @@ function loop(time, gen) {
     if (!game.paused || game.celebrating) tickSweepQueue();
     tickClearGhosts();   // [171026a]
     groundShifterTick(performance.now());   // [171026i]
+    try { islandReachTick(performance.now()); } catch (e) {}   // [051126v]
     if (!scrubbing) shifterRotationTick();   // [071026x] a tile whose ring has filled comes back with its next setting
     if (!scrubbing) holdStepsFaceHoles(Math.floor(game.cameraY));   // [071026p] every frame — frozen, paused or celebrating too
     // Paused — keep frame alive, redraw, but skip all updates
@@ -40357,6 +40581,7 @@ function loop(time, gen) {
                   if (ay < camI + 1 || ay > camI + VIEW_H - 1) continue;
                   if (world[key]) continue;
                   if (slots.some(sl => sl.keys.has(key))) continue;
+                  if (inSlotApron(ax, ay)) continue;   // [051126x]
                   candidates.push({ x: ax, y: ay, key });
               }
               if (hasAdj) break;
@@ -42611,6 +42836,7 @@ let chainThread = [];      // [{x, y, t}]
 function drawAnimFX() {
     const now = performance.now();
     drawBuildFX(now);   // [051126a]
+    try { drawSurpriseFX(now); } catch (e) {}   // [051126ab]
     drawCoverFX();   // [290926q]
     // [180826ae] Consumed tools linger until the piece visually lands — the
     // shifter must not vanish under a cube still in the air. Drawn in each
@@ -42918,6 +43144,7 @@ function scoresRunStats(r) {
 const RANKS_SHOWN = econDial('ranks', 0, 0, 1) >= 1;   // [031126r] the rankings are retired
 function renderScores() {
     try { syncNameUI(); } catch (e) {}   // [251026e]
+    try { renderDailyCard(); } catch (e) {}   // [051126ac]
     try { for (const id of ['scoresLadderHead', 'scoresLadder']) { const e = document.getElementById(id); if (e) e.hidden = !RANKS_SHOWN; }
           const re = document.getElementById('scoresRuns'); if (re) re.classList.toggle('noranks', !RANKS_SHOWN); } catch (e) {}
     const best = bests.score || 0;
@@ -43761,7 +43988,7 @@ function startGame(testDrive = false, daily = false) {
     // measuring from 0 — i.e. treating every run as having started at the epoch.
     runToken++;
     game._runStartT = performance.now();
-    deferred = []; devolveStage = null; buildFX = []; spanFX = []; rowGlassBank = 0; rowBankKeys = new Set(); voidPending.clear(); machineFX = null; machineFXPast = []; _singleSpin = null;
+    deferred = []; devolveStage = null; buildFX = []; spanFX = []; surpriseFX = []; rowGlassBank = 0; rowBankKeys = new Set(); voidPending.clear(); machineFX = null; machineFXPast = []; _singleSpin = null;
     stones = []; storeFlights = []; setTimeout(() => storeHud(), 0);   // [280926t]   // [280926d] nothing staged carries into a new run
 
     // [220826b] THE GUIDANCE IS ARMED WHEN THE DOOR OPENS, NOT WHEN PLAY IS HIT.
@@ -43786,10 +44013,60 @@ function startGame(testDrive = false, daily = false) {
 
 /* [090926h] The daily's result: text a player can say, a button that copies it,
    and a personal best per day. Play time, not wall time — pauses do not count. */
+/* ══ [051126ac] THE DAILY, READY FOR WORLD RANKINGS — Jake, 15:48: "i would like to do a daily puzzle like wordle with world rankings on the
+   top score card"; 16:00: "have the capability for daily puzzle world rankings". The daily is built ([090926h]: the date is the seed, five
+   levels, a result line to copy, a best kept a day) and was held back until rankings could back it. Now:
+     · RANKINGS — one door for every platform. A platform shell may hand the game its own leaderboard (window.ROTOR_PLATFORM.board: Steam
+       makes one a day, 'daily-YYYY-MM-DD'); otherwise, with a server address (ROTOR_BOARD_URL, or ?board=), it posts to and reads from
+       <server>/boards/daily-YYYY-MM-DD. With neither it is off and says so. One entry a player a day: their ROTOЯ name, levels reached,
+       play time, points, the run's id. The table orders by levels, then time.
+     · TOP SCORES gets TODAY'S PUZZLE: your result today, PLAY TODAY'S PUZZLE, and the world's top ten.
+   It shows only with DAILY_SHOWN (false until the server is up) or ?daily=1 to try it. The server itself is the next piece
+   (claude/rotor-daily-rankings-plan.md). */
+const DAILY_SHOWN = /[?&]daily=1(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
+const ROTOR_BOARD = (() => { try { const m = /[?&]board=([^&]+)/.exec(location.search || ''); return m ? decodeURIComponent(m[1]).replace(/\/+$/, '') : (window.ROTOR_BOARD_URL || ''); } catch (e) { return ''; } })();
+const RANKINGS = {
+    adapter() {
+        try { if (window.ROTOR_PLATFORM && window.ROTOR_PLATFORM.board && typeof window.ROTOR_PLATFORM.board.submit === 'function') return window.ROTOR_PLATFORM.board; } catch (e) {}
+        if (!ROTOR_BOARD || typeof fetch !== 'function') return null;
+        return {
+            submit: (board, e) => fetch(`${ROTOR_BOARD}/boards/${encodeURIComponent(board)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(e) }).then(r => r.ok),
+            top: (board, n) => fetch(`${ROTOR_BOARD}/boards/${encodeURIComponent(board)}?top=${n}`).then(r => r.ok ? r.json() : null),
+        };
+    },
+    online() { return !!this.adapter(); },
+    board(day) { return 'daily-' + day; },
+    submitDaily(e) { const a = this.adapter(); if (!a) return Promise.resolve(false); try { return Promise.resolve(a.submit(this.board(e.day), e)).catch(() => false); } catch (err) { return Promise.resolve(false); } },
+    topDaily(day, n = 10) { const a = this.adapter(); if (!a) return Promise.resolve(null); try { return Promise.resolve(a.top(this.board(day), n)).catch(() => null); } catch (err) { return Promise.resolve(null); } },
+    order(list) { return (list || []).slice().sort((a, b) => (b.lvl - a.lvl) || (a.ms - b.ms)); },
+};
+function dailyEntry(won) {
+    let n = ''; try { n = (rotorNameGet() || {}).n || ''; } catch (e) {}
+    return { day: game._dailyKey || dailyKey(), name: n, lvl: won ? DAILY_ROUNDS + 1 : advancedRound, ms: Math.round(dailyElapsedMs()), score: game.score || 0,
+             id: String(game._runId || game._recRunId || Date.now()), build: (typeof BUILD_VERSION !== 'undefined' ? BUILD_VERSION : '') };
+}
+function renderDailyCard() {
+    const head = document.getElementById('scoresDailyHead'), el = document.getElementById('scoresDaily');
+    if (!head || !el) return;
+    head.hidden = el.hidden = !DAILY_SHOWN; if (!DAILY_SHOWN) return;
+    const day = dailyKey(); let mine = null; try { mine = JSON.parse(localStorage.getItem('rotorDaily:' + day) || 'null'); } catch (e) {}
+    const fmt = e => e.lvl > DAILY_ROUNDS ? `FINISHED \u00b7 ${fmtMS(e.ms)}` : `LEVEL ${e.lvl}/${DAILY_ROUNDS} \u00b7 ${fmtMS(e.ms)}`;
+    const esc = t => String(t || '').toUpperCase().replace(/[<>&"]/g, '');
+    el.innerHTML = `<div class="scores-daily-mine">${mine ? 'TODAY: ' + fmt(mine) : 'Not played today.'}</div>` +
+        `<button type="button" class="scores-link scores-keep-btn" onclick="hideScores(); startDaily();">PLAY TODAY\u2019S PUZZLE</button>` +
+        `<div class="scores-daily-mine">A new puzzle every day at 00:00 UTC, the same for everyone.</div>` + `<div class="scores-daily-world" id="scoresDailyWorld">${RANKINGS.online() ? 'Loading the world\u2019s table\u2026' : 'World rankings go live with the online release.'}</div>`;
+    if (RANKINGS.online()) RANKINGS.topDaily(day, 10).then(list => {
+        const w = document.getElementById('scoresDailyWorld'); if (!w) return;
+        const L = RANKINGS.order(Array.isArray(list) ? list : (list && list.entries) || []);
+        w.innerHTML = L.length ? L.map((e, i) => `<div class="scores-run"><span class="scores-run-pos">${i + 1}</span><span><span class="scores-run-name">${esc(e.name) || 'A PLAYER'}</span><span class="scores-run-sub">${fmt(e)}</span></span><span class="scores-run-score">${(e.score || 0).toLocaleString()}</span></div>`).join('')
+                           : 'No one on today\u2019s table yet \u2014 be the first.';
+    });
+}
 function dailyElapsedMs() { return Math.max(0, nowPlay() - (game._dailyStartPlay || 0)); }
 function fmtMS(ms) { const s = Math.round(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 function dailyResultText(won) {
-    const d = new Date(); const day = d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear();
+    const d = new Date(); const day = DAILY_UTC ? d.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getUTCMonth()] + ' ' + d.getUTCFullYear()   // [051126ad]
+                                                : d.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getFullYear();
     const lvl = won ? `finished ${DAILY_ROUNDS}/${DAILY_ROUNDS}` : `level ${Math.min(advancedRound, DAILY_ROUNDS)}/${DAILY_ROUNDS}`;
     return `ROTOЯ daily ${day} — ${lvl} in ${fmtMS(dailyElapsedMs())} · ${game.runRows || 0} rows · combo ×${game.runBestChain || 1}`;
 }
@@ -43802,6 +44079,7 @@ function dailyResultHtml(won) {
         const mine = { lvl: won ? DAILY_ROUNDS + 1 : advancedRound, ms: dailyElapsedMs() };
         const better = !prev || mine.lvl > prev.lvl || (mine.lvl === prev.lvl && won && mine.ms < prev.ms);
         if (better) localStorage.setItem(key, JSON.stringify(mine));
+        if (better) try { RANKINGS.submitDaily(dailyEntry(won)).then(ok => rec('daily', { k: 'posted', ok: ok ? 1 : 0 })); } catch (e) {}   // [051126ac]
         best = better ? 'TODAY’S BEST' : '';
     } catch (e) {}
     game._dailyResult = txt;

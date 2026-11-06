@@ -2592,6 +2592,9 @@ body.theme-day .scores-link:hover { background: #0284c7; color: #ffffff; border-
     margin-bottom: 6px;
 }
 body.theme-day .scores-title { color: var(--day-ink); }
+.go-demo { margin-top: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }   /* [051126ae] */
+.go-demo-head { font-weight: 800; letter-spacing: 0.14em; font-size: 15px; color: #fcd34d; }
+.go-demo-line { font-size: 13px; line-height: 1.45; opacity: 0.9; max-width: 300px; }
 .scores-daily { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }   /* [051126ac] */
 .scores-daily[hidden], .scores-section-head[hidden] { display: none; }
 .scores-daily-mine, .scores-daily-world { font-size: 13px; letter-spacing: 0.04em; opacity: 0.9; }
@@ -8358,6 +8361,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 051126-1846: THE DEMO. [051126ae] Jake, 18:38 ("yes": the demo build, the platform setting first). BUILD — platform (web, crazygames, steam, app) and edition (demo, full; a bought game is full) from window.ROTOR_BUILD, set by a platform shell, or ?platform= / ?edition=; the store address for the wishlist button. THE DEMO is levels 1–5: clearing level 5 ends the run as a win, DEMO COMPLETE, with BIGGER CHALLENGES AHEAD ("five more levels in the full game: new shapes to master, harder sets, islands further out — and a world table to climb") and WISHLIST ON STEAM when there is a store page. ADS: a platform's ads (window.ROTOR_PLATFORM.ads) get a break at the level door and at the end of a run (not both at once), never in the daily or a bought game; the sound is hushed for it. demo.html beside index.html is this file with ROTOR_BUILD = demo.
 // 051126-1619: ONE DAY. [051126ad] Jake, 16:16–16:18: the daily turns over at the same moment worldwide, 00:00 UTC (the day and its result line are the UTC date; TODAY'S PUZZLE says so); it stays five levels, the demo's shapes. ?dailylocal=1 the device's date.
 // 051126-1610: STOCK TAKEN. Jake's answers, 5 Nov, 15:48–16:01 ("make all necessary changes and with your suggestions unless stated"). [051126v] AN ISLAND IS NEVER MORE THAN 4 SQUARES FROM LAND OR ANOTHER ISLAND: every island (generated, level, gold) is measured when made and twice more as it comes into view — the fewest hole squares from the land below that joins the way up, or another island — and over 4 stepping ground is laid from the far end until it is 4; the moat stays (?islereach=). [051126w] the square kit on every level's first square (?squarekit=1 the debut only), found a cell more often (the slot is dealt above the view); the 45 s help and first-landing help for the J too when the J and the square are what is left. [051126x] THE CLEAR APRON: no hole or red within 2 squares of a square or J slot (cleared when dealt, none put there while it lives; not on an island) — 'lose the shape through own mistake' (?apron=0). [051126y] level 3's island pair in a one-deep moat (?isle3moat=2). [051126z] the level card plays Lantern, Tide and Carousel in turn. [051126aa] ×2 gold runs 40 s (was 20; ?goldwin=). [051126ab] A SURPRISE UNDER A FILLED HOLE: 1 in 6 a cell, one every 8 s at most — a gold glint turning in the new ground, a ring, stars and the sound, then +5s, +10s or 250 × level points (?surprise=0, ?surpriseodds=). [051126ac] THE DAILY, READY FOR WORLD RANKINGS: RANKINGS takes a platform's own board (Steam: one a day) or a server address (ROTOR_BOARD_URL, ?board=), one entry a player a day; TOP SCORES has TODAY'S PUZZLE (your result, PLAY TODAY'S PUZZLE, the world's top ten) behind ?daily=1 until the server is up.
 // 051126-1506: TWENTY LEFT. [051126u] Jake, 5 Nov, 15:06: "after paying 20 secs for the gold there should be 20 secs on the clock": the gold needs its price plus 20 s (0:40, was 1:00), so taking it leaves at least 0:20. ?goldleft=.
@@ -9280,7 +9284,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '051126-1619 ROTOЯ · ONE DAY';
+const BUILD_VERSION = '051126-1846 ROTOЯ · THE DEMO';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -20343,6 +20347,46 @@ function guaranteeFeaturedHoles(fromY, toY, safeZoneEnd) {
    later leaderboard can take it as-is. ═════════════════════════════════════ */
 let dailyMode = false;
 const DAILY_ROUNDS = 5;
+/* ══ [051126ae] THE PLATFORM SETTING AND THE DEMO — the launch plan (5 Nov): one file, several versions. BUILD says where the game runs
+   and which edition it is; everything that differs hangs off it.
+     · BUILD.platform: 'web' | 'crazygames' | 'steam' | 'app' — from window.ROTOR_BUILD (a platform shell sets it before the game loads),
+       else ?platform=, else 'web'.
+     · BUILD.edition: 'demo' (levels 1–5) | 'full' (levels 1–10) — from window.ROTOR_BUILD, else ?edition=, else 'full'.
+       A player who has bought the game plays 'full' (the shell says so: window.ROTOR_BUILD.bought).
+     · BUILD.wishlist: the Steam store address for the demo's end card (window.ROTOR_BUILD.wishlist, or ?wishlist=); none, no button.
+   THE DEMO: levels 1–5 — the single, the pair, the diagonal, the J. Clearing level 5 ends the run as a win, and the end card teases
+   what is ahead ("BIGGER CHALLENGES AHEAD", Jake, 15:48 — not the square by name), with WISHLIST ON STEAM when there is a store page.
+   ADS: the shell may hand in window.ROTOR_PLATFORM.ads = { break(kind) → Promise }. The game asks for a break at the level door and at
+   the end of a run — never in the daily, never in a bought game. With no shell, nothing happens. (The rewarded +30 s comes with the
+   CrazyGames SDK.) */
+const BUILD = (() => {
+    const q = k => { try { const m = new RegExp('[?&]' + k + '=([^&]+)').exec(location.search || ''); return m ? decodeURIComponent(m[1]) : null; } catch (e) { return null; } };
+    const W = (typeof window !== 'undefined' && window.ROTOR_BUILD) || {};
+    const platform = String(W.platform || q('platform') || 'web').toLowerCase();
+    const bought = !!W.bought;
+    let edition = String(W.edition || q('edition') || 'full').toLowerCase(); if (bought) edition = 'full';
+    return { platform: ['web', 'crazygames', 'steam', 'app'].includes(platform) ? platform : 'web', edition: edition === 'demo' ? 'demo' : 'full', bought,
+             wishlist: W.wishlist || q('wishlist') || '' };
+})();
+const DEMO_LEVELS = 5;
+const IS_DEMO = BUILD.edition === 'demo';
+function demoEndHtml() {   // [051126ae] the tease: bigger challenges ahead
+    const w = BUILD.wishlist ? `<button class="go-copy go-wish" onclick="event.stopPropagation(); demoWishlist()">WISHLIST ON STEAM</button>` : '';
+    return `<div class="go-demo"><div class="go-demo-head">BIGGER CHALLENGES AHEAD</div>` +
+           `<div class="go-demo-line">Five more levels in the full game: new shapes to master, harder sets, islands further out — and a world table to climb.</div>${w}</div>`;
+}
+function demoWishlist() { try { rec('demo', { k: 'wishlist' }); } catch (e) {} try { window.open(BUILD.wishlist, '_blank', 'noopener'); } catch (e) {} }
+function runLevelCap() { return dailyMode ? DAILY_ROUNDS : IS_DEMO ? DEMO_LEVELS : ADVANCED_ROUNDS.length; }   // the last level of this run
+const ADS = {
+    adapter() { try { const a = window.ROTOR_PLATFORM && window.ROTOR_PLATFORM.ads; return a && typeof a.break === 'function' ? a : null; } catch (e) { return null; } },
+    on() { return !!this.adapter() && !dailyMode && !BUILD.bought && !(typeof game !== 'undefined' && game && game.testDrive); },
+    break(kind) {   // resolves when the break is over (or at once with none)
+        if (!this.on()) return Promise.resolve(false);
+        try { rec('ad', { k: kind }); } catch (e) {}
+        const hush = on => { try { if (audioCtx && _muteBus) _muteBus.gain.setValueAtTime(on ? 0 : (soundMuted ? 0 : 1), audioCtx.currentTime); } catch (e) {} };   // quiet for the break, the player's own setting kept
+        try { hush(true); return Promise.resolve(this.adapter().break(kind)).catch(() => false).then(r => { hush(false); return r; }); } catch (e) { hush(false); return Promise.resolve(false); }
+    },
+};
 let dailyRand = Math.random;
 function mulberry32(a) {
     return function () {
@@ -24749,7 +24793,7 @@ function replayClipMime() {
     return null;
 }
 function replayClipLevelText() {
-    const cap = dailyMode ? DAILY_ROUNDS : 10;
+    const cap = runLevelCap();   // [051126ae]
     return advancedRound > cap ? `ENDLESS ${advancedRound - cap}` : `${advancedRound} OF ${cap}`;
 }
 function replayClipStart(R) {
@@ -25316,7 +25360,7 @@ function closeCallNow() {   // the last piece's own moment, read at its claim
     return R.clk <= CLOSE_CALL_SEC || R.gap < CLOSE_CALL_ROWS;
 }
 function pickCelebration(mission) {
-    const _final = advancedRound >= (dailyMode ? DAILY_ROUNDS : ADVANCED_ROUNDS.length);
+    const _final = advancedRound >= runLevelCap();   // [051126ae]
     if (!_final && closeCallNow()) { game._pieceTurned = false; game._wasClose = true; return (_lastCelebration = dealLine('close', CLOSE_LINES)); }   // [091026b]
     game._wasClose = false;
     // Round pools only — act-based override lines were reviewed and removed.
@@ -27270,7 +27314,7 @@ function finishLevelTally() {
         setTimeout(() => el.classList.add('hidden'), 280);
     }
     const cb = _tallyDone; _tallyDone = null;
-    if (cb) cb();
+    if (cb) { if (ADS.on() && advancedRound < runLevelCap()) ADS.break('level').then(cb, cb); else cb(); }   // (not after the last level: the end of the run has its own)   // [051126ae] a break at the level door, when the platform has ads
 }
 
 /* ── [180926cc] THE COVERAGE GRADE, BY LEVEL ────────────────────────────────
@@ -27366,7 +27410,7 @@ function completeSet() {
     if (game._lv) game._lv.set = bonus;
     if (CLOCK_RESETS && CLOCK_ONLY && !game.testDrive) {   // [181026a] THE TIME LEFT BECOMES POINTS — the tally spins it down
         const _left = Math.max(0, Math.floor(momentumRemaining()));
-        const _lastLv = advancedRound === (dailyMode ? DAILY_ROUNDS : ADVANCED_ROUNDS.length);
+        const _lastLv = advancedRound === runLevelCap();   // [051126ae]
         const _carryOn = CLOCK_CARRY && !_lastLv;   // [251026a] the time left goes on, up to the next level's limit
         const _lim = _carryOn ? carryLimit(advancedRound + 1) : 0, _carry = _carryOn ? Math.min(_lim, _left) : 0;
         const _conv = _left - _carry;   // what is over the limit — the points, as before
@@ -27410,7 +27454,7 @@ function completeSet() {
     const fwDuration = mission.fwDuration || 2500;
     // D6 ENDLESS: no win-exit. Round 10 completion celebrates the campaign
     // then rolls straight into Endless rounds via the normal advance path.
-    const campaignDone = (advancedRound === (dailyMode ? DAILY_ROUNDS : ADVANCED_ROUNDS.length));   // [090926h] the daily is five
+    const campaignDone = (advancedRound === runLevelCap());   // [090926h] the daily is five · [051126ae] the demo too
     // [220826a] THE GAME ENDS NOW. `isFinale` was hard-coded false, which made
     // the entire finale branch below — MISSION COMPLETE, the closing
     // celebration, endGame('win') — unreachable code, and rolled level 10
@@ -44215,7 +44259,7 @@ function endGameNow(reason = 'death') {
         triggerShake(6, 350);
         const titleEl = document.getElementById('gameOverTitle');
         if (titleEl) {
-            titleEl.innerHTML = 'FULL<br>ROTATION';   // [230826d] see completeSet
+            titleEl.innerHTML = (IS_DEMO && !dailyMode) ? 'DEMO<br>COMPLETE' : 'FULL<br>ROTATION';   // [230826d] see completeSet · [051126ae] the demo's own
             titleEl.style.color = '#a3e635';
             titleEl.style.textShadow = '0 0 24px rgba(163,230,53,0.55)';
             // Reset any FAIL-state sizing from a prior run
@@ -44333,7 +44377,7 @@ function endGameNow(reason = 'death') {
            own celebration has already had the finale card to itself (see
            completeSet). A third telling is what [120926c] cut the cause for. */
         const isBestW = game.score > (game._startBest || 0) && (game._startBest || 0) > 0;
-        const _winCap = dailyMode ? DAILY_ROUNDS : 10;
+        const _winCap = runLevelCap();   // [051126ae]
         tauntEl.innerHTML =
             `<div class="go-scorewrap">` +
                 `<span class="go-lbl">SCORE</span>` +
@@ -44343,7 +44387,7 @@ function endGameNow(reason = 'death') {
             `<div class="go-stats">` +
                 `<div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>` +
                     `<span class="go-val" style="white-space:nowrap">${_winCap} of ${_winCap}</span></div>` +   /* [250926ab] no depth line */
-            `</div>`;
+            `</div>` + (IS_DEMO && !dailyMode ? demoEndHtml() : '');   // [051126ae]
     } else {
         // Achievement · cause · consolation. The cause tells the truth about
         // this ending in the game's voice (and quietly re-teaches its lesson);
@@ -44415,7 +44459,7 @@ function endGameNow(reason = 'death') {
         //   then the two lines of prose, at one size
         // The "9,545 to SOLENOID" line is gone: a target is an invitation to keep
         // going, and this screen is where a run has just ended.
-        const _cap = dailyMode ? DAILY_ROUNDS : 10;   // [090926h]
+        const _cap = runLevelCap();   // [090926h] · [051126ae]
         const lvlTxt = advancedRound > _cap
             ? 'ENDLESS ' + (advancedRound - _cap)
             : advancedRound + ' of ' + _cap;
@@ -44517,6 +44561,7 @@ function endGameNow(reason = 'death') {
     replayClipRefresh();
     try { nameRevealSync(); } catch (e) {}   // [031126e]
     document.getElementById('gameOverScreen').classList.remove('hidden');
+    try { if (ADS.on()) ADS.break('gameover'); } catch (e) {}   // [051126ae]
 }
 
 // ============ FIT TO VIEWPORT (V9) ============

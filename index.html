@@ -293,6 +293,13 @@ h1 { color: var(--wm-c0); margin: 0 0 6px; line-height: 1;
    so the original flex rules govern exactly as before — including the
    flex-shrink on .game-canvas that [160826g] accidentally removed. Only the
    beside arrangement is new, and it only engages when it wins by 15%. */
+/* [101126aj] the close-up board: the box is 8 columns by 10 rows; closeupTick stretches the drawing across it and clips it */
+body.closeup { --board-ratio: 8 / 10; }
+body.closeup .game-canvas { will-change: transform; }
+/* [101126aj] room for the taller board: a smaller stick (22dvh → CLOSEUP stick 16dvh) and a tighter HUD */
+body.closeup.in-play #stickPad { width: min(clamp(150px, 88%, 396px), var(--closeup-stick, 16dvh)); }
+body.closeup .set-only-hud { row-gap: 2px !important; padding-top: 5px !important; padding-bottom: 2px !important; }
+body.closeup:not(.layout-land) .set-only-hud { margin-top: 4px !important; }
 body.layout-beside .game-container { display: block; }
 body.layout-beside .game-canvas,
 body.layout-beside #stickPad { position: absolute; margin: 0; }
@@ -5147,7 +5154,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                     </span>
                 </button>
                 <button class="lc-replay-btn lc-next-btn" id="lcNextBtn" type="button" onclick="event.stopPropagation(); lcGoNext('next');">
-                    <span class="lc-next-lbl" id="lcNextLbl">NEXT LEVEL</span><span aria-hidden="true" class="lc-next-arrow">&#9654;&#9654;</span>
+                    <span class="lc-next-lbl" id="lcNextLbl">CONTINUE</span><span aria-hidden="true" class="lc-next-arrow">&#9654;</span>
                     <span class="lc-ring">
                         <svg width="14" height="14" viewBox="0 0 22 22" aria-hidden="true">
                             <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(6,34,43,0.25)" stroke-width="2"></circle>
@@ -5171,7 +5178,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                 </div>
                 <!-- [101126aa] and on, without saving -->
                 <button class="lc-replay-btn lc-next-btn lc-keep-next" id="lcKeepNext" type="button" onclick="event.stopPropagation(); lcGoNext('next');">
-                    <span class="lc-next-lbl" id="lcKeepNextLbl">NEXT LEVEL</span><span aria-hidden="true" class="lc-next-arrow">&#9654;&#9654;</span>
+                    <span class="lc-next-lbl" id="lcKeepNextLbl">CONTINUE</span><span aria-hidden="true" class="lc-next-arrow">&#9654;</span>
                 </button>
                 <div class="lc-keep-foot">
                     <span class="lc-ring">
@@ -5393,14 +5400,23 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                 <span>Opacity</span>
                 <input type="range" id="setStickOpacity" min="30" max="100" step="1" oninput="settingStickOpacity(this.value/100)">
             </div>
+            <!-- [101126aj] the close-up board, phones held upright -->
+            <label class="settings-row">
+                <span>Close-up board (phones)</span>
+                <input type="checkbox" id="setCloseup" onchange="settingCloseup(this.checked)">
+            </label>
             <div class="settings-row">
-                <span>Position</span>
+                <span>Hand (wide screens)</span>   <!-- [101126ad] was Position, which did nothing -->
                 <div class="settings-theme">
                     <button id="setStickLeft" class="settings-seg" onclick="settingStickSide('left')">◀ Left</button>
                     <button id="setStickRight" class="settings-seg" onclick="settingStickSide('right')">Right ▶</button>
                 </div>
             </div>
-            <label class="settings-row">
+            <!-- [101126ae] AUTO-DODGE RETIRED — Jake, 16:21: "check the 'auto dodge the player' is working correctly and works." It did not:
+                 it slid the stick between the board's bottom corners when your block came near, and since 7 Aug ([070826e]) the stick has had
+                 its own pad, under the board or beside it, never over it, so there is nothing for it to get out of the way of; the switch
+                 has done nothing since. The row is hidden (STICK_DODGE_ROW; ?dodgerow=1 shows it). -->
+            <label class="settings-row" id="setStickDodgeRow">
                 <span>Auto-dodge the player</span>
                 <input type="checkbox" id="setStickDodge" onchange="settingStickDodge(this.checked)">
             </label>
@@ -8518,6 +8534,12 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 101126-1921: CLOSE-UP. Jake, 10 Nov, 18:33–19:00. [101126aj] On an upright phone the board shows 8 columns by 10 rows, squares a quarter bigger, and the camera slides (two columns of margin round the block) to reveal the other two; chevrons mark slots out of view. Undo: Settings > Close-up board off; ?closeup=0; CLOSEUP_ON = false.
+// 101126-1813: CONTINUE. Jake, 10 Nov, 18:13. [101126ai] The button beside REPLAY reads CONTINUE ▶ and goes on to the level's tally (scores and stats), never past it; a move does the same. ?lcstraight=1 for 1507's straight on.
+// 101126-1718: TWO TEACHERS. Jake, 10 Nov, 17:17. [101126ah] FIX: 1659 commented out half of the teaching hourglass's line, so level 1 buried an hourglass under the block every frame (a trail of them, every difficulty). The line is whole; level 1 buries two, as before.
+// 101126-1659: NEW GLASSES. Jake, 10 Nov, 16:59. [101126ag] Hourglasses big/small: Easy 25/15, Medium 15/5, Hard 10 and none small (never dealt on Hard; the level-1 teaching one is big there). Words updated.
+// 101126-1633: RIGHT HAND (with the guide's price). Jake, 16:26. [101126af] A look with the Move Guide costs 5 s on Easy, 10 on Medium, 15 on Hard (free on level 1); every place that names it says so. ?guidesec= one price for all.
+// 101126-1622: RIGHT HAND. Jake, 10 Nov, 16:21. [101126ad] On a wide screen the board stands left and the panel with the stick right (Settings > Joystick > Hand: Left swaps them; ?hand=left); the old Position setting, dead since 7 Aug, is this now; the panel no longer saves room for a row under it. [101126ae] Auto-dodge (dead since the stick got its own pad) hidden from Settings (?dodgerow=1).
 // 101126-1529: EDGE TO EDGE. Jake, 10 Nov, 15:27. [101126ab] The level card's two buttons fit inside it; the card casts no shadow. [101126ac] The six round buttons are always there: upright, along the foot from side to side; wide, a column down the left margin, top to bottom; through the door, card, tally and replays. ?rowedges=0.
 // 101126-1507: STRAIGHT ON. Jake, 10 Nov, 14:58/15:05. [101126aa] The level card offers REPLAY and LEVEL n ▶▶ (★ FINISH on the last) side by side, the ring on the way on; LEVEL n, an arrow key or a touch on the joystick goes straight on (the tally's count lands and is skipped, the door opens). KEEP IT? gets the same button. ?lcnext=0.
 // 101126-1430: UP TO DATE. Jake, 10 Nov, 14:27. [101126w] HOW TO PLAY and Settings' rules brought up to date (new DIG lesson and Digging/Difficulty rules; hourglasses by difficulty; last cube over the edge; buried gold; button places; a hole cube is 5 s). [101126x] The stick's knob a convex polished cap, rim lit top left (?knob=old). [101126y] Idle stick arrows lighter grey (?stickgrey=old). [101126z] Slot colours 100% (?slotsolid=0). Shading checked: one light, top left, throughout.
@@ -9500,7 +9522,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101126-1529 ROTOЯ · EDGE TO EDGE';
+const BUILD_VERSION = '101126-1921 ROTOЯ · CLOSE-UP';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -11177,9 +11199,17 @@ const CLOCK_DRAIN = (() => {
 const MODES_ON = !/[?&]modes=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 const MODE_LIST = ['easy', 'medium', 'hard'];
 const MODE_WORD = { easy: 'EASY', medium: 'MEDIUM', hard: 'HARD' };
-const MODE_GLASS = { easy: [Math.round(econDial('easybig', 20, 5, 45)), Math.round(econDial('easysmall', 10, 1, 30))],
-                     medium: [Math.round(econDial('medbig', 15, 5, 45)), Math.round(econDial('medsmall', 8, 1, 30))],
-                     hard: [HOURGLASS_SEC, Math.max(1, Math.round(HOURGLASS_SEC / 2))] };
+/* ══ [101126ag] HOURGLASSES BY DIFFICULTY — Jake, 10 Nov, 16:59: "easy big 25 s small 15 s, medium 15 s and small 5 s, hard is 10 s for
+   big and no small." Big and small were 20/10 on Easy, 15/8 on Medium, 10/5 on Hard. Now 25/15, 15/5, and on Hard 10 with no small
+   hourglasses at all: a Hard board never deals one (the board's own deal, the tunnels, the wash-up after an island, the backfill),
+   and level 1's buried teaching hourglass is a big one there. The words everywhere say "no small ones" on Hard. The hourglass a
+   finished row lays is unchanged (10 s on every difficulty). ?easybig= ?easysmall= ?medbig= ?medsmall= ?hardbig= ?hardsmall= set them
+   (?hardsmall=5 brings Hard's small ones back). */
+const MODE_GLASS = { easy: [Math.round(econDial('easybig', 25, 5, 45)), Math.round(econDial('easysmall', 15, 0, 30))],
+                     medium: [Math.round(econDial('medbig', 15, 5, 45)), Math.round(econDial('medsmall', 5, 0, 30))],
+                     hard: [Math.round(econDial('hardbig', HOURGLASS_SEC, 5, 45)), Math.round(econDial('hardsmall', 0, 0, 30))] };
+function noSmallGlass() { return !!(CLOCK_RESETS && MODES_ON && (MODE_GLASS[runMode()] || [0, 1])[1] <= 0); }   // [101126ag] Hard deals none
+function glassPair(m) { const g = MODE_GLASS[m]; return g[1] > 0 ? `${g[0]} and ${g[1]}` : `${g[0]}, no small ones,`; }   // [101126ag] for the words
 const MODE_KEY = 'rotor_mode', MODE_DAILY = 'medium';
 let modePick = (() => {
     try { const m = /[?&]mode=(easy|medium|hard)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); if (m) return m[1]; } catch (e) {}
@@ -13098,7 +13128,7 @@ function settingsRulesRows() {
         (typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? ` A single crosses instead: ${CROSS_SEC} seconds a cell, and the cell becomes ground (not enough time, and it won\u2019t go).` +
             (LANDFALL_SEC > 0 ? ` The first landing on an island ringed by holes pays ${LANDFALL_SEC} seconds.` : '') : '')]);
     if (fresh) {
-        rows.push(['The clock', `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. A slot pays ${SLOT_PAY_SEC} seconds, a row ${typeof ROW_RUNS !== 'undefined' && ROW_RUNS ? ROW_RUN_SEC + (ROW_TAPER ? ` (less when the clock is over ${clockFmt(ROW_TAPER_FROM)}: down to ${ROW_TAPER_MIN} when it is full)` : '') : 'some'}, an hourglass ${hourglassFace('t10')} or ${hourglassFace('t30')}` +
+        rows.push(['The clock', `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. A slot pays ${SLOT_PAY_SEC} seconds, a row ${typeof ROW_RUNS !== 'undefined' && ROW_RUNS ? ROW_RUN_SEC + (ROW_TAPER ? ` (less when the clock is over ${clockFmt(ROW_TAPER_FROM)}: down to ${ROW_TAPER_MIN} when it is full)` : '') : 'some'}, an hourglass ${noSmallGlass() ? hourglassFace('t30') + ' (no small ones on Hard)' : hourglassFace('t10') + ' or ' + hourglassFace('t30')}` +
             (COMBO_SEC ? `, a combo ${COMBO_SEC}` : '') + `. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points, ${TIME_PTS_PER_SEC} \u00d7 the level a second. The clock runs a fifth faster than real time.`]);   // [251026k]
         if (typeof KEEP_TIME !== 'undefined' && KEEP_TIME)   // [251026k]
             rows.push(['Carry', `Everything on the clock when the set is complete carries into the next level. No level starts under ${clockFmt(CARRY_FLOOR_SEC)}. On the last level, all of it becomes points.`]);
@@ -13110,8 +13140,8 @@ function settingsRulesRows() {
                 : 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Whatever it carries you over is destroyed.']);
     if (GOLD_ON) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, land on it' : 'sits on an island. Land on it'} \u2014 by a flip or carried by a shifter \u2014 and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point${GOLD_TIME_X2 ? ', and the time the clock gains' + (GOLD_TIME_CAPPED ? ' (up to the ' + GOLD_TIME_CAP + ' seconds it cost)' : '') + ',' : ''} is doubled. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ' and stays until it leaves the bottom of the board' : ` and fades ${GOLD_LIFE_SEC} seconds after it appears`}. A shifter that carries you over it leaves it.`]);   // [311026o]
     if (typeof DIG_MODE !== 'undefined' && DIG_MODE) rows.push(['Digging', `Hourglasses, shifters and the \u00d72 gold are buried where they were dealt. The square you stand on is dug${DIG_WIDE ? ', and the eight round it' : ''}, and so is every square a shifter carries you across; a second after you leave, what was there comes up. Go back and land on it to collect it before it slides off the bottom. Slots, greens, reds and holes are always in view.`]);   // [101126w]
-    if (typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined') rows.push(['Difficulty', `Easy, Medium or Hard, chosen on the welcome page, sets what the hourglasses pay: big and small, ${MODE_GLASS.easy[0]} and ${MODE_GLASS.easy[1]} seconds on Easy, ${MODE_GLASS.medium[0]} and ${MODE_GLASS.medium[1]} on Medium, ${MODE_GLASS.hard[0]} and ${MODE_GLASS.hard[1]} on Hard. Each difficulty keeps its own top scores.`]);   // [101126w]
-    if (GUIDE_LOOK_SEC > 0) rows.push(['Move Guide', `Tap the compass to see the way to the set for a few seconds. Free on level 1; after that each look costs ${GUIDE_LOOK_SEC} seconds, paid when the route appears (no route, no charge). It won\u2019t open with under ${GUIDE_MIN_CLOCK} seconds on the clock.`]);   // [311026p]
+    if (typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined') rows.push(['Difficulty', `Easy, Medium or Hard, chosen on the welcome page, sets what the hourglasses pay: big and small, ${glassPair('easy')} seconds on Easy, ${glassPair('medium')} on Medium, ${glassPair('hard')} on Hard. Each difficulty keeps its own top scores.`]);   // [101126w]
+    if (GUIDE_LOOK_SEC > 0) rows.push(['Move Guide', `Tap the compass to see the way to the set for a few seconds. Free on level 1; after that each look costs ${guideLookSec()} seconds${guideModesWords()}, paid when the route appears (no route, no charge). It won\u2019t open with under ${GUIDE_MIN_CLOCK} seconds on the clock.`]);   // [311026p]
     rows.push(['Mistakes', (fresh && CUBE_LOST_SEC ? (WRONG_SLOT_TEN ? `A cube lost over the edge or off the bottom costs ${CUBE_LOST_SEC} seconds${HOLE_CUBE_PAYS ? `, one into a hole ${HOLE_CUBE_SEC}` : ''} (a red takes one for nothing); the wrong shape on a slot costs ${WRONG_SLOT_SEC}${WRONG_SLOT_PER_CUBE ? ' a cube it takes' : ''}${(LEVEL_ONE_FREE && !L1_HOLES_FREE) ? ', and is free on level 1' : ''}. ` : `A cube lost over the edge, off the bottom or on the wrong slot costs ${CUBE_LOST_SEC} seconds. `) : '') +   // [051126g]   // [311026i] what a mistake is
         (DIVE_BUILDS ? '' : DIVE_IS_MISTAKE ? (DIVE_FLAT && DIVE_CUBE_SEC > 0 ? `Your whole block into holes at once costs ${DIVE_CUBE_SEC} seconds a cube, every time` : `Your whole block into holes at once costs ${FALL_COST_SEC} seconds` + (DIVE_FLAT ? ', every time' : '')) + '. ' : '') + `Losing your last cube` + (DIVE_IS_MISTAKE && !DIVE_FLAT ? ' (your whole block into holes too)' : '') + `, a red\u2019s toll on a single, or a shifter pushing a single off the board is a mistake: ${MISTAKE_SEC} seconds${MISTAKE_STEP_SEC ? `, ${MISTAKE_STEP_SEC} more for each one before it in the level, never more than ${MISTAKE_CAP_SEC}` : ', every time'}. Points are never taken away.`]);
     return rows;
@@ -18737,7 +18767,12 @@ function digTeachTick(now) {
     const body = getPlayerCells();
     for (const c of body) { const k = `${c.x},${c.y}`;
         if (world[k] !== undefined || digHidden.has(k) || slots.some(sl => !sl.claimed && sl.keys.has(k))) continue;
-        digHidden.set(k, { v: 't10', m: null, teach: 1 }); digDug.set(k, { leftAt: 0 }); T.pending = k; T.n++;
+        /* [101126ah] FIX — Jake, 17:17, with a grab of a Hard board strewn with hourglasses: "there are way too many". 1659's change
+           ([101126ag], a big teaching hourglass on Hard) put its note in the middle of this line, so everything after it — marking the
+           cell dug, remembering the hourglass as pending, counting it — became part of the note. Level 1 then buried a fresh hourglass
+           under the block on every frame, on every difficulty, and each came up as the block moved: a trail of them. Mended: the line
+           is whole again, and level 1 buries its two teaching hourglasses, as it did before 1659. */
+        digHidden.set(k, { v: noSmallGlass() ? 't30' : 't10', m: null, teach: 1 }); digDug.set(k, { leftAt: 0 }); T.pending = k; T.n++;   // [101126ag] a big one on Hard
         rec('dig', { k: 'teach', n: T.n }); return; }
 }
 function digTick(now) {
@@ -21311,7 +21346,7 @@ function generateChunkInner(fromY, toY) {
                     // timeSpawnTilt. The board notices effort.
                     const _tt = timeSpawnTilt();
                     if (r < TIME_T30_CELL_CHANCE * _tt) world[key] = 't30';
-                    else if (r < (TIME_T30_CELL_CHANCE + TIME_T10_CELL_CHANCE) * _tt) world[key] = 't10';
+                    else if (!noSmallGlass() && r < (TIME_T30_CELL_CHANCE + TIME_T10_CELL_CHANCE) * _tt) world[key] = 't10';   // [101126ag] none on Hard
                     // [070926b] Hourglass SUPPLY was never recorded, so the
                     // last analysis could count what was collected and not
                     // what was offered. Same denominator problem reds had.
@@ -21414,9 +21449,9 @@ function generateChunkInner(fromY, toY) {
                                    looks like 10 and pays 15. Now t10, and
                                    recorded, so the next export can say where the
                                    clock's hourglass income actually comes from. */
-                                const tk = rich ? 't30' : 't10';
-                                world[`${x},${y}`] = tk;
-                                rec('spawn', { k: tk, src: 'tunnel' });
+                                const tk = rich ? 't30' : (noSmallGlass() ? null : 't10');   // [101126ag] none on Hard
+                                if (tk) { world[`${x},${y}`] = tk;
+                                rec('spawn', { k: tk, src: 'tunnel' }); }
                             } else if (countVisibleGreens() < MAX_VISIBLE_GREENS)
                                 world[`${x},${y}`] = 'pickup';
                         }
@@ -23500,7 +23535,7 @@ function islandWash(now) {
         delete world[hk];                                         // the prize leaves the island either way
         const hp = hk.split(',');
         addBurst(+hp[0] * CELL + CELL / 2, (+hp[1] - game.cameraY) * CELL + CELL / 2, '#86efac');
-        if (best && countTimeWindow(best.y) < MAX_VISIBLE_TIME) {
+        if (best && countTimeWindow(best.y) < MAX_VISIBLE_TIME && !noSmallGlass()) {   // [101126ag] none on Hard
             world[best.k] = 't10';
             addBurst(best.x * CELL + CELL / 2, (best.y - game.cameraY) * CELL + CELL / 2, '#86efac');
             if (sfx.time10) sfx.time10(); else if (sfx.ground) sfx.ground();
@@ -24843,12 +24878,17 @@ function replayTapeReady() {
      · A tap anywhere else on the card still does what it did (the tally, then CONTINUE).
    LC_NEXT_ON = false, or ?lcnext=0, puts back REPLAY alone. */
 const LC_NEXT_ON = !/[?&]lcnext=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126ai] CONTINUE, NOT STRAIGHT ON — Jake, 10 Nov, 18:13: "the skip to level button shouldnt jump the scores and stats screen, can
+   you rejig. just a 'continue' button should do." The button beside REPLAY read LEVEL n ▶▶ and went past the level's tally to the door.
+   It reads CONTINUE ▶ now and goes on to the tally, as waiting or tapping the card does; the tally's own CONTINUE then opens the door.
+   A move (an arrow key, a touch on the joystick) does the same. LC_STRAIGHT_ON = true, or ?lcstraight=1, puts back 1507's straight on. */
+const LC_STRAIGHT_ON = /[?&]lcstraight=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 let lcNextNow = false;   // the next press went straight on: the tally that follows lands its count and goes at once
-function lcNextLabel() { return (advancedRound >= runLevelCap()) ? '\u2605 FINISH' : `LEVEL ${advancedRound + 1}`; }
+function lcNextLabel() { if (!LC_STRAIGHT_ON) return 'CONTINUE'; return (advancedRound >= runLevelCap()) ? '\u2605 FINISH' : `LEVEL ${advancedRound + 1}`; }   // [101126ai]
 function lcGoNext(why) {
     if (!LC_NEXT_ON) return;
-    if (replayOfferLive()) { lcNextNow = true; rec('replay', { k: 'next', why, r: advancedRound }); replayOffer.pass(why); return; }
-    if (keepOfferLive()) { lcNextNow = true; rec('keep', { k: 'next', why, r: advancedRound }); keepOffer.pass(why); }
+    if (replayOfferLive()) { lcNextNow = LC_STRAIGHT_ON; rec('replay', { k: 'next', why, r: advancedRound }); replayOffer.pass(why); return; }
+    if (keepOfferLive()) { lcNextNow = LC_STRAIGHT_ON; rec('keep', { k: 'next', why, r: advancedRound }); keepOffer.pass(why); }
 }
 function lcTapIsStick(e) {   // a touch on the joystick through the card is a move
     if (!LC_NEXT_ON || !e || !(replayOfferLive() || keepOfferLive())) return false;
@@ -33345,8 +33385,9 @@ function checkCollisions() {
                         }
                     if (cands.length && countTimeWindow(camI) < MAX_VISIBLE_TIME) {
                         const c = cands[(Math.random() * cands.length) | 0];
-                        world[c.k] = Math.random() < 0.06 ? 't30' : 't10';
-                        rec('spawn', { k: world[c.k], src: 'backfill' });   // [070926b]
+                        const _bk = Math.random() < 0.06 ? 't30' : (noSmallGlass() ? null : 't10');   // [101126ag] none on Hard
+                        if (_bk) { world[c.k] = _bk;
+                        rec('spawn', { k: world[c.k], src: 'backfill' }); }   // [070926b]
                     }
                 }
             }
@@ -37627,16 +37668,26 @@ function toggleStick() { applyStick(!stickOn); }
 // Joystick position + auto-dodge prefs (per device). Default: bottom-RIGHT,
 // auto-dodge OFF — the stick is translucent enough to read the grid through,
 // so it stays planted unless the player opts back in.
+/* ══ [101126ad] THE STICK ON THE RIGHT ON A WIDE SCREEN, THE LEFT IN SETTINGS — Jake, 10 Nov, 16:21: "in the iphone setup and for all
+   similar setups favour the joystick on the right hand side for the 16:9 setups for right handed people but also update the settings
+   menu incase left handed people want the joystick to favour the left hand side." On a wide screen the panel (the set and the clock,
+   the stick at its foot) stood on the left of the board, so the stick was under the left thumb. Now the board stands on the left and
+   the panel on the right, the stick under the right thumb; Settings > Joystick > Hand: Left puts the panel back on the left. The six
+   round buttons keep to the left margin either way. An upright screen is unchanged (the stick is centred under the board).
+   Settings' old Position (Left / Right) did nothing since the stick got its own pad on 7 Aug ([070826e]): it is this choice now, read
+   from a fresh key (rotor_stick_hand) so an old tap of "Left" does not carry over. ?hand=left / ?hand=right try either. */
 let stickSide = 'right';
 let stickDodge = false;
-try { const _ss = localStorage.getItem('rotor_stick_side'); if (_ss === 'left' || _ss === 'right') stickSide = _ss; } catch (e) {}
+try { const _ss = localStorage.getItem('rotor_stick_hand'); if (_ss === 'left' || _ss === 'right') stickSide = _ss; } catch (e) {}   // [101126ad] a fresh key
+try { const _hq = /[?&]hand=(left|right)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); if (_hq) stickSide = _hq[1]; } catch (e) {}
 try { stickDodge = localStorage.getItem('rotor_stick_dodge') === '1'; } catch (e) {}
 _stickUI.tgt = _stickUI.dodge = (stickSide === 'right' ? 1 : 0);   // start planted, no boot-up glide
 function settingStickSide(side) {
     stickSide = side === 'left' ? 'left' : 'right';
-    try { localStorage.setItem('rotor_stick_side', stickSide); } catch (e) {}
+    try { localStorage.setItem('rotor_stick_hand', stickSide); } catch (e) {}   // [101126ad]
     _stickUI.tgt = stickSide === 'right' ? 1 : 0;   // glide over to the new home
     syncStickSettingsUI();
+    try { if (typeof layoutPlay === 'function') layoutPlay(); placeTopRow._sig = ''; placeTopRow(); } catch (e) {}   // [101126ad] the panel moves now
 }
 // Joystick opacity (30–100%), applied on top of the idle fade.
 let stickOpacity = 1;
@@ -37651,7 +37702,10 @@ function settingStickDodge(on) {
     try { localStorage.setItem('rotor_stick_dodge', stickDodge ? '1' : '0'); } catch (e) {}
     syncStickSettingsUI();
 }
+const STICK_DODGE_ROW = /[?&]dodgerow=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126ae]
 function syncStickSettingsUI() {
+    { const cu = document.getElementById('setCloseup'); if (cu) { cu.checked = closeupPref; const row = cu.closest('.settings-row'); if (row) row.style.display = CLOSEUP_ON ? '' : 'none'; } }   // [101126aj]
+    { const dr = document.getElementById('setStickDodgeRow'); if (dr) dr.style.display = STICK_DODGE_ROW ? '' : 'none'; }   // [101126ae]
     const l = document.getElementById('setStickLeft'), r = document.getElementById('setStickRight');
     if (l) l.classList.toggle('active', stickSide === 'left');
     if (r) r.classList.toggle('active', stickSide === 'right');
@@ -37682,10 +37736,27 @@ let _hintsAutoOff = null, _hintsOnAt = 0;
    a look that finds no route ("No flip reaches that shape") is free; with under GUIDE_MIN_CLOCK (10) on the clock it will not
    open (NOT ENOUGH TIME). The compass wears its price from level 2. The Settings switch still opens it by itself as a run
    begins (level 1, free). Every look is recorded, paid or free, so the next export shows how much it is used. ?guidesec=0: free. */
+/* ══ [101126af] THE MOVE GUIDE'S PRICE BY DIFFICULTY — Jake, 10 Nov, 16:26: "can the cost for using the move guide change with the
+   difficulty level, deduct 5 secs for easy, 10 secs for medium and 15 secs for hard." A look cost 10 s whatever the difficulty; it
+   is GUIDE_MODE_SEC by the run's difficulty now: 5 on Easy, 10 on Medium, 15 on Hard (still free on level 1, still paid when the
+   route appears, still not with under 20 s on the clock). Every place that names the price asks guideLookSec(). ?guidesec= sets one
+   price for all three, as before. */
+const GUIDE_MODE_SEC = { easy: 5, medium: 10, hard: 15 };
+const GUIDE_SEC_FIXED = /[?&]guidesec=/.test((typeof location !== 'undefined' && location.search) || '');
+function guideLookSec() {
+    if (GUIDE_SEC_FIXED || !(typeof MODES_ON !== 'undefined' && MODES_ON)) return GUIDE_LOOK_SEC;
+    const m = typeof runMode === 'function' ? runMode() : 'medium';
+    return GUIDE_MODE_SEC[m] != null ? GUIDE_MODE_SEC[m] : GUIDE_LOOK_SEC;
+}
+function guideModesWords() {   // ' (5 on Easy, 15 on Hard)' — the other two, after the player's own
+    if (GUIDE_SEC_FIXED || !(typeof MODES_ON !== 'undefined' && MODES_ON)) return '';
+    const nm = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, me = runMode();
+    return ' (' + ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${GUIDE_MODE_SEC[m]} on ${nm[m]}`).join(', ') + ')';
+}
 const GUIDE_LOOK_SEC = Math.round(econDial('guidesec', 10, 0, 30)), GUIDE_FREE_LEVEL = 1, GUIDE_MIN_CLOCK = 20;   // [031126c] 10 s a look (was 5), never with under 20 s on the clock (was 10)
 function guidePriceNow() {
     if (typeof game === 'undefined' || !game || game.testDrive || game._replay || !CLOCK_ONLY) return 0;
-    return advancedRound > GUIDE_FREE_LEVEL ? GUIDE_LOOK_SEC : 0;
+    return advancedRound > GUIDE_FREE_LEVEL ? guideLookSec() : 0;   // [101126af] by difficulty
 }
 function guideRefuses() { return !!(game && game.running && guidePriceNow() > 0 && momentumRemaining() < GUIDE_MIN_CLOCK); }
 function guideRefusedFx() {
@@ -37790,7 +37861,7 @@ const TIPS = {
     diag:      'Swipe diagonally \u2014 corners count.',
     gold:      `\u00d72 gold: land on it and the clock pays ${GOLD_PRICE_SEC} seconds \u2014 every point${GOLD_TIME_X2 ? ' and the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost,' : '') : ''} for ${GOLD_WINDOW_SEC} seconds is doubled, so score all you can while it runs.${GOLD_STAYS ? ' It stays until it leaves the bottom of the board.' : ` It fades ${GOLD_LIFE_SEC} seconds after it appears.`}`,   // [311026o]
     goldpoor:  `\u00d72 gold needs ${GOLD_MIN_CLOCK} seconds on the clock.`,   // [311026o]
-    guide:     `After level 1 the Move Guide costs ${GUIDE_LOOK_SEC} seconds a look, paid when the route appears.`,   // [311026p]
+    guide:     `After level 1 the Move Guide costs ${guideLookSec()} seconds a look, paid when the route appears.`,   // [311026p]
     clockreset: KEEP_TIME ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. Whatever is on the clock when the set is complete carries into the next level \u2014 all of it. The clock holds ${clockFmt(CLOCK_CEILING)}, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`   // [251026k]
               : CLOCK_CARRY ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. The time you have left carries into the next level — up to ${clockFmt(CARRY_MAX_SEC)}, ${CARRY_STEP_SEC} seconds less each level, never under ${clockFmt(CARRY_MIN_CAP_SEC)}. Any more becomes points, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`
                        : `Every level starts the clock on ${clockFmt(LEVEL_START_SEC)}. Time left at the end of a level becomes points.`,   // [251026a]   // [181026a]
@@ -37800,7 +37871,7 @@ const TIPS = {
     // save pays 15 — so the one number this tip existed to give was the one
     // number the game never gives. It names both real tiers now, which is also
     // the more useful lesson: the big ones are worth a detour.
-    hourglass: 'Hourglass: ' + hourglassFace('t10') + ' seconds, or ' + hourglassFace('t30') + ' for a big one.',   // [181026a] both from the one table   // [081026I]
+    hourglass: noSmallGlass() ? 'Hourglass: ' + hourglassFace('t30') + ' seconds.' : 'Hourglass: ' + hourglassFace('t10') + ' seconds, or ' + hourglassFace('t30') + ' for a big one.',   // [101126ag]   // [181026a] both from the one table   // [081026I]
     // [040826b] The generic line named neither the problem nor the cure — and
     // "a rotate could" is often FALSE, since a turn cannot change board colour.
     // These say what is actually wrong, which is the difference between a
@@ -39793,8 +39864,103 @@ function drawEdgeProximity() {
 }
 
 
+/* ══ [101126aj] THE CLOSE-UP BOARD ON PHONES — Jake, 10 Nov, 18:33: "for the iphone version of the game, i would like the camera to zoom
+   into the grid of 10 grid squares wide into 8 grid squares wide and for the player to be able to move all the way to right and all the
+   way to the left revealing the off screen grid squares"; 18:56 (the reasons, the camera to pan by itself, the guide shown); 19:00: "go
+   with 8 x 10. can you make sure that this is straight forward to undo if the redesign doesnt work".
+   HOW: nothing in the game's drawing changes. The board is still drawn whole, 10 × 10. On an upright phone (narrower than CLOSEUP_MAX_W,
+   500 px) the board's box takes the shape of 8 columns by 10 rows; the drawing is stretched 1.25 × across inside it, so its squares are
+   square again and a quarter bigger, and a clip shows 8 of the 10 columns. The camera is that clip and the slide behind it (closeupTick):
+   it keeps two columns either side of the block in view, so it stays still while the block is in the middle and eases across (in about
+   a third of a second) only as the block heads for a side, showing the edge before the block reaches it; the Move Guide's footprints,
+   one move out, are always inside that margin. Replays follow the block the same way. A set's slot out of view gets a small chevron in
+   its colour at that side of the window, at its height.
+   UNDO, in order of size: Settings > Board > Close-up board (phones) off — for that phone, kept; ?closeup=0 — off for that page load;
+   CLOSEUP_ON = false below — off for everyone (one line). Every piece lives behind body.closeup and these functions; with it off the
+   board is exactly as it was. */
+const CLOSEUP_ON = !/[?&]closeup=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126aj] false: the whole feature off
+const CLOSEUP_COLS = 8, CLOSEUP_MAX_W = 500, CLOSEUP_MARGIN = 2, CLOSEUP_EASE_MS = 320;
+let closeupPref = true;
+try { const _cp = localStorage.getItem('rotor_closeup'); if (_cp === '0') closeupPref = false; } catch (e) {}
+let closeupCam = null;   // the camera's left column (0 .. VIEW_W - CLOSEUP_COLS), eased
+function closeupWanted() {
+    const B = document.body;
+    return CLOSEUP_ON && closeupPref && B.classList.contains('in-play') && !B.classList.contains('test-drive') && !B.classList.contains('layout-land') && !B.classList.contains('layout-beside')
+        && (window.innerWidth || 9999) < CLOSEUP_MAX_W && window.innerHeight > window.innerWidth;
+}
+function settingCloseup(on) {
+    closeupPref = !!on;
+    try { localStorage.setItem('rotor_closeup', closeupPref ? '1' : '0'); } catch (e) {}
+    const c = document.getElementById('setCloseup'); if (c) c.checked = closeupPref;
+    closeupTick(true);
+}
+function closeupTick(force) {
+    const B = document.body, cv = document.getElementById('canvas'); if (!cv) return;
+    const on = closeupWanted();
+    if (!on) {
+        if (B.classList.contains('closeup')) { B.classList.remove('closeup'); cv.style.transform = cv.style.transformOrigin = cv.style.clipPath = cv.style.maxWidth = ''; closeupCam = null; closeupFit._key = ''; try { if (typeof layoutPlay === 'function') layoutPlay(); } catch (e) {} }
+        return;
+    }
+    if (!B.classList.contains('closeup')) { B.classList.add('closeup'); closeupCam = null; try { if (typeof layoutPlay === 'function') layoutPlay(); } catch (e) {} }
+    const span = VIEW_W - CLOSEUP_COLS;
+    let lo = VIEW_W, hi = -1;
+    try { for (const c of getPlayerCells()) { lo = Math.min(lo, c.x); hi = Math.max(hi, c.x); } } catch (e) {}
+    if (hi < 0) { lo = hi = (VIEW_W - 1) / 2; }
+    const cur = closeupCam == null ? Math.max(0, Math.min(span, (lo + hi + 1) / 2 - CLOSEUP_COLS / 2)) : closeupCam;
+    let tgt = cur;
+    if (lo - CLOSEUP_MARGIN < cur) tgt = lo - CLOSEUP_MARGIN;                                   // the block heads left: show two columns beyond it
+    if (hi + 1 + CLOSEUP_MARGIN > tgt + CLOSEUP_COLS) tgt = hi + 1 + CLOSEUP_MARGIN - CLOSEUP_COLS;   // heads right
+    tgt = Math.max(0, Math.min(span, tgt));
+    const now = performance.now(), dt = Math.min(80, now - (closeupTick._t || now)); closeupTick._t = now;
+    closeupCam = closeupCam == null ? tgt : closeupCam + (tgt - closeupCam) * (1 - Math.exp(-dt / CLOSEUP_EASE_MS * 3));
+    if (Math.abs(tgt - closeupCam) < 0.002) closeupCam = tgt;
+    try { closeupFit(cv); } catch (e) {}
+    const W = cv.clientWidth; if (!(W > 0)) return;
+    const k = VIEW_W / CLOSEUP_COLS;            // 1.25: the drawing stretched across, so the squares are square
+    const camPx = closeupCam * (W * k / VIEW_W); // the camera in screen pixels
+    closeupTick._camPx = camPx;
+    const sig = W + ':' + camPx.toFixed(2);
+    if (!force && sig === closeupTick._sig) return; closeupTick._sig = sig;
+    cv.style.transformOrigin = '0 0';
+    cv.style.transform = `translateX(${(-camPx).toFixed(2)}px) scaleX(${k})`;
+    const l = camPx / k, r = W - (camPx + W) / k;   // the clip, in the box's own (unstretched) pixels
+    cv.style.clipPath = `inset(0px ${r.toFixed(2)}px 0px ${l.toFixed(2)}px round 11px)`;
+}
+function closeupFit(cv) {   // a tall phone: the board is as wide as the frame, so it is 1.25 × that tall — narrow it till the stick clears the buttons
+    const key = window.innerWidth + 'x' + window.innerHeight;
+    if (closeupFit._key !== key) { closeupFit._key = key; cv.style.maxWidth = ''; closeupFit._n = 0; return; }
+    if (closeupFit._n > 6) return;
+    const sp = document.getElementById('stickPad'), hb = document.querySelector('.play-home-btn');
+    if (!sp || !hb) return;
+    const S = sp.getBoundingClientRect(), H = hb.getBoundingClientRect();
+    const lim = (H.height > 0 && H.top > S.top) ? H.top - 6 : window.innerHeight - 6;
+    const over = S.bottom - lim;
+    if (over > 1) { cv.style.maxWidth = Math.floor(cv.clientWidth - over / (VIEW_W / CLOSEUP_COLS) - 1) + 'px'; closeupFit._n++; try { if (typeof fitHudToBoard === 'function') fitHudToBoard(); } catch (e) {} }
+}
+function closeupWin() {   // the columns in view, in board pixels
+    if (typeof document === 'undefined' || !document.body.classList.contains('closeup') || closeupCam == null) return { on: false, l: 0, r: LOGICAL_W };
+    return { on: true, l: closeupCam * CELL, r: (closeupCam + CLOSEUP_COLS) * CELL };
+}
+function closeupDrawMarks() {   // a chevron, in the slot's colour, at the side of the window a slot is hidden beyond
+    if (!document.body.classList.contains('closeup') || closeupCam == null || typeof slots === 'undefined') return;
+    const L = closeupCam, R = closeupCam + CLOSEUP_COLS;
+    ctx.save(); ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
+    for (const sl of slots) {
+        if (sl.claimed || sl.retiring || !sl.keys || !sl.keys.size) continue;
+        let minX = 99, maxX = -1, sy = 0, n = 0;
+        for (const k of sl.keys) { const [x, y] = k.split(',').map(Number); minX = Math.min(minX, x); maxX = Math.max(maxX, x); sy += y; n++; }
+        const side = maxX + 1 <= L + 0.05 ? -1 : minX >= R - 0.05 ? 1 : 0; if (!side) continue;
+        const py = Math.max(CELL * 0.4, Math.min(LOGICAL_H - CELL * 0.4, (sy / n - game.cameraY + 0.5) * CELL));
+        const px = side < 0 ? L * CELL + 9 : R * CELL - 9, s = 9;
+        ctx.fillStyle = sl.color || '#ffffff'; ctx.strokeStyle = 'rgba(6, 20, 45, 0.8)'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+        ctx.beginPath(); ctx.moveTo(px + side * s * 0.6, py); ctx.lineTo(px - side * s * 0.6, py - s); ctx.lineTo(px - side * s * 0.6, py + s); ctx.closePath();
+        ctx.stroke(); ctx.fill();
+    }
+    ctx.restore();
+}
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
+    try { closeupTick(); } catch (e) {}   // [101126aj]
     tiltTick();   // [081026q]
     replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
 
@@ -41249,7 +41415,8 @@ function draw() {
         // Without this, long copy like "AMAZING — CONGRATULATIONS!" runs
         // off the canvas edge on smaller-width screens.
         const PAD = 24;
-        const maxLineWidth = LOGICAL_W - PAD;
+        const _cu = closeupWin();   // [101126aj] the close-up window (the whole board when it is off)
+        const maxLineWidth = (_cu.r - _cu.l) - PAD;
         let actualSize = fontSize;
         ctx.font = `bold ${Math.round(actualSize)}px sans-serif`;
         for (const line of lines) {
@@ -41279,7 +41446,8 @@ function draw() {
         let widest = 0;
         for (const ln of lines) widest = Math.max(widest, ctx.measureText(ln).width);
         const halfW = widest / 2;
-        const drawX = Math.max(halfW + MARGIN, Math.min(LOGICAL_W - halfW - MARGIN, f.x));
+        const _fx = (_cu.on && Math.abs(f.x - LOGICAL_W / 2) < 0.5) ? (_cu.l + _cu.r) / 2 : f.x;   // [101126aj] a centred word: the window's centre
+        const drawX = Math.max(_cu.l + halfW + MARGIN, Math.min(_cu.r - halfW - MARGIN, _fx));
         const blockH = (lines.length - 1) * lineH;
         let baseY = f.y + yOff - blockH / 2;
         // Top of the first line and bottom of the last must both be inside.
@@ -41392,6 +41560,7 @@ function draw() {
         ctx.restore();
     }
     
+    try { closeupDrawMarks(); } catch (e) {}   // [101126aj] the chevrons (into the clip too: harmless, they mark real slots)
     // HUD updates — Set-only
     renderSetIcons();
     if (replayClip && replayClip.live) replayClipFrame();   // [260926n] the finished frame goes into the clip
@@ -44896,7 +45065,7 @@ function scoreGuideRows() {
         ...(typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? [['A single crossing a hole (the cell becomes ground)', `\u2212${CROSS_SEC}s a cell`]] : []),   // [251026h]
         ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
         ...(GOLD_ON ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),   // [311026o]
-        ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide (free on level 1)', `\u2212${GUIDE_LOOK_SEC}s`]] : []),   // [311026p]
+        ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide (free on level 1)', `\u2212${guideLookSec()}s`]] : []),   // [311026p]
         ...(RED_TOLL_SEC === FALL_COST_SEC   // [181026f] one price: one line
             ? [...(DIVE_BUILDS ? [[L1_HOLES_FREE ? 'Your whole block into holes at once (the holes become ground; free on level 1)' : 'Your whole block into holes at once (the holes become ground)', `\u2212${HOLE_CUBE_SEC}s a cube`]] : DIVE_IS_MISTAKE && DIVE_FLAT ? [['Your whole block into holes at once (free on level 1)', DIVE_CUBE_SEC > 0 ? `\u2212${DIVE_CUBE_SEC}s a cube` : `\u2212${FALL_COST_SEC}s, flat`]] : []),   // [011126j] · [031126g]
                [DIVE_IS_MISTAKE && !DIVE_FLAT ? 'A mistake: a red with no cube to spare, losing your last cube, or your whole block into holes (free on level 1)' : 'A mistake: a red with no cube to spare, or losing your last cube (free on level 1)', `\u2212${FALL_COST_SEC}s`]]   // [011126f]
@@ -44927,7 +45096,7 @@ function scoreGuideSections() {   // [031126s] four short groups, from the game'
     const timeIn = fresh ? [
         ['A slot', `+${SLOT_PAY_SEC}s`],
         ...(typeof ROW_RUNS !== 'undefined' && ROW_RUNS ? [['A row', `+${ROW_RUN_SEC}s`, typeof ROW_TAPER !== 'undefined' && ROW_TAPER ? `less when the clock is over ${clockFmt(ROW_TAPER_FROM)} \u2014 down to ${ROW_TAPER_MIN}s when it is full` : '']] : []),
-        ['An hourglass', `+${hourglassFace('t10')}s or +${hourglassFace('t30')}s`],
+        ['An hourglass', noSmallGlass() ? `+${hourglassFace('t30')}s` : `+${hourglassFace('t10')}s or +${hourglassFace('t30')}s`],   // [101126ag]
         ['Landing on a green', `+${GREEN_STOMP_SEC}s`],
         ...(typeof LANDFALL_SEC !== 'undefined' && LANDFALL_SEC ? [['First landing on an island', `+${LANDFALL_SEC}s`, 'an island ringed by holes, once a level']] : []),
         ...(COMBO_SEC ? [['A combo', `+${COMBO_SEC}s`]] : []) ] : [];
@@ -44940,7 +45109,7 @@ function scoreGuideSections() {   // [031126s] four short groups, from the game'
                                            : [['A red with no cube to spare', `\u2212${RED_TOLL_SEC}s`], ['Losing your last cube', `\u2212${FALL_COST_SEC}s`, 'free on level 1']]),
         ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
         ...(GOLD_ON ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),
-        ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide', `\u2212${GUIDE_LOOK_SEC}s`, 'free on level 1']] : []) ];
+        ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide', `\u2212${guideLookSec()}s`, 'free on level 1']] : []) ];
     const foot = fresh ? `The clock holds ${clockFmt(CLOCK_CEILING)}. Points are never taken away; penalties cost time \u2014 the time you carry into the next level.` : 'Points are never taken away. Penalties cost time.';
     return [{ head: 'POINTS', rows: points }, { head: 'COMBOS', rows: combos }, { head: 'TIME IN', rows: timeIn }, { head: 'TIME OUT', rows: timeOut, cls: ' pen' }].filter(x => x.rows.length).concat([{ foot }]);
 }
@@ -46122,7 +46291,7 @@ function fitHudToBoard() {
     const hud = document.querySelector('.hud');
     if (!cv || !hud) return;
     if (document.body.classList.contains('layout-land')) return;   // [190926b] the column owns the HUD's width sideways
-    const boardW = cv.getBoundingClientRect().width;
+    const boardW = document.body.classList.contains('closeup') ? cv.clientWidth : cv.getBoundingClientRect().width;   // [101126aj] the window seen
     if (!boardW) return;
     const k = Math.max(0.55, Math.min(1, boardW / 480));
     if ('zoom' in hud.style) {
@@ -46219,14 +46388,15 @@ function layoutLand(wrap, cv, sp, hud) {
     hud.style.marginLeft = hud.style.marginRight = '0';
     const hudH = hud.getBoundingClientRect().height / (_fitScale || 1);
     // the column must fit the frame's height: the stick gives way before the board does
-    const _rowR = (typeof ROW_AT_FOOT !== 'undefined' && ROW_AT_FOOT && document.body.classList.contains('top-five')) ? 40 + 12 + 12 : 0;   // [031126v] room for the row under the panel
+    const _rowR = (typeof PLAY_ROW_EDGES !== 'undefined' && PLAY_ROW_EDGES) ? 0 : (typeof ROW_AT_FOOT !== 'undefined' && ROW_AT_FOOT && document.body.classList.contains('top-five')) ? 40 + 12 + 12 : 0;   // [031126v] room for the row under the panel · [101126ad] none: the row is down the margin now
     if (stick) stick = Math.round(Math.min(stick, Math.max(LZ.stickMin * 0.8, H - hudH - LAND.stackGap - _rowR)));
     const colH = hudH + (stick ? LAND.stackGap + stick : 0);
     const innerH = Math.max(side, colH);
     const pairW = colW + gap + side;
     wrap.style.width  = Math.round(pairW + pad * 2) + 'px';
     wrap.style.height = Math.round(innerH + pad * 2) + 'px';
-    const colX = pad, boardX = pad + colW + gap;
+    const _rightHand = stickSide !== 'left';   // [101126ad] right hand: the board on the left, the panel and its stick on the right
+    const colX = _rightHand ? pad + side + gap : pad, boardX = _rightHand ? pad : pad + colW + gap;
     const top = pad + Math.round((innerH - side) / 2);
     cv.style.left = boardX + 'px'; cv.style.top = top + 'px';
     cv.style.width = Math.round(side) + 'px'; cv.style.height = Math.round(side) + 'px';
@@ -46406,7 +46576,10 @@ function placeRotorMark() {
     const ok = (l, t) => l >= F.left - 1 && t >= F.top - 1 && l + w <= F.right + 1 && t + h <= F.bottom + 1 &&
         !avoid.some(R => !(l + w + 4 <= R.left || l - 4 >= R.right || t + h + 4 <= R.top || t - 4 >= R.bottom));
     if (ROTOR_MARK_ON_GRID) {   // [311026m] the board's own bottom-right corner, inside it
-        const B = bd.getBoundingClientRect();
+        let B = bd.getBoundingClientRect();
+        if (document.body.classList.contains('closeup') && typeof closeupTick === 'function') {   // [101126aj] the window seen, not the stretched drawing
+            const l = B.left + (closeupTick._camPx || 0), w2 = bd.clientWidth; B = { left: l, right: l + w2, top: B.top, bottom: B.bottom, width: w2, height: B.height };
+        }
         if (B.width > 60 && B.height > 60) {
             const inset = Math.max(4, Math.round(B.width / VIEW_W * 0.2));
             m.style.left = Math.round(B.right - inset - w) + 'px'; m.style.top = Math.round(B.bottom - inset - h) + 'px';
@@ -47754,7 +47927,7 @@ const TUT_ACT_MS = { reveal: 900, flip: TUT_FLIP, grow: 560, store: 620, stone: 
 function glassModesLine() {   // [101126w] what the hourglasses pay on each difficulty, the player's own first
     if (!(typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined')) return '';
     const nm = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, me = runMode();
-    const others = ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${MODE_GLASS[m][0]} and ${MODE_GLASS[m][1]} on ${nm[m]}`);
+    const others = ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${glassPair(m).replace(/,$/, '')} on ${nm[m]}`);   // [101126ag]
     return ` That is on ${nm[me]}; they pay ${others.join(', ')}.`;
 }
 const TUT = [
@@ -47821,7 +47994,7 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'wait', d: 400 },
             { k: 'push', trig: [2, 2], vec: [1, 0], to: [[3, 2]] }, { k: 'push', trig: [3, 2], vec: [1, 0], to: [[4, 2]] },
             { k: 'claim', set: 0, say: 'SET!' }, { k: 'wait' } ] }] : []),
-  { ch: 'TURN', title: 'MOVE GUIDE', line: 'Tap the compass in the row of round buttons. After a beat the way to the set lights up, one move at a time — even for a diagonal.' + (GUIDE_LOOK_SEC > 0 ? ` Free on level 1; after that each look costs ${GUIDE_LOOK_SEC} seconds.` : ''),   // [311026p]   // [290926r] · [290926y] a diagonal pair
+  { ch: 'TURN', title: 'MOVE GUIDE', line: 'Tap the compass in the row of round buttons. After a beat the way to the set lights up, one move at a time — even for a diagonal.' + (GUIDE_LOOK_SEC > 0 ? ` Free on level 1; after that each look costs ${guideLookSec()} seconds.` : ''),   // [311026p]   // [290926r] · [290926y] a diagonal pair
     guideBtn: true,
     init: { body: { cells: [[0, 3], [1, 2]], type: 'diagonal', par: 0 }, sets: [{ type: 'diagonal', cells: [[4, 2], [5, 3]] }] },
     acts: [ { k: 'guide', route: [[[2, 1], [3, 0]], [[3, 2], [4, 1]], [[5, 1], [6, 2]], [[4, 2], [5, 3]]], d: 1000 + 3 * 450 + 350 + 1100 },
@@ -47838,7 +48011,7 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
   // [021126a] THE CLOCK follows COLLECT THE SET (it was 16th of 18): the rule that keeps a run alive, said where the set is
-  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (KEEP_TIME ? `The set pays points. The board pays time: a row ${ROW_RUN_SEC} seconds, a big hourglass ${hourglassFace('t30')} and a small one ${hourglassFace('t10')}, a green ${GREEN_STOMP_SEC}, a slot ${SLOT_PAY_SEC}.${glassModesLine()} Level 1 starts on ${clockFmt(LEVEL_START_SEC)}, and whatever is left when the set is complete carries into the next level. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points.` : CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
+  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (KEEP_TIME ? `The set pays points. The board pays time: a row ${ROW_RUN_SEC} seconds, a big hourglass ${hourglassFace('t30')}${noSmallGlass() ? ' (no small ones)' : ' and a small one ' + hourglassFace('t10')}, a green ${GREEN_STOMP_SEC}, a slot ${SLOT_PAY_SEC}.${glassModesLine()} Level 1 starts on ${clockFmt(LEVEL_START_SEC)}, and whatever is left when the set is complete carries into the next level. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points.` : CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
     showClock: true,
     init: { body: { cells: [[3, 3], [4, 3]], type: 'pair', par: 0 }, clock: 22,
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },

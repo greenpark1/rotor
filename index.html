@@ -453,6 +453,19 @@ body.theme-day .level-card-extra { color: #0ea5e9; }
     color: var(--wm-c0); box-shadow: none; opacity: 0.85;
 }
 .lc-replay-btn:active { transform: translateY(1px); opacity: 1; }
+/* [101126aa] the offer: REPLAY | LEVEL n ▶▶, one width each, the countdown ring on the way on; under KEEP IT? the same button alone */
+/* [101126ab] Jake, 15:27: "make sure the two buttons fit into the square when the level has finished, also remove the drop shadow on the
+   square". The pair was as wide as 82% of the screen (320 px on a phone) in a card whose inside is 274 px, so it ran out past both
+   sides. It is the card's inside width now, each button half of it; KEEP IT?'s button the same. The card casts no shadow. */
+.lc-pair { display: flex; gap: 8px; justify-content: center; width: 100%; margin: 0; }
+.level-card-offer { width: 100%; }
+.level-card-box { box-shadow: none !important; }
+.lc-pair > .lc-replay-btn { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; gap: 5px; white-space: nowrap; letter-spacing: 1.2px; }
+.level-card.lc-has-next #lcReplayBtn .lc-ring { display: none; }
+.lc-next-btn { border-color: rgba(34, 211, 238, 0.85); opacity: 1; font-weight: 800; }
+.lc-next-arrow { font-size: 0.85em; letter-spacing: -2px; }
+.lc-keep-next { width: 100%; min-width: 0; margin: 10px 0 0; }
+.lc-move-hint { margin-top: 8px; font-size: 9.5px; letter-spacing: 1.6px; font-weight: 700; opacity: 0.7; text-align: center; }
 .lc-ring { position: relative; width: 14px; height: 14px; flex: 0 0 auto; }
 .lc-ring svg { display: block; transform: rotate(-90deg); }
 .lc-ring-num {
@@ -3598,13 +3611,22 @@ body.top-five { --tf-w: 40px; --tf-left: 14px; --tf-top: calc(12px + env(safe-ar
 body.top-five.in-play .play-home-btn, body.top-five.in-play .play-cog-btn, body.top-five.in-play .theme-btn.play-theme-btn, body.top-five.in-play .play-corner {
     top: var(--tf-top); bottom: auto; right: auto; width: var(--tf-w); height: var(--tf-w); }
 body.top-five.in-play .play-home-btn { left: var(--tf-left); }
-body.top-five.in-play.layout-land.tally-open .play-home-btn, body.top-five.in-play.layout-land.tally-open .play-cog-btn, body.top-five.in-play.layout-land.tally-open .theme-btn.play-theme-btn, body.top-five.in-play.layout-land.tally-open .play-corner { visibility: hidden; }   /* [031126w] not over the level card */
+body.top-five.in-play.layout-land.tally-open:not(.row-always) .play-home-btn, body.top-five.in-play.layout-land.tally-open:not(.row-always) .play-cog-btn, body.top-five.in-play.layout-land.tally-open:not(.row-always) .theme-btn.play-theme-btn, body.top-five.in-play.layout-land.tally-open:not(.row-always) .play-corner { visibility: hidden; }   /* [031126w] not over the level card */
 body.top-five.tf-foot.in-play .play-home-btn, body.top-five.tf-foot.in-play .play-cog-btn, body.top-five.tf-foot.in-play .theme-btn.play-theme-btn, body.top-five.tf-foot.in-play .play-corner { top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }   /* [031126v] */
 body.top-five.in-play .theme-btn.play-theme-btn { left: calc(var(--tf-left) + var(--tf-step)); }
 body.top-five.in-play .play-corner.wc-guide { left: calc(var(--tf-left) + var(--tf-step) * 2); }
 body.top-five.in-play .play-corner.wc-tips { left: calc(var(--tf-left) + var(--tf-step) * 3); }
 body.top-five.in-play .play-corner.wc-sound { left: calc(var(--tf-left) + var(--tf-step) * 4); }   /* [051126m] six across */
 body.top-five.in-play .play-cog-btn { left: calc(var(--tf-left) + var(--tf-step) * 5); }
+/* [101126ac] down the side on a wide screen: one column in the margin left of the panel, top to bottom, in the row's order */
+body.top-five.tf-col.in-play .play-home-btn, body.top-five.tf-col.in-play .play-cog-btn, body.top-five.tf-col.in-play .theme-btn.play-theme-btn, body.top-five.tf-col.in-play .play-corner { left: var(--tf-x) !important; bottom: auto !important; right: auto !important; }
+body.top-five.tf-col.in-play .play-home-btn { top: var(--tf-y0) !important; }
+body.top-five.tf-col.in-play .theme-btn.play-theme-btn { top: calc(var(--tf-y0) + var(--tf-vstep)) !important; }
+body.top-five.tf-col.in-play .play-corner.wc-guide { top: calc(var(--tf-y0) + var(--tf-vstep) * 2) !important; }
+body.top-five.tf-col.in-play .play-corner.wc-tips { top: calc(var(--tf-y0) + var(--tf-vstep) * 3) !important; }
+body.top-five.tf-col.in-play .play-corner.wc-sound { top: calc(var(--tf-y0) + var(--tf-vstep) * 4) !important; }
+body.top-five.tf-col.in-play .play-cog-btn { top: calc(var(--tf-y0) + var(--tf-vstep) * 5) !important; }
+body.row-always.in-play .play-home-btn, body.row-always.in-play .play-cog-btn, body.row-always.in-play .theme-btn.play-theme-btn, body.row-always.in-play .play-corner { z-index: 45; }
 body.top-five.in-play .play-home-btn svg, body.top-five.in-play .play-cog-btn svg, body.top-five.in-play .play-corner svg, body.top-five.in-play .theme-btn.play-theme-btn svg { width: 55%; height: 55%; }
 /* [290726p] Welcome-page day/night toggle — one tap, no settings trip. Sits
    top-LEFT, mirroring the cog top-right. Shows the theme you would SWITCH TO
@@ -4515,7 +4537,7 @@ body.x3d .set-band-icons .set-slot svg { filter: drop-shadow(0 2px 0 var(--x3d-s
    comes in with the board. */
 html:not(.ui-ready) #startScreen, html:not(.ui-ready) .corner-toggle, html:not(.ui-ready) .cog-btn, html:not(.ui-ready) .theme-btn { opacity: 0 !important; }
 html.ui-ready #startScreen { transition: opacity 160ms ease-out; }
-body.door-up.in-play .play-corner, body.door-up.in-play .play-home-btn, body.door-up.in-play .play-theme-btn, body.door-up.in-play .play-cog-btn { opacity: 0 !important; pointer-events: none; }
+body.door-up.in-play:not(.row-always) .play-corner, body.door-up.in-play:not(.row-always) .play-home-btn, body.door-up.in-play:not(.row-always) .play-theme-btn, body.door-up.in-play:not(.row-always) .play-cog-btn { opacity: 0 !important; pointer-events: none; }   /* [101126ac] not with the row always there */
 body.in-play .play-corner, body.in-play .play-home-btn, body.in-play .play-theme-btn, body.in-play .play-cog-btn { transition: opacity 220ms ease-out; }
 #startScreen { --wm-c0: #0284c7; --wm-c0-deep: #0284c7; --welcome-blue: #0284c7; }
 #startScreen, #startScreen *, #startScreen *::before, #startScreen *::after { text-shadow: none !important; box-shadow: none !important; }
@@ -5097,7 +5119,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
          CSS animations. Sits over the canvas (z-index 20). Triggered via
          showRoundOverlay(n). The .active class drives both the fade-to-
          black background and the big number scale-in / scale-out. -->
-    <div class="level-card hidden" id="levelCard" onclick="replayOfferPass('tap'); keepOfferPass('tap');">
+    <div class="level-card hidden" id="levelCard" onclick="if (lcTapIsStick(event)) { lcGoNext('move'); return; } replayOfferPass('tap'); keepOfferPass('tap');">
         <div class="level-card-box">
             <div class="level-card-title lc-row" id="lcTitle"></div>
             <div class="level-card-cov lc-row" id="lcCov"></div>
@@ -5109,6 +5131,8 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                  the start so that nothing above them moves when they arrive -->
             <div class="lc-slot" id="lcSlot">
             <div class="level-card-offer lc-row" id="lcOffer" hidden>
+                <!-- [101126aa] REPLAY and the next level, side by side, one width; the countdown ring on the next level -->
+                <div class="lc-pair">
                 <button class="lc-replay-btn" id="lcReplayBtn" type="button"
                         onclick="event.stopPropagation(); replayOfferTake();">
                     <span aria-hidden="true">&#9654;</span><span>REPLAY</span>
@@ -5122,6 +5146,19 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                         <span class="lc-ring-num" id="lcOfferNum">4</span>
                     </span>
                 </button>
+                <button class="lc-replay-btn lc-next-btn" id="lcNextBtn" type="button" onclick="event.stopPropagation(); lcGoNext('next');">
+                    <span class="lc-next-lbl" id="lcNextLbl">NEXT LEVEL</span><span aria-hidden="true" class="lc-next-arrow">&#9654;&#9654;</span>
+                    <span class="lc-ring">
+                        <svg width="14" height="14" viewBox="0 0 22 22" aria-hidden="true">
+                            <circle cx="11" cy="11" r="9" fill="none" stroke="rgba(6,34,43,0.25)" stroke-width="2"></circle>
+                            <circle cx="11" cy="11" r="9" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" id="lcNextArc"
+                                    stroke-dasharray="56.5" stroke-dashoffset="0"></circle>
+                        </svg>
+                        <span class="lc-ring-num" id="lcNextNum">4</span>
+                    </span>
+                </button>
+                </div>
                 <div class="lc-replay-hint" id="lcOfferHint"></div>
             </div>
             <!-- [270926d] KEEP IT? — after the replay the player pressed for: the
@@ -5132,6 +5169,10 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                     <button class="go-clip-btn" type="button" onclick="event.stopPropagation(); keepOfferHold(); replayClipSave();">⇓ DOWNLOAD REPLAY</button>
                     <button class="go-clip-btn" id="lcKeepShare" type="button" onclick="event.stopPropagation(); keepOfferHold(); replayClipShare();" hidden>SHARE REPLAY</button>
                 </div>
+                <!-- [101126aa] and on, without saving -->
+                <button class="lc-replay-btn lc-next-btn lc-keep-next" id="lcKeepNext" type="button" onclick="event.stopPropagation(); lcGoNext('next');">
+                    <span class="lc-next-lbl" id="lcKeepNextLbl">NEXT LEVEL</span><span aria-hidden="true" class="lc-next-arrow">&#9654;&#9654;</span>
+                </button>
                 <div class="lc-keep-foot">
                     <span class="lc-ring">
                         <svg width="14" height="14" viewBox="0 0 22 22" aria-hidden="true">
@@ -8477,6 +8518,8 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 101126-1529: EDGE TO EDGE. Jake, 10 Nov, 15:27. [101126ab] The level card's two buttons fit inside it; the card casts no shadow. [101126ac] The six round buttons are always there: upright, along the foot from side to side; wide, a column down the left margin, top to bottom; through the door, card, tally and replays. ?rowedges=0.
+// 101126-1507: STRAIGHT ON. Jake, 10 Nov, 14:58/15:05. [101126aa] The level card offers REPLAY and LEVEL n ▶▶ (★ FINISH on the last) side by side, the ring on the way on; LEVEL n, an arrow key or a touch on the joystick goes straight on (the tally's count lands and is skipped, the door opens). KEEP IT? gets the same button. ?lcnext=0.
 // 101126-1430: UP TO DATE. Jake, 10 Nov, 14:27. [101126w] HOW TO PLAY and Settings' rules brought up to date (new DIG lesson and Digging/Difficulty rules; hourglasses by difficulty; last cube over the edge; buried gold; button places; a hole cube is 5 s). [101126x] The stick's knob a convex polished cap, rim lit top left (?knob=old). [101126y] Idle stick arrows lighter grey (?stickgrey=old). [101126z] Slot colours 100% (?slotsolid=0). Shading checked: one light, top left, throughout.
 // 101126-1104: SLOT CHROME. Jake, 10 Nov, 11:02. [101126v] A slot's colour starts 3.5 px inside its chrome edge, the sliver keeping the cell's own ground, so its chrome reads as fully as a plain cell's. ?slotgap=0. With 1053 (replay music, chrome knuckles in holes, no 'for posting') and 1100 (wide welcome page).
 // 101126-1053: REPLAY MUSIC. Jake, 10 Nov, 10:47. [101126s] The replay plays an original tune: after a win, upbeat in C major at 140; after a loss, gentle and hopeful in A minor at 88; it also goes into the downloadable clip (?replaymusic=0). [101126t] No 'for posting' under the clip buttons. [101126u] Chrome knuckles in the holes too (?voidknuckle=white). With 1100's wide welcome page ([101126r]).
@@ -9457,7 +9500,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101126-1430 ROTOЯ · UP TO DATE';
+const BUILD_VERSION = '101126-1529 ROTOЯ · EDGE TO EDGE';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -20272,9 +20315,41 @@ try { if (econDial('toprow', 1, 0, 1) >= 1) document.body.classList.add('top-fiv
 const ROW_AT_FOOT = econDial('rowat', 1, 0, 1) >= 1;   // [031126v]
 /* [091126z] the play buttons are never under 32 px (they were 28 on a 320-wide phone): the row runs wider than the panel there, centred and on screen. ?rowmin=28 */
 const TOP_ROW_MIN = Math.round(econDial('rowmin', 32, 24, 40));
+/* ══ [101126ac] THE SIX ROUND BUTTONS ALWAYS THERE: ACROSS THE FOOT, OR DOWN THE SIDE — Jake, 10 Nov, 15:27: "the 5 buttons on the home /
+   welcome screen need to be present on all screens during the game either at the base running horizontally from one side to the other
+   for 9:16 play or vertically if the screen is required to fit into 16:9 format." The row (Home, theme, Move Guide, Tips, Sound,
+   Settings) sat under the play panel, only as wide as the panel; on a wide screen it was a short row under the panel, crowding the
+   stick on a small phone; and it went away while the door was down between levels, and on a wide screen while the level's tally was up.
+   Now: upright, it runs along the foot of the screen from one side to the other (14 px in from each edge, evenly spaced, up to 40 px
+   buttons); wide, it is a column down the margin to the left of the panel (every landscape layout measured leaves 75 px or more there),
+   from the top of the screen to the bottom, evenly spaced, in the same order top to bottom. It stays through the door, the level card,
+   the tally and the replays (above them). PLAY_ROW_EDGES = false, or ?rowedges=0, puts back the row under the panel. */
+const PLAY_ROW_EDGES = !/[?&]rowedges=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+try { if (PLAY_ROW_EDGES) document.body.classList.add('row-always'); } catch (e) {}
 function placeTopRow() {   // [031126m] the five span the panel: above it if there is room, else under it
     try {
         const B = document.body; if (!B.classList.contains('top-five')) return;
+        if (PLAY_ROW_EDGES) {   // [101126ac]
+            const VW = window.innerWidth || document.documentElement.clientWidth, VH = window.innerHeight || document.documentElement.clientHeight;
+            const land = B.classList.contains('layout-land'), GAP = 6;
+            const els = ['.hud.set-only-hud', '#canvas', '#stickPad'].map(q => document.querySelector(q)).filter(Boolean).map(e => e.getBoundingClientRect()).filter(r => r.width > 0);
+            const sig = [VW, VH, land ? 1 : 0].concat(els.map(r => Math.round(r.left))).join(','); if (sig === placeTopRow._sig) return; placeTopRow._sig = sig;
+            if (!land) {
+                const w = Math.max(TOP_ROW_MIN, Math.min(40, Math.floor((VW - 28 - 5 * GAP) / 6)));
+                B.classList.remove('tf-col', 'tf-under'); B.classList.add('tf-foot');
+                B.style.setProperty('--tf-w', w + 'px'); B.style.setProperty('--tf-left', '14px'); B.style.setProperty('--tf-step', ((VW - 28 - w) / 5) + 'px');
+                B.style.removeProperty('--tf-top');
+            } else {
+                const w = Math.max(TOP_ROW_MIN, Math.min(40, Math.floor((VH - 24 - 5 * GAP) / 6)));
+                const left = els.length ? Math.min(...els.map(r => r.left)) : 80;
+                B.classList.remove('tf-foot', 'tf-under'); B.classList.add('tf-col');
+                B.style.setProperty('--tf-w', w + 'px');
+                B.style.setProperty('--tf-x', Math.max(6, Math.round((left - w) / 2)) + 'px');
+                B.style.setProperty('--tf-y0', 'calc(12px + env(safe-area-inset-top, 0px))');
+                B.style.setProperty('--tf-vstep', ((VH - 24 - w) / 5) + 'px');
+            }
+            return;
+        }
         const hud = document.querySelector('.hud.set-only-hud'); if (!hud) return;
         const r0 = hud.getBoundingClientRect(); if (!(r0.width > 0)) return;
         const sig = [r0.left, r0.right, r0.top, r0.bottom].map(Math.round).join(','); if (sig === placeTopRow._sig) return; placeTopRow._sig = sig;
@@ -24753,6 +24828,41 @@ function replayTapeReady() {
     return moveTape.slice(-REPLAY_MOVES)
                    .filter(e => e.to && e.to.length && e.from && e.from.length).length >= 2;
 }
+/* ══ [101126aa] A NEXT-LEVEL BUTTON BESIDE REPLAY, AND MOVE TO GO ON — Jake, 10 Nov, 14:58: "where we have a replay button we need a
+   continue button of some sort that advances straight to the next level"; 15:05: "go with your suggestions" (two buttons side by side,
+   named for where they go, the ring on the way on; and a move carries on).
+   The level card offered REPLAY alone, with its 4 s ring; doing nothing, or tapping anywhere, went on to the level's tally (the count,
+   then CONTINUE) and the door. Now:
+     · REPLAY and LEVEL n ▶▶ sit side by side, one width each (★ FINISH on the last level). The countdown ring moves onto LEVEL n: wait,
+       and it still goes on by itself.
+     · LEVEL n goes STRAIGHT on: the offer closes, the tally is added up at once (its points land, nothing is lost) and skipped, and
+       the door to the next level opens.
+     · MOVE TO GO ON: while the card is up, an arrow key (or WASD) or a touch on the joystick does the same. A key held from the last
+       move does not count (no repeats). A line under the buttons says so.
+     · After a replay, KEEP IT? (download / share) has the same LEVEL n ▶▶ under it, and a move works there too.
+     · A tap anywhere else on the card still does what it did (the tally, then CONTINUE).
+   LC_NEXT_ON = false, or ?lcnext=0, puts back REPLAY alone. */
+const LC_NEXT_ON = !/[?&]lcnext=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+let lcNextNow = false;   // the next press went straight on: the tally that follows lands its count and goes at once
+function lcNextLabel() { return (advancedRound >= runLevelCap()) ? '\u2605 FINISH' : `LEVEL ${advancedRound + 1}`; }
+function lcGoNext(why) {
+    if (!LC_NEXT_ON) return;
+    if (replayOfferLive()) { lcNextNow = true; rec('replay', { k: 'next', why, r: advancedRound }); replayOffer.pass(why); return; }
+    if (keepOfferLive()) { lcNextNow = true; rec('keep', { k: 'next', why, r: advancedRound }); keepOffer.pass(why); }
+}
+function lcTapIsStick(e) {   // a touch on the joystick through the card is a move
+    if (!LC_NEXT_ON || !e || !(replayOfferLive() || keepOfferLive())) return false;
+    const pad = document.getElementById('stickPad'); if (!pad) return false;
+    const r = pad.getBoundingClientRect();
+    return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+}
+function lcTallyStraightOn() {   // called as a tally opens: if the player went straight on, land the count and go
+    if (!lcNextNow) return false;
+    lcNextNow = false;
+    try { skipLevelTally(); } catch (e) {}
+    setTimeout(() => { try { finishLevelTally(); } catch (e) {} }, 60);
+    return true;
+}
 function replayOfferLive() { return !!(replayOffer && !replayOffer.taken); }
 function replayOfferTake() { if (replayOfferLive()) replayOffer.take(); }
 function replayOfferPass(why) { if (replayOfferLive()) replayOffer.pass(why || 'tap'); }
@@ -24779,14 +24889,14 @@ function _lcOfferShow(ms) {
        button is not one. The countdown ring still says the window is closing.
        The element stays, empty, so nothing else has to move. */
     const hint = document.getElementById('lcOfferHint');
-    if (hint) hint.textContent = '';
+    if (hint) { hint.textContent = LC_NEXT_ON ? 'OR MOVE TO GO ON' : ''; hint.classList.toggle('lc-move-hint', LC_NEXT_ON); }   // [101126aa]
+    { const nb = document.getElementById('lcNextBtn'); if (nb) nb.hidden = !LC_NEXT_ON; const nl = document.getElementById('lcNextLbl'); if (nl) nl.textContent = lcNextLabel();
+      if (card) card.classList.toggle('lc-has-next', LC_NEXT_ON); }
     const t0 = performance.now();
     const paint = () => {
         const left = Math.max(0, ms - (performance.now() - t0));
-        const arc = document.getElementById('lcOfferArc');
-        if (arc) arc.setAttribute('stroke-dashoffset', String(LC_RING_C * (1 - left / ms)));
-        const num = document.getElementById('lcOfferNum');
-        if (num) num.textContent = String(Math.max(1, Math.ceil(left / 1000)));
+        for (const id of ['lcOfferArc', 'lcNextArc']) { const arc = document.getElementById(id); if (arc) arc.setAttribute('stroke-dashoffset', String(LC_RING_C * (1 - left / ms))); }
+        for (const id of ['lcOfferNum', 'lcNextNum']) { const num = document.getElementById(id); if (num) num.textContent = String(Math.max(1, Math.ceil(left / 1000))); }
         if (left <= 0) _lcOfferStopTick();
     };
     paint();
@@ -24830,6 +24940,7 @@ function _lcKeepShow(ms) {
     if (card) card.classList.add('offering');
     const sh = document.getElementById('lcKeepShare');
     if (sh) sh.hidden = !(replayClip && replayClipCanShare(replayClip));
+    { const kb = document.getElementById('lcKeepNext'); if (kb) kb.hidden = !LC_NEXT_ON; const kl = document.getElementById('lcKeepNextLbl'); if (kl) kl.textContent = lcNextLabel(); }   // [101126aa]
     const hint = document.getElementById('lcKeepHint');
     if (hint) hint.textContent = 'the replay you just watched, as a video';   // [101126t] no "for posting" (Jake, 10:47)
     const t0 = performance.now();
@@ -24849,6 +24960,7 @@ function _lcKeepShow(ms) {
    after the replay the player asked for, or when the offer's window closes. */
 function levelCardThenReplay(lc, onDone) {
     const id = ++_replayOfferSeq;
+    lcNextNow = false;   // [101126aa]
     let settled = false;
     const finish = () => {
         if (settled) return;
@@ -28560,6 +28672,7 @@ function completeSet() {
                 if (_run !== _runSerial) return;
                 hideLevelCard();
                 showLevelTally(_afterCard, { auto: TALLY_AUTO });   // [231026c] it waits for CONTINUE
+                lcTallyStraightOn();   // [101126aa] LEVEL n ▶▶ or a move: the count lands and the door opens
             } : _afterCard);
         }, SET_TO_REPLAY_MS + _hold);   // [ACTION REPLAY] was 2200 — the card's hold; now the fireworks' first bloom · [290926g] after the landing
     } else {
@@ -28634,6 +28747,7 @@ function completeSet() {
                     if (!game.running) return;   // Home during the scorecard
                     endGame('win');
                 }, { title: 'ROTOЯ COMPLETE', cta: '★ FINISH' });
+                lcTallyStraightOn();   // [101126aa] ★ FINISH: the count lands and the run's end card follows
             });
         }, FINALE_MS + _holdF);
     }
@@ -46335,6 +46449,8 @@ document.addEventListener('keydown', e => {
        is left alone on purpose: a direction still held from the last move — and
        keydown REPEATS while a key is held — would otherwise dismiss a countdown
        the player never meant to touch. */
+    if (LC_NEXT_ON && !e.repeat && ((typeof replayOfferLive === 'function' && replayOfferLive()) || (typeof keepOfferLive === 'function' && keepOfferLive()))
+        && /^(ArrowUp|ArrowDown|ArrowLeft|ArrowRight|w|a|s|d|W|A|S|D)$/.test(e.key)) { lcGoNext('move'); e.preventDefault(); return; }   // [101126aa] move to go on
     if (typeof replayOfferLive === 'function' && replayOfferLive() && !e.repeat) {
         if (e.key === 'r' || e.key === 'R' || e.key === 'Enter') { replayOfferTake(); e.preventDefault(); return; }
         if (e.key === ' ' || e.code === 'Space' || e.key === 'Escape') { replayOfferPass('key'); e.preventDefault(); return; }

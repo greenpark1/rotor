@@ -293,14 +293,6 @@ h1 { color: var(--wm-c0); margin: 0 0 6px; line-height: 1;
    so the original flex rules govern exactly as before — including the
    flex-shrink on .game-canvas that [160826g] accidentally removed. Only the
    beside arrangement is new, and it only engages when it wins by 15%. */
-/* [101126aj] the close-up board: the box is 8 columns by 10 rows; closeupTick stretches the drawing across it and clips it */
-body.closeup { --board-ratio: 408 / 480; }   /* [101126ak] 8 columns + the edge strips; closeupTick writes the exact figure */
-body.closeup .game-canvas { background: transparent; }   /* [101126ak] the edge strips show the page */
-body.closeup .game-canvas { will-change: transform; }
-/* [101126aj] room for the taller board: a smaller stick (22dvh → CLOSEUP stick 16dvh) and a tighter HUD */
-body.closeup.in-play #stickPad { width: min(clamp(150px, 88%, 396px), var(--closeup-stick, 16dvh)); }
-body.closeup .set-only-hud { row-gap: 2px !important; padding-top: 5px !important; padding-bottom: 2px !important; }
-body.closeup:not(.layout-land) .set-only-hud { margin-top: 4px !important; }
 body.layout-beside .game-container { display: block; }
 body.layout-beside .game-canvas,
 body.layout-beside #stickPad { position: absolute; margin: 0; }
@@ -5401,11 +5393,6 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                 <span>Opacity</span>
                 <input type="range" id="setStickOpacity" min="30" max="100" step="1" oninput="settingStickOpacity(this.value/100)">
             </div>
-            <!-- [101126aj] the close-up board, phones held upright -->
-            <label class="settings-row">
-                <span>Close-up board (phones)</span>
-                <input type="checkbox" id="setCloseup" onchange="settingCloseup(this.checked)">
-            </label>
             <div class="settings-row">
                 <span>Hand (wide screens)</span>   <!-- [101126ad] was Position, which did nothing -->
                 <div class="settings-theme">
@@ -8535,8 +8522,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
-// 101126-2056: DRIFT. Jake, 10 Nov, 20:50. [101126ak] The close-up camera is a damped spring (about 0.9 s, gathers and settles) resting on whole columns; the window is 8 columns plus 12 px either side, cleared to the page, with the edge knuckles drawn whole. Dials ?closeupdrift= ?closeupedge=.
-// 101126-1921: CLOSE-UP. Jake, 10 Nov, 18:33–19:00. [101126aj] On an upright phone the board shows 8 columns by 10 rows, squares a quarter bigger, and the camera slides (two columns of margin round the block) to reveal the other two; chevrons mark slots out of view. Undo: Settings > Close-up board off; ?closeup=0; CLOSEUP_ON = false.
+// 101126-2126: NO ZOOM. Jake, 10 Nov, 21:26: "the zoom isnt working. can you revert back to the version without the zoom". This is 101126-1813 (CONTINUE) exactly, restamped; the close-up board of 1921 and 2056 ([101126aj], [101126ak]) is gone. Those builds are in OLDER (HTML - 101126-1921, HTML - 101126-2056) and the patches p239a–d and p240a in 07 WORKSHOP if it is ever wanted again.
 // 101126-1813: CONTINUE. Jake, 10 Nov, 18:13. [101126ai] The button beside REPLAY reads CONTINUE ▶ and goes on to the level's tally (scores and stats), never past it; a move does the same. ?lcstraight=1 for 1507's straight on.
 // 101126-1718: TWO TEACHERS. Jake, 10 Nov, 17:17. [101126ah] FIX: 1659 commented out half of the teaching hourglass's line, so level 1 buried an hourglass under the block every frame (a trail of them, every difficulty). The line is whole; level 1 buries two, as before.
 // 101126-1659: NEW GLASSES. Jake, 10 Nov, 16:59. [101126ag] Hourglasses big/small: Easy 25/15, Medium 15/5, Hard 10 and none small (never dealt on Hard; the level-1 teaching one is big there). Words updated.
@@ -9524,7 +9510,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101126-2056 ROTOЯ · DRIFT';
+const BUILD_VERSION = '101126-2126 ROTOЯ · NO ZOOM';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -37706,7 +37692,6 @@ function settingStickDodge(on) {
 }
 const STICK_DODGE_ROW = /[?&]dodgerow=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126ae]
 function syncStickSettingsUI() {
-    { const cu = document.getElementById('setCloseup'); if (cu) { cu.checked = closeupPref; const row = cu.closest('.settings-row'); if (row) row.style.display = CLOSEUP_ON ? '' : 'none'; } }   // [101126aj]
     { const dr = document.getElementById('setStickDodgeRow'); if (dr) dr.style.display = STICK_DODGE_ROW ? '' : 'none'; }   // [101126ae]
     const l = document.getElementById('setStickLeft'), r = document.getElementById('setStickRight');
     if (l) l.classList.toggle('active', stickSide === 'left');
@@ -39866,133 +39851,8 @@ function drawEdgeProximity() {
 }
 
 
-/* ══ [101126aj] THE CLOSE-UP BOARD ON PHONES — Jake, 10 Nov, 18:33: "for the iphone version of the game, i would like the camera to zoom
-   into the grid of 10 grid squares wide into 8 grid squares wide and for the player to be able to move all the way to right and all the
-   way to the left revealing the off screen grid squares"; 18:56 (the reasons, the camera to pan by itself, the guide shown); 19:00: "go
-   with 8 x 10. can you make sure that this is straight forward to undo if the redesign doesnt work".
-   HOW: nothing in the game's drawing changes. The board is still drawn whole, 10 × 10. On an upright phone (narrower than CLOSEUP_MAX_W,
-   500 px) the board's box takes the shape of 8 columns by 10 rows; the drawing is stretched 1.25 × across inside it, so its squares are
-   square again and a quarter bigger, and a clip shows 8 of the 10 columns. The camera is that clip and the slide behind it (closeupTick):
-   it keeps two columns either side of the block in view, so it stays still while the block is in the middle and eases across (in about
-   a third of a second) only as the block heads for a side, showing the edge before the block reaches it; the Move Guide's footprints,
-   one move out, are always inside that margin. Replays follow the block the same way. A set's slot out of view gets a small chevron in
-   its colour at that side of the window, at its height.
-   UNDO, in order of size: Settings > Board > Close-up board (phones) off — for that phone, kept; ?closeup=0 — off for that page load;
-   CLOSEUP_ON = false below — off for everyone (one line). Every piece lives behind body.closeup and these functions; with it off the
-   board is exactly as it was. */
-const CLOSEUP_ON = !/[?&]closeup=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126aj] false: the whole feature off
-const CLOSEUP_COLS = 8, CLOSEUP_MAX_W = 500, CLOSEUP_MARGIN = 2, CLOSEUP_EASE_MS = 320;
-let closeupPref = true;
-try { const _cp = localStorage.getItem('rotor_closeup'); if (_cp === '0') closeupPref = false; } catch (e) {}
-/* [101126ak] Jake, 10 Nov, 20:50: "can you make the camera panning more smoother, it should drift more. also add in the whole of the
-   knuckle on the side as oppsoed to just half a knuckle and a bit of breathing room with more void if needed."
-   THE DRIFT: the camera is a damped spring now (closeupSpring), not a chase — it gathers speed, glides and settles, taking about
-   CLOSEUP_DRIFT_MS (0.9 s) to settle where it took 0.32 s, half-way in 0.3 s. It rests only on whole columns, so the window's edges always fall on a
-   line of knuckles. THE EDGE: the window is 8 columns plus CLOSEUP_EDGE (12 board px) either side. That strip is cleared to the page
-   behind the board and the knuckles on the line are drawn over it whole, so the edge reads as whole knuckles and then a little open
-   space; at the board's own sides the strip is simply the page. ?closeupdrift=<ms> and ?closeupedge=<px> are the dials; 0 edge puts
-   back the plain cut. */
-const CLOSEUP_DRIFT_MS = (() => { const m = /[?&]closeupdrift=(\d+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(60, Math.min(3000, +m[1])) : 900; })();
-const CLOSEUP_EDGE = (() => { const m = /[?&]closeupedge=([\d.]+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(0, Math.min(24, +m[1])) : 12; })();
-let closeupCam = null, closeupVel = 0;   // the camera's left column (0 .. VIEW_W - CLOSEUP_COLS), sprung; and its speed
-function closeupWinW() { return CLOSEUP_COLS * CELL + 2 * CLOSEUP_EDGE; }   // the window, in board px
-function closeupSpring(cur, tgt, dt) {   // a critically damped spring: smooth start, glide, no overshoot
-    const T = CLOSEUP_DRIFT_MS / 3000, w = 2 / T, x = w * dt, e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
-    const ch = cur - tgt, tmp = (closeupVel + w * ch) * dt;
-    closeupVel = (closeupVel - w * tmp) * e;
-    return tgt + (ch + tmp) * e;
-}
-function closeupWanted() {
-    const B = document.body;
-    return CLOSEUP_ON && closeupPref && B.classList.contains('in-play') && !B.classList.contains('test-drive') && !B.classList.contains('layout-land') && !B.classList.contains('layout-beside')
-        && (window.innerWidth || 9999) < CLOSEUP_MAX_W && window.innerHeight > window.innerWidth;
-}
-function settingCloseup(on) {
-    closeupPref = !!on;
-    try { localStorage.setItem('rotor_closeup', closeupPref ? '1' : '0'); } catch (e) {}
-    const c = document.getElementById('setCloseup'); if (c) c.checked = closeupPref;
-    closeupTick(true);
-}
-function closeupTick(force) {
-    const B = document.body, cv = document.getElementById('canvas'); if (!cv) return;
-    const on = closeupWanted();
-    if (!on) {
-        if (B.classList.contains('closeup')) { B.classList.remove('closeup'); B.style.removeProperty('--board-ratio'); cv.style.transform = cv.style.transformOrigin = cv.style.clipPath = cv.style.maxWidth = ''; closeupCam = null; closeupVel = 0; closeupFit._key = ''; try { if (typeof layoutPlay === 'function') layoutPlay(); } catch (e) {} }
-        return;
-    }
-    const WW = closeupWinW();
-    if (!B.classList.contains('closeup')) { B.classList.add('closeup'); B.style.setProperty('--board-ratio', WW + ' / ' + LOGICAL_H); closeupCam = null; closeupVel = 0; try { if (typeof layoutPlay === 'function') layoutPlay(); } catch (e) {} }
-    const span = VIEW_W - CLOSEUP_COLS;
-    let lo = VIEW_W, hi = -1;
-    try { for (const c of getPlayerCells()) { lo = Math.min(lo, c.x); hi = Math.max(hi, c.x); } } catch (e) {}
-    if (hi < 0) { lo = hi = Math.floor((VIEW_W - 1) / 2); }
-    closeupTick._rest = closeupTick._rest == null || closeupCam == null ? Math.max(0, Math.min(span, Math.round((lo + hi + 1) / 2 - CLOSEUP_COLS / 2))) : closeupTick._rest;
-    let tgt = closeupTick._rest;
-    if (lo - CLOSEUP_MARGIN < tgt) tgt = lo - CLOSEUP_MARGIN;                                    // the block heads left: show two columns beyond it
-    if (hi + 1 + CLOSEUP_MARGIN > tgt + CLOSEUP_COLS) tgt = hi + 1 + CLOSEUP_MARGIN - CLOSEUP_COLS;   // heads right
-    tgt = Math.max(0, Math.min(span, Math.round(tgt))); closeupTick._rest = tgt;                   // whole columns only
-    const now = performance.now(), dt = Math.min(80, now - (closeupTick._t || now)) / 1000; closeupTick._t = now;
-    if (closeupCam == null) { closeupCam = tgt; closeupVel = 0; }
-    else { closeupCam = closeupSpring(closeupCam, tgt, dt); if (Math.abs(tgt - closeupCam) < 0.004 && Math.abs(closeupVel) < 0.02) { closeupCam = tgt; closeupVel = 0; } }
-    try { closeupFit(cv); } catch (e) {}
-    const W = cv.clientWidth; if (!(W > 0)) return;
-    const k = LOGICAL_W / WW;                   // the drawing stretched across, so the squares are square
-    const xL = closeupCam * CELL - CLOSEUP_EDGE; // the window's left, in board px (below 0 at the far left: the page shows)
-    const camPx = xL * (W / WW);                 // ... in screen px
-    closeupTick._camPx = camPx;
-    const sig = W + ':' + camPx.toFixed(2);
-    if (!force && sig === closeupTick._sig) return; closeupTick._sig = sig;
-    cv.style.transformOrigin = '0 0';
-    cv.style.transform = `translateX(${(-camPx).toFixed(2)}px) scaleX(${k.toFixed(5)})`;
-    const u = W / LOGICAL_W, l = xL * u, r = W - (xL + WW) * u;   // the clip, in the box's own (unstretched) px; negative past the board's sides
-    cv.style.clipPath = `inset(0px ${r.toFixed(2)}px 0px ${l.toFixed(2)}px round 11px)`;
-}
-function closeupFit(cv) {   // a tall phone: the board is as wide as the frame, so it is that much taller — narrow it till the stick clears the buttons
-    const key = window.innerWidth + 'x' + window.innerHeight;
-    if (closeupFit._key !== key) { closeupFit._key = key; cv.style.maxWidth = ''; closeupFit._n = 0; return; }
-    if (closeupFit._n > 6) return;
-    const sp = document.getElementById('stickPad'), hb = document.querySelector('.play-home-btn');
-    if (!sp || !hb) return;
-    const S = sp.getBoundingClientRect(), H = hb.getBoundingClientRect();
-    const lim = (H.height > 0 && H.top > S.top) ? H.top - 6 : window.innerHeight - 6;
-    const over = S.bottom - lim;
-    if (over > 1) { cv.style.maxWidth = Math.floor(cv.clientWidth - over * closeupWinW() / LOGICAL_H - 1) + 'px'; closeupFit._n++; try { if (typeof fitHudToBoard === 'function') fitHudToBoard(); } catch (e) {} }
-}
-function closeupWin() {   // the columns in view, in board pixels (the edge strips not counted)
-    if (typeof document === 'undefined' || !document.body.classList.contains('closeup') || closeupCam == null) return { on: false, l: 0, r: LOGICAL_W };
-    return { on: true, l: closeupCam * CELL, r: (closeupCam + CLOSEUP_COLS) * CELL };
-}
-function closeupDrawEdges() {   // [101126ak] the strips either side cleared to the page, and the knuckles on the line drawn whole over them
-    if (!CLOSEUP_EDGE || !document.body.classList.contains('closeup') || closeupCam == null) return;
-    const E = CLOSEUP_EDGE, L = closeupCam * CELL, R = (closeupCam + CLOSEUP_COLS) * CELL;
-    ctx.save(); ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
-    const strips = [[L - E - 3, E + 3], [R, E + 3]].filter(([x]) => x + E > 0 && x < LOGICAL_W);
-    for (const [x, w] of strips) ctx.clearRect(x, -5, w, LOGICAL_H + 10);
-    ctx.beginPath(); for (const [x, w] of strips) ctx.rect(x, -5, w, LOGICAL_H + 10); ctx.clip();
-    try { ctx.translate(shake.x || 0, shake.y || 0); } catch (e) {}
-    try { drawJoints(); } catch (e) {}
-    ctx.restore();
-}
-function closeupDrawMarks() {   // a chevron, in the slot's colour, at the side of the window a slot is hidden beyond
-    if (!document.body.classList.contains('closeup') || closeupCam == null || typeof slots === 'undefined') return;
-    const L = closeupCam, R = closeupCam + CLOSEUP_COLS;
-    ctx.save(); ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);
-    for (const sl of slots) {
-        if (sl.claimed || sl.retiring || !sl.keys || !sl.keys.size) continue;
-        let minX = 99, maxX = -1, sy = 0, n = 0;
-        for (const k of sl.keys) { const [x, y] = k.split(',').map(Number); minX = Math.min(minX, x); maxX = Math.max(maxX, x); sy += y; n++; }
-        const side = maxX + 1 <= L + 0.05 ? -1 : minX >= R - 0.05 ? 1 : 0; if (!side) continue;
-        const py = Math.max(CELL * 0.4, Math.min(LOGICAL_H - CELL * 0.4, (sy / n - game.cameraY + 0.5) * CELL));
-        const px = side < 0 ? L * CELL + 11 : R * CELL - 11, s = 9;
-        ctx.fillStyle = sl.color || '#ffffff'; ctx.strokeStyle = 'rgba(6, 20, 45, 0.8)'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
-        ctx.beginPath(); ctx.moveTo(px + side * s * 0.6, py); ctx.lineTo(px - side * s * 0.6, py - s); ctx.lineTo(px - side * s * 0.6, py + s); ctx.closePath();
-        ctx.stroke(); ctx.fill();
-    }
-    ctx.restore();
-}
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
-    try { closeupTick(); } catch (e) {}   // [101126aj]
     tiltTick();   // [081026q]
     replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
 
@@ -41447,8 +41307,7 @@ function draw() {
         // Without this, long copy like "AMAZING — CONGRATULATIONS!" runs
         // off the canvas edge on smaller-width screens.
         const PAD = 24;
-        const _cu = closeupWin();   // [101126aj] the close-up window (the whole board when it is off)
-        const maxLineWidth = (_cu.r - _cu.l) - PAD;
+        const maxLineWidth = LOGICAL_W - PAD;
         let actualSize = fontSize;
         ctx.font = `bold ${Math.round(actualSize)}px sans-serif`;
         for (const line of lines) {
@@ -41478,8 +41337,7 @@ function draw() {
         let widest = 0;
         for (const ln of lines) widest = Math.max(widest, ctx.measureText(ln).width);
         const halfW = widest / 2;
-        const _fx = (_cu.on && Math.abs(f.x - LOGICAL_W / 2) < 0.5) ? (_cu.l + _cu.r) / 2 : f.x;   // [101126aj] a centred word: the window's centre
-        const drawX = Math.max(_cu.l + halfW + MARGIN, Math.min(_cu.r - halfW - MARGIN, _fx));
+        const drawX = Math.max(halfW + MARGIN, Math.min(LOGICAL_W - halfW - MARGIN, f.x));
         const blockH = (lines.length - 1) * lineH;
         let baseY = f.y + yOff - blockH / 2;
         // Top of the first line and bottom of the last must both be inside.
@@ -41592,8 +41450,6 @@ function draw() {
         ctx.restore();
     }
     
-    try { closeupDrawEdges(); } catch (e) {}   // [101126ak] whole knuckles at the window's edges
-    try { closeupDrawMarks(); } catch (e) {}   // [101126aj] the chevrons (into the clip too: harmless, they mark real slots)
     // HUD updates — Set-only
     renderSetIcons();
     if (replayClip && replayClip.live) replayClipFrame();   // [260926n] the finished frame goes into the clip
@@ -46324,7 +46180,7 @@ function fitHudToBoard() {
     const hud = document.querySelector('.hud');
     if (!cv || !hud) return;
     if (document.body.classList.contains('layout-land')) return;   // [190926b] the column owns the HUD's width sideways
-    const boardW = document.body.classList.contains('closeup') ? cv.clientWidth : cv.getBoundingClientRect().width;   // [101126aj] the window seen
+    const boardW = cv.getBoundingClientRect().width;
     if (!boardW) return;
     const k = Math.max(0.55, Math.min(1, boardW / 480));
     if ('zoom' in hud.style) {
@@ -46609,10 +46465,7 @@ function placeRotorMark() {
     const ok = (l, t) => l >= F.left - 1 && t >= F.top - 1 && l + w <= F.right + 1 && t + h <= F.bottom + 1 &&
         !avoid.some(R => !(l + w + 4 <= R.left || l - 4 >= R.right || t + h + 4 <= R.top || t - 4 >= R.bottom));
     if (ROTOR_MARK_ON_GRID) {   // [311026m] the board's own bottom-right corner, inside it
-        let B = bd.getBoundingClientRect();
-        if (document.body.classList.contains('closeup') && typeof closeupTick === 'function') {   // [101126aj] the window seen, not the stretched drawing
-            const l = B.left + (closeupTick._camPx || 0), w2 = bd.clientWidth, eg = CLOSEUP_EDGE * w2 / closeupWinW(); B = { left: l, right: l + w2 - eg, top: B.top, bottom: B.bottom, width: w2, height: B.height };
-        }
+        const B = bd.getBoundingClientRect();
         if (B.width > 60 && B.height > 60) {
             const inset = Math.max(4, Math.round(B.width / VIEW_W * 0.2));
             m.style.left = Math.round(B.right - inset - w) + 'px'; m.style.top = Math.round(B.bottom - inset - h) + 'px';

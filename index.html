@@ -1755,6 +1755,34 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
 #startScreen .welcome-box .wr-title { margin-bottom: clamp(4px, 2cqw, 16px); }
 #startScreen .welcome-box .wr-obj { margin-bottom: clamp(20px, 9cqw, 72px); }
 #startScreen .welcome-box .wr-stamp { margin-top: clamp(4px, 2cqw, 14px); }
+/* ══ [101126r] THE WELCOME PAGE ON A WIDE SCREEN — Jake, 10 Nov, 10:47: "can you make doubley sure that the function buttons that we see
+   on the welcome screen are always present on the game screen. please adjust the 9:16 and 16:9 layouts accordingly." Measured at nine
+   sizes: the game screen shows all five of the welcome page's round buttons (Move Guide, Tips, theme, Sound, Settings) plus Home, in
+   view and tappable, at every one. The welcome page itself was the one that failed: it is built as the largest 9:16 box that fits, so
+   on a landscape phone (844 x 390) it was a strip 220 px wide — the title off the top, EASY / MEDIUM / HARD overprinting, the round
+   buttons overlapping and off the bottom; on a 16:9 monitor the same column at a third of the width with type too small to read.
+   Wider than 4:3 it is now a 16:9 box in two columns: the word mark, tagline and objective on the left, centred; PLAY, the difficulty,
+   CARRY ON, HOW TO PLAY, TOP SCORES, the round buttons and the build stamp on the right, in one column of one width. Portrait (9:16)
+   is unchanged. */
+@media (min-aspect-ratio: 4/3) {
+    #startScreen .welcome-box {
+        display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); column-gap: 7cqw; row-gap: clamp(6px, 1.3cqw, 16px);
+        align-content: center; align-items: center; justify-items: stretch;
+        max-width: min(100vw, calc((100vh - 12px) * 16 / 9)); max-width: min(100vw, calc((100dvh - 12px) * 16 / 9));
+        min-height: 0; height: 100vh; height: 100dvh; padding: 10px 5cqw;
+    }
+    #startScreen .welcome-box > .welcome-row { width: 100%; min-width: 0; grid-column: 2; margin: 0; }
+    #startScreen .welcome-box > .wr-title, #startScreen .welcome-box > .wr-obj { overflow: hidden; }
+    #startScreen .welcome-box > .wr-title { grid-column: 1; grid-row: 1 / span 4; align-self: end; margin: 0; }
+    #startScreen .welcome-box > .wr-obj { grid-column: 1; grid-row: 5 / span 3; align-self: start; margin: 0; }
+    #startScreen .welcome-box > .wr-stamp { margin: 0; }
+    #startScreen .welcome-box .start-btn { font-size: 20px; padding: 10px 20px; }
+    #startScreen .welcome-box .objective-text { font-size: clamp(13px, 2.2cqw, 24px); }
+}
+/* the right-hand column grows with the screen: a laptop or monitor gets buttons sized for it, not for a phone held sideways */
+@media (min-aspect-ratio: 4/3) and (min-height: 560px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 1.3; } }
+@media (min-aspect-ratio: 4/3) and (min-height: 800px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 1.65; } }
+@media (min-aspect-ratio: 4/3) and (min-height: 1050px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 2; } }
 /* [280926z] the tutorials */
 .tut-wrap #demoVideo, .tut-wrap #demoCanvas { display: none !important; }
 .tut { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -3139,6 +3167,49 @@ body.theme-day .taunt-box .go-revolves { color: #64748b; }
     transition: color 0.2s;
 }
 .details-toggle:hover { color: #94a3b8; }
+/* ══ [101126p] THE END OF A RUN: BUTTONS IN STEP, AND A LANDSCAPE LAYOUT — Jake, 10 Nov, 10:00, with a screen grab of the end card:
+   "can you address any symmetry issues between the buttons. also, make it suitable for viewing 9:16 and 16:9". Each button was as wide
+   as its own words: PLAY AGAIN one width, TOP SCORES another, REPLAY a third, Export play data a fourth, one above the next, so their
+   edges stepped in and out down the screen; KEEP IT and CHOOSE ANOTHER the same. Now the buttons share one column (--go-act, 320 px or
+   the card's width if less): PLAY AGAIN spans it; TOP SCORES and REPLAY sit side by side beneath it, each half the column, the same
+   height, with a gap the width of the column's margin (and if only one is showing it spans the column); the replay's DOWNLOAD and
+   SHARE pair the same way; KEEP IT and CHOOSE ANOTHER likewise; Export play data spans the column, quiet, at the foot. Every left and
+   right edge lines up with PLAY AGAIN's.
+   Wide screens (16:9, wider than 4:3): the verdict (title and score card) sits on the left and what next (name and buttons) on the
+   right, each centred in its half, so a landscape phone at 844 x 390 shows it all without scrolling (it scrolled 125 px). On a short
+   landscape screen the title, the card's padding and the type step down to fit. Portrait (9:16) keeps the single column. */
+#gameOverScreen { --go-act: min(320px, var(--board-w, 360px), calc(100vw - 30px)); }
+#gameOverScreen .go-side { display: flex; flex-direction: column; align-items: center; }
+#gameOverScreen .go-actions { width: var(--go-act); display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-top: 4px; }
+#gameOverScreen .go-actions .start-btn { width: 100%; margin: 0; padding: 15px 12px; box-sizing: border-box; }
+#gameOverScreen .go-row, #gameOverScreen .go-clip { display: flex; gap: 10px; margin: 0; }
+#gameOverScreen .go-row > button, #gameOverScreen .go-clip > button { flex: 1 1 0; min-width: 0; margin: 0; padding-left: 8px; padding-right: 8px; box-sizing: border-box; white-space: nowrap; }
+#gameOverScreen .go-row > button[hidden], #gameOverScreen .go-row > button.hidden { display: none; }
+#gameOverScreen .go-clip { flex-wrap: wrap; }
+#gameOverScreen .go-clip .clip-hint { flex-basis: 100%; }
+#gameOverScreen .go-actions .details-toggle { width: 100%; margin: 0; box-sizing: border-box; }
+#gameOverScreen .go-name { width: var(--go-act); max-width: none; }
+#gameOverScreen .go-name-btns { width: 100%; flex-wrap: nowrap; gap: 10px; }
+#gameOverScreen .go-name-btns > button { flex: 1 1 0; min-width: 0; margin: 0; box-sizing: border-box; white-space: nowrap; padding-left: 6px; padding-right: 6px; }
+#gameOverScreen .go-row > button, #gameOverScreen .go-name-btns > button { font-size: 13px; letter-spacing: 1px; }   /* two to a row: CHOOSE ANOTHER fits its half */
+@media (min-aspect-ratio: 4/3) {
+    #gameOverScreen { flex-direction: row; justify-content: center; align-items: center; gap: clamp(24px, 6vw, 96px); --go-act: min(var(--board-w, 360px), 40vw, 480px); }   /* the column as wide as the card beside it */
+    #gameOverScreen .go-side { flex: 0 1 auto; justify-content: center; }
+    #gameOverScreen .go-verdict .taunt-box { margin: 10px 0 0; width: var(--go-act); }   /* the two halves the same width */
+}
+@media (min-aspect-ratio: 4/3) and (max-height: 520px) {
+    #gameOverScreen .screen-title { font-size: clamp(20px, 6.5vh, 32px); margin: 0; }
+    #gameOverScreen .taunt-box { padding: 10px 18px; width: min(var(--board-w, 360px), 44vw, 360px); }
+    #gameOverScreen .taunt-box .go-scorewrap .go-lbl { font-size: 16px; }
+    #gameOverScreen .taunt-box .go-score { font-size: clamp(30px, 11vh, 48px); }
+    #gameOverScreen .taunt-box .go-prose { margin-top: 8px; }
+    #gameOverScreen .taunt-box .go-stats { margin-top: 4px; }
+    #gameOverScreen .go-actions { gap: 7px; }
+    #gameOverScreen .go-actions .start-btn { padding: 10px 12px; font-size: 19px; }
+    #gameOverScreen .go-row > button, #gameOverScreen .go-clip > button { padding-top: 8px; padding-bottom: 8px; }
+    #gameOverScreen .go-name { gap: 3px; margin: 0 auto 6px; }
+    #gameOverScreen .go-name-sub { font-size: 11.5px; }
+}
 /* [180926c] Sized and weighted BETWEEN the play button and the two tool links:
    it is a place to go, not the thing to do, and not a developer control either. */
 .go-scores-btn {
@@ -4796,14 +4867,20 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
          for the next reader.
          [180926c] The loss title is now DEALT from GO_TITLES — six lines, a
          shuffled deck — so this placeholder names none of them. -->
+    <!-- [101126p] two groups: the verdict (title and card) and what next (name and buttons) — stacked when tall, side by side when wide -->
+    <div class="go-side go-verdict">
     <div class="screen-title" id="gameOverTitle"></div>
 
     <div class="taunt-box" id="tauntBox"></div>
+    </div>
+    <div class="go-side go-next">
 
     <!-- [031126e] YOU PLAYED AS … — told after the first run, KEEP IT or CHOOSE ANOTHER; then PLAYED AS … -->
     <div class="go-name" id="goName" hidden></div>
 
+    <div class="go-actions">
     <button class="start-btn" onclick="startGame()">▶ PLAY AGAIN</button>
+    <div class="go-row">
     <!-- [180926c] THE LADDER, FROM THE SCREEN THAT JUDGES A RUN. The table was
          reachable only from the welcome page, so NEW BEST could appear on a card
          that shows no best and offers no route to the one it refers to: a player
@@ -4812,6 +4889,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
     <button class="go-scores-btn" onclick="showScores('end')">TOP SCORES</button>
     <!-- [270926b] Watch how it ended again — and only then is it offered as a file. -->
     <button class="go-scores-btn go-replay-btn" id="goReplayBtn" onclick="this.blur(); gameOverReplay();">▶ REPLAY</button>
+    </div>
     <!-- [260926n] The run's replay, as a file — shown only once a clip exists
          (the browser has to be able to record a canvas), SHARE only where the
          browser can hand a file to the system sheet (the iPhone and iPad).
@@ -4819,13 +4897,15 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
     <div class="go-clip" id="goClip" hidden>
         <button class="go-clip-btn" id="goClipSave" onclick="replayClipSave()">⇓ DOWNLOAD REPLAY</button>
         <button class="go-clip-btn" id="goClipShare" onclick="replayClipShare()" hidden>SHARE REPLAY</button>
-        <span class="clip-hint">the replay you just watched, as a video — for posting</span>
+        <span class="clip-hint">the replay you just watched, as a video</span>
     </div>
     <button class="details-toggle debug-only" onclick="startReview()">⏮ Review last moves</button>
     <!-- [160826p] Downloads the run's event log as JSON for balance analysis.
          Visible (not debug-only): the data is collected on the phone and the
          laptop alike, and this is the only way it leaves the device. -->
     <button class="details-toggle" id="exportPlaydataBtn" onclick="recExport()">⇓ Export play data</button>
+    </div>
+    </div>
     <!-- [220826a] The end of a run is where a player is most likely to want the
          project — they have just been beaten by it or just finished it. -->
     <!-- [090926j] SOURCE & UPDATES link removed per the designer. -->
@@ -5154,7 +5234,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
         <div class="go-clip tally-clip" id="tallyClip" hidden>
             <button class="go-clip-btn" onclick="event.stopPropagation(); replayClipSave();">⇓ DOWNLOAD REPLAY</button>
             <button class="go-clip-btn" id="tallyClipShare" onclick="event.stopPropagation(); replayClipShare();" hidden>SHARE REPLAY</button>
-            <span class="clip-hint">the replay you just watched, as a video — for posting</span>
+            <span class="clip-hint">the replay you just watched, as a video</span>
         </div>
         </div><!-- /tally-body [031126a] -->
         <button class="tally-continue" id="tallyContinue" onclick="event.stopPropagation(); finishLevelTally();">▶ CONTINUE</button>
@@ -8397,6 +8477,21 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 101126-1430: UP TO DATE. Jake, 10 Nov, 14:27. [101126w] HOW TO PLAY and Settings' rules brought up to date (new DIG lesson and Digging/Difficulty rules; hourglasses by difficulty; last cube over the edge; buried gold; button places; a hole cube is 5 s). [101126x] The stick's knob a convex polished cap, rim lit top left (?knob=old). [101126y] Idle stick arrows lighter grey (?stickgrey=old). [101126z] Slot colours 100% (?slotsolid=0). Shading checked: one light, top left, throughout.
+// 101126-1104: SLOT CHROME. Jake, 10 Nov, 11:02. [101126v] A slot's colour starts 3.5 px inside its chrome edge, the sliver keeping the cell's own ground, so its chrome reads as fully as a plain cell's. ?slotgap=0. With 1053 (replay music, chrome knuckles in holes, no 'for posting') and 1100 (wide welcome page).
+// 101126-1053: REPLAY MUSIC. Jake, 10 Nov, 10:47. [101126s] The replay plays an original tune: after a win, upbeat in C major at 140; after a loss, gentle and hopeful in A minor at 88; it also goes into the downloadable clip (?replaymusic=0). [101126t] No 'for posting' under the clip buttons. [101126u] Chrome knuckles in the holes too (?voidknuckle=white). With 1100's wide welcome page ([101126r]).
+// 101126-1100: WIDE WELCOME. Jake, 10 Nov, 10:47. [101126r] Wider than 4:3 the welcome page is a 16:9 box in two columns (word mark and objective left; PLAY, difficulty, HOW TO PLAY, TOP SCORES, the round buttons and the stamp right): on a landscape phone it was a 220 px strip, overprinted and off the screen.
+// 101126-1018: CLEAN SLOTS. Jake, 10 Nov, 10:18. [101126q] Slot colour 65%; by night no coloured outline, glow, wash or rim on or outside the chrome edge. ?slotouter=1.
+// 101126-1001: END CARD IN STEP. Jake, 10 Nov, 10:00. [101126p] The end card's buttons share one column: PLAY AGAIN spans it, TOP SCORES and REPLAY side by side in equal halves (DOWNLOAD/SHARE and KEEP IT/CHOOSE ANOTHER the same), Export play data across the foot. Wider than 4:3, the verdict sits left and the buttons right; short landscape screens step the sizes down so nothing scrolls.
+// 101126-0959: SEE THROUGH THE SLOTS. Jake, 10 Nov, 09:58. [101126o] A slot's colour at the trail's 55% with nothing under it (no day white, no night lid; by day the bare depths), so the underworld shows through as on a walked cell. ?slotsee=0.
+// 101126-0946: COLOUR IN THE KNOB. Jake, 10 Nov, 09:45. [101126l] The stick's knob carries the block's colour in its middle band (?stickband=0). [101126m] Lit knuckles hold 0.5 s. [101126n] An empty day cell's two rings are solid white (?dayrings=soft).
+// 101126-0926: SEE MORE. Jake, 10 Nov, 09:25. [101126i] Knuckle heart 15% smaller (radius 3.4), chrome ring 2.95 wide; lit knuckles hold 1 s then fade. [101126j] Day white 75%. [101126k] Trail 55%.
+// 101126-0920: CHROME STICK. Jake, 10 Nov, 09:15. [101126g] The arrow the stick points at lights in the block's colour with its glow (red still for a refusal), and so does the held knob's edge; ?stickarrow=white. [101126h] The stick in polished chrome: the pad's edge a chrome band, the knob chrome with a soft highlight and a chrome rim; ?stickchrome=0.
+// 101126-0913: MORE CHROME. Jake, 10 Nov, 09:12. [101126e] The knuckle's coloured centre is 10% smaller (radius 4.45 -> 4.0) and its chrome ring grows inward to meet it (1.9 -> 2.35 wide); the outside is unchanged. ?knuckleheart=1. [101126f] By day the white bands are 85% (were 70). ?daywhite=.
+// 101126-0907: TWO SECOND KNUCKLES. Jake, 10 Nov, 09:06. [101126d] Each lit knuckle keeps its own light: pop, 2 s hold, 0.4 s fade; quick moves leave a short wake of lit knuckles. ?knucklehold=0.6.
+// 101126-0901: SEVENTY WHITE. Jake, 10 Nov, 09:01. [101126c] By day the cell's two white bands are 70% (were solid). ?daywhite=1 for solid.
+// 101126-0739: BIG KNUCKLES. Jake, 10 Nov, 07:39. [101126b] A lit knuckle keeps its chrome ring; only the centre takes the block's colour. Knuckles are radius 6.0 (was 4.4): 0.7 short of the cells' chrome edge. The depths keep the old size. ?knuckler=4.4, ?knucklering=colour.
+// 101126-0729: LIT KNUCKLES. Jake, 10 Nov, 07:26. [101126a] On a move the knuckles the block turns over light in the block's colour: the centre solid, the chrome ring lit with a tight glow (no spill), its catch-light kept; the colour of the shape that made the move; same 0.9 s pop, hold, fade. ?knucklelight=white.
 // 091126-1643: SEE THROUGH THE TRAIL. Jake, 9 Nov, 16:42. [091126am] The trail at 65% (80% barely showed anything) with the underworld under it: by night no dark lid; by day the bare depths under the whole walked cell. ?trailsee=0.8, ?trailunder2=0.
 // 091126-1634: FULL TRAIL. Jake, 9 Nov, 16:33. [091126al] A walked cell's colour fills its centre too, day and night (night's lid as well); empty cells keep the open centre. ?trailcentre=open.
 // 091126-1627: GOLD UNCAPPED. Jake, 9 Nov, 16:27. [091126ak] ×2 gold doubles every second the clock gains for its whole 40 s, with no 15 s cap; the words drop 'up to'. ?goldtimecap=15 for the cap.
@@ -9362,7 +9457,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '091126-1643 ROTOЯ · SEE THROUGH THE TRAIL';
+const BUILD_VERSION = '101126-1430 ROTOЯ · UP TO DATE';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -12956,7 +13051,7 @@ function settingsRulesRows() {
     const fresh = typeof CLOCK_RESETS !== 'undefined' && CLOCK_RESETS, rows = [];
     rows.push(['The set', 'Flip in eight directions. Land exactly on each slot in the set at the top \u2014 the same shape, the same way round. The full set finishes the level.']);
     rows.push(['Greens and reds', `Land beside a green to evolve, on one for ${GREEN_STOMP_SEC} seconds. A red devolves you by a cube you can spare` + (RED_PAYS_SEC > 0 ? ` and pays ${RED_PAYS_SEC} seconds` : '') + `; a single has none to spare, so it costs ${RED_TOLL_SEC}.`]);   // [011126f]
-    rows.push(['Holes', 'The cube over a hole goes in and becomes ground \u2014 you devolve by one.' + (DIVE_BUILDS ? ' ' + diveWords() + (LEVEL_ONE_FREE ? (L1_HOLES_FREE ? ' Holes and slots are free on level 1.' : ' The wrong slot is free on level 1.') : '') : DIVE_IS_MISTAKE ? (DIVE_FLAT ? (DIVE_CUBE_SEC > 0 ? ` Your whole block into holes at once costs ${DIVE_CUBE_SEC} seconds a cube.` : ` Your whole block into holes at once costs ${FALL_COST_SEC} seconds.`) : ' Your whole block into holes at once is a mistake.') : '') +   // [011126f] · [011126j]
+    rows.push(['Holes', 'The cube over a hole goes in and becomes ground \u2014 you devolve by one.' + (DIVE_BUILDS ? ' ' + diveWords() + (LEVEL_ONE_FREE ? (L1_HOLES_FREE ? ' Holes and slots are free on level 1.' : '') : '') : DIVE_IS_MISTAKE ? (DIVE_FLAT ? (DIVE_CUBE_SEC > 0 ? ` Your whole block into holes at once costs ${DIVE_CUBE_SEC} seconds a cube.` : ` Your whole block into holes at once costs ${FALL_COST_SEC} seconds.`) : ' Your whole block into holes at once is a mistake.') : '') +   // [011126f] · [011126j]
         (typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? ` A single crosses instead: ${CROSS_SEC} seconds a cell, and the cell becomes ground (not enough time, and it won\u2019t go).` +
             (LANDFALL_SEC > 0 ? ` The first landing on an island ringed by holes pays ${LANDFALL_SEC} seconds.` : '') : '')]);
     if (fresh) {
@@ -12970,9 +13065,11 @@ function settingsRulesRows() {
     if (COMBO_SLOT_PTS) rows.push(['Combos', `A shifter carrying you onto a slot: ${COMBO_SLOT_PTS.toLocaleString()} \u00d7 the level, doubled for a second shifter and again for a third. A slot and a row on one landing, a green and a slot in one move, or a red trimmed into a fit: ${COMBO_OTHER_PTS.toLocaleString()} \u00d7 the level.`]);
     rows.push(['Shifters', SHIFTER_SERIES ? 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Carried onto another shifter, that one fires at once \u2014 a row of them runs one after another.' + (PUSH_LANDS_AS_FLIP ? ' Where it puts you is a landing, as after a flip: a red there takes a cube (a single pays the red\u2019s toll), a green there is collected, a green beside you evolves you. Hourglasses, and reds and greens it carries you over, are destroyed; so is anything else it carries you over or onto, unless' : ' Anything else it carries you over or onto is destroyed, unless') + ' it lands you exactly on a slot of your shape: that fills it.' + (STEP_SPARES_SLOTS && TURN_SPARES_SLOTS ? ' A shifter never destroys a slot: it carries you over one, and won\u2019t put you on one you don\u2019t fit. Carried exactly onto a slot of your shape is a combo \u2014 big points.' : TURN_SPARES_SLOTS ? ' A turn never destroys a slot: it won\u2019t swing you onto one you don\u2019t fit.' : '')   // [311026b] · [311026i] · [311026n]
                 : 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Whatever it carries you over is destroyed.']);
-    if (GOLD_ON) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin sits on an island. Land on it \u2014 by a flip or carried by a shifter \u2014 and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point${GOLD_TIME_X2 ? ', and the time the clock gains' + (GOLD_TIME_CAPPED ? ' (up to the ' + GOLD_TIME_CAP + ' seconds it cost)' : '') + ',' : ''} is doubled. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ' and stays until it leaves the bottom of the board' : ` and fades ${GOLD_LIFE_SEC} seconds after it appears`}. A shifter that carries you over it leaves it.`]);   // [311026o]
+    if (GOLD_ON) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, land on it' : 'sits on an island. Land on it'} \u2014 by a flip or carried by a shifter \u2014 and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point${GOLD_TIME_X2 ? ', and the time the clock gains' + (GOLD_TIME_CAPPED ? ' (up to the ' + GOLD_TIME_CAP + ' seconds it cost)' : '') + ',' : ''} is doubled. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ' and stays until it leaves the bottom of the board' : ` and fades ${GOLD_LIFE_SEC} seconds after it appears`}. A shifter that carries you over it leaves it.`]);   // [311026o]
+    if (typeof DIG_MODE !== 'undefined' && DIG_MODE) rows.push(['Digging', `Hourglasses, shifters and the \u00d72 gold are buried where they were dealt. The square you stand on is dug${DIG_WIDE ? ', and the eight round it' : ''}, and so is every square a shifter carries you across; a second after you leave, what was there comes up. Go back and land on it to collect it before it slides off the bottom. Slots, greens, reds and holes are always in view.`]);   // [101126w]
+    if (typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined') rows.push(['Difficulty', `Easy, Medium or Hard, chosen on the welcome page, sets what the hourglasses pay: big and small, ${MODE_GLASS.easy[0]} and ${MODE_GLASS.easy[1]} seconds on Easy, ${MODE_GLASS.medium[0]} and ${MODE_GLASS.medium[1]} on Medium, ${MODE_GLASS.hard[0]} and ${MODE_GLASS.hard[1]} on Hard. Each difficulty keeps its own top scores.`]);   // [101126w]
     if (GUIDE_LOOK_SEC > 0) rows.push(['Move Guide', `Tap the compass to see the way to the set for a few seconds. Free on level 1; after that each look costs ${GUIDE_LOOK_SEC} seconds, paid when the route appears (no route, no charge). It won\u2019t open with under ${GUIDE_MIN_CLOCK} seconds on the clock.`]);   // [311026p]
-    rows.push(['Mistakes', (fresh && CUBE_LOST_SEC ? (WRONG_SLOT_TEN ? `A cube lost over the edge, off the bottom${HOLE_CUBE_PAYS ? ' or into a hole' : ''} costs ${CUBE_LOST_SEC} seconds (a red takes one for nothing); the wrong shape on a slot costs ${WRONG_SLOT_SEC}${WRONG_SLOT_PER_CUBE ? ' a cube it takes' : ''}. ` : `A cube lost over the edge, off the bottom or on the wrong slot costs ${CUBE_LOST_SEC} seconds. `) : '') +   // [051126g]   // [311026i] what a mistake is
+    rows.push(['Mistakes', (fresh && CUBE_LOST_SEC ? (WRONG_SLOT_TEN ? `A cube lost over the edge or off the bottom costs ${CUBE_LOST_SEC} seconds${HOLE_CUBE_PAYS ? `, one into a hole ${HOLE_CUBE_SEC}` : ''} (a red takes one for nothing); the wrong shape on a slot costs ${WRONG_SLOT_SEC}${WRONG_SLOT_PER_CUBE ? ' a cube it takes' : ''}${(LEVEL_ONE_FREE && !L1_HOLES_FREE) ? ', and is free on level 1' : ''}. ` : `A cube lost over the edge, off the bottom or on the wrong slot costs ${CUBE_LOST_SEC} seconds. `) : '') +   // [051126g]   // [311026i] what a mistake is
         (DIVE_BUILDS ? '' : DIVE_IS_MISTAKE ? (DIVE_FLAT && DIVE_CUBE_SEC > 0 ? `Your whole block into holes at once costs ${DIVE_CUBE_SEC} seconds a cube, every time` : `Your whole block into holes at once costs ${FALL_COST_SEC} seconds` + (DIVE_FLAT ? ', every time' : '')) + '. ' : '') + `Losing your last cube` + (DIVE_IS_MISTAKE && !DIVE_FLAT ? ' (your whole block into holes too)' : '') + `, a red\u2019s toll on a single, or a shifter pushing a single off the board is a mistake: ${MISTAKE_SEC} seconds${MISTAKE_STEP_SEC ? `, ${MISTAKE_STEP_SEC} more for each one before it in the level, never more than ${MISTAKE_CAP_SEC}` : ', every time'}. Points are never taken away.`]);
     return rows;
 }
@@ -17764,7 +17861,7 @@ function underPattern(P, alpha, width, fillA) {
        on the far edges are the other halves of the ones on the near edges, so
        the field still repeats without a seam. */
     {
-        const sr = Math.max(1.0, SOCKET_R * UNDER_A_SCALE);
+        const sr = Math.max(1.0, SOCKET_R_UNDER * UNDER_A_SCALE);   // [101126b] the depths keep the old knuckle
         const W = UNDER_SUPER_W, H = UNDER_SUPER_H;
         const solidAt = (i, j) => !underHoleAt(((i % W) + W) % W, ((j % H) + H) % H);
         const ringA = (dayTiles ? 0.55 : alpha) * 0.62;
@@ -18902,9 +18999,19 @@ function contactPoints(from, to) {
     return out;
 }
 let jointFlash = { t: 0, pts: null };
+/* ══ [101126d] A LIT KNUCKLE HOLDS 2 S, THEN FADES — Jake, 10 Nov, 09:06: "for all the knuckles that light up, can you put a 2 second
+   hold and then fade on them, as they are activated". A lit knuckle held about 0.6 s and faded by 0.9 s, and the next move put it out
+   at once (only the latest move's knuckles were kept). Now every knuckle keeps its own light: it pops in the block's colour, holds at
+   full for KNUCKLE_HOLD_MS (2 s), then fades over KNUCKLE_FADE_MS (0.4 s). Moves in quick succession leave a short wake of lit
+   knuckles behind the block, each going out 2.4 s after it lit; a knuckle lit again starts its 2 s again, in the new colour.
+   ?knucklehold= sets the hold in seconds (0.6 for about the old feel). */
+const KNUCKLE_HOLD_MS = (() => { const m = /[?&]knucklehold=([\d.]+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(0, Math.min(10, +m[1])) * 1000 : 500; })();   // [101126i] 1 s (Jake, 09:25; was 2) · [101126m] 0.5 s (Jake, 09:45)
+const KNUCKLE_FADE_MS = 400;
+const jointLit = new Map();   // [101126d] 'gx,gy' -> { t, col }: each knuckle's own light
 function noteJointFlash(fromCells, toCells) {
     const pts = contactPoints(fromCells, toCells).filter(([x, y]) => socketAt(x, y));
-    jointFlash = pts.length ? { t: performance.now(), pts } : { t: 0, pts: null };
+    jointFlash = pts.length ? { t: performance.now(), pts, col: playerColor() } : { t: 0, pts: null };   // [101126a] the colour of the block that made the move
+    if (pts.length) { const t = performance.now(), col = playerColor(); for (const [gx, gy] of pts) jointLit.set(`${gx},${gy}`, { t, col }); }   // [101126d]
 }
 const JOINT_DUR = 900;   // [290926b] 620 -> 900: held, then faded — see drawJoints
 const KNUCKLE_W = 1.5;          // [290926b] the resting ring: the weight of the grid line
@@ -18913,6 +19020,17 @@ const KNUCKLE_HEART_R = 3.1;    // [290926b] the white heart that fills it while
    ring should activate (not the outer ring) on the leading edge or corner of the direction of cube travel." The outer ring is
    left exactly as at rest; on a move an INNER RING lights inside it — white on a hairline, like the outer ring — on the
    knuckles the cube turns over (contactPoints: the leading edge, or the corner). KNUCKLE_INNER_ONLY = false puts back 290926b. */
+/* ══ [101126a] THE KNUCKLE LIGHTS IN THE BLOCK'S COLOUR — Jake, 10 Nov, 07:26: "at present the knuckles light up depending on the
+   direction that has been selected. can these knuckles glow the colour of the shape at that moment using the centre of the knuckle as
+   the colour and the chrome outside section for the glow?"; 07:29: a tight glow, the colour of the shape that made the move, on moves
+   only. On every move the knuckles the block turns over (the leading edge, or the corner on a diagonal) lit with a white inner ring
+   ([241026d]). Now the knuckle's centre fills solid with the block's colour, and its chrome ring takes the same colour with a glow held
+   close to the ring (KNUCKLE_GLOW_BLUR, 4 px) so it does not spill onto the cells' edges; the ring's white catch-light still shows, so
+   it reads as lit metal. The colour is the block's as the move is made: a shifter that changes the shape on landing does not change
+   it. Same pop, hold and fade (JOINT_DUR, 0.9 s), day and night. KNUCKLE_SHAPE_LIGHT = false, or ?knucklelight=white, puts back the
+   white inner ring. */
+const KNUCKLE_CHROME_KEPT = !/[?&]knucklering=colour(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126b]
+const KNUCKLE_SHAPE_LIGHT = !/[?&]knucklelight=white(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || '')), KNUCKLE_GLOW_BLUR = 4;
 const KNUCKLE_INNER_ONLY = true, KNUCKLE_INNER_R = 2.2, KNUCKLE_INNER_W = 1.6;
 /* ── [060926c] THE SOCKET LATTICE — THREE STATES, ALWAYS ON ──────────────────
    Every grid intersection in view is marked. Three states, told apart by SHAPE
@@ -18942,7 +19060,30 @@ const KNUCKLE_INNER_ONLY = true, KNUCKLE_INNER_R = 2.2, KNUCKLE_INNER_W = 1.6;
    Corners rounded further (CORNER_K 0.30 -> 0.42, CORNER_MAX 11 -> 16) so a
    4.4px dot has clear space at every intersection instead of sitting on four
    cell corners. */
-const SOCKET_R = 4.4;
+/* ══ [101126b] THE KNUCKLE: CHROME KEPT WHEN LIT, AND BIGGER — Jake, 10 Nov, 07:39: "re. the knuckle, keep the chrome outer and the
+   colour centre. also, can you make the knuckle bigger across the grid so that its almost touching the cell but not quite."
+   1. Lit, the knuckle keeps its chrome ring as at rest; only its centre fills with the block's colour ([101126a] tinted the ring too).
+   2. The knuckle's ring is 6.0 across its middle (radius; was 4.4). Measured: a cell is inset 3 from the grid line and its corner is
+      rounded at 16, so the nearest point of a cell to a grid corner is 9.9 away, and its chrome edge (2.1 wide on a 1.2 seat) reaches
+      in to 8.25. The knuckle's ring (1.9 wide on a 1.2 seat) reaches out to 7.55 at radius 6.0: a 0.7 gap, close but not touching.
+      The knuckles in the depths keep their old size (SOCKET_R_UNDER). ?knuckler= sets the radius (4.4 for the old size). */
+const SOCKET_R_UNDER = 4.4;
+/* ══ [101126i/j/k] Jake, 10 Nov, 09:25: "Knuckles: make the chrome section of the knuckle larger and the centre colour section smaller by
+   15%. Can you put a 1 second hold and then fade on them, as they are activated. Can the transparency of the colour white grid square be
+   increased by 10%. also, the transparency of the occupied colour can be increased by 10%". [101126i] The heart is 15% smaller again
+   (KNUCKLE_HEART_K 0.9 -> 0.765: radius 4.0 -> 3.4), the chrome ring growing inward to meet it (2.35 -> 2.95 wide), the outside fixed;
+   a lit knuckle holds 1 s (KNUCKLE_HOLD_MS, was 2 s), then fades over 0.4 s. [101126j] By day the white bands are 75% (were 85): 25%
+   see-through. [101126k] The trail is 55% (TRAIL_SEE, was 65): 45% see-through, day and night. */
+/* ══ [101126e] MORE CHROME, A SMALLER HEART — Jake, 10 Nov, 09:12: "make the chrome section of the knuckle larger and the centre colour
+   section smaller by 10%". The knuckle's outside stays where it is (0.7 short of the cells' chrome edge, [101126b]); the coloured centre
+   is 10% smaller across (radius 4.45 -> 4.0), and the chrome ring grows inward to meet it (1.9 -> 2.35 wide). KNUCKLE_HEART_K 0.9;
+   ?knuckleheart=1 for the 0739 proportions. */
+const KNUCKLE_HEART_K = (() => { const m = /[?&]knuckleheart=([\d.]+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(0.3, Math.min(1, +m[1])) : 0.765; })();   // [101126i] 15% smaller again (0.9 x 0.85; Jake, 09:25)
+function knuckleGeom() {   // [101126e] the chrome ring and the heart inside it, from the knuckle's fixed outside
+    const w0 = KNUCKLE_W + 0.4, outer = SOCKET_R + w0 / 2, heart = (SOCKET_R - w0 / 2 - 0.6) * KNUCKLE_HEART_K, inner = heart + 0.6;
+    return { ringR: (outer + inner) / 2, ringW: outer - inner, heart };
+}
+const SOCKET_R = (() => { const m = /[?&]knuckler=([\d.]+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(2, Math.min(8, +m[1])) : 6.0; })();   // [101126b] 6.0 (was 4.4)
 /* [080926c] ONE OUTLINE WEIGHT FOR EVERY ASSET ON THE GRID. Field note: the
    white outline should be slightly thicker and consistent across all. It was
    1.8px, written as a literal in four places — the empty cell, the trail, the
@@ -18962,6 +19103,10 @@ function socketInk() { return currentTheme === 'day' ? SOCKET_INK_DAY : SOCKET_I
    back the dot. */
 const VOID_KNUCKLES = true;
 const VOID_KNUCKLE_A = 1;
+/* ══ [101126u] CHROME KNUCKLES IN THE HOLES — Jake, 10 Nov, 10:47: "There should be chrome knuckles in the void / hole areas as well."
+   Inside a hole the knuckles were still the old white ring on a dark hairline; they are now the same chrome as on land ([101126e]),
+   day and night. ?voidknuckle=white puts back the white ring. */
+const VOID_KNUCKLE_CHROME = !/[?&]voidknuckle=white(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 function drawJoints() {
     const camInt = Math.floor(game.cameraY), camFrac = game.cameraY - camInt;
     const used = new Set();
@@ -18996,7 +19141,7 @@ function drawJoints() {
                weight of the grid line, on a hairline of shadow so it reads over the
                depths. In a void: a small dim dot, "not here", and nothing white. */
             if (socketAt(gx, gy) && chromeOn()) {   // [091126af] the knuckle in chrome · [091126aj] by night too
-                ctx.globalAlpha = 1; chromeStrokeRing(px, py, SOCKET_R, KNUCKLE_W + 0.4);
+                ctx.globalAlpha = 1; { const g = knuckleGeom(); chromeStrokeRing(px, py, g.ringR, g.ringW); }   // [101126e]
             } else if (socketAt(gx, gy)) {
                 const _day = currentTheme === 'day';
                 ctx.globalAlpha = _day ? 0.6 : 0.35;   // the hairline it sits on: shadow by night, deep ice by day
@@ -19006,6 +19151,8 @@ function drawJoints() {
                 ctx.strokeStyle = '#ffffff';
                 ctx.lineWidth = KNUCKLE_W;
                 ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
+            } else if (VOID_KNUCKLES && VOID_KNUCKLE_CHROME && chromeOn()) {   // [101126u] in a hole too, the knuckle is chrome
+                ctx.globalAlpha = VOID_KNUCKLE_A; { const g = knuckleGeom(); chromeStrokeRing(px, py, g.ringR, g.ringW); }
             } else if (VOID_KNUCKLES) {   // [081026i] inside a hole: the same knuckle, so the anchor points show
                 const _day = currentTheme === 'day';
                 ctx.globalAlpha = (_day ? 0.6 : 0.35) * VOID_KNUCKLE_A;
@@ -19027,13 +19174,38 @@ function drawJoints() {
     // It holds at full strength for most of JOINT_DUR and fades only at the end,
     // so a flip at full speed still leaves it lit long enough to see. By day
     // the ring turns deep ice so the white heart has an edge on the pale seams.
+    if (KNUCKLE_SHAPE_LIGHT && jointLit.size) for (const [key, L] of jointLit) {   // [101126a] lit in the block's colour · [101126d] each its own 2 s
+            const age = performance.now() - L.t;
+            if (age > KNUCKLE_HOLD_MS + KNUCKLE_FADE_MS) { jointLit.delete(key); continue; }
+            const [gx, gy] = key.split(',').map(Number);
+            const pop = age < 90 ? age / 90 * 1.35 : age < 180 ? 1.35 - 0.35 * (age - 90) / 90 : 1;
+            const hold = age < KNUCKLE_HOLD_MS ? 1 : 1 - (age - KNUCKLE_HOLD_MS) / KNUCKLE_FADE_MS;
+            const px = gx * CELL, py = (gy - game.cameraY) * CELL, col = L.col, w = KNUCKLE_W + 0.4;
+            const p = Math.min(1.15, pop);
+            ctx.save();
+            ctx.globalAlpha = hold;
+            ctx.fillStyle = col;   // the centre, solid in the block's colour
+            ctx.beginPath(); ctx.arc(px, py, KNUCKLE_CHROME_KEPT ? Math.min(knuckleGeom().heart, knuckleGeom().heart * p / 0.9) : (SOCKET_R - w / 2) * p, 0, TAU); ctx.fill();   // [101126e] the smaller heart   // [101126b] inside the chrome
+            if (!KNUCKLE_CHROME_KEPT) {   // [101126b] the ring stays chrome; ?knucklering=colour lights it as 0729 did
+                ctx.shadowColor = col; ctx.shadowBlur = KNUCKLE_GLOW_BLUR;
+                ctx.strokeStyle = col; ctx.lineWidth = w;
+                ctx.beginPath(); ctx.arc(px, py, SOCKET_R, 0, TAU); ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = hold * 0.55;
+                ctx.strokeStyle = '#ffffff'; ctx.lineWidth = Math.max(0.5, w * 0.35);
+                ctx.beginPath(); ctx.arc(px - 0.3, py - 0.3, SOCKET_R, Math.PI * 0.9, Math.PI * 1.6); ctx.stroke();
+            }
+            ctx.restore();
+        }
+    ctx.globalAlpha = 1;
     if (jointFlash.pts) {
         const day = currentTheme === 'day';
         const heart = '#ffffff', rim = day ? '#0369a1' : '#ffffff';   // a white heart in both themes; by day in a deep-ice ring
         const age = Math.max(0, k * JOINT_DUR);
         const pop = age < 90 ? age / 90 * 1.35 : age < 180 ? 1.35 - 0.35 * (age - 90) / 90 : 1;   // 0 -> 1.35 -> 1
         const hold = k < 0.7 ? 1 : 1 - (k - 0.7) / 0.3;
-        if (KNUCKLE_INNER_ONLY) for (const [gx, gy] of jointFlash.pts) {   // [241026d] only the inner ring lights
+        if (KNUCKLE_SHAPE_LIGHT) { /* [101126d] drawn from jointLit, below */ }
+        else if (KNUCKLE_INNER_ONLY) for (const [gx, gy] of jointFlash.pts) {   // [241026d] only the inner ring lights
             const px = gx * CELL, py = (gy - game.cameraY) * CELL, r = KNUCKLE_INNER_R * Math.min(1.2, pop);
             ctx.save();
             ctx.globalAlpha = hold * (day ? 0.85 : 0.5);
@@ -24659,7 +24831,7 @@ function _lcKeepShow(ms) {
     const sh = document.getElementById('lcKeepShare');
     if (sh) sh.hidden = !(replayClip && replayClipCanShare(replayClip));
     const hint = document.getElementById('lcKeepHint');
-    if (hint) hint.textContent = 'the replay you just watched, as a video — for posting';
+    if (hint) hint.textContent = 'the replay you just watched, as a video';   // [101126t] no "for posting" (Jake, 10:47)
     const t0 = performance.now();
     const paint = () => {
         const left = Math.max(0, ms - (performance.now() - t0));
@@ -25213,6 +25385,7 @@ function replayFinish() {
     if (!R || R.done) return;
     replayClipStop(true);  // [260926n] the last frame is the one the replay stopped on — [061026g] then the end card
     R.done = true;
+    try { if (_rm) { const M = _rm; setTimeout(() => { if (_rm === M) replayMusicStop(false); }, 1500); } } catch (e) {}   // [101126s] the tune plays out over the clip's end card, then fades
     devolveStage = null;   // [280926d]
     transformAnim = null; transformPast = []; machineFX = null; machineFXPast = []; _singleSpin = null;   // [280926r]
     replayStageClear(R);   // [110926a] the board goes back to now, before anything reads it
@@ -25339,7 +25512,15 @@ function replayClipStart(R) {
         c.height = canvas.height + Math.round((CLIP_TOP_H + CLIP_BOT_H) * k);
         const g = c.getContext('2d');
         const stream = c.captureStream(30);
-        const rec = new MediaRecorder(stream, { mimeType: mt.mime, videoBitsPerSecond: 3000000 });
+        let rec;
+        try {   // [101126s] the replay's music as the clip's soundtrack
+            const at = _rm && _rm.dest && _rm.dest.stream.getAudioTracks()[0];
+            if (at) stream.addTrack(at);
+            rec = new MediaRecorder(stream, { mimeType: mt.mime, videoBitsPerSecond: 3000000 });
+        } catch (e) {
+            for (const tr of stream.getAudioTracks()) stream.removeTrack(tr);
+            rec = new MediaRecorder(stream, { mimeType: mt.mime, videoBitsPerSecond: 3000000 });
+        }
         const chunks = [];
         const clip = { rec, stream, chunks, canvas: c, ctx: g, k, mime: mt.mime, ext: mt.ext, live: true, blob: null, kind: R.kind,
                        score: game.score, levelText: replayClipLevelText(), t0: performance.now(), day: currentTheme === 'day' };
@@ -25536,6 +25717,105 @@ function replayClipReady(C) {
    is over, so the main loop is not running: a small driver of its own
    advances the replay and draws the board until it finishes, then the card
    comes back with SAVE / SHARE on it. */
+/* ══ [101126s] MUSIC UNDER THE REPLAY — Jake, 10 Nov, 10:47: "when a player requests the replay, can you add a suitable piece of music,
+   if its a loss, make it a bad luck but better luck next time vibe. if its a [win], make the music celebratory and up beat."
+   Two short original tunes, played by the game's own synthesiser (no files), looped for as long as the replay runs and faded out
+   when it ends. THE WIN: 140 bpm in C major, C - G - Am - F; a bright square-wave lead in quick eighths, a bouncing bass, offbeat
+   chord stabs, kick, snare and hats; every second time round the lead climbs to a high C. THE LOSS: 88 bpm, A minor - F - C - G;
+   a soft triangle lead in a gentle falling line, warm held chords and a quiet bass, no drums; the fourth bar lifts to G and leaves
+   the phrase open, a shrug and a "go on, again". Through the game's sound bus, so the Sound button mutes it, and only when Music is
+   on in Settings. The tune also goes into the replay video the player can download or share (whatever the mute), so the clip has its
+   soundtrack. REPLAY_MUSIC = false, or ?replaymusic=0, leaves the replay silent. */
+const REPLAY_MUSIC = !/[?&]replaymusic=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+let _rm = null;   // the replay's music: { master, dest, timer, win, t0, step }
+function rmNote(m) { return 440 * Math.pow(2, (m - 69) / 12); }
+const RM_WIN = { bpm: 140, bars: [
+    { ch: [48, 52, 55], bass: 36, lead: [76, 79, 84, 79, 76, 79, 84, 86] },
+    { ch: [43, 47, 50], bass: 31, lead: [83, 79, 74, 79, 83, 86, 83, 79] },
+    { ch: [45, 48, 52], bass: 33, lead: [81, 76, 72, 76, 81, 84, 81, 76] },
+    { ch: [41, 45, 48], bass: 29, lead: [77, 81, 84, 81, 79, 77, 76, 74] },
+    { ch: [48, 52, 55], bass: 36, lead: [76, 79, 84, 79, 76, 79, 84, 88] },
+    { ch: [43, 47, 50], bass: 31, lead: [86, 83, 79, 83, 86, 91, 86, 83] },
+    { ch: [45, 48, 52], bass: 33, lead: [84, 81, 76, 81, 84, 88, 84, 81] },
+    { ch: [43, 47, 50], bass: 31, lead: [79, 83, 86, 91, 88, 86, 84, null] } ] };
+const RM_LOSS = { bpm: 88, bars: [
+    { ch: [57, 60, 64], bass: 45, lead: [69, null, 72, null, 71, null, 69, null] },
+    { ch: [53, 57, 60], bass: 41, lead: [69, null, 72, null, 77, null, 76, null] },
+    { ch: [48, 52, 55], bass: 36, lead: [76, null, 74, null, 72, null, 74, null] },
+    { ch: [55, 59, 62], bass: 43, lead: [71, null, 74, null, 79, null, null, null] } ] };
+function rmVoice(t, f, dur, type, vol, dest, filt) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    let head = o;
+    if (filt) { const bq = audioCtx.createBiquadFilter(); bq.type = 'lowpass'; bq.frequency.value = filt; o.connect(bq); head = bq; }
+    head.connect(g); g.connect(dest);
+    o.start(t); o.stop(t + dur + 0.05);
+}
+function rmNoise(t, dur, vol, dest, hp) {
+    const n = Math.max(1, Math.floor(audioCtx.sampleRate * dur)), b = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = audioCtx.createBufferSource(), g = audioCtx.createGain(), f = audioCtx.createBiquadFilter();
+    s.buffer = b; f.type = 'highpass'; f.frequency.value = hp; g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(dest); s.start(t);
+}
+function rmKick(t, dest) {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.2);
+}
+function rmBar(R, bar, t, dest) {   // one bar of the tune at time t
+    const beat = 60 / R.bpm, e = beat / 2, win = R === RM_WIN;
+    if (win) {
+        bar.lead.forEach((m, i) => { if (m != null) rmVoice(t + i * e, rmNote(m), e * 0.9, 'square', 0.06, dest, 3200); });
+        for (let i = 0; i < 8; i++) rmVoice(t + i * e, rmNote(bar.bass + (i % 4 === 2 ? 12 : 0)), e * 0.8, 'triangle', 0.16, dest);
+        for (const i of [1, 3, 5, 7]) bar.ch.forEach(m => rmVoice(t + i * e, rmNote(m + 12), e * 0.5, 'sawtooth', 0.025, dest, 1800));
+        for (const i of [0, 4]) rmKick(t + i * e, dest);
+        for (const i of [2, 6]) rmNoise(t + i * e, 0.12, 0.18, dest, 1500);
+        for (let i = 0; i < 8; i++) rmNoise(t + i * e, 0.03, 0.06, dest, 7000);
+    } else {
+        bar.lead.forEach((m, i) => { if (m != null) rmVoice(t + i * e, rmNote(m), e * 1.9, 'triangle', 0.09, dest); });
+        bar.ch.forEach(m => rmVoice(t, rmNote(m), beat * 4 * 0.98, 'sine', 0.035, dest));
+        for (const i of [0, 4]) rmVoice(t + i * e, rmNote(bar.bass), beat * 1.8, 'sine', 0.13, dest);
+    }
+}
+function replayMusicStart(win) {
+    replayMusicStop(true);
+    if (!REPLAY_MUSIC) return;
+    try {
+        initAudio();
+        if (!audioCtx) return;
+        const R = win ? RM_WIN : RM_LOSS;
+        const master = audioCtx.createGain(); master.gain.value = 0.0001;
+        const t0 = audioCtx.currentTime + 0.08;
+        master.gain.exponentialRampToValueAtTime(win ? 0.9 : 1.4, t0 + 0.4);   // the gentle tune is quieter by nature: lifted to sit level with the win
+        const mc = document.getElementById('musicCheck');
+        if (!mc || mc.checked) master.connect(duckBus());   // the speakers, under the Sound button
+        let dest = null;
+        try { dest = audioCtx.createMediaStreamDestination(); master.connect(dest); } catch (e) { dest = null; }   // the clip's soundtrack
+        const barLen = 4 * 60 / R.bpm;
+        _rm = { master, dest, win, R, t0, next: t0, bar: 0, barLen, timer: 0 };
+        const pump = () => {   // keep two bars scheduled ahead
+            if (!_rm) return;
+            while (_rm.next < audioCtx.currentTime + barLen * 2) { rmBar(R, R.bars[_rm.bar % R.bars.length], _rm.next, master); _rm.next += barLen; _rm.bar++; }
+        };
+        pump();
+        _rm.timer = setInterval(pump, 250);
+    } catch (e) { _rm = null; }
+}
+function replayMusicStop(now) {
+    const M = _rm; _rm = null;
+    if (!M) return;
+    try {
+        clearInterval(M.timer);
+        const t = audioCtx.currentTime, fade = now ? 0.05 : 0.8;
+        M.master.gain.cancelScheduledValues(t); M.master.gain.setValueAtTime(Math.max(0.0001, M.master.gain.value), t);
+        M.master.gain.exponentialRampToValueAtTime(0.0001, t + fade);
+        setTimeout(() => { try { M.master.disconnect(); } catch (e) {} }, (fade + 0.2) * 1000);
+    } catch (e) {}
+}
 function gameOverReplay() {
     if (game.running || game._replay || game.testDrive) return;
     const scr = document.getElementById('gameOverScreen');
@@ -25543,8 +25823,9 @@ function gameOverReplay() {
     const back = () => { scr.classList.remove('hidden'); replayClipRefresh(); };
     scr.classList.add('hidden');
     const reason = (game._lastDeath && game._lastDeath.reason) || 'death';
+    replayMusicStart(reason === 'win');   // [101126s] before the clip starts, so its soundtrack goes in
     const ok = startBoardReplay('death', reason, back, { lead: RP_LEAD_MS, record: true });
-    if (!ok) { back(); return; }
+    if (!ok) { replayMusicStop(true); back(); return; }
     rec('replay', { k: 'again', r: advancedRound });
     const drive = () => {
         if (game.running) return;               // a new run took over — its loop draws now
@@ -36706,8 +36987,16 @@ function drawJoystickGuide() {
     pctx.lineWidth = 1.5;
     pctx.strokeStyle = day ? 'rgba(71,85,105,0.3)' : 'rgba(148,163,184,0.22)';
     if (STICK_POP) { pctx.strokeStyle = day ? 'rgba(3, 105, 161, 0.6)' : 'rgba(203, 213, 225, 0.55)'; pctx.lineWidth = 2.6; }   // [081026u] a firm edge
-    pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, cx, cy, RD + 8); else pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.stroke();
-    if (STICK_CELLS && DEPTH_LIGHT) {   // [081026n] the lit top-left of its rim
+    if (STICK_CHROME && STICK_CELLS) {   // [101126h] the edge, a polished chrome band
+        const E = RD + 8;
+        pctx.lineJoin = 'round';
+        pctx.beginPath(); _padSqPath(pctx, cx, cy, E);
+        pctx.strokeStyle = day ? 'rgba(30, 41, 59, 0.30)' : 'rgba(0, 0, 0, 0.55)'; pctx.lineWidth = 6.2; pctx.stroke();   // the seat
+        pctx.strokeStyle = chromeGradOn(pctx, cx - E, cy - E, cx + E, cy + E); pctx.lineWidth = 4.6; pctx.stroke();   // the steel
+        pctx.save(); pctx.translate(-0.6, -0.6); pctx.beginPath(); _padSqPath(pctx, cx, cy, E);
+        pctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; pctx.lineWidth = 1.2; pctx.stroke(); pctx.restore();   // the catch-light
+    } else { pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, cx, cy, RD + 8); else pctx.arc(cx, cy, RD + 8, 0, Math.PI * 2); pctx.stroke(); }
+    if (STICK_CELLS && DEPTH_LIGHT && !STICK_CHROME) {   // [081026n] the lit top-left of its rim · [101126h] the chrome has its own
         pctx.save();
         pctx.beginPath(); _padSqPath(pctx, cx, cy, RD + 8); pctx.clip();
         pctx.strokeStyle = day ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.16)'; pctx.lineWidth = 3;
@@ -36848,11 +37137,15 @@ function drawJoystickGuide() {
                 pctx.lineWidth = 2.2; pctx.stroke();
             } else if (h > 0) {
                 pctx.globalAlpha = 0.95 * FA;
-                pctx.strokeStyle = '#ffffff'; pctx.shadowColor = mono; pctx.shadowBlur = 10 * h;
+                if (STICK_ARROW_SHAPE) { const sc = playerColor(); pctx.strokeStyle = sc; pctx.shadowColor = sc; pctx.shadowBlur = 12 * h; pctx.globalAlpha = FA; }   // [101126g]
+                else { pctx.strokeStyle = '#ffffff'; pctx.shadowColor = mono; pctx.shadowBlur = 10 * h; }
                 pctx.lineWidth = W; pctx.stroke();
             } else {
                 pctx.globalAlpha = (STICK_POP ? (day ? 0.92 : 0.88) : (day ? 0.62 : 0.5)) * FAc;   // [081026u]
-                pctx.strokeStyle = day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#cbd5e1';
+                /* [101126y] LIGHTER IDLE ARROWS — Jake, 14:27: "The non coloured arrows on the joystick default colour should be a slightly
+                   lighter grey, the daylight mode arrows look quite black." Day's were the glyph ink, a near-black slate; they are a mid
+                   steel grey (#6f7b8c) now, and night's a touch lighter (#dbe3ec, was #cbd5e1). ?stickgrey=old puts back the dark ones. */
+                pctx.strokeStyle = STICK_IDLE_LIGHT ? (day ? '#6f7b8c' : '#dbe3ec') : (day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#cbd5e1');
                 if (DEPTH_LIGHT) { pctx.shadowColor = day ? 'rgba(2, 62, 110, 0.25)' : 'rgba(0, 0, 0, 0.6)'; pctx.shadowBlur = 3; pctx.shadowOffsetX = 1.5; pctx.shadowOffsetY = 2; }
                 pctx.lineWidth = W; pctx.stroke();
             }
@@ -36977,15 +37270,36 @@ function drawJoystickGuide() {
         const lg = pctx.createLinearGradient(0, -KH, 0, KH);
         if (day) { lg.addColorStop(0, glow > 0 ? '#eef3f9' : (STICK_POP ? '#e2eaf2' : CANDY.steelHi)); lg.addColorStop(1, glow > 0 ? '#a3b6cb' : (STICK_POP ? '#8499b2' : CANDY.steelLo)); }   // [081026u] a deeper fall
         else { lg.addColorStop(0, glow > 0 ? '#f1f5f9' : '#d5dee8'); lg.addColorStop(1, glow > 0 ? '#a9b8c9' : '#8597ab'); }
-        pctx.fillStyle = lg;
+        pctx.fillStyle = STICK_CHROME ? (KNOB_CONVEX ? chromeFaceGrad(pctx, KH) : chromeGradOn(pctx, -KH, -KH, KH, KH, true)) : lg;   // [101126h] polished chrome · [101126x] a dome
         pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.fill();
         pctx.shadowColor = 'transparent'; pctx.shadowBlur = 0; pctx.shadowOffsetX = 0; pctx.shadowOffsetY = 0;
+        if (STICK_CHROME) {   // [101126h] the shine: a soft bright highlight on the upper left, and a chrome rim
+            pctx.save(); pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.clip();
+            const sh = pctx.createRadialGradient(-KH * 0.42, -KH * 0.5, 0, -KH * 0.42, -KH * 0.5, KH * 0.85);
+            sh.addColorStop(0, 'rgba(255, 255, 255, 0.85)'); sh.addColorStop(0.35, 'rgba(255, 255, 255, 0.35)'); sh.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            pctx.fillStyle = sh; pctx.fillRect(-KH, -KH, 2 * KH, 2 * KH);
+            pctx.restore();
+            pctx.lineJoin = 'round';
+            pctx.beginPath(); _padSqPath(pctx, 0, 0, KH);
+            pctx.strokeStyle = 'rgba(30, 41, 59, 0.45)'; pctx.lineWidth = 3.4; pctx.stroke();
+            pctx.strokeStyle = KNOB_CONVEX ? chromeGradOn(pctx, -KH, -KH, KH, KH) : chromeGradOn(pctx, KH, KH, -KH, -KH); pctx.lineWidth = 2.2; pctx.stroke();   // the rim · [101126x] lit top left, as every bevel is
+        }
+        if (STICK_CHROME && STICK_BAND_SHAPE) {   // [101126l] the middle band in the block's colour
+            const bc = playerColor();
+            pctx.save();
+            pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * 0.75); _padSqPath(pctx, 0, 0, KH * 0.5);
+            pctx.fillStyle = bc; pctx.fill('evenodd');
+            const bs = pctx.createLinearGradient(-KH * 0.75, -KH * 0.75, KH * 0.75, KH * 0.75);   // lit as the cubes are: top left
+            bs.addColorStop(0, 'rgba(255, 255, 255, 0.35)'); bs.addColorStop(0.5, 'rgba(255, 255, 255, 0)'); bs.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
+            pctx.fillStyle = bs; pctx.fill('evenodd');
+            pctx.restore();
+        }
         pctx.save();   // the cell's two rings, in the shifters' ink, faint — as on a turn tile
         pctx.strokeStyle = day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#1f3555';
         pctx.lineWidth = 2.2;
         for (const [k, a] of [[0.75, 0.3], [0.5, 0.24]]) { pctx.globalAlpha = FA * a; pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * k); pctx.stroke(); }
         pctx.restore();
-        if (DEPTH_LIGHT) {   // [081026n] lit top-left, shaded bottom-right
+        if (DEPTH_LIGHT && !STICK_CHROME) {   // [081026n] lit top-left, shaded bottom-right · [101126h] the chrome has its own
             pctx.save(); pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.clip();
             pctx.lineWidth = 4;
             pctx.strokeStyle = 'rgba(255,255,255,0.7)'; pctx.beginPath(); _padSqPath(pctx, 2, 2, KH); pctx.stroke();
@@ -37005,14 +37319,15 @@ function drawJoystickGuide() {
 
     if (glow > 0) {
         pctx.save();
-        pctx.shadowColor = mono;
+        const _kc = (STICK_ARROW_SHAPE && STICK_CHROME) ? playerColor() : mono;   // [101126g] held: the knob's edge glows in the block's colour too
+        pctx.shadowColor = _kc;
         pctx.shadowBlur = 20 * glow;
-        pctx.strokeStyle = mono;
+        pctx.strokeStyle = _kc;
         pctx.globalAlpha = 0.9 * FA;
         pctx.lineWidth = 2.5;
         pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, 0, 0, KH); else pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
         pctx.restore();
-    } else {
+    } else if (!(STICK_CHROME && STICK_CELLS)) {   // [101126h] at rest the chrome rim is the edge
         pctx.lineWidth = 1.5;
         pctx.strokeStyle = day ? 'rgba(51,65,85,0.5)' : 'rgba(203,213,225,0.4)';
         if (STICK_POP) { pctx.strokeStyle = day ? 'rgba(31, 53, 85, 0.75)' : 'rgba(226, 232, 240, 0.75)'; pctx.lineWidth = 2.2; }   // [081026u]
@@ -37887,7 +38202,12 @@ const UNDER_DAY_DARK_K = (() => { const m = /[?&]daydark=([\d.]+)(?:&|$)/.exec((
    slot's colour across both bands; an object on a walked cell on that coral band. ?daylike=0 puts back day as it was at 1434. */
 const DAY_LIKE_NIGHT = !/[?&]daylike=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 const DAY_CENTRE_OPEN = !/[?&]daycentre=solid(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
-let DAY_GROUND_BANDS = CELL_BANDS_SOLID ? (DAY_LIKE_NIGHT ? [1, 1, (UNDER_WINDOW_CLEAR && UNDER_WINDOW_AS_HOLE) ? 0 : DAY_OPEN_LIGHT] : [1, DAY_OPEN_LIGHT, DAY_CENTRE_OPEN ? DAY_OPEN_LIGHT : 1]) : [0.8, 0.5, 0.72];   // [091126u] · [091126ab] solid to the inner ring   // [091126b] edge inward: solid, open, solid · [091126e]
+/* ══ [101126c] DAY'S WHITE AT 70% — Jake, 10 Nov, 09:01: "In daylight mode, make the opacity of the white grid colour 70%". The two
+   white bands of every day cell (on an empty cell, under an object, round a slot) were solid white; they are 70% now, so the depths
+   show faintly through the white. The chrome edge, the open centre and the knuckles are unchanged. DAY_WHITE_A; ?daywhite= sets it
+   (1 for solid). */
+const DAY_WHITE_A = (() => { const m = /[?&]daywhite=([\d.]+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(0, Math.min(1, +m[1])) : 0.75; })();   // [101126f] 85% (Jake, 09:12; was 70) · [101126j] 75%: 10% more see-through (Jake, 09:25)
+let DAY_GROUND_BANDS = CELL_BANDS_SOLID ? (DAY_LIKE_NIGHT ? [DAY_WHITE_A, DAY_WHITE_A, (UNDER_WINDOW_CLEAR && UNDER_WINDOW_AS_HOLE) ? 0 : DAY_OPEN_LIGHT] : [1, DAY_OPEN_LIGHT, DAY_CENTRE_OPEN ? DAY_OPEN_LIGHT : 1]) : [0.8, 0.5, 0.72];   // [091126u] · [091126ab] solid to the inner ring   // [091126b] edge inward: solid, open, solid · [091126e]
 /* [091126c] THE OPEN BAND 10% LARGER — Jake, 9 Nov, 10:30: "make the transparent area in the cells larger by 10% making the inner and
    outer rings smaller in area if needed". The open band ran from the ring at 3/4 to the ring at 1/2 (on the well's floor, 0.9 of that):
    0.675² − 0.45² = 25.3% of the cell's area. Both rings move by the same step, the outer one out and the inner one in, to 0.7625 and
@@ -37944,6 +38264,41 @@ const CELL_EDGE_EVERYWHERE = !/[?&]celledge=objects(?:&|$)/.test((typeof locatio
    and the coloured rim is gone; on a walked cell the trail's band is under it instead ([091126v]). ?dayobjfloor=0 puts it back. */
 const DAY_SLOT_CLEAN = !/[?&]dayslot=ring(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 const DAY_OBJ_ON_EMPTY = !/[?&]dayobjfloor=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126o] THE SLOTS AS SEE-THROUGH AS THE TRAIL — Jake, 10 Nov, 09:58: "can the slots colour have the transparency increased similar
+   to the transparency level on the occupied grid square colour". A slot's colour lay across its cell's two bands at 82%, and under it
+   sat the cell's own white (day, 75%) or its dark lid (night), so nothing of the depths came through. Now, as on a walked cell
+   ([091126am]): no white bands and no lid under a slot; by day the depths under the whole slot cell are drawn bare; and the colour is
+   at the trail's strength, TRAIL_SEE (55%). The white edge and the open centre are unchanged. SLOT_SEE_THROUGH = false, or ?slotsee=0,
+   puts back the solid slot. */
+const SLOT_SEE_THROUGH = !/[?&]slotsee=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126q] THE SLOT: 65%, AND NO COLOUR OUTSIDE ITS CHROME — Jake, 10 Nov, 10:18, with a grab of a slot: "reduce the transparency
+   by 10% on the coloured section. Also, there should be no colour on the outside grid line of the chrome, remove." The slot's colour
+   is 65% (SLOT_SEE_A; was the trail's 55%). By night a slot also wore, from before the bands, a coloured outline with a glow on the
+   cell's edge, a faint wash across the whole cell and a pale rim just inside the edge; together they put the colour on and around the
+   chrome. They are gone: the colour is only inside the chrome, across the two bands. SLOT_OUTER_CLEAN = false, or ?slotouter=1, puts
+   them back; ?slotsee=0 the solid slot. */
+const SLOT_SEE_A = /[?&]slotsolid=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || '')) ? 0.65 : 1,   /* [101126z] Jake, 14:27: "can the colours in the slots be not transparent at all, 100% opacity" — 1 (was 0.65); ?slotsolid=0 for 65% */ SLOT_OUTER_CLEAN = !/[?&]slotouter=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126v] THE SLOT'S CHROME AS FULL AS EVERY OTHER CELL'S — Jake, 10 Nov, 11:02, with a grab of two pink slots beside a pink
+   block: "theres slightly more of the outer chrome ring visible where the rotor shape is ... the same chrome edge on the right side
+   needs to be the same as it doesnt look as though there is as much chrome on display. amend". Measured across both edges: the chrome
+   stroke is the same width on every cell, but on a plain cell its dark seat shows on the white inside it and the white band follows,
+   so the edge reads about 4 px deeper; on a slot the colour began at the very edge, under the chrome, and swallowed the seat. Now the
+   slot's colour starts SLOT_CHROME_GAP (3.5 px) inside the edge, and that sliver keeps the cell's own ground (the day white at its
+   75%, the night lid), so the slot's chrome reads exactly as a plain cell's. ?slotgap=0 puts the colour back to the edge. */
+const SLOT_CHROME_GAP = /[?&]slotgap=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || '')) ? 0 : 3.5;
+function slotBandFill(sx, sy, size, fill) {   // [101126v] the slot's colour across its bands, a sliver inside its chrome
+    if (!(SLOT_CHROME_GAP > 0)) { nightBandFill(sx, sy, size, fill); return; }
+    const kw = (typeof CELL_WELL !== 'undefined' && CELL_WELL) ? CELL_WELL_K : 1, d = SLOT_CHROME_GAP, day = currentTheme === 'day';
+    const a = ctx.globalAlpha, bow = SLOT_SEE_THROUGH ? a / SLOT_SEE_A : 1;
+    ctx.save();
+    ctx.globalAlpha = bow * (day ? DAY_WHITE_A : 1);   // the sliver: the cell's own ground
+    ctx.fillStyle = day ? '#ffffff' : NIGHT_LID_SOLID;
+    ctx.beginPath(); _appendScaledSq(sx, sy, size, 1); _appendScaledSq(sx + d, sy + d, size - 2 * d, 1); ctx.fill('evenodd');
+    ctx.globalAlpha = a;   // the colour, inside it
+    ctx.fillStyle = fill;
+    ctx.beginPath(); _appendScaledSq(sx + d, sy + d, size - 2 * d, 1); _appendScaledSq(sx, sy, size, CELL_BAND_K[1] * kw); ctx.fill('evenodd');
+    ctx.restore();
+}
 const SLOT_BAND_NIGHT = !/[?&]slotband=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [091126aa]
 const NIGHT_EMPTY_INNER_BAND = !/[?&]nightempty=outer(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');
 if (NIGHT_INNER_RING_OFF && !NIGHT_EMPTY_INNER_BAND) CELL_RING_STYLE.night.k = [CELL_BAND_K[0]];   // [091126y] both rings when the inner band is back
@@ -38059,13 +38414,15 @@ function objInsetBegin(item, sx, sy, size) {   // the shadow, then the transform
    so the trail is TRAIL_SEE 65%: the tiles below read plainly through it and it keeps its colour. ?trailsee=0.8 for 80%.
    TRAIL_SHOW_UNDER = false, or ?trailunder2=0, puts back the lid and the washed depths. */
 const TRAIL_SHOW_UNDER = !/[?&]trailunder2=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
-const TRAIL_SEE = (() => { const m = /[?&]trailsee=([\d.]+)(?:&|$)/.exec((typeof location !== 'undefined' && location.search) || ''); return m ? Math.max(0.2, Math.min(1, +m[1])) : (TRAIL_SHOW_UNDER ? 0.65 : 0.8); })();   // [091126am] 65% (was 80): ?trailsee= sets it
+const TRAIL_SEE = (() => { const m = /[?&]trailsee=([\d.]+)(?:&|$)/.exec((typeof location !== 'undefined' && location.search) || ''); return m ? Math.max(0.2, Math.min(1, +m[1])) : (TRAIL_SHOW_UNDER ? 0.55 : 0.8); })();   // [101126k] 55%: 10% more see-through (Jake, 09:25; was 65)   // [091126am] 65% (was 80): ?trailsee= sets it
 const TRAIL_RINGS_WHITE = true;
 if (TRAIL_RINGS_WHITE) CELL_RING_STYLE.dayTrail = { col: 'rgba(255,255,255,', a: [0.9, 0.75], w: 1.1 };
 if (DAY_LIKE_NIGHT) CELL_RING_STYLE.dayTrail.k = CELL_BAND_K;   // [091126ab] the trail's rings on the band's edges
 if (DAY_RINGS_THREE) CELL_RING_STYLE.dayRings = { col: 'rgba(226,232,240,', a: [0.78, 0.55], w: 1.1, k: (typeof CELL_BAND_K !== 'undefined' ? CELL_BAND_K : [0.75, 0.5]) };   // [091126c]
 if (DAY_CENTRE_OPEN && !DAY_LIKE_NIGHT && CELL_RING_STYLE.dayRings) CELL_RING_STYLE.dayRings.k = [(typeof CELL_BAND_K !== 'undefined' ? CELL_BAND_K : [0.75])[0]];   // [091126u] the outer ring only
 if (DAY_LIKE_NIGHT && CELL_RING_STYLE.dayRings) CELL_RING_STYLE.dayRings.k = CELL_BAND_K;   // [091126ab] both rings
+const DAY_RINGS_SOLID = !/[?&]dayrings=soft(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126n]
+if (DAY_RINGS_SOLID && CELL_RING_STYLE.dayRings) { CELL_RING_STYLE.dayRings.col = 'rgba(255,255,255,'; CELL_RING_STYLE.dayRings.a = [1, 1]; CELL_RING_STYLE.dayRings.w = 1.1; }   // [101126n] solid white
 function drawDayBands(sx, sy, size) {
     if (DAY_RINGS_NIGHT && DAY_EDGE_BOLD) {   // [081026e] twice the weight, grown inward; full white
         if (DAY_GROUND_WHITE > 0 && DAY_GROUND_BANDS) {   // [171026k] white by section, cut on the cell's own rings
@@ -38110,6 +38467,57 @@ const DAY_CHROME = !/[?&]chrome=0(?:&|$)/.test(((typeof location !== 'undefined'
    ?nightchrome=0, gives night back its pale edge and white knuckles. */
 const NIGHT_CHROME = !/[?&]nightchrome=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 function chromeOn() { return DAY_CHROME && (currentTheme === 'day' || NIGHT_CHROME); }   // [091126aj]
+/* ══ [101126g] THE STICK'S ARROW LIGHTS IN THE BLOCK'S COLOUR — Jake, 10 Nov, 09:15: "as the joystick is pointed in the desired
+   direction, can the compass direction use the colour of the shape as its 'activated' colour." The arrow the stick points at lit white
+   with a grey glow; it now lights in the block's colour with a glow of the same colour (a pair pink, a J green...), as the knuckles do.
+   A refused direction still flashes red. STICK_ARROW_SHAPE = false, or ?stickarrow=white, puts back the white.
+   ══ [101126h] A CHROME STICK — Jake, 10 Nov, 09:15: "Make the joystick more chrome and shiny." The pad's edge was a thin blue (day) or
+   grey (night) line, and the knob a soft brushed silver. The pad's edge is now a polished chrome band like the cells' edges (a dark
+   seat, the steel shaded from a top-left highlight through a dark reflection, a white catch-light), and the knob is polished chrome:
+   bands of light and dark steel across it from the top left, a chrome rim, and a bright soft highlight on its upper left, as on a
+   polished metal cap. Its two faint rings stay. STICK_CHROME = false, or ?stickchrome=0, puts back the brushed silver. */
+const STICK_ARROW_SHAPE = !/[?&]stickarrow=white(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126l] THE BLOCK'S COLOUR IN THE KNOB'S MIDDLE BAND — Jake, 10 Nov, 09:45: "put the cube colour in the middle band of the
+   joystick." The knob is a cell in chrome with two faint rings; the band between them (from 0.75 to 0.5 of the knob) is now filled with
+   the block's colour, all the time, so the stick always shows what you are steering: chrome outside it, chrome in the middle.
+   STICK_BAND_SHAPE = false, or ?stickband=0, leaves it chrome.
+   ══ [101126m] KNUCKLES HOLD 0.5 S — Jake, 09:45: "each lit knuckle holds for 1/2 second, then fades" (was 1 s; KNUCKLE_HOLD_MS).
+   ══ [101126n] DAY RINGS SOLID WHITE — Jake, 09:45: "in the white grid cell make the inner circle line solid white and the next line
+   outwards white as well (see the occupied colour white rings for reference)". An empty day cell's two rings were a pale cool grey at
+   78% and 55%, nearly lost on the white; they are pure white, solid, at the weight of the walked cell's white rings.
+   DAY_RINGS_SOLID = false, or ?dayrings=soft, puts back the pale rings. */
+const STICK_BAND_SHAPE = !/[?&]stickband=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const STICK_CHROME = !/[?&]stickchrome=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+/* ══ [101126x] A CONVEX CHROME KNOB — Jake, 10 Nov, 14:27: "check the joystick chrome reflections are convincing, the current shading
+   looks as though its been dented in the top left hand side." It read as a dent for two reasons: its rim was lit the wrong way round
+   (bright bottom right, dark top left: the bevel of a hollow), and its face had a hard dark reflection band a third of the way in from
+   the top left, where a dome is at its brightest. Now it is a polished cap: the face falls smoothly from a bright top left to a deeper
+   steel at the bottom right with one soft reflection band past the middle, the specular highlight sits on its upper left, and the rim
+   is lit as every other bevel in the game is, bright on the top left and dark on the bottom right. KNOB_CONVEX; ?knob=old puts back
+   1104's knob.
+   ══ SHADING, CHECKED ACROSS THE GAME (same message): every light in the game falls from the top left — every drop shadow is offset down
+   and right, the cubes, objects, gold and slots' bands are lit top left, the chrome everywhere (cell edges, knuckles, the pad's edge) is
+   bright top left and dark bottom right, the board's own well is shaded top and left with a lit lip at the bottom. The one thing that
+   broke the rule was the knob's rim (above). */
+const STICK_IDLE_LIGHT = !/[?&]stickgrey=old(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126y]
+const KNOB_CONVEX = !/[?&]knob=old(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function chromeFaceGrad(c, KH) {   // [101126x] a polished dome, lit from the top left
+    const g = c.createLinearGradient(-KH, -KH, KH, KH);
+    g.addColorStop(0.00, '#ffffff'); g.addColorStop(0.28, '#e9eef4'); g.addColorStop(0.52, '#c3ccd7');
+    g.addColorStop(0.64, '#eef2f6'); g.addColorStop(0.80, '#97a3b3'); g.addColorStop(1.00, '#b8c2ce');
+    return g;
+}
+function chromeGradOn(c, x0, y0, x1, y1, deep) {   // [101126h] the same steel, on any canvas; deep: stronger bands for a face
+    const g = c.createLinearGradient(x0, y0, x1, y1);
+    if (deep) {
+        g.addColorStop(0.00, '#ffffff'); g.addColorStop(0.16, '#e4eaf1'); g.addColorStop(0.34, '#8b98a9');
+        g.addColorStop(0.46, '#f7f9fc'); g.addColorStop(0.60, '#b8c3d0'); g.addColorStop(0.80, '#5f6c7d'); g.addColorStop(1.00, '#aeb9c6');
+    } else {
+        g.addColorStop(0.00, '#ffffff'); g.addColorStop(0.18, '#d9e1ea'); g.addColorStop(0.38, '#8a97a8');
+        g.addColorStop(0.50, '#f4f7fa'); g.addColorStop(0.64, '#a9b5c3'); g.addColorStop(0.82, '#6b7889'); g.addColorStop(1.00, '#c9d3de');
+    }
+    return g;
+}
 function chromeGrad(x0, y0, x1, y1) {   // polished steel across a span, lit from the top left
     const g = ctx.createLinearGradient(x0, y0, x1, y1);
     g.addColorStop(0.00, '#ffffff');
@@ -39347,13 +39755,14 @@ function draw() {
        still lies over the window. Night is unchanged. UNDER_WINDOW_CLEAR = false, or ?underwin=0, puts the sheets back. */
     if (UNDER_WINDOW_CLEAR && currentTheme === 'day') {
         const ci = cellInset(), cz = CELL - 2 * ci, kw = (typeof CELL_WELL !== 'undefined' && CELL_WELL) ? CELL_WELL_K : 1;
+        const _openSlot = new Set((typeof slots !== 'undefined' && slots) ? slots.filter(sl => !sl.claimed).flatMap(sl => [...sl.keys]) : []);   // [101126o]
         ctx.save(); ctx.beginPath();
         for (let row = -1; row <= VIEW_H + 1; row++) {
             const wy = camInt + row;
             for (let col = 0; col < VIEW_W; col++) {
                 const key = `${col},${wy}`;
                 if (voidShown(key) || world[key] === 'wall') continue;
-                _appendScaledSq(col * CELL + ci, (row - camFrac) * CELL + ci, cz, (TRAIL_SHOW_UNDER && visited.has(key) && !world[key]) ? 1 : CELL_BAND_K[1] * kw);   // [091126am] a walked cell: the whole of it
+                _appendScaledSq(col * CELL + ci, (row - camFrac) * CELL + ci, cz, ((TRAIL_SHOW_UNDER && visited.has(key) && !world[key]) || (SLOT_SEE_THROUGH && _openSlot.has(key))) ? 1 : CELL_BAND_K[1] * kw);   // [101126o] a slot: the whole of it   // [091126am] a walked cell: the whole of it
             }
         }
         ctx.clip();
@@ -39886,7 +40295,8 @@ function draw() {
                     // gaps between tiles, so the floor reads as white tiles on
                     // a dark frame (was outline-only back when the canvas was
                     // white and showed through).
-                    if (DAY_BANDS && (!(_slotCells && _slotCells.has(key)) || (DAY_SLOT_CLEAN && DAY_LIKE_NIGHT))) drawDayBands(sx, sy, CELL_SIZE);   // [071026z] four bands: white, open, white, open · [091126ad] a slot's cell too: its centre open
+                    if (SLOT_SEE_THROUGH && DAY_LIKE_NIGHT && _slotCells && _slotCells.has(key)) { /* [101126o] no white under a slot */ }
+                    else if (DAY_BANDS && (!(_slotCells && _slotCells.has(key)) || (DAY_SLOT_CLEAN && DAY_LIKE_NIGHT))) drawDayBands(sx, sy, CELL_SIZE);   // [071026z] four bands: white, open, white, open · [091126ad] a slot's cell too: its centre open
                     else
                     roundedSq(sx, sy, CELL_SIZE, (_slotCells && _slotCells.has(key)) ? dayTileFill() : dayLidFill(), CANDY.cellEdge, 1.1);   // [260926m] the grey grout · [260926n] lilac · [280926c] deep ice, each tile's own edge · [071026t] a lid, not a slab (a set's cells keep the white, so its colour stays true)
                 } else {
@@ -39907,7 +40317,8 @@ function draw() {
                         roundedSq(sx, sy, CELL_SIZE, GLASS_PANE, null);
                         roundedSq(sx, sy, CELL_SIZE, null, GLASS_OUTLINE, CELL_OUTLINE_W);
                     } else {
-                    if (CELL_BANDS_SOLID) nightBandedLid(sx, sy, CELL_SIZE);   // [091126b] solid, open, solid
+                    if (SLOT_SEE_THROUGH && _slotCells && _slotCells.has(key)) { /* [101126o] no lid under a slot */ }
+                    else if (CELL_BANDS_SOLID) nightBandedLid(sx, sy, CELL_SIZE);   // [091126b] solid, open, solid
                     else roundedSq(sx, sy, CELL_SIZE, GROUND_LID, null);
                     // [HOLES] 1.4 -> 1.8. Weight is the axis brightness cannot
                     // fake: at 1.8 against the near layer's 1.3 the board's own
@@ -40070,8 +40481,8 @@ function draw() {
             const size = CELL - 4;
             if (currentTheme === 'day' && DAY_SLOT_CLEAN && DAY_LIKE_NIGHT) {   // [091126ad] the colour across the two bands, inside the white edge
                 const ci = cellInset(), cz = CELL - 2 * ci;
-                ctx.save(); ctx.globalAlpha = 0.82 * bowAlpha;
-                nightBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);
+                ctx.save(); ctx.globalAlpha = (SLOT_SEE_THROUGH ? SLOT_SEE_A : 0.82) * bowAlpha;   // [101126o] · [101126q] 65%
+                slotBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);   // [101126v]
                 ctx.restore();
             } else if (currentTheme === 'day') {
                 // Day slot — family colour wash + bold family outline. Clean
@@ -40094,13 +40505,14 @@ function draw() {
                 ctx.restore();
                 if (DAY_LIKE_NIGHT && SLOT_BAND_NIGHT) {   // [091126ab] as by night: the slot's colour across both bands
                     const ci = cellInset(), cz = CELL - 2 * ci;
-                    ctx.save(); ctx.globalAlpha = 0.82 * bowAlpha;
-                    nightBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);
+                    ctx.save(); ctx.globalAlpha = (SLOT_SEE_THROUGH ? SLOT_SEE_A : 0.82) * bowAlpha;   // [101126o] · [101126q] 65%
+                    slotBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);   // [101126v]
                     ctx.restore();
                 }
             } else {
                 // Night slot — outlined rounded square with faint interior
                 // family-colour wash; soft glow stroke
+                if (!SLOT_OUTER_CLEAN) {   // [101126q] no colour on or outside the chrome
                 ctx.save();
                 ctx.globalAlpha = (0.10 + 0.05 * breathe) * bowAlpha;
                 roundedSq(sx, sy, size, slot.color, null);
@@ -40116,14 +40528,15 @@ function draw() {
                 // Rim = exact scaled copy of the outer ring, flush inside it.
                 roundedSqScaled(sx, sy, size, (size - 4.8) / size, rimColor, 1.6);
                 ctx.restore();
+                }
                 /* [091126aa] NIGHT: A SLOT'S COLOUR FILLS BOTH BANDS — Jake, 9 Nov, 14:30: "in night mode the slot colours to be collected
                    should not just occupy the outer limit of the outside cell ring but also the whole of the next band in." By night a
                    slot's cell now carries its colour across the cell's two bands, from its edge in to the inner ring, as a walked cell
                    carries its violet ([091126x]); the centre stays open. ?slotband=0 puts back the coloured edge alone. */
                 if (SLOT_BAND_NIGHT) {
                     const ci = cellInset(), cz = CELL - 2 * ci;
-                    ctx.save(); ctx.globalAlpha = 0.82 * bowAlpha;
-                    nightBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);
+                    ctx.save(); ctx.globalAlpha = (SLOT_SEE_THROUGH ? SLOT_SEE_A : 0.82) * bowAlpha;   // [101126o] · [101126q] 65%
+                    slotBandFill(c.x * CELL + ci, (c.y - game.cameraY) * CELL + ci, cz, slot.color);   // [101126v]
                     ctx.restore();
                 }
             }
@@ -44642,6 +45055,7 @@ function toggleDetails() {
 
 function startDaily() { startGame(false, true); }
 function startGame(testDrive = false, daily = false) {
+    try { replayMusicStop(true); } catch (e) {}   // [101126s]
     try { requestAnimationFrame(() => requestAnimationFrame(placeTopRow)); } catch (e) {}   // [031126m]
     _runSerial++;   // [300926e]
     game._piecesHome = 0; machineHoldUntil = 0; game._setDoneHold = false;   // [300926f][300926g]
@@ -47201,9 +47615,32 @@ function fbTick(now) {
 const TUT_ON = true;
 const TUT_COLS = 7, TUT_ROWS = 4, TUT_STICK_H = 1.6;   // [290926w] the strip under the board, in cells
 const TUT_FLIP = 320, TUT_GAP = 430, TUT_TAIL = 1500;
-const TUT_ACT_MS = { flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820, stomp: 620, settake: 1150,
+/* ══ [101126w] HOW TO PLAY, UP TO DATE — Jake, 10 Nov, 14:27: "can you check that the 'how to play' section is all up to date". Every
+   lesson and every line of Settings' rules was read against the game as it plays now. Changed:
+     · NEW lesson DIG (after FLIP): the game's key feature had none. Hourglasses, shifters and the gold are buried; the square you stand on
+       and the eight round it are dug; a second after you move off, what was there comes up; go back and land on it. The lesson shows a
+       single walking, an hourglass coming up behind it, and the single going back for it (a new act, 'reveal').
+     · THE CLOCK named one hourglass ("an hourglass 15"); there are two and they pay by difficulty: big and small, 20/10 on Easy, 15/8 on
+       Medium, 10/5 on Hard. It says so, with the player's own difficulty first.
+     · EDGES gave only the 3 s a cube; your last cube over the edge is a mistake, 20 s. It says so.
+     · ×2 GOLD said the gold "sits on an island"; it is buried and dug up now. Settings' rules said the same; both fixed.
+     · MOVE GUIDE said "the compass, bottom left", TIPS "the bulb, bottom right"; both sit in the row of round buttons with the theme,
+       Sound and Settings (second and third from the left, beside the board on a wide screen). They say "in the row of round buttons".
+     · Settings' Mistakes said a cube into a hole costs 3 s; it costs 5 (HOLE_CUBE_SEC). Fixed; and "the wrong slot is free on level 1"
+       moves from the Holes line to the Mistakes line, where it belongs.
+     · NEW rule lines in Settings: Digging, and Difficulty.
+   Checked and right as they stand: STEER, FLIP, EVOLVE, ON A GREEN (2 s), HOLES (5 s a cube), CROSSING (5 s a cell, landfall 10), REDS
+   (20 s on a single), SHIFTERS, IN A ROW, TURN TO FIT, COLLECT THE SET (5 s a slot, combo 1,000 × the level), WRONG SLOTS (5 s a cube),
+   ×2 GOLD's price, window and doubled time (no cap). */
+const TUT_ACT_MS = { reveal: 900, flip: TUT_FLIP, grow: 560, store: 620, stone: 560, sink: 900, breakoff: 1000, push: 650, turn: 820, stomp: 620, settake: 1150,
                      cover: 1400, guide: 3000, tipon: 700, tip: 800, tipoff: 700,   // [290926r]
                      claim: 900, rowclear: 900, red: 900, redtoll: 1000, hourglass: 700, spin: 950, wait: 400, cross: 900, landfall: 900, gold: 1300 };   // [311026o] gold   // [251026h]
+function glassModesLine() {   // [101126w] what the hourglasses pay on each difficulty, the player's own first
+    if (!(typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined')) return '';
+    const nm = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, me = runMode();
+    const others = ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${MODE_GLASS[m][0]} and ${MODE_GLASS[m][1]} on ${nm[m]}`);
+    return ` That is on ${nm[me]}; they pay ${others.join(', ')}.`;
+}
 const TUT = [
   { ch: 'FLIP', title: 'STEER', line: 'Eight directions — your block flips on an edge or a corner. It never slides.', compass: true,
     init: { body: { cells: [[1, 2]], type: 'single', par: 0 } },
@@ -47213,6 +47650,13 @@ const TUT = [
     init: { body: { cells: [[0, 2], [1, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 2], [3, 2]] }, { k: 'flip', dir: 'NE', to: [[4, 1], [4, 0]] }, { k: 'flip', dir: 'SE', to: [[5, 2], [6, 2]] },
             { k: 'flip', dir: 'W', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'NW', to: [[2, 1], [2, 0]] }, { k: 'flip', dir: 'SW', to: [[0, 2], [1, 2]] } ] },
+  ...(typeof DIG_MODE !== 'undefined' && DIG_MODE ? [{ ch: 'FLIP', title: 'DIG', line: `Hourglasses, shifters and the \u00d72 gold are buried. The square you stand on is dug${DIG_WIDE ? ', and so are the eight round it' : ''}; a second after you move off, whatever was there comes up. Go back and land on it to collect it \u2014 before it slides off the bottom.`,   // [101126w]
+    showClock: true,
+    init: { body: { cells: [[1, 2]], type: 'single', par: 0 }, clock: 24 },
+    acts: [ { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2]] },
+            { k: 'reveal', at: [2, 1], kind: 't30', say: 'FOUND' },
+            { k: 'flip', dir: 'NW', to: [[2, 1]] }, { k: 'hourglass', h: [2, 1], sec: hourglassFace('t30'), say: '+' + hourglassFace('t30') + 's' },
+            { k: 'flip', dir: 'E', to: [[3, 1]] } ] }] : []),
   { ch: 'FLIP', title: 'EVOLVE', line: 'Land BESIDE a green to evolve — it joins your block: single, pair, J or diagonal, square.',
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '3,2': 'green' } },
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'grow', g: [3, 2], to: [[2, 2], [3, 2]], type: 'pair', say: 'EVOLVED' },
@@ -47237,7 +47681,7 @@ const TUT = [
             { k: 'flip', dir: 'E', to: [[4, 2]] },
             ...(LANDFALL_SEC > 0 ? [{ k: 'landfall', to: [[4, 2]], sec: LANDFALL_SEC, say: `LANDFALL +${LANDFALL_SEC}s` }] : []),
             { k: 'flip', dir: 'E', to: [[5, 2]] } ] }] : []),
-  { ch: 'FLIP', title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]
+  { ch: 'FLIP', title: 'EDGES', line: 'A cube carried over the edge breaks off and you devolve — the rest carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds; your last cube over the edge is a mistake, ${MISTAKE_LAST_CUBE_SEC} seconds.` : ''),   // [181026a] · [101126w] the last cube
     init: { body: { cells: [[2, 2], [3, 2]], type: 'pair', par: 0 } },
     acts: [ { k: 'flip', dir: 'E', to: [[4, 2], [5, 2]] }, { k: 'flip', dir: 'E', to: [[6, 2], [7, 2]] },
             { k: 'breakoff', cube: [7, 2], dir: [1, 0], to: [[6, 2]], type: 'single', say: 'OUT OF BOUNDS · −1 CUBE' } ] },
@@ -47261,7 +47705,7 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] }, { k: 'wait', d: 400 },
             { k: 'push', trig: [2, 2], vec: [1, 0], to: [[3, 2]] }, { k: 'push', trig: [3, 2], vec: [1, 0], to: [[4, 2]] },
             { k: 'claim', set: 0, say: 'SET!' }, { k: 'wait' } ] }] : []),
-  { ch: 'TURN', title: 'MOVE GUIDE', line: 'Tap the compass, bottom left. After a beat the way to the set lights up, one move at a time — even for a diagonal.' + (GUIDE_LOOK_SEC > 0 ? ` Free on level 1; after that each look costs ${GUIDE_LOOK_SEC} seconds.` : ''),   // [311026p]   // [290926r] · [290926y] a diagonal pair
+  { ch: 'TURN', title: 'MOVE GUIDE', line: 'Tap the compass in the row of round buttons. After a beat the way to the set lights up, one move at a time — even for a diagonal.' + (GUIDE_LOOK_SEC > 0 ? ` Free on level 1; after that each look costs ${GUIDE_LOOK_SEC} seconds.` : ''),   // [311026p]   // [290926r] · [290926y] a diagonal pair
     guideBtn: true,
     init: { body: { cells: [[0, 3], [1, 2]], type: 'diagonal', par: 0 }, sets: [{ type: 'diagonal', cells: [[4, 2], [5, 3]] }] },
     acts: [ { k: 'guide', route: [[[2, 1], [3, 0]], [[3, 2], [4, 1]], [[5, 1], [6, 2]], [[4, 2], [5, 3]]], d: 1000 + 3 * 450 + 350 + 1100 },
@@ -47278,26 +47722,26 @@ const TUT = [
     acts: [ { k: 'flip', dir: 'N', to: [[1, 2], [2, 2]] }, { k: 'flip', dir: 'E', to: [[3, 2], [4, 2]] }, { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] },
             { k: 'claim', set: 0, say: 'SET!' } ] },
   // [021126a] THE CLOCK follows COLLECT THE SET (it was 16th of 18): the rule that keeps a run alive, said where the set is
-  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (KEEP_TIME ? `The set pays points. The board pays time: a row ${ROW_RUN_SEC} seconds, an hourglass ${hourglassFace('t30')}, a green ${GREEN_STOMP_SEC}, a slot ${SLOT_PAY_SEC}. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}, and whatever is left when the set is complete carries into the next level. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points.` : CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
+  { ch: 'FIT', title: 'THE CLOCK', line: CLOCK_RESETS ? (KEEP_TIME ? `The set pays points. The board pays time: a row ${ROW_RUN_SEC} seconds, a big hourglass ${hourglassFace('t30')} and a small one ${hourglassFace('t10')}, a green ${GREEN_STOMP_SEC}, a slot ${SLOT_PAY_SEC}.${glassModesLine()} Level 1 starts on ${clockFmt(LEVEL_START_SEC)}, and whatever is left when the set is complete carries into the next level. The clock holds ${clockFmt(CLOCK_CEILING)}; time over that becomes points.` : CLOCK_CARRY ? `Fill a set, finish a row or pick up an hourglass to feed the clock. Level 1 starts on ${clockFmt(LEVEL_START_SEC)}; what you have left carries into the next level, up to a limit that falls each level — the rest becomes points.` : `Fill a set, finish a row or pick up an hourglass to feed the clock. Every level starts on ${clockFmt(LEVEL_START_SEC)}; time left at the end becomes points.`) : 'Finish a row or pick up an hourglass to feed the clock. The grid keeps moving — don’t run out of grid.',   // [181026a]
     showClock: true,
     init: { body: { cells: [[3, 3], [4, 3]], type: 'pair', par: 0 }, clock: 22,
             walked: [[0, 2], [1, 2], [2, 2], [5, 2], [6, 2]], tiles: { '4,1': 't30' } },
     acts: [ { k: 'flip', dir: 'N', to: [[3, 2], [4, 2]] }, { k: 'rowclear', row: 2, sec: ROW_RUN_SEC, say: `ROW +${ROW_RUN_SEC}s` },
-            { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] }, { k: 'hourglass', h: [4, 1], sec: HOURGLASS_SEC, say: '+' + HOURGLASS_SEC + 's' } ] },
+            { k: 'flip', dir: 'N', to: [[3, 1], [4, 1]] }, { k: 'hourglass', h: [4, 1], sec: hourglassFace('t30'), say: '+' + hourglassFace('t30') + 's' } ] },
   { ch: 'FIT', title: 'WRONG SLOTS', line: 'Land the wrong shape on a slot — even a bigger one over all of it — and the cubes on it are destroyed' + (WRONG_SLOT_TEN ? ` and it costs ${WRONG_SLOT_SEC} seconds${WRONG_SLOT_PER_CUBE ? ' a cube' : ''}; the rest of you carries on. All of you on it, and you start again. ` : (CLOCK_RESETS ? `, ${CUBE_LOST_SEC} seconds each` : '') + '; the rest of you carries on. All of you on it, and you start again \u2014 ' + (CLOCK_RESETS ? `${FALL_COST_SEC} seconds for the last cube. ` : 'your last cube is lost. ')) + 'Only the right shape, exactly, is yours.',   // [051126g]   // [311026i] the whole body on it   // [181026a]   // [171026d]   // [290926n] · [300926m] exact fit again
     init: { body: { cells: [[0, 1], [1, 1]], type: 'pair', par: 0 }, sets: [{ type: 'pair', cells: [[3, 1], [3, 2]] }] },
     acts: [ { k: 'flip', dir: 'E', to: [[2, 1], [3, 1]] },
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
             { k: 'wait' }, { k: 'wait' } ] },
   /* [311026o] ×2 GOLD, TAUGHT: a single lands on the coin (the clock pays), wears the gold rim, and its next row says POINTS ×2. */
-  ...(GOLD_ON ? [{ ch: 'FIT', title: '\u00d72 GOLD', line: `From level ${GOLD_FROM}, twice a level, \u00d72 gold sits on an island. Land on it and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point is doubled \u2014 rows, slots, combos, the set${GOLD_TIME_X2 ? ' \u2014 and so is the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost' : '') + '' : ''}. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ', and stays until it leaves the bottom of the board' : `, and fades ${GOLD_LIFE_SEC} seconds after it appears`}.`,
+  ...(GOLD_ON ? [{ ch: 'FIT', title: '\u00d72 GOLD', line: `From level ${GOLD_FROM}, twice a level, \u00d72 gold ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried \u2014 dig it up, then land on it' : 'sits on an island. Land on it'} and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point is doubled \u2014 rows, slots, combos, the set${GOLD_TIME_X2 ? ' \u2014 and so is the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost' : '') + '' : ''}. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ', and stays until it leaves the bottom of the board' : `, and fades ${GOLD_LIFE_SEC} seconds after it appears`}.`,
     showClock: true,
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '2,2': 'gold' }, clock: 80, walked: [[0, 1], [1, 1], [3, 1], [4, 1], [5, 1], [6, 1]] },   // [011126l] above the floor
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] },
             { k: 'gold', g: [2, 2], toll: GOLD_PRICE_SEC, say: `\u2212${GOLD_PRICE_SEC}s \u00b7 \u00d72` },
             { k: 'flip', dir: 'N', to: [[2, 1]] }, { k: 'rowclear', row: 1, cube: [4, 3], sec: ROW_RUN_SEC, say: `ROW +${ROW_RUN_SEC}s \u00b7 POINTS \u00d72` },
             { k: 'wait' } ] }] : []),
-  { ch: 'FIT', title: 'TIPS', line: 'Tap the bulb, bottom right. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]
+  { ch: 'FIT', title: 'TIPS', line: 'Tap the bulb in the row of round buttons. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]
     tipsBtn: true,
     init: { body: { cells: [[0, 1]], type: 'single', par: 0 }, tiles: { '3,1': 'green' } },
     acts: [ { k: 'tipon' }, { k: 'flip', dir: 'E', to: [[1, 1]] },
@@ -47364,6 +47808,7 @@ function tutApply(S, a, tEnd) {
     else if (a.k === 'rowclear') { S.clock += a.sec; for (let x = 0; x < TUT_COLS; x++) S.walked.add(x + ',' + a.row); }
     else if (a.k === 'gold') { delete S.tiles[a.g.join(',')]; S.clock -= a.toll; S.x2 = true; }   // [311026o]
     else if (a.k === 'hourglass') { delete S.tiles[a.h.join(',')]; S.clock += a.sec; }
+    else if (a.k === 'reveal') { S.tiles[a.at.join(',')] = a.kind; }   // [101126w] something dug comes up
     else if (a.k === 'stomp') { delete S.tiles[a.g.join(',')]; S.clock += a.sec; }   // [290926n]
     else if (a.k === 'settake') { S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; }   // [290926n] the set is untouched
     else if (a.k === 'red') { delete S.tiles[a.cube.join(',')]; S.walked.add(a.cube.join(',')); S.body.cells = a.to.map(c => c.slice()); S.body.type = a.type; S.clock += a.sec; }

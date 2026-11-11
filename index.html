@@ -1793,6 +1793,17 @@ body.theme-day .score-display.record { color: #b45309; text-shadow: none; }
     #startScreen .welcome-box .objective-text { font-size: clamp(13px, 2.2cqw, 24px); }
 }
 /* the right-hand column grows with the screen: a laptop or monitor gets buttons sized for it, not for a phone held sideways */
+/* [111126c] Jake, 11 Nov, 19:34 (a 16:9 grab): "can they be more symetrically placed in this particular layout, the left side needs to
+   be spread out a bit more". The left side was a short block in the middle of a tall right-hand column. Now it spans the right column's
+   height exactly (--wl-rows, counted by welcomeSpanRows): the word mark's top level with PLAY's, the objective's foot level with the
+   build stamp's, and FLIP · TURN · FIT half-way between. WELCOME_SPREAD = false (?spread=0) puts back the centred block. */
+@media (min-aspect-ratio: 4/3) {
+    body:not(.no-spread) #startScreen .welcome-box > .wr-title { grid-row: 1 / span var(--wl-rows, 6); align-self: stretch; display: flex; flex-direction: column;
+        padding-bottom: calc(clamp(13px, 2.2cqw, 24px) * 1.6); }
+    body:not(.no-spread) #startScreen .welcome-box > .wr-title .title-block { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    body:not(.no-spread) #startScreen .welcome-box > .wr-title .objective-verbs.tagline { margin-top: auto; margin-bottom: auto; }
+    body:not(.no-spread) #startScreen .welcome-box > .wr-obj { grid-row: 1 / span var(--wl-rows, 6); align-self: end; }
+}
 @media (min-aspect-ratio: 4/3) and (min-height: 560px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 1.3; } }
 @media (min-aspect-ratio: 4/3) and (min-height: 800px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 1.65; } }
 @media (min-aspect-ratio: 4/3) and (min-height: 1050px) { #startScreen .welcome-box > .welcome-row:not(.wr-title):not(.wr-obj) { zoom: 2; } }
@@ -2929,6 +2940,14 @@ body.theme-day .name-more { color: #334155; border-color: rgba(100, 116, 139, 0.
 .name-own-hit { padding: 7px 12px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer;
     background: rgba(34, 211, 238, 0.12); border: 1px solid rgba(34, 211, 238, 0.45); color: #e2e8f0; }
 .name-own-note { font-size: 12px; color: #94a3b8; min-height: 0; }
+/* [111126a] the letter buttons */
+.name-own-spell { min-height: 46px; display: flex; align-items: center; letter-spacing: 0.06em; }
+.name-own-spell:empty::before { content: 'Your first name, or one letter'; font-weight: 600; color: #64748b; letter-spacing: 0; }
+.name-own-letters { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 5px; }
+.name-own-letter { height: 36px; padding: 0; border-radius: 9px; font: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+    background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(148, 163, 184, 0.35); color: #e2e8f0; }
+.name-own-letter:hover, .name-own-letter:focus-visible { border-color: var(--wm-c0); outline: none; }
+body.theme-day .name-own-letter { background: #f1f5f9; border-color: rgba(100, 116, 139, 0.35); color: #0c4a6e; }
 .name-picks-head { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #94a3b8; margin-top: 2px; }
 .go-name { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 4px auto 10px; max-width: var(--board-w, 360px); text-align: center; }
 .go-name[hidden] { display: none; }
@@ -3873,6 +3892,17 @@ body.theme-day .settings-testdrive { background: #f0fdfa; color: var(--wm-c0); b
 .keymap { display: flex; flex-direction: column; margin: 2px 0 4px; }
 /* [251026h] HOW IT WORKS in Settings */
 .settings-rules { display: flex; flex-direction: column; margin: 2px 0 4px; text-align: left; }
+/* [111126b] controllers: the highlight, and the button badges */
+body.pad-active .pad-focus { outline: 3px solid var(--wm-c0, #22d3ee) !important; outline-offset: 3px; box-shadow: 0 0 0 6px rgba(34, 211, 238, 0.25) !important; }
+body.pad-active .pad-focus:not(.name-own-letter):not(.name-own-hit) { transform: scale(1.03); }
+body.theme-day.pad-active .pad-focus { outline-color: #0284c7 !important; box-shadow: 0 0 0 6px rgba(2, 132, 199, 0.22) !important; }
+body.pad-active :focus:not(.pad-focus) { outline: none; }
+.pad-glyph { display: none; }
+body.pad-active.in-play .pad-glyph { display: flex; position: absolute; right: -5px; bottom: -5px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px;
+    align-items: center; justify-content: center; font: 800 10px/1 'IBM Plex Mono', monospace; letter-spacing: 0; color: #0f172a; background: #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35); pointer-events: none; z-index: 2; }
+body.pad-active.in-play .pad-glyph.wide { font-size: 7px; border-radius: 4px; }
+body.theme-day.pad-active.in-play .pad-glyph { background: #0c4a6e; color: #f8fafc; }
 .settings-rule { display: flex; flex-direction: column; gap: 2px; padding: 7px 0; font-size: 12.5px; line-height: 1.4; color: #cbd5e1; }
 .settings-rule + .settings-rule { border-top: 1px solid rgba(148,163,184,0.10); }
 .settings-rule b { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--wm-c0); }
@@ -4844,11 +4874,14 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
         <button type="button" class="start-btn name-keep hidden" id="nameKeep" onclick="nameKeepGiven()">KEEP IT</button>
         <div class="name-sub" id="nameSub"></div>
         <div class="name-own">
-            <label class="name-own-lbl" for="nameOwnInput">USE MY FIRST NAME OR AN INITIAL</label>
+            <!-- [111126a] Jake, 11 Nov: no keyboard needed. Letter buttons spell the start of the name; only letters that lead to a name are offered -->
+            <div class="name-own-lbl" id="nameOwnLbl">USE MY FIRST NAME OR AN INITIAL — TAP ITS FIRST LETTER</div>
             <div class="name-own-row">
-                <input type="text" id="nameOwnInput" class="name-own-input" placeholder="Your first name, or one letter" autocomplete="off" autocapitalize="words" spellcheck="false" maxlength="24" oninput="nameOwnSuggest(this.value)">
+                <div class="name-own-input name-own-spell" id="nameOwnInput" aria-live="polite"></div>
+                <button type="button" class="name-own-clear hidden" id="nameOwnBack" onclick="nameOwnBackspace()" aria-label="Take off the last letter">⌫</button>
                 <button type="button" class="name-own-clear hidden" id="nameOwnClear" onclick="nameOwnClear()" aria-label="Back to our names">✕</button>
             </div>
+            <div class="name-own-letters" id="nameOwnLetters"></div>
             <div class="name-own-list" id="nameOwnList"></div>
             <div class="name-own-note" id="nameOwnNote"></div>
         </div>
@@ -5400,6 +5433,15 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                     <button id="setStickRight" class="settings-seg" onclick="settingStickSide('right')">Right ▶</button>
                 </div>
             </div>
+            <!-- [111126d] the trackpad -->
+            <label class="settings-row">
+                <span>Two-finger swipe (trackpad)</span>
+                <input type="checkbox" id="setSwipe" onchange="settingSwipe(this.checked)">
+            </label>
+            <label class="settings-row">
+                <span>Reverse two-finger swipe</span>
+                <input type="checkbox" id="setSwipeRev" onchange="settingSwipeReverse(this.checked)">
+            </label>
             <!-- [101126ae] AUTO-DODGE RETIRED — Jake, 16:21: "check the 'auto dodge the player' is working correctly and works." It did not:
                  it slid the stick between the board's bottom corners when your block came near, and since 7 Aug ([070826e]) the stick has had
                  its own pad, under the board or beside it, never over it, so there is nothing for it to get out of the way of; the switch
@@ -8522,6 +8564,10 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 111126-2158: TRACKPAD. Jake, 11 Nov, 21:37–21:54. [111126d] A two-finger drag on a trackpad moves the block by distance (a square about every centimetre, steady while dragging, capped at the held pace, one square for a flick); the laptop's coast after lifting is ignored; Settings: on/off and Reverse. ?swipe=0, ?swipestep=.
+// 111126-1935: SPREAD. Jake, 11 Nov, 19:34. [111126c] The wide welcome page's left side spans the right column's height: ROTOЯ level with PLAY, the objective level with the build stamp, FLIP · TURN · FIT between. ?spread=0.
+// 111126-1914: CONTROLLERS. Jake, 11 Nov, 18:54–19:04. [111126b] Gamepads (Xbox, PlayStation, Switch Pro, Steam Deck): stick or D-pad plays the eight directions as the on-screen stick does; every other screen has a highlight to move, bottom button presses, right goes back; play buttons carry the pad's own button names; buzzes rumble the pad. ?pad=0 off.
+// 111126-1853: LETTERS. Jake, 11 Nov, 18:38–18:53. [111126a] Name Day needs no keyboard: A–Z letter buttons (only letters that lead to a name) spell the start of a first name, the matches show beneath; ⌫ and ✕; a real keyboard still works.
 // 101126-2126: NO ZOOM. Jake, 10 Nov, 21:26: "the zoom isnt working. can you revert back to the version without the zoom". This is 101126-1813 (CONTINUE) exactly, restamped; the close-up board of 1921 and 2056 ([101126aj], [101126ak]) is gone. Those builds are in OLDER (HTML - 101126-1921, HTML - 101126-2056) and the patches p239a–d and p240a in 07 WORKSHOP if it is ever wanted again.
 // 101126-1813: CONTINUE. Jake, 10 Nov, 18:13. [101126ai] The button beside REPLAY reads CONTINUE ▶ and goes on to the level's tally (scores and stats), never past it; a move does the same. ?lcstraight=1 for 1507's straight on.
 // 101126-1718: TWO TEACHERS. Jake, 10 Nov, 17:17. [101126ah] FIX: 1659 commented out half of the teaching hourglass's line, so level 1 buried an hourglass under the block every frame (a trail of them, every difficulty). The line is whole; level 1 buries two, as before.
@@ -9510,7 +9556,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '101126-2126 ROTOЯ · NO ZOOM';
+const BUILD_VERSION = '111126-2158 ROTOЯ · TRACKPAD';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -12168,6 +12214,7 @@ const HAPTICS = {
     on: true,
     last: 0,
     fire(pattern, minGap = 60) {
+        if (this.on && typeof padRumble === 'function' && !(typeof game !== 'undefined' && game && game.testDrive)) { const n = performance.now(); if (n - (this._padLast || 0) >= minGap) { this._padLast = n; padRumble(pattern); } }   // [111126b] the pad too
         if (!this.on || !this.ok()) return;
         if (typeof game !== 'undefined' && game && game.testDrive) return;
         const now = performance.now();
@@ -13132,6 +13179,8 @@ function settingsRulesRows() {
     if (GUIDE_LOOK_SEC > 0) rows.push(['Move Guide', `Tap the compass to see the way to the set for a few seconds. Free on level 1; after that each look costs ${guideLookSec()} seconds${guideModesWords()}, paid when the route appears (no route, no charge). It won\u2019t open with under ${GUIDE_MIN_CLOCK} seconds on the clock.`]);   // [311026p]
     rows.push(['Mistakes', (fresh && CUBE_LOST_SEC ? (WRONG_SLOT_TEN ? `A cube lost over the edge or off the bottom costs ${CUBE_LOST_SEC} seconds${HOLE_CUBE_PAYS ? `, one into a hole ${HOLE_CUBE_SEC}` : ''} (a red takes one for nothing); the wrong shape on a slot costs ${WRONG_SLOT_SEC}${WRONG_SLOT_PER_CUBE ? ' a cube it takes' : ''}${(LEVEL_ONE_FREE && !L1_HOLES_FREE) ? ', and is free on level 1' : ''}. ` : `A cube lost over the edge, off the bottom or on the wrong slot costs ${CUBE_LOST_SEC} seconds. `) : '') +   // [051126g]   // [311026i] what a mistake is
         (DIVE_BUILDS ? '' : DIVE_IS_MISTAKE ? (DIVE_FLAT && DIVE_CUBE_SEC > 0 ? `Your whole block into holes at once costs ${DIVE_CUBE_SEC} seconds a cube, every time` : `Your whole block into holes at once costs ${FALL_COST_SEC} seconds` + (DIVE_FLAT ? ', every time' : '')) + '. ' : '') + `Losing your last cube` + (DIVE_IS_MISTAKE && !DIVE_FLAT ? ' (your whole block into holes too)' : '') + `, a red\u2019s toll on a single, or a shifter pushing a single off the board is a mistake: ${MISTAKE_SEC} seconds${MISTAKE_STEP_SEC ? `, ${MISTAKE_STEP_SEC} more for each one before it in the level, never more than ${MISTAKE_CAP_SEC}` : ', every time'}. Points are never taken away.`]);
+    if (typeof padRulesText === 'function') rows.push(['Controller', padRulesText()]);   // [111126b]
+    if (typeof SWIPE_ON !== 'undefined' && SWIPE_ON) rows.push(['Trackpad', 'Drag two fingers the way you want to go: a square for about every centimetre, steady flipping while you keep dragging, one square for a quick flick. Lift to stop. Backwards? Settings > Reverse two-finger swipe. The joystick and arrow keys work too.']);   // [111126d]
     return rows;
 }
 function renderSettingsRules() {
@@ -37692,6 +37741,7 @@ function settingStickDodge(on) {
 }
 const STICK_DODGE_ROW = /[?&]dodgerow=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [101126ae]
 function syncStickSettingsUI() {
+    try { syncSwipeSettingsUI(); } catch (e) {}   // [111126d]
     { const dr = document.getElementById('setStickDodgeRow'); if (dr) dr.style.display = STICK_DODGE_ROW ? '' : 'none'; }   // [101126ae]
     const l = document.getElementById('setStickLeft'), r = document.getElementById('setStickRight');
     if (l) l.classList.toggle('active', stickSide === 'left');
@@ -43307,8 +43357,7 @@ function openNameScreen() {
     if (rotorNameGet() && !rotorNameCanChange()) { openCertScreen(false); return; }
     const s = document.getElementById('nameScreen'); if (!s) return;
     s.classList.remove('hidden'); s.scrollTop = 0;
-    _nameOwn = ''; const inp = document.getElementById('nameOwnInput'); if (inp) inp.value = '';
-    nameOwnSuggest('');
+    _nameOwn = ''; nameOwnSuggest('');   // [111126a]
     syncNameScreen(true);
 }
 function closeNameScreen() {
@@ -43339,25 +43388,54 @@ function nameShowPicks() {
     if (_nameOwn) { nameRenderPicks(rotorNameSuggestOwn(_nameOwn, 5), 'FOR ' + _nameOwn.toLocaleUpperCase()); return; }
     nameRenderPicks(rotorNameSuggest(5), '');
 }
-function nameOwnSuggest(q) {
-    const box = document.getElementById('nameOwnList'), note = document.getElementById('nameOwnNote'); if (!box) return;
-    const hits = rotorFirstNameSearch(q, 6);
-    box.innerHTML = hits.map(n => `<button type="button" class="name-own-hit" data-f="${rnEsc(n)}" onclick="nameOwnPick(this.dataset.f)">${rnEsc(n)}</button>`).join('');
-    if (note) note.textContent = (rnFold(q).length >= 2 && !hits.length) ? 'That name is not on our list yet — pick one of ours below.' : '';
+/* [111126a] Jake, 11 Nov, 18:38: "when name selection takes place, is a keyboard needed to input the players first name?"; 18:53 "okay
+   implement". The text box is gone: letter buttons spell the start of the name (_nameOwnQ). Only letters that lead on to a name on the
+   list are offered, so a player can never spell a dead end; the names that match show beneath as before, the letter on its own (the
+   initial) first. ⌫ takes off the last letter, ✕ goes back to our names. A real keyboard still works while the screen is open (letters,
+   Backspace), for desktop. Works by touch, mouse, controller and keys alike. */
+let _nameOwnQ = '';
+function nameOwnNextLetters(q) {   // the letters that carry q on to at least one name
+    if (!_rnFolded) _rnFolded = RN_FIRST_OWN.map(rnFold);
+    const f = rnFold(q), seen = new Set();
+    for (const n of _rnFolded) if (n.length > f.length && n.startsWith(f)) { const c = n[f.length]; if (c >= 'a' && c <= 'z') seen.add(c); }
+    return [...seen].sort();
 }
+function nameOwnSuggest(q) {
+    _nameOwnQ = String(q || '');
+    const box = document.getElementById('nameOwnList'), note = document.getElementById('nameOwnNote'); if (!box) return;
+    const sp = document.getElementById('nameOwnInput'); if (sp) sp.textContent = _nameOwnQ ? _nameOwnQ.toLocaleUpperCase() + '…' : '';
+    const lbl = document.getElementById('nameOwnLbl'); if (lbl) lbl.textContent = _nameOwnQ ? 'NEXT LETTER, OR TAP YOUR NAME BELOW' : 'USE MY FIRST NAME OR AN INITIAL — TAP ITS FIRST LETTER';
+    const L = document.getElementById('nameOwnLetters');
+    if (L) L.innerHTML = (_nameOwnQ.length >= 12 ? [] : nameOwnNextLetters(_nameOwnQ)).map(c => `<button type="button" class="name-own-letter" data-c="${c}" onclick="nameOwnLetter(this.dataset.c)">${c.toUpperCase()}</button>`).join('');
+    const hits = _nameOwnQ ? rotorFirstNameSearch(_nameOwnQ, 8) : [];
+    box.innerHTML = hits.map(n => `<button type="button" class="name-own-hit" data-f="${rnEsc(n)}" onclick="nameOwnPick(this.dataset.f)">${rnEsc(n)}</button>`).join('');
+    const bk = document.getElementById('nameOwnBack'); if (bk) bk.classList.toggle('hidden', !_nameOwnQ || !!_nameOwn);
+    const cl = document.getElementById('nameOwnClear'); if (cl) cl.classList.toggle('hidden', !_nameOwnQ && !_nameOwn);
+    if (note) note.textContent = '';
+}
+function nameOwnLetter(c) { if (_nameOwn) { _nameOwn = ''; nameShowPicks(); } nameOwnSuggest((_nameOwnQ + c).slice(0, 12)); }
+function nameOwnBackspace() { if (_nameOwn) { _nameOwn = ''; nameShowPicks(); } nameOwnSuggest(_nameOwnQ.slice(0, -1)); }
 function nameOwnPick(f) {
     if (!rnSets().f.has(f)) return;
     _nameOwn = f;
-    const inp = document.getElementById('nameOwnInput'); if (inp) { inp.value = f; inp.blur(); }
+    const sp = document.getElementById('nameOwnInput'); if (sp) sp.textContent = f;
     const box = document.getElementById('nameOwnList'); if (box) box.innerHTML = '';
+    const L = document.getElementById('nameOwnLetters'); if (L) L.innerHTML = '';
+    const lbl = document.getElementById('nameOwnLbl'); if (lbl) lbl.textContent = 'YOUR FIRST NAME — NOW PICK BELOW';
+    const bk = document.getElementById('nameOwnBack'); if (bk) bk.classList.add('hidden');
     const back = document.getElementById('nameOwnClear'); if (back) back.classList.remove('hidden');
     nameShowPicks();
 }
 function nameOwnClear() {
-    _nameOwn = ''; const inp = document.getElementById('nameOwnInput'); if (inp) inp.value = '';
-    const back = document.getElementById('nameOwnClear'); if (back) back.classList.add('hidden');
+    _nameOwn = '';
     nameOwnSuggest(''); nameShowPicks();
 }
+document.addEventListener('keydown', e => {   // a real keyboard, while Name Day is open
+    const scr = document.getElementById('nameScreen'); if (!scr || scr.classList.contains('hidden') || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === 'Backspace') { if (_nameOwnQ || _nameOwn) { e.preventDefault(); nameOwnBackspace(); } return; }
+    const k = (e.key || '').toLowerCase(); if (k.length !== 1 || k < 'a' || k > 'z') return;
+    if (_nameOwn || nameOwnNextLetters(_nameOwnQ).includes(k)) { e.preventDefault(); nameOwnLetter(k); }
+});
 function namePickTap(b) {
     _namePick = _namePicks[+((b && b.dataset.ix) || -1)] || null;
     document.querySelectorAll('#namePicks .name-pick').forEach(x => x.classList.toggle('on', x === b));
@@ -43716,9 +43794,10 @@ function resumeBank(a) {   // the dropped run goes on TOP SCORES as it stood —
 function paintResume() {
     const row = document.getElementById('resumeRow'), btn = document.getElementById('resumeBtn');
     if (!row || !btn) return;
-    if (!_resume) { row.hidden = true; return; }
+    if (!_resume) { row.hidden = true; try { welcomeSpanRows(); } catch (e) {} return; }
     btn.innerHTML = `<span>CARRY ON \u00b7 LEVEL ${_resume.lv} \u00b7 ${Math.round(_resume.s || 0).toLocaleString()}</span>`;
     row.hidden = false;
+    try { welcomeSpanRows(); } catch (e) {}   // [111126c]
 }
 function resumeDrop() { _resume = null; resumeStore(null); paintResume(); }   // the offer is spent: PLAY or CARRY ON was pressed
 function resumeRun() {
@@ -46750,6 +46829,323 @@ document.addEventListener('keydown', e => {
     }
 });
 
+/* ══ [111126b] CONTROLLERS — Jake, 11 Nov, 18:54: "what support can be given to the different types of controllers that might
+   come with consoles or desktops laptops etc? does this need considering?"; 19:04: "do it all in one go".
+   The browser's Gamepad API with its standard layout covers Xbox, PlayStation, Switch Pro, 8BitDo and the Steam Deck's own
+   controls in one. Buttons are named here by POSITION (bottom, right, left, top), and the pictures follow the pad in your hands.
+   PLAYING   left stick or D-pad: the eight directions, held to keep going, exactly as the on-screen stick (it moves and lights
+             with you) — a fresh push from the middle moves at once, a change of direction settles for 120 ms, back to the
+             middle lets go. LEFT (X / □) the Move Guide · TOP (Y / △) tips · START pause · SELECT settings ·
+             LB day/night · RB sound.
+   MENUS     whenever there are buttons to press (welcome, Settings, Name Day, the level card, the end card, HOW TO PLAY,
+             paused) the D-pad or stick moves a highlight to the nearest button that way; BOTTOM (A / ✕) presses it,
+             RIGHT (B / ○) goes back (the screen's ✕ or ‹, else Escape). A slider takes left and right. Held, it repeats.
+             The highlight starts on the screen's main button.
+   PICTURES  while a pad is in use (body.pad-active, cleared by the mouse or a touch) the play buttons carry small badges with
+             the pad's own button names — A B X Y, ✕ ○ □ △, or B A Y X on a Nintendo pad — and Settings > rules lists them.
+   RUMBLE    every phone buzz (HAPTICS) also rumbles the pad, where the browser can (Chrome, Edge; the Haptics setting rules).
+   PAD_ON = false (or ?pad=0) turns the whole thing off. */
+const PAD_ON = !/[?&]pad=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const PAD_DEAD_ON = 0.5, PAD_DEAD_OFF = 0.35, PAD_SETTLE_MS = 120, PAD_REPEAT_FIRST = 380, PAD_REPEAT_MS = 140;
+const PAD_B = { bottom: 0, right: 1, left: 2, top: 3, lb: 4, rb: 5, lt: 6, rt: 7, select: 8, start: 9, up: 12, down: 13, dleft: 14, dright: 15 };
+const PAD_NAMES = {
+    xbox:     { 0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 8: 'VIEW', 9: 'MENU' },
+    ps:       { 0: '✕', 1: '○', 2: '□', 3: '△', 4: 'L1', 5: 'R1', 8: 'CREATE', 9: 'OPTIONS' },
+    nintendo: { 0: 'B', 1: 'A', 2: 'Y', 3: 'X', 4: 'L', 5: 'R', 8: '−', 9: '+' }
+};
+const _pad = { type: 'xbox', prev: {}, dir: null, pend: null, pendT: 0, heldDir: null, navDir: null, navNext: 0, lastSeen: 0, focusT: 0, live: false, idx: -1 };
+function padTypeOf(id) {
+    id = String(id || '');
+    if (/054c|playstation|dualshock|dualsense|sony/i.test(id)) return 'ps';
+    if (/057e|nintendo|switch|joy-con|pro controller/i.test(id)) return 'nintendo';
+    return 'xbox';   // Xbox, the Steam Deck, 8BitDo in X mode, and anything else: A B X Y by position
+}
+function padName(b) { return (PAD_NAMES[_pad.type] || PAD_NAMES.xbox)[b] || ''; }
+function padRumble(pattern) {
+    if (!PAD_ON || !_pad.live || !document.body.classList.contains('pad-active')) return;
+    try {
+        const p = navigator.getGamepads && navigator.getGamepads()[_pad.idx]; const a = p && p.vibrationActuator; if (!a || !a.playEffect) return;
+        const arr = Array.isArray(pattern) ? pattern : [pattern || 20], dur = arr.filter((v, i) => i % 2 === 0).reduce((x, y) => x + y, 0);
+        const strong = Math.min(1, 0.25 + dur / 80);
+        a.playEffect('dual-rumble', { startDelay: 0, duration: Math.max(20, Math.min(400, dur * 1.6)), weakMagnitude: Math.min(1, strong + 0.2), strongMagnitude: strong }).catch(() => {});
+    } catch (e) {}
+}
+function padActive(on) {
+    const B = document.body; if (!B) return;
+    if (on && !B.classList.contains('pad-active')) { B.classList.add('pad-active'); padGlyphs(); }
+    if (!on && B.classList.contains('pad-active')) { B.classList.remove('pad-active'); document.querySelectorAll('.pad-focus').forEach(x => x.classList.remove('pad-focus')); }
+}
+function padGlyphs() {   // the badges on the play buttons, in the pad's own names
+    const spots = [['#hintPill', 2], ['#tipsPill', 3], ['#playThemeBtn', 4], ['#playSoundBtn', 5], ['.play-cog-btn', 8]];
+    for (const [sel, b] of spots) document.querySelectorAll(sel).forEach(el => {
+        let g = el.querySelector(':scope > .pad-glyph');
+        if (!g) { g = document.createElement('span'); g.className = 'pad-glyph'; g.setAttribute('aria-hidden', 'true'); el.appendChild(g);
+                  try { if (getComputedStyle(el).position === 'static') el.style.position = 'relative'; } catch (e) {} }
+        g.textContent = padName(b); g.classList.toggle('wide', padName(b).length > 2);
+    });
+    document.body.dataset.pad = _pad.type;
+    try { if (typeof renderSettingsRules === 'function') renderSettingsRules(); } catch (e) {}
+}
+function padRulesText() {
+    const n = b => padName(b);
+    return `Left stick or D-pad: the eight directions, held to keep going. ${n(2)} the Move Guide, ${n(3)} tips, ${n(9)} pause, ${n(8)} settings, ${n(4)} day or night, ${n(5)} sound. `
+        + `On every other screen the D-pad moves the highlight, ${n(0)} presses, ${n(1)} goes back. Works with Xbox, PlayStation, Switch Pro and Steam Deck controls.`;
+}
+/* which buttons are on screen to press: visible, enabled and not under something else */
+const PAD_ROW = '.play-home-btn, .play-theme-btn, .play-cog-btn, #hintPill, #tipsPill, #playSoundBtn, #stickPad';
+function padVisible(el) {
+    if (!el || el.disabled) return false;
+    const r = el.getBoundingClientRect(); if (r.width < 3 || r.height < 3) return false;
+    if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false;
+    const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.pointerEvents === 'none' || +cs.opacity < 0.05) return false;
+    return true;
+}
+function padScroller(el) {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowY) && p.scrollHeight > p.clientHeight + 2) return p;
+    }
+    return null;
+}
+function padUncovered(el) {
+    const r = el.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight;
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (cx >= 0 && cy >= 0 && cx < W && cy < H) {
+        const hit = document.elementFromPoint(cx, cy);
+        return !!hit && (el === hit || el.contains(hit) || (hit.contains && hit.contains(el) && hit.tagName === 'LABEL'));
+    }
+    const sc = padScroller(el); if (!sc) return false;   // below the fold of a panel that scrolls: reachable if the panel itself is on top
+    const R = sc.getBoundingClientRect(), hit = document.elementFromPoint(Math.max(0, Math.min(W - 1, R.left + R.width / 2)), Math.max(0, Math.min(H - 1, R.top + Math.min(R.height, H) / 2)));
+    return !!hit && sc.contains(hit);
+}
+function padCandidates(withRow) {
+    const out = [];
+    for (let el of document.querySelectorAll('button, a[href], input[type=checkbox], input[type=radio], input[type=range], select, [tabindex]:not([tabindex="-1"])')) {
+        if ((el.type === 'checkbox' || el.type === 'radio') && el.getBoundingClientRect().width < 6) { const lb = el.closest('label'); if (!lb) continue; el = lb; }
+        if (out.includes(el)) continue;
+        if (!withRow && el.matches && el.matches(PAD_ROW)) continue;
+        if (el.closest && el.closest('#devNoteBar, .dev-only')) continue;
+        if (padVisible(el) && padUncovered(el)) out.push(el);
+    }
+    return out;
+}
+function padPlaying() {   // the board is live and nothing else wants pressing
+    return typeof game !== 'undefined' && game && game.running && !game.paused && document.body.classList.contains('in-play') && !padCandidates(false).length;
+}
+function padFocus(el) {
+    if (!el) return;
+    document.querySelectorAll('.pad-focus').forEach(x => { if (x !== el) x.classList.remove('pad-focus'); });
+    el.classList.add('pad-focus');
+    try { el.focus({ preventScroll: true }); } catch (e) {}
+    try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+}
+function padCurrent(c) {
+    const a = document.querySelector('.pad-focus');
+    if (a && c.includes(a)) return a;
+    const f = document.activeElement; if (f && c.includes(f)) return f;
+    const lb = f && f.closest && f.closest('label'); if (lb && c.includes(lb)) return lb;
+    return null;
+}
+function padPreferred(c) {
+    const pri = ['#pausePlayBtn', '#tallyContinue', '#nameOk:not([disabled])', '.start-btn', '.lc-next, .lc-continue', '.go-actions button', '.settings-done'];
+    for (const sel of pri) { const el = c.find(x => x.matches && x.matches(sel)); if (el) return el; }
+    const safe = c.filter(x => !(x.matches && x.matches('.play-home-btn, #pauseQuitBtn, [onclick*="exitToWelcome"]')));   // never start on a way out
+    return (safe.length ? safe : c).slice().sort((a, b) => { const A = a.getBoundingClientRect(), B = b.getBoundingClientRect(); return (A.top - B.top) || (A.left - B.left); })[0] || null;
+}
+function padNavMove(dir) {
+    const c = padCandidates(true); if (!c.length) return;
+    const cur = padCurrent(c);
+    if (!cur) { padFocus(padPreferred(c)); return; }
+    if (cur.type === 'range' && (dir === 'W' || dir === 'E')) {   // a slider takes left and right
+        const st = (+cur.max - +cur.min) / 20 || 1; cur.value = Math.max(+cur.min, Math.min(+cur.max, +cur.value + (dir === 'E' ? st : -st)));
+        cur.dispatchEvent(new Event('input', { bubbles: true })); cur.dispatchEvent(new Event('change', { bubbles: true })); return;
+    }
+    const v = { N: [0, -1], S: [0, 1], W: [-1, 0], E: [1, 0], NE: [1, -1], NW: [-1, -1], SE: [1, 1], SW: [-1, 1] }[dir]; if (!v) return;
+    const R = cur.getBoundingClientRect(), cx = R.left + R.width / 2, cy = R.top + R.height / 2;
+    let best = null, bs = 1e9;
+    for (const el of c) {
+        if (el === cur) continue;
+        const r = el.getBoundingClientRect(), ex = r.left + r.width / 2, ey = r.top + r.height / 2, dx = ex - cx, dy = ey - cy;
+        const along = dx * v[0] + dy * v[1]; if (along <= 2) continue;
+        // the gap between edges along the way, and how far off the line it sits
+        const gapX = v[0] ? Math.max(0, v[0] > 0 ? r.left - R.right : R.left - r.right) : 0, gapY = v[1] ? Math.max(0, v[1] > 0 ? r.top - R.bottom : R.top - r.bottom) : 0;
+        const off = v[0] && v[1] ? Math.abs(dx * v[1] - dy * v[0]) / 1.414 : v[0] ? Math.max(0, Math.abs(dy) - (R.height + r.height) / 2) : Math.max(0, Math.abs(dx) - (R.width + r.width) / 2);
+        const sc = (gapX + gapY) + along * 0.1 + off * 2.2;
+        if (sc < bs) { bs = sc; best = el; }
+    }
+    if (best) padFocus(best);
+}
+function padPress() {
+    const c = padCandidates(true);
+    if (!c.length) { padKey('Enter', 'Enter'); return; }   // nothing to press: as Enter (the opening, the tally's count)
+    let cur = padCurrent(c);
+    if (!cur) { padFocus(padPreferred(c)); return; }
+    if (cur.type === 'range') return;
+    try { cur.click(); } catch (e) {}
+    setTimeout(() => { const c2 = padCandidates(true); if (!padCurrent(c2) && c2.length) padFocus(padPreferred(c2)); }, 60);
+}
+function padBack() {
+    const c = padCandidates(true);
+    const back = c.find(el => el.matches && el.matches('.scores-back, .settings-close, [aria-label="Back"], [aria-label="Close"]'));
+    if (back) { try { back.click(); } catch (e) {} return; }
+    padKey('Escape', 'Escape');
+}
+function padKey(key, code) {
+    try { document.dispatchEvent(new KeyboardEvent('keydown', { key, code, bubbles: true, cancelable: true })); document.dispatchEvent(new KeyboardEvent('keyup', { key, code, bubbles: true, cancelable: true })); } catch (e) {}
+}
+function padClick(sel) { const el = document.querySelector(sel); if (el && padVisible(el)) try { el.click(); } catch (e) {} }
+function padDirOf(p) {   // the D-pad, else the left stick (with a little hysteresis), as one of eight
+    const b = i => !!(p.buttons[i] && p.buttons[i].pressed);
+    let x = (b(15) ? 1 : 0) - (b(14) ? 1 : 0), y = (b(13) ? 1 : 0) - (b(12) ? 1 : 0);
+    if (!x && !y) {
+        const ax = p.axes[0] || 0, ay = p.axes[1] || 0, m = Math.hypot(ax, ay);
+        if (m < (_pad.dir ? PAD_DEAD_OFF : PAD_DEAD_ON)) return { dir: null, ax: 0, ay: 0 };
+        const a = Math.atan2(-ay, ax) * 180 / Math.PI, k = ((Math.round(a / 45) % 8) + 8) % 8;
+        return { dir: ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'][k], ax, ay };
+    }
+    const k = { '1,0': 'E', '1,-1': 'NE', '0,-1': 'N', '-1,-1': 'NW', '-1,0': 'W', '-1,1': 'SW', '0,1': 'S', '1,1': 'SE' }[x + ',' + y];
+    const m = Math.hypot(x, y); return { dir: k, ax: x / m, ay: y / m };
+}
+function padStickShow(d, ax, ay) {   // the on-screen stick moves and lights with the pad
+    if (typeof _stickTouch === 'undefined') return;
+    if (d) { const T = (typeof STICK_R !== 'undefined' ? STICK_R - STICK_KR - 3 : 30); _stickTouch.active = true; _stickTouch.ox = ax * T; _stickTouch.oy = ay * T; _stickTouch.dir = d; _stickOrigin = null; }
+    else if (_stickTouch.active && _pad.heldDir) { _stickTouch.active = false; _stickTouch.ox = _stickTouch.oy = 0; _stickTouch.dir = null; _stickTouch.pendDir = null; _stickTouch.lockDir = null; }
+}
+function padPlayDir(d, ax, ay) {   // the same rules as the on-screen stick
+    const now = performance.now();
+    if (!d) {
+        if (_pad.heldDir) { padStickShow(null); _pad.heldDir = null; _pad.pend = null; game.isTouching = false; try { stopDrag(); } catch (e) {} game._freshPush = false; }
+        return;
+    }
+    padStickShow(d, ax, ay);
+    if (!_pad.heldDir) { _pad.heldDir = d; game.isTouching = true; try { initAudio(); } catch (e) {} move(d); return; }
+    if (d === _pad.heldDir) { _pad.pend = null; return; }
+    if (_pad.pend !== d) { _pad.pend = d; _pad.pendT = now; return; }
+    if (now - _pad.pendT >= PAD_SETTLE_MS) { _pad.heldDir = d; _pad.pend = null; game.isTouching = true; move(d); }
+}
+function padTick() {
+    if (!PAD_ON) return;
+    let pads = []; try { pads = navigator.getGamepads ? [...navigator.getGamepads()] : []; } catch (e) {}
+    const p = pads.find(x => x && x.connected && x.mapping === 'standard') || pads.find(x => x && x.connected);
+    if (!p) { _pad.live = false; requestAnimationFrame(padTick); return; }
+    _pad.live = true; _pad.idx = p.index;
+    const t = padTypeOf(p.id); if (t !== _pad.type) { _pad.type = t; if (document.body.classList.contains('pad-active')) padGlyphs(); }
+    const now = performance.now(), down = i => !!(p.buttons[i] && p.buttons[i].pressed);
+    const pressed = i => down(i) && !_pad.prev[i];
+    const D = padDirOf(p); _pad.dir = D.dir;
+    let any = !!D.dir; for (let i = 0; i < p.buttons.length; i++) if (down(i)) any = true;
+    if (any) { padActive(true); _pad.lastSeen = now; }
+    // the board
+    const live = typeof game !== 'undefined' && game && game.running && !game.paused && document.body.classList.contains('in-play');
+    if (_pad.heldDir) padPlayDir(live ? D.dir : null, D.ax, D.ay);                 // a direction held on the board stays the board's till let go
+    else if (D.dir && !_pad.navDir && live && padPlaying()) padPlayDir(D.dir, D.ax, D.ay);
+    else if (D.dir) {   // the menus: a highlight, repeating while held
+        if (D.dir !== _pad.navDir) { _pad.navDir = D.dir; _pad.navNext = now + PAD_REPEAT_FIRST; padNavMove(D.dir); }
+        else if (now >= _pad.navNext) { _pad.navNext = now + PAD_REPEAT_MS; padNavMove(D.dir); }
+    }
+    if (!D.dir) _pad.navDir = null;
+    // buttons
+    if (pressed(PAD_B.start)) {   // pause and resume; on a card it presses, as A does; over Settings it closes them
+        const so = document.getElementById('settingsOverlay'), sOpen = so && !so.classList.contains('hidden');
+        if (typeof game !== 'undefined' && game.running && document.body.classList.contains('in-play') && !game.celebrating) {
+            if (sOpen) closeSettings(); else if (game.paused || !padCandidates(false).length) { try { togglePause(); } catch (e) {} } else padPress();
+        } else padPress();
+    }
+    if (pressed(PAD_B.select)) { if (document.body.classList.contains('in-play')) padClick('.play-cog-btn'); else { const so = document.getElementById('settingsOverlay'); if (so && !so.classList.contains('hidden')) closeSettings(); else try { openSettings(); } catch (e) {} } }
+    const inPlay = document.body.classList.contains('in-play') && typeof game !== 'undefined' && game.running && !game.paused && !padCandidates(false).length;
+    if (pressed(PAD_B.bottom)) { if (inPlay) padKey('Enter', 'Enter'); else padPress(); }
+    if (pressed(PAD_B.right)) { if (!inPlay) padBack(); }
+    if (pressed(PAD_B.left) && document.body.classList.contains('in-play')) padClick('#hintPill');
+    if (pressed(PAD_B.top) && document.body.classList.contains('in-play')) padClick('#tipsPill');
+    if (pressed(PAD_B.lb)) padClick(document.body.classList.contains('in-play') ? '#playThemeBtn' : '.theme-btn');
+    if (pressed(PAD_B.rb)) padClick(document.body.classList.contains('in-play') ? '#playSoundBtn' : '#playSoundBtn, .wc-sound');
+    // the highlight starts on the screen's main button, and moves on when its screen goes
+    if (document.body.classList.contains('pad-active') && now - _pad.focusT > 250) {
+        _pad.focusT = now;
+        if (!(live && !padCandidates(false).length)) { const c = padCandidates(true); if (c.length && !padCurrent(c)) padFocus(padPreferred(c)); }
+        else document.querySelectorAll('.pad-focus').forEach(x => x.classList.remove('pad-focus'));
+    }
+    _pad.prev = {}; for (let i = 0; i < p.buttons.length; i++) _pad.prev[i] = down(i);
+    requestAnimationFrame(padTick);
+}
+if (PAD_ON && typeof window !== 'undefined' && window.addEventListener && typeof navigator !== 'undefined' && navigator.getGamepads) {
+    let started = false; const go = () => { if (!started) { started = true; requestAnimationFrame(padTick); } };
+    window.addEventListener('gamepadconnected', e => { _pad.type = padTypeOf(e.gamepad && e.gamepad.id); go(); });
+    try { if ([...navigator.getGamepads()].some(Boolean)) go(); } catch (e) {}
+    let mx = null, my = null;
+    window.addEventListener('mousemove', e => { if (mx !== null && Math.hypot(e.clientX - mx, e.clientY - my) > 12) padActive(false); mx = e.clientX; my = e.clientY; }, true);
+    for (const t of ['pointerdown', 'touchstart']) window.addEventListener(t, e => { if (e.isTrusted) padActive(false); }, true);
+}
+
+/* ══ [111126d] THE TRACKPAD — Jake, 11 Nov, 21:37: "Is it possible for me to use the trackpad on my laptop to control rotor?";
+   21:53: "can a slow two fingered drag in the desired drag equal to constant flipping in one direction"; 21:54: "build it".
+   A two-finger drag arrives as a stream of scroll ('wheel') events. During a run they move the block BY DISTANCE, as a list scrolls:
+   every SWIPE_STEP_PX of finger travel (about a centimetre) is one square in the way the fingers go, any of the eight; a slow steady
+   drag flips steadily, a faster one quicker but never faster than a held direction (game.dragInterval, and never mid-flip); a quick
+   flick is one square; turning back mid-drag follows at once. THE COAST: when the fingers lift the laptop keeps sending a fading
+   trickle; a run of steadily shrinking deltas is that trickle and is ignored until the fingers move again (or a fresh gesture
+   starts after a quiet SWIPE_QUIET_MS), so the block stops when the fingers do. DIRECTION: by default the block goes the way the
+   fingers go on a Mac set to natural scrolling (the Mac's default); Settings > Two-finger swipe > Reverse flips it. A mouse wheel
+   sends the same events, so a wheel nudges the block up or down, a square a notch. Off the board (settings, the tally, panels)
+   scrolling is untouched. Settings > Two-finger swipe off, ?swipe=0, or SWIPE_ON = false turn it off. Dials: ?swipestep=<px>. */
+const SWIPE_ON = !/[?&]swipe=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const SWIPE_STEP_PX = (() => { const m = /[?&]swipestep=(\d+)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? Math.max(10, Math.min(400, +m[1])) : 60; })();
+const SWIPE_FIRST_K = 0.6;      // the first square of a gesture comes a little sooner
+const SWIPE_QUIET_MS = 140;     // a gap this long ends a gesture
+const SWIPE_COAST_N = 4;        // this many shrinking deltas in a row: the coast
+let swipePref = true, swipeReverse = false;
+try { if (localStorage.getItem('rotor_swipe') === '0') swipePref = false; if (localStorage.getItem('rotor_swipe_rev') === '1') swipeReverse = true; } catch (e) {}
+const _sw = { ax: 0, ay: 0, lastT: 0, mags: [], coasting: false, moves: 0, lastMove: 0 };
+function settingSwipe(on) { swipePref = !!on; try { localStorage.setItem('rotor_swipe', on ? '1' : '0'); } catch (e) {} syncSwipeSettingsUI(); }
+function settingSwipeReverse(on) { swipeReverse = !!on; try { localStorage.setItem('rotor_swipe_rev', on ? '1' : '0'); } catch (e) {} syncSwipeSettingsUI(); }
+function syncSwipeSettingsUI() {
+    const a = document.getElementById('setSwipe'), r = document.getElementById('setSwipeRev');
+    if (a) { a.checked = swipePref; const row = a.closest('.settings-row'); if (row) row.style.display = SWIPE_ON ? '' : 'none'; }
+    if (r) { r.checked = swipeReverse; r.disabled = !swipePref; const row = r.closest('.settings-row'); if (row) row.style.display = SWIPE_ON ? '' : 'none'; }
+}
+function swipeDir8(x, y) { const a = Math.atan2(-y, x) * 180 / Math.PI, k = ((Math.round(a / 45) % 8) + 8) % 8; return ['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'][k]; }
+function swipeLive() {
+    return SWIPE_ON && swipePref && typeof game !== 'undefined' && game && game.running && !game.paused && !game.celebrating && !game.testDrive
+        && document.body.classList.contains('in-play');
+}
+function swipeWheel(e) {
+    if (!swipeLive()) return;
+    const t = e.target; if (t && t.closest && t.closest('.screen-overlay, .settings-card, .level-tally, #settingsOverlay')) return;
+    if (e.ctrlKey) return;   // a pinch (zoom) is not a swipe
+    if (e.cancelable) e.preventDefault();   // no page scroll, and no two-finger "back" swipe out of the game
+    const now = performance.now();
+    const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
+    let dx = (e.deltaX || 0) * k, dy = (e.deltaY || 0) * k;
+    if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+    // the way the fingers went: a Mac on natural scrolling sends the opposite of the finger
+    const sg = swipeReverse ? 1 : -1; let fx = dx * sg, fy = dy * sg;
+    if (now - _sw.lastT > SWIPE_QUIET_MS) { _sw.ax = _sw.ay = 0; _sw.mags = []; _sw.coasting = false; _sw.moves = 0; }   // a fresh gesture
+    _sw.lastT = now;
+    const m = Math.hypot(fx, fy); if (!m) return;
+    // the coast: deltas that only shrink, steadily, are the laptop's fade-out after the fingers lifted
+    const M = _sw.mags; M.push(m); if (M.length > SWIPE_COAST_N + 1) M.shift();
+    if (_sw.coasting) { if (m > M[M.length - 2] * 1.15) { _sw.coasting = false; _sw.ax = _sw.ay = 0; } else return; }
+    else if (M.length > SWIPE_COAST_N && _sw.moves > 0) {
+        let shrink = true; for (let i = 1; i < M.length; i++) if (!(M[i] < M[i - 1] * 0.99)) { shrink = false; break; }
+        if (shrink) { _sw.coasting = true; _sw.ax = _sw.ay = 0; return; }
+    }
+    // a turn back mid-drag: start counting afresh the new way
+    if (_sw.ax * fx + _sw.ay * fy < 0) { _sw.ax = _sw.ay = 0; }
+    _sw.ax += fx; _sw.ay += fy;
+    const need = SWIPE_STEP_PX * (_sw.moves ? 1 : SWIPE_FIRST_K), have = Math.hypot(_sw.ax, _sw.ay);
+    if (have < need) return;
+    const gap = (game.dragInterval || 150) * (typeof bodyTimeScale === 'function' ? bodyTimeScale() : 1);
+    const easing = M.length > 1 && m < M[M.length - 2] * 0.99;   // the fingers slowing (or the coast starting): a waiting square waits on
+    if ((_sw.moves && (now - _sw.lastMove < gap || easing)) || (typeof flipInAir === 'function' && flipInAir())) {   // not faster than a held direction: keep one square waiting
+        const c = need / have; _sw.ax *= c; _sw.ay *= c; return;
+    }
+    const d = swipeDir8(_sw.ax, _sw.ay);
+    _sw.ax = _sw.ay = 0; _sw.moves++; _sw.lastMove = now;
+    try { initAudio(); } catch (e2) {}
+    try { if (typeof padActive === 'function') padActive(false); } catch (e2) {}
+    move(d);
+}
+if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('wheel', swipeWheel, { passive: false });
+
 // Touch controls
 let touchX = 0, touchY = 0;
 // Direction-change debounce. Hold-to-continue is already in place via
@@ -47213,7 +47609,16 @@ function placeTaglineStops(vEl) {
         d.style.transform = `translate(${((inkR + inkL) / 2 - (dr.left + dr.width / 2)).toFixed(2)}px, ${(capMid - (dr.top + dr.height / 2)).toFixed(2)}px) scale(${TAGLINE_DOT_SCALE})`;   // [311026g] drawn at full size and scaled about its centre: a 2 px box with round corners drew as a sliver
     });
 }
+const WELCOME_SPREAD = !/[?&]spread=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [111126c]
+function welcomeSpanRows() {   // how many rows the right-hand column has just now (CARRY ON comes and goes), for the left side to span
+    const box = document.querySelector('#startScreen .welcome-box'); if (!box) return;
+    document.body.classList.toggle('no-spread', !WELCOME_SPREAD);
+    const n = [...box.children].filter(e => e.classList.contains('welcome-row') && !e.classList.contains('wr-title') && !e.classList.contains('wr-obj')
+        && !e.hidden && getComputedStyle(e).display !== 'none').length;
+    box.style.setProperty('--wl-rows', String(Math.max(1, n)));
+}
 function fitWelcome() {
+    try { welcomeSpanRows(); } catch (e) {}   // [111126c]
     fitLine(document.querySelector('.welcome-box .screen-title'), 'font');
     {   // [061026b] the tagline is a third of the word mark's size ([071026a]), then spread to its width
         const tEl = document.querySelector('.welcome-box .screen-title'), vEl = document.querySelector('.welcome-box .objective-verbs.tagline');

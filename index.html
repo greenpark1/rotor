@@ -1282,6 +1282,11 @@ body.theme-day .chain-bar-fill { background: #b45309; }
 .rotor-wrap .store-chip  { grid-column: 3; grid-row: 1; justify-self: end; }   /* [280926F] mirrors LEVEL */
 .store-chip.empty { opacity: 0.6; }   /* [280926F] ×0: there, but resting */
 #rotorWheel { transform-origin: 32px 32px; }
+/* [131126l] the low clock, seen */
+#lowClockGlow { position: fixed; inset: 0; pointer-events: none; z-index: 30; opacity: 0; box-shadow: inset 0 0 90px 30px rgba(239, 68, 68, 0.85), inset 0 0 22px 6px rgba(248, 113, 113, 0.9); transition: opacity 120ms linear; }
+.rotor-secs.clock-low { color: #f87171 !important; animation: clockLowPulse 0.7s ease-in-out infinite alternate; }
+body.theme-day .rotor-secs.clock-low { color: #dc2626 !important; }
+@keyframes clockLowPulse { from { transform: scale(1); text-shadow: 0 0 0 rgba(239,68,68,0); } to { transform: scale(1.12); text-shadow: 0 0 12px rgba(239,68,68,0.85); } }
 .rotor-secs {
     /* [270726zb] Matched to the COLLECT THE SET text size. */
     font-size: var(--hud-clock); font-weight: 800; letter-spacing: 1px;
@@ -3113,6 +3118,8 @@ body.theme-day .taunt-box .go-score { color: #e8a800; text-shadow: none; }
 .taunt-box .go-rankline .go-lbl { margin-right: 4px; }
 .taunt-box .go-rank-name { font-weight: 900; }
 .taunt-box .go-rank-pos { opacity: 0.7; margin-left: 4px; }
+.taunt-box .go-rank-sub { margin-top: 4px; font-size: 11px; letter-spacing: 1.2px; font-weight: 700; }
+.taunt-box .go-rank-sub .go-rank-pos { margin-left: 0; }
 .taunt-box .go-rank-up { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: #facc15; color: #0f172a; font-weight: 900; font-size: 10px; }
 .replay-medal { display: inline-flex; align-items: center; gap: 4px; margin-left: 10px; font-weight: 800; letter-spacing: 1px; }
 .replay-medal svg { width: 16px; height: 16px; }
@@ -5046,6 +5053,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
     <button class="pause-btn" id="pausePlayBtn" type="button" title="Play — carry on with this run" aria-label="Play" onclick="this.blur(); resumeFromPause();"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.6 13 8l-8.5 5.4z"/></svg><span>PLAY</span></button>
     <button class="pause-btn" id="pauseQuitBtn" type="button" title="Quit — end this run, see your score and the replay" aria-label="Quit" onclick="this.blur(); quitRun();"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.5" y="3.5" width="9" height="9" rx="1.6"/></svg><span>QUIT</span></button>
 </div>
+<div id="lowClockGlow" aria-hidden="true"></div>   <!-- [131126l] -->
 <div class="game-container">
     <!-- [030826q] Wordmark removed from the play screen. It had grown to span
          the grid, which made the game's own title the largest thing above a
@@ -8632,6 +8640,18 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 131126-1602: HARD TO THE END. Playdata 116 (Jake, 16:00): Hard won with the clock near the top from level 7. [131126p] On Hard (no hourglasses) every second the clock gains from level 7 pays 75% (whole seconds, fractions carried); the rules line says so. ?hardlatepay= ?hardlatepayfrom=.
+// 131126-1527: SWAP AND RANK. Jake, 13 Nov, 15:26. [131126n] A used shifter always comes back as the other kind from itself (turn → step → turn), not from the last shifter seen (?shiftown=0). [131126o] The end card shows RANK (cog, name, place, RANK UP) beside LEVEL instead of MEDAL + YOUR RANK; the replay bar and clip wear the rank (?rankonly=0).
+// 131126-1506: FREE GOLD. Jake, 13 Nov, 15:01–15:05. [131126m] ×2 gold is free (no 15 s, no 0:25 needed): 40 s of double points for everyone, and double time too if the clock is under 1:00 when it is taken. Words in the rules, tip, lesson and price list. ?goldfree=0, ?goldtimelow=.
+// 131126-1435: SEE THE CLOCK. Jake, 13 Nov, 14:30–14:34 (playdata 115). [131126k] Hard rows pay 8 s on levels 1–5, 10 s on 6–8, 12 s on 9–10 (the 8 s rule ×1, ×1.25, ×1.5, its taper too). ?hardrows=. [131126l] Below 0:30 the clock pulses red and a red glow comes in from the screen's edges, stronger as it falls; a level starting under 0:30 says LOW CLOCK · YOU START ON 0:20 on its door and fires its alarm (20s LEFT · MAKE ROWS) as play begins. ?lowclock=0.
+// 131126-1346: NO SAND. Jake, 13 Nov, 13:41–13:44. [131126i] Hard has no hourglasses at all (swept from the board ahead and the ground every frame; rows pay their full 8 s at once, nothing banked; the 90/82/77% cut off). ?hardglass=1. [131126j] Gold only on purpose: a buried gold comes up only when you are 2+ squares away, and is taken only by your own flip, not in its first 1.5 s, not by a green/red changing your size or a shifter carrying you. ?goldsafe=0.
+// 131126-1304: (same build) Jake, 13 Nov, 13:03. [131126h] The joystick's play / pause / stop button on desktop too: the well and symbols show wherever the stick does; a mouse click on the knob pauses, a click on the paused knob plays, holding the mouse button a second on the paused knob stops; a drag still steers.
+// 131126-1304: SKIN OF TEETH. Jake, 13 Nov, 12:58 (playdata 114: Hard won easily on 1218). [131126g] Hard pays 90% of every second gained on levels 1–5, 82% on 6–8, 77% on 9–10 (was 100% / 93%). Replayed on 114: a win, 0:15, 0:10, 0:07 on 6–8, 0:19 on 10. ?hardpay=a,b,c.
+// 131126-1218: HARD LATE. Jake, 13 Nov, 12:17. [131126f] On Hard from level 6 every second the clock is paid is 93% (clockCredit → hardTrim; whole seconds, fractions carried). Replayed on playdata 113: still a win, 0:07 on level 9. The rules line says so. ?hardlate= ?hardlatefrom=.
+// 131126-1208: LIT BUTTON. Jake, 13 Nov, 12:04. [131126e] The knob's symbols in colour: pause amber, play green, stop red; a tap pops the symbol (450 ms swell and glow); paused the ▶ breathes green; held, the ■ and its ring go red. While paused (and the play pop) the knob's colour band is plain steel.
+// 131126-1208: PRESS HERE. Jake, 13 Nov, 12:01. [131126d] On touch the knob's play / pause / stop glyph sits in a sunken rounded-square well (shaded top-left, lit bottom-right, a dark seat); the colour band moved out to 0.86–0.64 of the knob to make room.
+// 131126-1128: KNOB AND ORDER. Jake, 13 Nov, 11:21. [131126b] Step and turn shifters alternate, never two of a kind in a row: new arrivals in view of the same kind as the last are turned into the other (kit and seeded ones keep theirs but count); a tile coming back picks the other kind. ?shiftalt=0. [131126c] On touch the joystick knob is play / pause / stop: tap = pause (❚❚ on the knob), paused tap = play (▶), paused hold 1 s = stop (a ring fills, ■). ?knobbtn=0.
+// 131126-1118: FLAT CHIPS. Jake, 13 Nov, 11:17. [131126a] The green, the red, the hourglasses and the shifters drawn as the key art's flat chips: no dome of light, a fine 1.4 px edge lit top-left and shaded bottom-right in place of the 3 px bevel, own-colour outline kept. ?objflat=0.
 // 121126-1746: WORDS ON TOP. Jake, 12 Nov, 17:45. [121126t] The ×2 banner is drawn after the knuckles (just before the floats), so the knuckles no longer show through its words. ?x2top=0.
 // 121126-1654: FINE EDGE. Jake, 12 Nov, 16:53: "can the chrome be any more subtle". [121126s] The chrome outline on the RЯ thinner and softer: Home Screen icons (stroke 4 of the letter's 100, was 7, at 75%) and the board mark the same.
 // 121126-1651: BLUE EDGE. Jake, 12 Nov, 16:50: "i'd prefer the ROTOЯ blue as it is but add a subtle chrome / reflective outline flourish". [121126r] Home Screen icons back to the flat ROTOЯ blue RЯ on the navy (no glow), with a thin chrome outline; the board's RЯ mark keeps its own colour (white night, blue day) with the same thin chrome outline; letters 40% / 60% see-through, edge solid. Built-in apple-touch fallback replaced.
@@ -9639,7 +9659,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '121126-1746 ROTOЯ · WORDS ON TOP';
+const BUILD_VERSION = '131126-1602 ROTOЯ · HARD TO THE END';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -10695,6 +10715,36 @@ const CLOCK_ALARMS = true;   // [081026H] the marks at 30, 20 and 10 — see sfx
 const WARN_IN_GRACE = true;
 /* [021126b] FINISH A ROW — the first clock alarm of a level with no row made yet adds one line under it: FINISH A ROW · +8s. Once a level. */
 const ROW_NUDGE = true;
+/* ══ [131126l] A LOW CLOCK YOU CAN SEE — Jake, 13 Nov, 14:30: "i didnt have the sound on so there was very little time to react to the
+   warning (if there was one)". Playdata 115: level 7 began on the 0:20 floor; the 30 s and 20 s alarms fire only as the clock passes
+   them going down, and the re-arm set the mark to 20 as the level opened, so neither fired; FIELD FAILING at 10 s was the only sign.
+   Now: (1) below LOW_CLOCK_SEC the clock pulses red and a red glow comes in from the screen's edges (#lowClockGlow), stronger and
+   quicker as the clock falls, and fullest under 10 s; it shows only while you play. (2) A level that starts under LOW_CLOCK_SEC says so
+   on its door (LOW CLOCK · YOU START ON 0:20) and, as play begins, its alarm fires (20s LEFT) with MAKE ROWS under it.
+   LOW_CLOCK_FX = false, or ?lowclock=0, takes them off. */
+const LOW_CLOCK_FX = !/[?&]lowclock=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const LOW_CLOCK_SEC = 30;
+function lowClockTick() {   // every frame
+    if (!LOW_CLOCK_FX) return;
+    const el = document.getElementById('lowClockGlow'), ck = document.getElementById('rotorSecs');
+    const live = game.running && !game.paused && !game._replay && !game.testDrive && !game.introHold && !game.celebrating && !game._deathHold && CLOCK_ONLY;
+    const t = live ? momentumRemaining() : 999;
+    const k = t < LOW_CLOCK_SEC ? Math.min(1, (LOW_CLOCK_SEC - t) / (LOW_CLOCK_SEC - 5)) : 0;
+    if (ck) ck.classList.toggle('clock-low', k > 0);
+    if (el) {
+        if (k <= 0) { if (el.style.opacity !== '0') el.style.opacity = '0'; }
+        else { const hz = 0.8 + 1.6 * k, now = performance.now() / 1000, pulse = 0.5 + 0.5 * Math.sin(now * hz * Math.PI * 2);
+               el.style.opacity = String(Math.min(1, (0.25 + 0.55 * k) * (0.6 + 0.4 * pulse))); }
+    }
+    if (live && game._lowStartPending != null && !game.inputLocked) {   // the level began low: say it as play starts
+        const st = game._lowStartPending; game._lowStartPending = null;
+        const band = st <= 10 ? 10 : st <= 20 ? 20 : 30;
+        game._clockMark = band;
+        try { clockAlarm(band); } catch (e) {}
+        addFloat(LOGICAL_W / 2, LOGICAL_H / 2 + 30, 'MAKE ROWS', INK.warn, false, { life: 2200, hold: 1200 });
+        rec('lowstart', { st: Math.round(st), r: advancedRound });
+    }
+}
 function clockAlarm(mark) {   // [081026H] heard, seen and felt, once per descent past the mark
     const day = currentTheme === 'day';
     const col = mark === 30 ? (day ? '#b45309' : '#fbbf24') : mark === 20 ? (day ? '#c2410c' : '#fb923c') : (day ? '#dc2626' : '#f87171');
@@ -11332,9 +11382,73 @@ const MODE_GLASS = { easy: [Math.round(econDial('easybig', 25, 5, 45)), Math.rou
    1:52) and the run finishes with about 0:44 (was 2:15). Small ones (5 s) and the rows' banked hourglasses (10 s) are unchanged.
    ?medlate= sets the price, ?medlatefrom= the level (11 turns it off). */
 const MED_LATE_FROM = Math.round(econDial('medlatefrom', 7, 2, 11)), MED_LATE_BIG = Math.round(econDial('medlate', 12, 5, 45));
+/* ══ [131126f] HARD PAYS A LITTLE LESS LATE ON — Jake, 13 Nov, 11:21: "'Hard' mode is too easy"; 12:01: cut back a bit what gives
+   time, no caps; 12:17: "go with your recco". Playdata 113's Hard win earned 3,343 s (hourglasses 1,160, rows 1,004, new ground 504,
+   pieces 210, greens 210, landfall 125, island cache 85, combo 45); levels 1–5 were tight (0:18 on level 5), 6–10 easy (the clock at
+   its top). On Hard, from level HARD_LATE_FROM, every second the clock is paid (hourglasses, rows, new ground, greens, pieces,
+   landfall, the island cache, combos, the rest — everything through clockCredit) is HARD_LATE_K of what it was: 7% less. Paid in
+   whole seconds as before, the fractions carried from one payment to the next (game._hardCarry), so on average it is exactly 93%
+   and every number shown is the number paid. Replayed on that run: it still wins, down to 0:07 on level 9. Easy and Medium unchanged;
+   levels 1–5 of Hard unchanged. ?hardlate= the share (1 = off), ?hardlatefrom= the level. */
+const HARD_LATE_K = (() => { const m = /[?&]hardlate=([\d.]+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? +m[1] : 0.93; })();
+const HARD_LATE_FROM = (() => { const m = /[?&]hardlatefrom=(\d+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? +m[1] : 6; })();
+/* [131126g] HARD BY THE SKIN OF YOUR TEETH — Jake, 13 Nov, 12:58, with playdata 114 (1218 on Hard: won in 29 min, the clock never under
+   1:10 after level 2): "its too easy still"; Hard should be won "by the skin of [your] teeth ... nearly ran out of time completely on 4 or
+   5 of the levels". 7% from level 6 was not enough. Hard now pays HARD_PAY of every second: 90% on levels 1–5, 82% on 6–8, 77% on 9–10.
+   Replayed on playdata 114 (same play): still a win, the clock down to 0:15, 0:10 and 0:07 on levels 6–8 and 0:19 on 10, 0:35–0:42 on
+   4–5. (Playdata 113's slower run would have ended on level 4.) ?hardpay=a,b,c sets the three shares; ?hardlate=1 turns it off. */
+const HARD_PAY = (() => { const m = /[?&]hardpay=([\d.]+),([\d.]+),([\d.]+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? [+m[1], +m[2], +m[3]] : [0.90, 0.82, 0.77]; })();
+/* ══ [131126p] HARD: THE LAST FOUR LEVELS PAY LESS — playdata 116 (Jake, 13 Nov, 16:00, Hard on 1527): won, 218,649, 26 min.
+   Levels 1–6 were the skin of the teeth (lows 0:22, 0:35, 0:13, 0:08, 0:15, 0:34); from level 7 the clock lived near the 2:30 top
+   (lows 0:35, 1:55, 1:41, 1:59; 322 s spilled over the top into points). What paid it: rows 828 s, new ground 386 s, landfall and the
+   island cache 120 s, greens 114 s, pieces 105 s. Replayed on the same play: everything ×0.75 from level 7 → lows 0:24, 0:49, 0:57,
+   0:43 (wins); ×0.72 → 0:23, 0:34, 0:20, 0:05; ×0.70 runs out on level 9. So on Hard, from level HARD_LATE_PAY_FROM (7), every
+   second the clock gains is HARD_LATE_PAY (0.75) of it, whole seconds with the fraction carried (hardTrim). No cap: nothing is thrown
+   away, it just pays less. ?hardlatepay= (1 = off), ?hardlatepayfrom=. */
+const HARD_LATE_PAY = econDial('hardlatepay', 0.75, 0.3, 1);
+const HARD_LATE_PAY_FROM = Math.round(econDial('hardlatepayfrom', 7, 1, 10));
+function hardShare() {   // what Hard pays of a second on this level
+    if (hardNoGlass()) return (game && !game.testDrive && typeof advancedRound !== 'undefined' && advancedRound >= HARD_LATE_PAY_FROM) ? HARD_LATE_PAY : 1;   // [131126i] no hourglasses: everything else pays in full · [131126p] less from level 7
+    if (runMode() !== 'hard' || typeof advancedRound === 'undefined' || (game && game.testDrive)) return 1;
+    if (HARD_LATE_K >= 1 && /[?&]hardlate=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''))) return 1;
+    return advancedRound >= 9 ? HARD_PAY[2] : advancedRound >= 6 ? HARD_PAY[1] : HARD_PAY[0];
+}
+function hardLate() { return hardShare() < 1; }
+function hardTrim(sec) {   // whole seconds, the fractions carried over
+    if (!(sec > 0) || !hardLate()) return sec;
+    const want = sec * hardShare() + (game._hardCarry || 0);   // [131126g]
+    const pay = Math.floor(want + 1e-9);
+    game._hardCarry = want - pay;
+    return pay;
+}
 function medLate() { return runMode() === 'medium' && typeof advancedRound !== 'undefined' && advancedRound >= MED_LATE_FROM; }
 function noSmallGlass() { return !!(CLOCK_RESETS && MODES_ON && (MODE_GLASS[runMode()] || [0, 1])[1] <= 0); }   // [101126ag] Hard deals none
-function glassPair(m) { const g = MODE_GLASS[m]; return g[1] > 0 ? `${g[0]} and ${g[1]}` : `${g[0]}, no small ones,`; }   // [101126ag] for the words
+/* ══ [131126i] HARD: NO HOURGLASSES — Jake, 13 Nov, 13:44: "Can you build the 'hard' version without hourglasses featured at all, in the
+   game." On Hard no hourglass is ever seen: none dealt on the board or on islands, none buried (the dig, the level-1 lesson, the
+   treats under built ground), none laid by the rows' bank, none from a rescue. Rows pay their full time at once instead of banking
+   it into hourglasses (8 s, falling to 4 s as the clock nears its top), and the 90 / 82 / 77% cut of [131126g] is off, so every other
+   source pays in full. Replayed on playdata 114 (Jake's best Hard run, same play), even so the clock would have run out on level 6:
+   Hard is now a different game, to be played and tuned. ?hardglass=1 puts the hourglasses (and the cut) back. */
+const HARD_NO_GLASS = !/[?&]hardglass=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function hardNoGlass() { return HARD_NO_GLASS && typeof runMode === 'function' && runMode() === 'hard'; }
+/* [131126k] HARD ROWS GROW WITH THE LEVELS — Jake, 13 Nov, 14:30–14:34 (playdata 115: levels 1–6 too easy, then level 7 suddenly
+   too hard). Without hourglasses rows are Hard's time, and the long levels (6–10 run 3–5 minutes) outran them. A row on Hard pays
+   HARD_ROW_K of the 8 s rule (8 s falling to 4 s near the clock's top): ×1 on levels 1–5 (8 s), ×1.25 on 6–8 (10 s), ×1.5 on 9–10
+   (12 s). Replayed on playdata 114 without hourglasses: 8 s throughout runs out on level 7; this just wins (0:04 on level 6).
+   ?hardrows=a,b,c. */
+const HARD_ROW_K = (() => { const m = /[?&]hardrows=([\d.]+),([\d.]+),([\d.]+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? [+m[1], +m[2], +m[3]] : [1, 1.25, 1.5]; })();
+function hardRowSec() { const r = (typeof advancedRound !== 'undefined') ? advancedRound : 1; const k = r >= 9 ? HARD_ROW_K[2] : r >= 6 ? HARD_ROW_K[1] : HARD_ROW_K[0]; return Math.round(rowSecOld() * k); }
+function hardGlassSweep() {   // every frame on Hard: no hourglass on the board ahead of you or in the ground
+    if (!hardNoGlass() || !game.running) return;
+    const ci = Math.floor(game.cameraY);
+    for (let y = ci - 3; y <= ci + VIEW_H + 14; y++) for (let x = 0; x < VIEW_W; x++) {
+        const k = `${x},${y}`;
+        if (isTimeCell(world[k])) { delete world[k]; try { rowBankKeys.delete(k); } catch (e) {} rec('noglass', { at: k }); }
+    }
+    for (const [k, h] of [...digHidden]) if (h && isTimeCell(h.v)) { digHidden.delete(k); digDug.delete(k); }
+}
+// [131126i] Hard names none
+function glassPair(m) { if (m === 'hard' && HARD_NO_GLASS) return 'nothing, there are none,'; const g = MODE_GLASS[m]; return g[1] > 0 ? `${g[0]} and ${g[1]}` : `${g[0]}, no small ones,`; }   // [101126ag] for the words
 const MODE_KEY = 'rotor_mode', MODE_DAILY = 'medium';
 let modePick = (() => {
     try { const m = /[?&]mode=(easy|medium|hard)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); if (m) return m[1]; } catch (e) {}
@@ -11447,7 +11561,9 @@ function momentumRemaining() { return Math.max(0, LEVEL_TIME_LIMIT - game.speedT
    else. Set it to Infinity and [070826i] is back exactly. */
 const CLOCK_CEILING = CLOCK_RESETS ? CLOCK_LIMIT_SEC : 90;   // [181026a] 1:39, and nothing over it is lost
 function momentumRoom()   { return Math.max(0, CLOCK_CEILING - momentumRemaining()); }
-function clockCredit(sec) { try { if (sec > 0 && typeof GOLD_TIME_X2 !== 'undefined' && GOLD_TIME_X2 && typeof x2Active === 'function' && x2Active()) { const room = Math.max(0, GOLD_TIME_CAP - (game._x2TimeExtra || 0)), extra = Math.min(sec, room); game._x2TimeExtra = (game._x2TimeExtra || 0) + extra; sec += extra; } } catch (e) {}   // [061126q] ×2 gold: time gained twice over · [061126v] the extra never more than the gold cost
+function clockCredit(sec) { try { sec = hardTrim(sec); } catch (e) {}   // [131126f] Hard, level 6 on: 7% less
+    try { if (sec > 0 && typeof GOLD_TIME_X2 !== 'undefined' && GOLD_TIME_X2 && typeof x2Active === 'function' && x2Active() && (!GOLD_FREE || game._x2TimeOn)) {   // [131126m] time doubled only for a gold taken under 1:00
+        const room = Math.max(0, GOLD_TIME_CAP - (game._x2TimeExtra || 0)), extra = Math.min(sec, room); game._x2TimeExtra = (game._x2TimeExtra || 0) + extra; sec += extra; } } catch (e) {}   // [061126q] ×2 gold: time gained twice over · [061126v] the extra never more than the gold cost
     if (CLOCK_RESETS) return Math.max(0, sec); return Math.max(0, Math.min(sec, Math.ceil(momentumRoom()))); }   // [181026a] every payer says its full number: the clock takes what it can and the rest is points
 function secsLabel(sec)   { return sec > 0 ? `+${sec}s` : 'FULL'; }   // what the clock was paid, in one word when it was nothing
 function momentumAddSeconds(sec) {
@@ -13265,7 +13381,8 @@ function settingsRulesRows() {
     if (COMBO_SLOT_PTS) rows.push(['Combos', `A shifter carrying you onto a slot: ${COMBO_SLOT_PTS.toLocaleString()} \u00d7 the level, doubled for a second shifter and again for a third. A slot and a row on one landing, a green and a slot in one move, or a red trimmed into a fit: ${COMBO_OTHER_PTS.toLocaleString()} \u00d7 the level.`]);
     rows.push(['Shifters', SHIFTER_SERIES ? 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Carried onto another shifter, that one fires at once \u2014 a row of them runs one after another.' + (PUSH_LANDS_AS_FLIP ? ' Where it puts you is a landing, as after a flip: a red there takes a cube (a single pays the red\u2019s toll), a green there is collected, a green beside you evolves you. Hourglasses, and reds and greens it carries you over, are destroyed; so is anything else it carries you over or onto, unless' : ' Anything else it carries you over or onto is destroyed, unless') + ' it lands you exactly on a slot of your shape: that fills it.' + (STEP_SPARES_SLOTS && TURN_SPARES_SLOTS ? ' A shifter never destroys a slot: it carries you over one, and won\u2019t put you on one you don\u2019t fit. Carried exactly onto a slot of your shape is a combo \u2014 big points.' : TURN_SPARES_SLOTS ? ' A turn never destroys a slot: it won\u2019t swing you onto one you don\u2019t fit.' : '')   // [311026b] · [311026i] · [311026n]
                 : 'Stand on one while its ring fills and it fires: a step pushes you, a turn swings you. Whatever it carries you over is destroyed.']);
-    if (GOLD_ON) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, land on it' : 'sits on an island. Land on it'} \u2014 by a flip or carried by a shifter \u2014 and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point${GOLD_TIME_X2 ? ', and the time the clock gains' + (GOLD_TIME_CAPPED ? ' (up to the ' + GOLD_TIME_CAP + ' seconds it cost)' : '') + ',' : ''} is doubled. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ' and stays until it leaves the bottom of the board' : ` and fades ${GOLD_LIFE_SEC} seconds after it appears`}. A shifter that carries you over it leaves it.`]);   // [311026o]
+    if (GOLD_ON && GOLD_FREE) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, flip onto it' : 'sits on an island; flip onto it'}. It is free: for the next ${GOLD_WINDOW_SEC} seconds every point is doubled, and if your clock is under ${clockFmt(GOLD_TIME_LOW_SEC)} when you take it, the time you gain is doubled too.${GOLD_STAYS ? ' It stays until it leaves the bottom of the board.' : ` It fades ${GOLD_LIFE_SEC} seconds after it appears.`}`]);   // [131126m]
+    else if (GOLD_ON) rows.push(['\u00d72 Gold', `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, land on it' : 'sits on an island. Land on it'} \u2014 by a flip or carried by a shifter \u2014 and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point${GOLD_TIME_X2 ? ', and the time the clock gains' + (GOLD_TIME_CAPPED ? ' (up to the ' + GOLD_TIME_CAP + ' seconds it cost)' : '') + ',' : ''} is doubled. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ' and stays until it leaves the bottom of the board' : ` and fades ${GOLD_LIFE_SEC} seconds after it appears`}. A shifter that carries you over it leaves it.`]);   // [311026o]
     if (typeof DIG_MODE !== 'undefined' && DIG_MODE) rows.push(['Digging', `Hourglasses, shifters and the \u00d72 gold are buried where they were dealt. The square you stand on is dug${DIG_WIDE ? ', and the eight round it' : ''}, and so is every square a shifter carries you across; a second after you leave, what was there comes up. Go back and land on it to collect it before it slides off the bottom. Slots, greens, reds and holes are always in view.`]);   // [101126w]
     if (typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined') rows.push(['Difficulty', `Easy, Medium or Hard, chosen on the welcome page, sets what the hourglasses pay: big and small, ${glassPair('easy')} seconds on Easy, ${glassPair('medium')} on Medium, ${glassPair('hard')} on Hard. Each difficulty keeps its own top scores.`]);   // [101126w]
     if (GUIDE_LOOK_SEC > 0) rows.push(['Move Guide', `Tap the compass to see the way to the set for a few seconds. Free on level 1; after that each look costs ${guideLookSec()} seconds${guideModesWords()}, paid when the route appears (no route, no charge). It won\u2019t open with under ${GUIDE_MIN_CLOCK} seconds on the clock.`]);   // [311026p]
@@ -18915,6 +19032,8 @@ function digTick(now) {
         if (on.has(k)) { d.leftAt = 0; continue; }
         if (!d.leftAt) { d.leftAt = now; continue; }
         if (now - d.leftAt < DIG_AFTER_MS) continue;
+        { const hh = digHidden.get(k);   // [131126j] a gold waits until you are GOLD_CLEAR squares away
+          if (GOLD_SAFE && hh && hh.v === 'gold') { const [gx, gy] = k.split(',').map(Number); if (body.some(c => Math.max(Math.abs(c.x - gx), Math.abs(c.y - gy)) < GOLD_CLEAR)) continue; } }
         digDug.delete(k); const h = digHidden.get(k); digHidden.delete(k);
         digReveal(k, h, body);
     }
@@ -20428,7 +20547,15 @@ const GOLD_TIME_CAPPED = GOLD_TIME_CAP < 999;   // [091126ak] the words say "up 
    playdata 102: 20 s for 319 points. Points in a run come at about 50 a second by level 6, and 20 s on the clock is worth about as much
    again at the end — so 20 s of ×2 only broke even. Now ×2 runs GOLD_WINDOW_SEC 40 s (?goldwin=): every point in it twice, a piece's
    1,000 × level included, about twice what the 20 s would have been worth. */
-const GOLD_FROM = 3, GOLD_PER_LEVEL = 2, GOLD_PRICE_SEC = Math.round(econDial('goldprice', 15, 0, 60)), GOLD_MIN_CLOCK = GOLD_PRICE_SEC + GOLD_LEFT_SEC, GOLD_WINDOW_SEC = Math.round(econDial('goldwin', 40, 5, 120)), GOLD_LIFE_SEC = 20;   // [051126u] 40 (was 60)
+/* ══ [131126m] GOLD HELPS WHOEVER TAKES IT — Jake, 13 Nov, 15:01: "what are the reasons for paying for gold x2? this just rewards the
+   person with lots of time, its not much of a life saver for the player that really needs it"; 15:05 "go with your choice". The gold
+   cost 15 s and needed 0:25 on the clock, then doubled what came in for 40 s: worth it only with time to spare and time flowing
+   (playdata 115: 22–38 s back on levels 3–5, 5–7 s back on level 6 where the clock reached 0:05). Now it is free (GOLD_FREE): for
+   GOLD_WINDOW_SEC every point is doubled, and if the clock is under GOLD_TIME_LOW_SEC (1:00) when you take it, the time you gain is
+   doubled as well — a lifeline when you need one, a score boost when you don't. ?goldfree=0 puts back the 15 s price. */
+const GOLD_FREE = !/[?&]goldfree=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const GOLD_TIME_LOW_SEC = Math.round(econDial('goldtimelow', 60, 0, 300));
+const GOLD_FROM = 3, GOLD_PER_LEVEL = 2, GOLD_PRICE_SEC = GOLD_FREE ? 0 : Math.round(econDial('goldprice', 15, 0, 60)), GOLD_MIN_CLOCK = GOLD_FREE ? 0 : GOLD_PRICE_SEC + GOLD_LEFT_SEC, GOLD_WINDOW_SEC = Math.round(econDial('goldwin', 40, 5, 120)), GOLD_LIFE_SEC = 20;   // [051126u] 40 (was 60)
 /* [051126s] THE GOLD STAYS — Jake, 5 Nov, 14:29: "the gold cube should stay on the grid and not disappear unless it runs off the bottom of
    the screen". It faded GOLD_LIFE_SEC (20) after it came fully into view, and went with the level when the set was done. Now it stays
    until it leaves the bottom of the board; one left when the set is done carries into the next level as that level's first coin.
@@ -20740,8 +20867,26 @@ function goldTick() {   // every frame of live play
     const k = DIG_MODE ? digGoldSpot() : carveGoldIsland();   // [061126f] dug in, in dig mode
     if (k) { G.key = k; G.seenAt = 0; G.made++; }
 }
+/* ══ [131126j] GOLD ONLY ON PURPOSE — Jake, 13 Nov, 13:41: "Can you check in the data how quickly and often gold x2 gets picked up
+   after spawning on the grid? I suspect that it is being picked up unintentionally"; 13:44 "Go with your suggestion". In every run
+   since gold was buried, 48 golds were taken: 5 within a second of coming up (twice the instant it appeared, twice as a green grew
+   the block onto it) and 4 more within two; the rest about 8 s after, by choice. A buried gold came up 1 s after you left its cell,
+   beside you, and any touch took it for 15 s. Now (1) it waits to come up until no part of you is within GOLD_CLEAR squares, and
+   (2) only your own flip takes it: not a green or red changing your size, not a shifter carrying you there (GOLD_GUARD_MS after
+   each), and not in its first GOLD_GRACE_MS on the board. Passed over, it stays. ?goldsafe=0 puts back the old way. */
+const GOLD_SAFE = !/[?&]goldsafe=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const GOLD_CLEAR = 2, GOLD_GRACE_MS = 1500, GOLD_GUARD_MS = 250, GOLD_GUARD_SHIFT_MS = 1600;
 function goldLanding(cells) {   // the body has come to rest: is it on the coin?
     if (!GOLD_ON || game.testDrive || game._replay) return;
+    if (GOLD_SAFE) {   // [131126j]
+        const nowT = performance.now();
+        const onGold = cells.some(c => world[`${c.x},${c.y}`] === 'gold');
+        if (onGold) {
+            const young = game._gold && game._gold.seenAt != null && (nowPlay() - game._gold.seenAt) < GOLD_GRACE_MS;
+            const guarded = (game._goldGuardUntil || 0) > nowT;
+            if (young || guarded) { if (!game._goldSparedAt || nowT - game._goldSparedAt > 800) { game._goldSparedAt = nowT; rec('gold', { k: 'spared', why: young ? 'young' : 'carried', r: advancedRound }); } return; }
+        }
+    }
     for (const cell of cells) {
         const key = `${cell.x},${cell.y}`;
         if (world[key] !== 'gold') continue;
@@ -20758,20 +20903,21 @@ function goldLanding(cells) {   // the body has come to rest: is it on the coin?
         }
         delete world[key];
         markCovered(key);
-        bumpCost(GOLD_PRICE_SEC, px, py, 'trade', 'gold');
+        if (GOLD_PRICE_SEC > 0) bumpCost(GOLD_PRICE_SEC, px, py, 'trade', 'gold');   // [131126m] free now
+        game._x2TimeOn = !GOLD_FREE || momentumRemaining() < GOLD_TIME_LOW_SEC;   // [131126m] under 1:00: the time doubles too
         if (game._lv) { game._lv.goldSecs = (game._lv.goldSecs || 0) + GOLD_PRICE_SEC; game._lv.goldN = (game._lv.goldN || 0) + 1; }
         game._x2Until = nowPlay() + GOLD_WINDOW_SEC * 1000; game._x2Ended = false; game._x2Pts = 0; game._x2TimeExtra = 0;   // [061126v]
         const _gIn = (typeof landingIn === 'function') ? landingIn() : 0;   // [011126c] as the body is seen to land
         game._goldShock = { x: px, y: py + CELL / 2, t0: performance.now() + _gIn };
-        x2Banner(GOLD_TIME_X2 ? '\u00d72 POINTS & TIME' : '\u00d72 POINTS', `SCORE ALL YOU CAN FOR ${GOLD_WINDOW_SEC}s!`, 2300, _gIn + 120);   // [011126c] · [061126q]
+        x2Banner((GOLD_TIME_X2 && game._x2TimeOn) ? '\u00d72 POINTS & TIME' : '\u00d72 POINTS', `SCORE ALL YOU CAN FOR ${GOLD_WINDOW_SEC}s!`, 2300, _gIn + 120);   // [011126c] · [061126q]
         game._x2Sec = null;
         document.body.classList.add('x2-on'); document.body.classList.remove('x2-last');
-        addFloat(px, py - 14, `−${GOLD_PRICE_SEC}s → ×2 FOR ${GOLD_WINDOW_SEC}s`, INK.points, true, { life: 1800, hold: 700 });
-        tapeNote(`×2 GOLD  −${GOLD_PRICE_SEC}s`, '#facc15');
+        addFloat(px, py - 14, GOLD_FREE ? `×2 FOR ${GOLD_WINDOW_SEC}s${game._x2TimeOn ? ' · TIME TOO' : ''}` : `−${GOLD_PRICE_SEC}s → ×2 FOR ${GOLD_WINDOW_SEC}s`, INK.points, true, { life: 1800, hold: 700 });   // [131126m]
+        tapeNote(GOLD_FREE ? `×2 GOLD${game._x2TimeOn ? ' + TIME' : ''}` : `×2 GOLD  −${GOLD_PRICE_SEC}s`, '#facc15');
         triggerEdgeGlow('#facc15', 900);
         try { if (typeof HAPTICS !== 'undefined') HAPTICS.fire(HAPTIC.claim, 0); } catch (e) {}
         try { if (sfx.gold) sfx.gold(); [NOTE.C5, NOTE.E5, NOTE.G5, NOTE.C6].forEach((f, i) => setTimeout(() => playTone(f, 0.16, WAVE.reward, VOL.event), 70 * i)); } catch (e) {}
-        rec('gold', { k: 'take', m: Math.round(momentumRemaining()), r: advancedRound });
+        rec('gold', { k: 'take', m: Math.round(momentumRemaining()), r: advancedRound, ...(GOLD_FREE ? { time: game._x2TimeOn ? 1 : 0 } : {}) });
         return;
     }
 }
@@ -22805,6 +22951,57 @@ function redealStep(m, x, y) {
    next from those it has not yet been, never the one it just was; when it has been all of them, the tally starts
    again. The reel ([081026w]) flicks through both kinds before it lands. SHIFTER_SWAP = false: a tile keeps its kind. */
 let SHIFTER_SWAP = true;   // a let, so a suite can hold a tile to its kind
+/* ══ [131126b] STEP, TURN, STEP, TURN — Jake, 13 Nov, 11:21: "Move shifters and turn shifters must alternate when spawning and
+   respawning. Never two of the same in a row." One running order for the whole run: every shifter that comes into view (dealt,
+   laid by lucky ground, dug up, revealed, offered by a row) and every tile that comes back with a new setting takes the other kind
+   from the last one. A new arrival of the same kind as the last is turned into the other kind on the spot (a step aimed at the
+   nearest hole or a useful way; a turn of a dealt size and spin) before it is drawn. The deliberate helpers keep their kind but
+   still count in the order: the square kit's turn (kit) and the level's seeded shifter (seeded). A tile coming back picks its next
+   setting from the other kind when it has one. SHIFTER_ALTERNATE = false, or ?shiftalt=0, puts back the free choice. */
+const SHIFTER_ALTERNATE = !/[?&]shiftalt=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+let _altSeen = new Map(), _altLast = null;   // reset when a run starts (beside rec('run'))
+/* ══ [131126n] THE SAME TILE SWAPS — Jake, 13 Nov, 15:26: "i landed on the same shifter 3 x and each time it was a turn shifter
+   opiton, where was the move shifter". 1128's redeal picked the other kind from the last shifter SEEN anywhere on the board, so a
+   turn tile with a step in view came back a turn every time. Now a used tile always comes back as the other kind from itself: a
+   turn comes back a step, a step comes back a turn. With no useful way for a step it takes its best way anyway.
+   SHIFTER_SWAP_OWN = false, or ?shiftown=0, puts back 1128's rule. */
+const SHIFTER_SWAP_OWN = !/[?&]shiftown=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function altMakeKind(k, x, y, kind) {   // turn the shifter at k into `kind`, keeping its spawn time and flags
+    const m = shifterMeta[k] || (shifterMeta[k] = { spawnTime: performance.now() });
+    if (kind === 'pivot') {
+        const tn = (typeof rollTurnSize === 'function') ? rollTurnSize() : 1;
+        const sp = (typeof nextTurnSpin === 'function') ? nextTurnSpin(tn) : (Math.random() < 0.5 ? 'cw' : 'ccw');
+        m.dir = sp; m.turns = tn; delete m.gear;
+        try { noteTurnSpin(sp, tn); } catch (e) {}
+    } else {
+        let dir = (Math.random() * 8) | 0;
+        try { const b = bestSlipDir(x, y); if (b !== null && b !== undefined) dir = b; } catch (e) {}
+        try { const h = stepAimAtHole(x, y, dir); if (h !== null) dir = h; } catch (e) {}
+        m.dir = dir; m.gear = (typeof dealGear === 'function' && STEP_GEARS) ? dealGear(x, y, dir) : 1; delete m.turns; delete m.deck;
+    }
+    world[k] = kind;
+}
+function shifterAlternateTick() {   // every frame: each shifter that comes into view, in order, takes the other kind from the last
+    if (!SHIFTER_ALTERNATE || ONE_SHIFTER || !game.running || game._replay) return;
+    const ci = Math.floor(game.cameraY);
+    const here = new Set();
+    for (let y = ci - 1; y <= ci + VIEW_H; y++) for (let x = 0; x < VIEW_W; x++) {
+        const k = `${x},${y}`, w = world[k];
+        if (w !== 'slip' && w !== 'pivot') continue;
+        here.add(k);
+        const was = _altSeen.get(k);
+        if (was === w) continue;
+        if (was === undefined) {   // a new arrival
+            const m = shifterMeta[k] || {};
+            if (_altLast && w === _altLast && !m.kit && !m.seeded) {
+                altMakeKind(k, x, y, w === 'slip' ? 'pivot' : 'slip');
+                rec('alt', { k: world[k], was: w, at: k });
+            }
+        }
+        _altLast = world[k]; _altSeen.set(k, world[k]);   // a tile that came back as the other kind counts too
+    }
+    for (const k of Array.from(_altSeen.keys())) if (!here.has(k)) _altSeen.delete(k);
+}
 function redealShifter(m, x, y, w) {   // the next capability from the tile's own tally; returns the kind it comes back as
     const cur = w === 'pivot' ? turnCardOf(m) : 's' + m.dir;
     const all = TURN_CARDS.concat(stepUsefulDirs(x, y).map(d => 's' + d));
@@ -22812,6 +23009,17 @@ function redealShifter(m, x, y, w) {   // the next capability from the tile's ow
     if (!m.capSeen.includes(cur)) m.capSeen.push(cur);
     let pool = all.filter(c => c !== cur && !m.capSeen.includes(c));
     if (!pool.length) { m.capSeen = [cur]; pool = all.filter(c => c !== cur); }
+    if (SHIFTER_ALTERNATE && !ONE_SHIFTER && (SHIFTER_SWAP_OWN || _altLast)) {   // [131126b] the other kind · [131126n] from the tile itself
+        const want = SHIFTER_SWAP_OWN ? (w === 'slip' ? 'pivot' : 'slip') : (_altLast === 'slip' ? 'pivot' : 'slip');
+        let alt = pool.filter(c => (c[0] === 's') === (want === 'slip'));
+        if (!alt.length) alt = all.filter(c => c !== cur && (c[0] === 's') === (want === 'slip'));
+        if (!alt.length && SHIFTER_SWAP_OWN && want === 'slip') {   // [131126n] no useful way: its best way, or any way
+            let d = (Math.random() * 8) | 0;
+            try { const b = bestSlipDir(x, y); if (b !== null && b !== undefined) d = b; } catch (e) {}
+            alt = ['s' + d];
+        }
+        if (alt.length) pool = alt;
+    }
     if (!pool.length) return w;
     const card = pool[(Math.random() * pool.length) | 0];
     m.capSeen.push(card);
@@ -25846,7 +26054,7 @@ function replayClipStart(R) {
         const chunks = [];
         const clip = { rec, stream, chunks, canvas: c, ctx: g, k, mime: mt.mime, ext: mt.ext, live: true, blob: null, kind: R.kind,
                        score: game.score, levelText: replayClipLevelText(), t0: performance.now(), day: currentTheme === 'day',
-                       medal: (R.medal && MEDALS_ON) ? (medalAward() || {}).run : null };   // [121126d]
+                       medal: (R.medal && MEDALS_ON) ? medalShown(medalAward()) : null };   // [121126d] · [131126o] the rank
         rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
         rec.onstop = () => {
             try {
@@ -26157,7 +26365,7 @@ function gameOverReplay() {
     replayMusicStart(reason === 'win');   // [101126s] before the clip starts, so its soundtrack goes in
     const ok = startBoardReplay('death', reason, back, { lead: RP_LEAD_MS, record: true, medal: MEDALS_ON });   // [121126d]
     try { const A = MEDALS_ON ? medalAward() : null, el = document.getElementById('replayMedal');
-          if (el) { el.hidden = !(ok && A); if (A) el.innerHTML = rankBadgeSVG(A.run.index, false) + '<span>' + A.run.name + '</span>'; } } catch (e) {}
+          if (el) { el.hidden = !(ok && A); if (A) { const M = medalShown(A); el.innerHTML = rankBadgeSVG(M.index, false) + '<span>' + M.name + '</span>'; } } } catch (e) {}   // [131126o]
     if (!ok) { replayMusicStop(true); back(); return; }
     rec('replay', { k: 'again', r: advancedRound });
     const drive = () => {
@@ -28693,6 +28901,7 @@ function completeSet() {
                 const _st = (CLOCK_CARRY && game._nextStart != null) ? game._nextStart : LEVEL_START_SEC;   // [251026a] what was carried
                 game.speedTimer = LEVEL_TIME_LIMIT - _st;
                 rec('clock', { to: _st, r: advancedRound, ...(CLOCK_CARRY ? { carried: game._carriedSec || 0 } : {}) });
+                if (LOW_CLOCK_FX && _st < LOW_CLOCK_SEC) game._lowStartPending = _st;   // [131126l] said as play begins
                 game._clockShown = null;   // [011126i] a new level shows its clock as it is
                 game._nextStart = null;
                 if (advancedRound === 2) showTip('clockreset');
@@ -28841,7 +29050,7 @@ function completeSet() {
                 // [090926a] TIGHT / STEADY / LOOSE tried for one build and removed
                 // on the designer's call. The ratio (roundRevolves / roundRows)
                 // stays in the export if it is ever wanted again.
-                game._lastLevelLine = CLOCK_RESETS ? ((CLOCK_CARRY && game._nextStart != null) ? (game._nextStart > (game._carriedSec || 0) ? `CLOCK STARTS ON ${clockFmt(game._nextStart)}` : `YOU CARRY ${clockFmt(game._nextStart)}`) : `CLOCK BACK TO ${clockFmt(LEVEL_START_SEC)}`) : `ROWS ${game.roundRows || 0}`;   // [251026a] the door says what you carry   // [181026a] the door says the rule
+                game._lastLevelLine = CLOCK_RESETS ? ((CLOCK_CARRY && game._nextStart != null) ? ((LOW_CLOCK_FX && game._nextStart < LOW_CLOCK_SEC) ? `LOW CLOCK \u00b7 YOU START ON ${clockFmt(game._nextStart)}` : game._nextStart > (game._carriedSec || 0) ? `CLOCK STARTS ON ${clockFmt(game._nextStart)}` : `YOU CARRY ${clockFmt(game._nextStart)}`) : `CLOCK BACK TO ${clockFmt(LEVEL_START_SEC)}`) : `ROWS ${game.roundRows || 0}`;   // [131126l] a low start says so   // [251026a] the door says what you carry   // [181026a] the door says the rule
             }
             // [100926f] the card yields to the replay of the closing moves; the
             // door follows. Without a tape (or if skipped) it is the old beat.
@@ -31037,8 +31246,20 @@ function medalAward() {   // once a run, at game over: this run's medal, and the
     try { rec('medal', { run: run.name, rank: now.name, up: game._medalAward.up ? 1 : 0, score }); } catch (e) {}
     return game._medalAward;
 }
-function medalCardHtml(levelHtml) {   // the stats row: MEDAL beside LEVEL, YOUR RANK under them
+/* ══ [131126o] RANK, NOT MEDAL AND RANK — Jake, 13 Nov, 15:26 (grab of the demo's end card: MEDAL SOLENOID, YOUR RANK DYNAMO 7 OF 10,
+   PLAYED AS …): "this needs to be rationalised to rank and name, remove medal but integrate the symbol into rank". The card shows RANK
+   (the cog and name of your best single run under your name, its place on the ladder, RANK UP when this run raised it) beside LEVEL;
+   the name stays under the card. The game-over replay's bar and the clip's strip wear the rank too. RANK_ONLY = false, or ?rankonly=0,
+   puts back MEDAL + YOUR RANK. */
+const RANK_ONLY = !/[?&]rankonly=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function medalShown(A) { return A ? (RANK_ONLY ? A.rank : A.run) : null; }   // what the replay wears
+function medalCardHtml(levelHtml) {   // the stats row: MEDAL beside LEVEL, YOUR RANK under them · [131126o] RANK beside LEVEL
     const A = medalAward();
+    if (A && RANK_ONLY) return `<div class="go-stats">` +
+        `<div class="go-stat go-medal-stat"><span class="go-lbl">RANK</span><span class="go-medal">${rankBadgeSVG(A.rank.index, false)}<span class="go-val">${A.rank.name}</span></span>` +
+        `<span class="go-rank-sub"><span class="go-rank-pos">${A.rank.position} OF ${A.rank.total}</span>${A.up ? ' <span class="go-rank-up">RANK UP</span>' : ''}</span></div>` +
+        `<div class="go-stat"><span class="go-lbl">LEVEL</span>${levelHtml}</div>` +
+        `</div>`;
     if (!A) return `<div class="go-stats"><div class="go-stat" style="grid-column: 1 / -1"><span class="go-lbl">LEVEL</span>${levelHtml}</div></div>`;
     return `<div class="go-stats">` +
         `<div class="go-stat go-medal-stat"><span class="go-lbl">MEDAL</span><span class="go-medal">${rankBadgeSVG(A.run.index, false)}<span class="go-val">${A.run.name}</span></span></div>` +
@@ -34034,6 +34255,7 @@ function rowBankTick() {   // lay the banked hourglasses: 3–7 rows ahead, on f
     }
 }
 function rowSecNow() {   // [031126p] what a row pays at this moment: 8 s up to 1:30 on the clock, falling to 4 s at the top
+    if (hardNoGlass()) return hardRowSec();   // [131126i] Hard: the full row at once, nothing banked · [131126k] more as the levels grow
     if (!ROW_TAPER) return ROW_RUN_SEC;
     const C = (typeof momentumRemaining === 'function') ? momentumRemaining() : 0, top = (typeof CLOCK_CEILING !== 'undefined' ? CLOCK_CEILING : 150);
     if (!(C > ROW_TAPER_FROM) || top <= ROW_TAPER_FROM) return ROW_RUN_SEC;
@@ -37287,8 +37509,106 @@ function _padSqPath(g, cx, cy, half) {   // a cell-shaped rounded square, centre
     g.lineTo(x + r, y + z); g.quadraticCurveTo(x, y + z, x, y + z - r);
     g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath();
 }
+/* ══ [131126c] THE KNOB IS PLAY, PAUSE AND STOP — Jake, 13 Nov, 11:21: "Add tap controls to the top of the joystick play, pause, stop
+   as a button in the middle of the joystick for smart phone and tablet use." (In August [090826i] a lamp on the knob was taken off
+   so the stick meant one thing; Jake now asks for it back.) On a touch screen: a quick tap on the knob (under KNOB_TAP_MS, no
+   direction pushed) pauses; paused, the knob shows ▶ and a tap plays on; paused, holding the knob for KNOB_STOP_MS fills a ring and
+   stops the run (as QUIT does: the score and the replay). The knob carries a small ❚❚ while you play. A push still steers as before:
+   a tap that turns into a push is a move, never a pause. KNOB_BUTTON = false, or ?knobbtn=0, takes it off. */
+const KNOB_BUTTON = !/[?&]knobbtn=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const KNOB_TAP_MS = (() => { const m = /[?&]knobtap=(\d+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? +m[1] : 350; })(), KNOB_STOP_MS = 1000;   // [131126d] ?knobtap= ms
+/* [131126d] THE BUTTON SITS IN A WELL — Jake, 13 Nov, 12:01: "make the play, pause, stop buttons on the joystick sit on an indented
+   rounded square like the rounded square patterns elsewhere on the joystick, it needs to look like something that could be pressed
+   in ... if you need to move the player coloured band out a bit more to create more room, do so." With the knob button on, the
+   colour band moves out (KNOB_BAND_OUT .. KNOB_BAND_IN of the knob's half-side, was 0.75 .. 0.5) and inside it a rounded square
+   well (KNOB_WELL) is sunk into the chrome: shaded along the top and left where the light cannot reach, lit along the bottom and
+   right, a dark seat round its edge; the glyph sits in it. */
+const KNOB_BAND_OUT = 0.86, KNOB_BAND_IN = 0.64, KNOB_WELL = 0.52;
+/* [131126h] THE BUTTON WITH A MOUSE TOO — Jake, 13 Nov, 13:03: "make sure the interactive joystick is incorporated ... it should still
+   feature on a desktop except where the press of a joystick button on a touch screen occurs it will be the click of a cursor in the
+   same position for a desktop or non touch screen." The well, the colours and the symbols show wherever the joystick does; with a
+   mouse a click on the knob pauses, a click on the paused knob plays, and holding the button down on the paused knob for a second
+   stops — the same as a finger. A drag from the knob still steers. */
+function knobWellOn() { return KNOB_BUTTON; }
+function drawKnobWell(pctx, KH, day) {
+    const W = KH * KNOB_WELL;
+    pctx.save();
+    pctx.beginPath(); _padSqPath(pctx, 0, 0, W);
+    const g = pctx.createLinearGradient(-W, -W, W, W);   // a hollow: dark where the top-left rim shades it
+    if (day) { g.addColorStop(0, '#9aa6b5'); g.addColorStop(0.55, '#c4ccd6'); g.addColorStop(1, '#e3e8ee'); }
+    else { g.addColorStop(0, '#6b7a8d'); g.addColorStop(0.55, '#a3afbd'); g.addColorStop(1, '#cdd5de'); }
+    pctx.fillStyle = g; pctx.fill();
+    pctx.clip();   // the inner shadow, inside the well only
+    pctx.lineWidth = 5;
+    pctx.strokeStyle = day ? 'rgba(15, 23, 42, 0.32)' : 'rgba(2, 6, 23, 0.45)';
+    pctx.beginPath(); _padSqPath(pctx, 2.2, 2.2, W); pctx.stroke();
+    pctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+    pctx.beginPath(); _padSqPath(pctx, -2.2, -2.2, W); pctx.stroke();
+    pctx.restore();
+    pctx.save();   // the seat: a fine dark line where the chrome meets the well
+    pctx.lineWidth = 1.4; pctx.strokeStyle = day ? 'rgba(30, 41, 59, 0.45)' : 'rgba(15, 23, 42, 0.6)';
+    pctx.beginPath(); _padSqPath(pctx, 0, 0, W); pctx.stroke();
+    pctx.restore();
+}
+let _knobHold = null, _mouseKnob = null;   // [131126h] _mouseKnob: a mouse press that began on the knob   // { t0 } while a finger rests on the knob of a paused game
+function knobHit(pt) {   // is a point on the stick's pad on the knob itself?
+    const c = stickCentre(), KH = STICK_KR * 0.9;
+    return Math.abs(pt.x - c.x) <= KH && Math.abs(pt.y - c.y) <= KH;
+}
+function knobStopTick() {   // paused and held long enough: stop the run
+    if (!_knobHold || !game.running || !game.paused) { if (_knobHold && !game.paused) _knobHold = null; return; }
+    if (performance.now() - _knobHold.t0 >= KNOB_STOP_MS) { _knobHold = null; rec('knob', { k: 'stop' }); quitRun(); }
+}
+/* [131126e] THE BUTTON LIGHTS UP — Jake, 13 Nov, 12:04: "the play, pause, stop symbols need suitable colours to animate when
+   activated, the colour for the player cube can be disabled when they are activated." Pause is amber, play is green, stop is red
+   (KNOB_FX colours). Tapped, the symbol pops in its colour (KNOB_POP_MS: it swells and glows, then settles). Paused, the knob is the
+   play button: ▶ in green, breathing softly; holding it turns it to a red ■ with the red ring filling. While paused, and through the
+   play pop as you go on, the knob's colour band is plain steel instead of the block's colour, so the button's colour is the only one.
+   Playing, the ❚❚ rests in the shifters' ink as before. */
+const KNOB_FX = { pause: ['#f59e0b', '#b45309'], play: ['#22c55e', '#15803d'], stop: ['#ef4444', '#b91c1c'] };   // [night, day]
+const KNOB_POP_MS = 450;
+function knobFxCol(k, day) { return KNOB_FX[k][day ? 1 : 0]; }
+function knobBandOff() {   // the band goes steel while the button speaks
+    if (!knobWellOn()) return false;
+    if (game.paused) return true;
+    const fx = game._knobFx;
+    return !!(fx && fx.k === 'play' && performance.now() - fx.t < KNOB_POP_MS);
+}
+function drawKnobFace(pctx, KH, day) {   // ❚❚ while playing, ▶ paused, the stop ring and ■ while it is held · [131126e] in colour
+    if (!KNOB_BUTTON) return;   // [131126h] touch or mouse
+    const ink = day ? 'rgba(31, 41, 55, 0.78)' : 'rgba(15, 23, 42, 0.8)';
+    const s = KH * 0.22, now = performance.now();
+    const fx = game._knobFx, age = fx ? now - fx.t : 1e9;
+    const pop = (k) => (fx && fx.k === k && age < KNOB_POP_MS) ? Math.sin(Math.PI * age / KNOB_POP_MS) : 0;   // 0 → 1 → 0
+    const pauseBars = () => { const bw = s * 0.42, gap = s * 0.36; pctx.fillRect(-gap - bw, -s * 0.9, bw, s * 1.8); pctx.fillRect(gap, -s * 0.9, bw, s * 1.8); };
+    const playTri = () => { pctx.beginPath(); pctx.moveTo(-s * 0.75, -s); pctx.lineTo(s * 1.05, 0); pctx.lineTo(-s * 0.75, s); pctx.closePath(); pctx.fill(); };
+    const lit = (col, glow) => { pctx.fillStyle = col; pctx.shadowColor = col; pctx.shadowBlur = glow; };
+    pctx.save();
+    pctx.fillStyle = ink;
+    if (game.paused) {
+        const held = _knobHold ? Math.min(1, (now - _knobHold.t0) / KNOB_STOP_MS) : 0;
+        if (held > 0.08) {   // the stop: red ■, a red ring filling round it, a pulse as it fills
+            const c = knobFxCol('stop', day), q = 1 + 0.08 * Math.sin(now / 70);
+            pctx.save(); pctx.scale(q, q); lit(c, 10); pctx.fillRect(-s * 0.85, -s * 0.85, s * 1.7, s * 1.7); pctx.restore();
+            pctx.strokeStyle = c; pctx.lineWidth = 4; pctx.lineCap = 'round'; pctx.shadowColor = c; pctx.shadowBlur = 6;
+            pctx.beginPath(); pctx.arc(0, 0, KH * (knobWellOn() ? 0.42 : 0.62), -Math.PI / 2, -Math.PI / 2 + held * Math.PI * 2); pctx.stroke();   // [131126d] inside the well
+        } else if (pop('pause') > 0) {   // just paused: the ❚❚ pops in amber
+            const p = pop('pause'); pctx.save(); pctx.scale(1 + 0.3 * p, 1 + 0.3 * p); lit(knobFxCol('pause', day), 14 * p); pauseBars(); pctx.restore();
+        } else {   // paused: the play button, green, breathing
+            const br = 0.5 + 0.5 * Math.sin(now / 420);
+            lit(knobFxCol('play', day), 4 + 6 * br); pctx.globalAlpha = 0.8 + 0.2 * br; playTri();
+        }
+    } else if (pop('play') > 0) {   // just played on: the ▶ pops in green
+        const p = pop('play'); pctx.save(); pctx.scale(1 + 0.3 * p, 1 + 0.3 * p); lit(knobFxCol('play', day), 14 * p); playTri(); pctx.restore();
+    } else {
+        pctx.globalAlpha = 0.55; pauseBars();
+    }
+    pctx.restore();
+}
+function isTouch() { return (typeof window !== 'undefined') && (('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0); }
 function drawJoystickGuide() {
     if (!game.running) return;
+    try { knobStopTick(); } catch (e) {}   // [131126c]
     const R = STICK_R, KR = STICK_KR;
     // [090826l] RD is the DRAWN ring; R stays the input radius. Everything the
     // eye sees uses RD, everything the finger drives uses R.
@@ -37686,11 +38006,12 @@ function drawJoystickGuide() {
             pctx.strokeStyle = KNOB_CONVEX ? chromeGradOn(pctx, -KH, -KH, KH, KH) : chromeGradOn(pctx, KH, KH, -KH, -KH); pctx.lineWidth = 2.2; pctx.stroke();   // the rim · [101126x] lit top left, as every bevel is
         }
         if (STICK_CHROME && STICK_BAND_SHAPE) {   // [101126l] the middle band in the block's colour
-            const bc = playerColor();
+            const bc = knobBandOff() ? (day ? '#9aa6b5' : '#8b97a8') : playerColor();   // [131126e] steel while the button speaks
             pctx.save();
-            pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * 0.75); _padSqPath(pctx, 0, 0, KH * 0.5);
+            const _bo = knobWellOn() ? KNOB_BAND_OUT : 0.75, _bi = knobWellOn() ? KNOB_BAND_IN : 0.5;   // [131126d] out a little, for the well
+            pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * _bo); _padSqPath(pctx, 0, 0, KH * _bi);
             pctx.fillStyle = bc; pctx.fill('evenodd');
-            const bs = pctx.createLinearGradient(-KH * 0.75, -KH * 0.75, KH * 0.75, KH * 0.75);   // lit as the cubes are: top left
+            const bs = pctx.createLinearGradient(-KH * _bo, -KH * _bo, KH * _bo, KH * _bo);   // lit as the cubes are: top left
             bs.addColorStop(0, 'rgba(255, 255, 255, 0.35)'); bs.addColorStop(0.5, 'rgba(255, 255, 255, 0)'); bs.addColorStop(1, 'rgba(0, 0, 0, 0.22)');
             pctx.fillStyle = bs; pctx.fill('evenodd');
             pctx.restore();
@@ -37698,7 +38019,7 @@ function drawJoystickGuide() {
         pctx.save();   // the cell's two rings, in the shifters' ink, faint — as on a turn tile
         pctx.strokeStyle = day ? (typeof DAY_GLYPH_INK !== 'undefined' ? DAY_GLYPH_INK : '#3f4652') : '#1f3555';
         pctx.lineWidth = 2.2;
-        for (const [k, a] of [[0.75, 0.3], [0.5, 0.24]]) { pctx.globalAlpha = FA * a; pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * k); pctx.stroke(); }
+        for (const [k, a] of (knobWellOn() ? [[KNOB_BAND_OUT, 0.3], [KNOB_BAND_IN, 0.24]] : [[0.75, 0.3], [0.5, 0.24]])) { pctx.globalAlpha = FA * a; pctx.beginPath(); _padSqPath(pctx, 0, 0, KH * k); pctx.stroke(); }
         pctx.restore();
         if (DEPTH_LIGHT && !STICK_CHROME) {   // [081026n] lit top-left, shaded bottom-right · [101126h] the chrome has its own
             pctx.save(); pctx.beginPath(); _padSqPath(pctx, 0, 0, KH); pctx.clip();
@@ -37734,6 +38055,7 @@ function drawJoystickGuide() {
         if (STICK_POP) { pctx.strokeStyle = day ? 'rgba(31, 53, 85, 0.75)' : 'rgba(226, 232, 240, 0.75)'; pctx.lineWidth = 2.2; }   // [081026u]
         pctx.beginPath(); if (STICK_CELLS) _padSqPath(pctx, 0, 0, KH); else pctx.arc(0, 0, KR, 0, Math.PI * 2); pctx.stroke();
     }
+    if (STICK_CELLS) { try { if (knobWellOn()) drawKnobWell(pctx, KH, day); drawKnobFace(pctx, KH, day); } catch (e) {} }   // [131126c] · [131126d] in its well
     // [180826w] The five grip dimples are gone — designer's call. They read as
     // clutter at rest rather than texture; the knob's gradient carries its
     // shape on its own.
@@ -38107,7 +38429,7 @@ const TIPS = {
     edge:      'A cube that flips over the edge is lost. The rest of you carries on.' + (CLOCK_RESETS ? ` Each costs ${CUBE_LOST_SEC} seconds.` : ''),   // [181026a]   // [260926k]
     misfit:    'The wrong shape on a slot: the cubes on it are destroyed and the rest of you carries on' + (WRONG_SLOT_TEN ? `. It costs ${WRONG_SLOT_SEC} seconds${WRONG_SLOT_PER_CUBE ? ' a cube' : ''}. All of you on it, and you start again.` : CLOCK_RESETS ? `, ${CUBE_LOST_SEC} seconds a cube. All of you on it, and you start again \u2014 ${FALL_COST_SEC} seconds for the last cube.` : '. All of you on it, and you start again.'),   // [051126g]   // [311026i] a single on it is a lost last cube, not 3 s   // [181026a]   // [260926k] · [290926q] · [171026d]
     diag:      'Swipe diagonally \u2014 corners count.',
-    gold:      `\u00d72 gold: land on it and the clock pays ${GOLD_PRICE_SEC} seconds \u2014 every point${GOLD_TIME_X2 ? ' and the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost,' : '') : ''} for ${GOLD_WINDOW_SEC} seconds is doubled, so score all you can while it runs.${GOLD_STAYS ? ' It stays until it leaves the bottom of the board.' : ` It fades ${GOLD_LIFE_SEC} seconds after it appears.`}`,   // [311026o]
+    gold:      GOLD_FREE ? `\u00d72 gold is free: every point for ${GOLD_WINDOW_SEC} seconds is doubled, and the time you gain too if your clock is under ${clockFmt(GOLD_TIME_LOW_SEC)} when you take it.` : `\u00d72 gold: land on it and the clock pays ${GOLD_PRICE_SEC} seconds \u2014 every point${GOLD_TIME_X2 ? ' and the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost,' : '') : ''} for ${GOLD_WINDOW_SEC} seconds is doubled, so score all you can while it runs.${GOLD_STAYS ? ' It stays until it leaves the bottom of the board.' : ` It fades ${GOLD_LIFE_SEC} seconds after it appears.`}`,   // [311026o]
     goldpoor:  `\u00d72 gold needs ${GOLD_MIN_CLOCK} seconds on the clock.`,   // [311026o]
     guide:     `After level 1 the Move Guide costs ${guideLookSec()} seconds a look, paid when the route appears.`,   // [311026p]
     clockreset: KEEP_TIME ? `Level 1 starts on ${clockFmt(LEVEL_START_SEC)}. Whatever is on the clock when the set is complete carries into the next level \u2014 all of it. The clock holds ${clockFmt(CLOCK_CEILING)}, and no level starts under ${clockFmt(CARRY_FLOOR_SEC)}.`   // [251026k]
@@ -39234,8 +39556,34 @@ const SHIFTER_RELIEF_FAM = '#94a3b8';
    green and red already do ([091126o]). The player's own night glow is unchanged. NO_BLEED = false, or ?bleed=1, puts the glows back. */
 const NO_BLEED = !/[?&]bleed=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 const GREEN_RED_STILL = !/[?&]greenred=glow(?:&|$)/.test((typeof location !== 'undefined' && location.search) || '');   // [091126o]
+/* ══ [131126a] OBJECTS AS IN THE KEY ART — Jake, 13 Nov, 11:17: "using the latest artwork, can you update the appearance of the game
+   objects accordingly in the actual game". In the key art (v13) the green, the red, the hourglass and the shifters are low, flat chips:
+   a flat face, no dome of light, and a crisp edge that catches the light along the top and left and falls into shade along the bottom
+   and right. Here the dome goes, the 3 px bevel becomes a fine OBJ_FLAT_EDGE px lit edge, and the own-colour outline stays. Same size,
+   same symbols, same wells. ?objflat=0 puts back the domed tiles of [091126m]. */
+const OBJ_FLAT = !/[?&]objflat=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const OBJ_FLAT_EDGE = 1.4;
+function objFlatEdge(sx, sy, size) {   // the chip's crisp edge: lit top-left, in shade bottom-right
+    if (!(size > OBJ_FLAT_EDGE * 4)) return;
+    const day = currentTheme === 'day';
+    const g = ctx.createLinearGradient(sx, sy, sx + size, sy + size);
+    g.addColorStop(0, day ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.7)');
+    g.addColorStop(0.42, 'rgba(255, 255, 255, 0.12)');
+    g.addColorStop(0.58, day ? 'rgba(2, 44, 84, 0.08)' : 'rgba(0, 0, 0, 0.1)');
+    g.addColorStop(1, day ? 'rgba(2, 44, 84, 0.4)' : 'rgba(0, 0, 0, 0.5)');
+    ctx.save();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+    ctx.fillStyle = g;
+    ctx.beginPath(); _appendScaledSq(sx, sy, size, 1); _appendScaledSq(sx, sy, size, (size - 2 * OBJ_FLAT_EDGE) / size); ctx.fill('evenodd');
+    ctx.restore();
+}
 function objRelief(sx, sy, size, fam) {   // drawn over the tile's body, under its symbol
     if (!OBJ_RELIEF) return;
+    if (OBJ_FLAT) {   // [131126a] flat face, own-colour outline, fine lit edge
+        try { faceOutline(sx, sy, size, fam); } catch (e) {}
+        objFlatEdge(sx, sy, size);
+        return;
+    }
     const day = currentTheme === 'day';
     ctx.save();
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
@@ -40137,6 +40485,9 @@ function slotKeepClear() {
 function draw() {
     ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0);   // [270726v] HiDPI
     try { slotKeepClear(); } catch (e) {}   // [121126c]
+    try { shifterAlternateTick(); } catch (e) {}   // [131126b]
+    try { hardGlassSweep(); } catch (e) {}   // [131126i]
+    try { lowClockTick(); } catch (e) {}   // [131126l]
     tiltTick();   // [081026q]
     replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
 
@@ -43852,6 +44203,7 @@ const REC_CAP = 8000;
 let recEvents = [];
 let recRunStart = 0;
 function rec(t, d) {
+    if (t === 'use' && d && GOLD_SAFE) game._goldGuardUntil = performance.now() + ((d.k === 'slip' || d.k === 'pivot') ? GOLD_GUARD_SHIFT_MS : GOLD_GUARD_MS);   // [131126j] a growth or a carry is not your flip
     if ((t === 'time' || t === 'rowtime') && d && d.sec > 0) ledgerTime(t === 'rowtime' ? 'row' : (d.src || 'other'), d.sec, t === 'rowtime' ? (d.n || 1) : 1);   // [241026c]
     try {
         if (recEvents.length >= REC_CAP) return;
@@ -44096,6 +44448,8 @@ function recStartRun() {
     recRunId = Date.now();
     recEvents = [];
     tipWant = {};   // [210826l] tip demand is per-run, like everything else here
+    try { _altSeen = new Map(); _altLast = null; } catch (e) {}   // [131126b] a new run, a new order
+    game._hardCarry = 0;   // [131126f]
     rec('run', { when: Date.now(), build: BUILD_VERSION, pace: SCROLL_PACE, price: TIME_PRICES_BITE ? TIME_PRICE_MUL : 1, glass: hourglassFace('t30'), mode: runMode(), drain: CLOCK_DRAIN, econ: CLOCK_RESETS ? { mistake: MISTAKE_PRICE, start: LEVEL_START_SEC, ...(CLOCK_CARRY ? { carry: KEEP_TIME ? ['all', CARRY_FLOOR_SEC] : [CARRY_MAX_SEC, CARRY_STEP_SEC, CARRY_MIN_CAP_SEC, CARRY_FLOOR_SEC] } : {}), limit: isFinite(CLOCK_CEILING) ? CLOCK_CEILING : 0, slot: SLOT_PAY_SEC, cube: CUBE_LOST_SEC, bonus: TIME_PTS_PER_SEC } : 'old', ramp: PENALTY_RAMP, ratchet: PENALTY_RATCHET });   // [071026y] · [081026d] · [081026I]
 }
 function recExport() {
@@ -45272,7 +45626,7 @@ function scoreGuideRows() {
         ...(fresh && CUBE_LOST_SEC ? [['A cube lost over the edge, off the bottom, or on a slot it doesn\u2019t fit', `\u2212${CUBE_LOST_SEC}s a cube`]] : []),
         ...(typeof SINGLE_BUYS_GROUND !== 'undefined' && SINGLE_BUYS_GROUND ? [['A single crossing a hole (the cell becomes ground)', `\u2212${CROSS_SEC}s a cell`]] : []),   // [251026h]
         ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
-        ...(GOLD_ON ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),   // [311026o]
+        ...(GOLD_ON && !GOLD_FREE ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),   // [311026o] · [131126m] free
         ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide (free on level 1)', `\u2212${guideLookSec()}s`]] : []),   // [311026p]
         ...(RED_TOLL_SEC === FALL_COST_SEC   // [181026f] one price: one line
             ? [...(DIVE_BUILDS ? [[L1_HOLES_FREE ? 'Your whole block into holes at once (the holes become ground; free on level 1)' : 'Your whole block into holes at once (the holes become ground)', `\u2212${HOLE_CUBE_SEC}s a cube`]] : DIVE_IS_MISTAKE && DIVE_FLAT ? [['Your whole block into holes at once (free on level 1)', DIVE_CUBE_SEC > 0 ? `\u2212${DIVE_CUBE_SEC}s a cube` : `\u2212${FALL_COST_SEC}s, flat`]] : []),   // [011126j] · [031126g]
@@ -45316,7 +45670,7 @@ function scoreGuideSections() {   // [031126s] four short groups, from the game'
         ...(RED_TOLL_SEC === FALL_COST_SEC ? [['A red with no cube to spare, or losing your last cube', `\u2212${FALL_COST_SEC}s`, step ? `free on level 1 \u2014 each one after the first in a level costs ${step}s more, never over ${cap}s` : 'free on level 1 \u2014 the same every time']]
                                            : [['A red with no cube to spare', `\u2212${RED_TOLL_SEC}s`], ['Losing your last cube', `\u2212${FALL_COST_SEC}s`, 'free on level 1']]),
         ['A refused flip deep in a hole', `\u2212${REFUSAL_SEC}s`],
-        ...(GOLD_ON ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),
+        ...(GOLD_ON && !GOLD_FREE ? [['Taking \u00d72 Gold', `\u2212${GOLD_PRICE_SEC}s`]] : []),
         ...(GUIDE_LOOK_SEC > 0 ? [['A look with the Move Guide', `\u2212${guideLookSec()}s`, 'free on level 1']] : []) ];
     const foot = fresh ? `The clock holds ${clockFmt(CLOCK_CEILING)}. Points are never taken away; penalties cost time \u2014 the time you carry into the next level.` : 'Points are never taken away. Penalties cost time.';
     return [{ head: 'POINTS', rows: points }, { head: 'COMBOS', rows: combos }, { head: 'TIME IN', rows: timeIn }, { head: 'TIME OUT', rows: timeOut, cls: ' pen' }].filter(x => x.rows.length).concat([{ foot }]);
@@ -47530,8 +47884,28 @@ function addStickAware(type, fn, opts) {
         return true;
     };
     pad.addEventListener('mousedown', e => {
+        // [131126h] a click on the knob: paused, hold to stop or let go to play
+        if (KNOB_BUTTON && e.button === 0 && game.running && (game.testDrive || stickOn)) {
+            const kp = stickClientToLogical(e.clientX, e.clientY);
+            if (game.paused) { if (knobHit(kp)) { _knobHold = { t0: performance.now(), mouse: true }; e.preventDefault(); } return; }
+            _mouseKnob = knobHit(kp) && !game.inputLocked ? { t0: performance.now(), x: e.clientX, y: e.clientY } : null;
+        }
         if (grab(e.clientX, e.clientY)) e.preventDefault();
     });
+    window.addEventListener('mouseup', e => {   // [131126h] the click's end, ahead of the stick's release
+        if (_knobHold && _knobHold.mouse) {
+            const short = performance.now() - _knobHold.t0 < KNOB_STOP_MS;
+            _knobHold = null;
+            if (short && game.running && game.paused) { rec('knob', { k: 'play', by: 'mouse' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; }
+            return;
+        }
+        const mk = _mouseKnob; _mouseKnob = null;
+        if (!mk || !game.running || game.paused || game.celebrating || game.introHold) return;
+        const still = Math.hypot(e.clientX - mk.x, e.clientY - mk.y) < 8;
+        if (still && !_stickTouch.dir && performance.now() - mk.t0 < Math.max(KNOB_TAP_MS, 400)) {
+            setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause', by: 'mouse' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; } }, 0);
+        }
+    }, true);
     // Touch too — the pad's touchstart routes through addStickAware to the stick
     // grab, so the lamp needs its own listener ahead of it.
     // Move and release listen on the WINDOW, not the pad: a drag that leaves the
@@ -47574,6 +47948,11 @@ addStickAware('touchstart', e => {
     // touchend fires the answer may have changed, which is the entire bug.
     game._touchBeganRunning = !!game.running;
     game._touchMoved = false;
+    // [131126c] paused, a finger on the knob: play on release, stop if held
+    if (KNOB_BUTTON && game.running && game.paused && (game.testDrive || stickOn)) {
+        const kp = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
+        if (knobHit(kp)) { _knobHold = { t0: performance.now() }; e.preventDefault(); return; }
+    }
     // If paused, a tap resumes the game (mobile has no spacebar)
     if (game.running && game.paused) {
         togglePause();
@@ -47587,6 +47966,8 @@ addStickAware('touchstart', e => {
         // [140826h] The whole pad grabs, and the touch point becomes the origin.
         const onPad = pt.x >= 0 && pt.y >= 0 && pt.x <= STICK_PAD_W && pt.y <= STICK_PAD_H;
         if (onPad) {
+            _stickTouch.knobTap = KNOB_BUTTON && knobHit(pt) && !game.inputLocked;   // [131126c] may yet be a tap on the knob
+            _stickTouch.pushed = false;
             _stickOrigin = { x: pt.x, y: pt.y };
             _stickTouch.active = true;
             _stickTouch.dir = null; _stickTouch.pendDir = null;
@@ -47610,6 +47991,11 @@ addStickAware('touchstart', e => {
 // enlarged stick would have been drawn perfectly and done nothing.
 addStickAware('touchmove', e => {
     game._touchMoved = true;   // [300726aj] any drag disqualifies the pause tap
+    if (_knobHold) {   // [131126c] slid off the knob: neither play nor stop
+        const kp = stickClientToLogical(e.touches[0].clientX, e.touches[0].clientY);
+        if (!knobHit(kp)) _knobHold = null;
+        e.preventDefault(); return;
+    }
     if (!game.running || game.paused) return;
     
     // STICK DRIVE — knob follows the finger; 8-way commits mirror the swipe
@@ -47630,7 +48016,7 @@ addStickAware('touchmove', e => {
             stopDrag();
             game._freshPush = false;   // [061026q] the knob back in the middle is a let-go
         } else if (_stickTouch.dir === null) {
-            _stickTouch.dir = sDir;
+            _stickTouch.dir = sDir; _stickTouch.pushed = true;   // [131126c] a push: never a tap
             move(sDir);
         } else if (sDir === _stickTouch.dir) {
             _stickTouch.pendDir = null;
@@ -47725,6 +48111,12 @@ addStickAware('touchend', e => {
     // Tap-to-start is kept for touches that genuinely begin while no run is in
     // progress — the welcome screen — and both stopped screens have their own
     // explicit button besides.
+    if (_knobHold) {   // [131126c] released before the stop: play on
+        const short = performance.now() - _knobHold.t0 < KNOB_STOP_MS;
+        _knobHold = null;
+        if (short && game.running && game.paused) { rec('knob', { k: 'play' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; }
+        e.preventDefault(); return;
+    }
     if (!game.running) {
         if (!game._touchBeganRunning) startGame();
         game._touchBeganRunning = false;
@@ -47745,8 +48137,12 @@ addStickAware('touchend', e => {
                    !game.celebrating && tapDur < 260 &&
                    (game.paused || !game.inputLocked);
 
+    // [131126c] a quick tap on the knob, no push: pause
+    const knobTap = _stickTouch.active && _stickTouch.knobTap && !_stickTouch.pushed && tapDur < KNOB_TAP_MS && !game.paused && !game.celebrating && !game.introHold;
     // STICK RELEASE — knob springs home, auto-repeat stops.
     if (_stickTouch.active) {
+        if (knobTap) { setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; } }, 0); }
+        _stickTouch.knobTap = false;
         _stickTouch.active = false;
         _stickTouch.dir = null; _stickTouch.pendDir = null;
         _stickTouch.lockDir = null;
@@ -48631,7 +49027,9 @@ function glassModesLine() {   // [101126w] what the hourglasses pay on each diff
     if (!(typeof MODES_ON !== 'undefined' && MODES_ON && typeof MODE_GLASS !== 'undefined')) return '';
     const nm = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, me = runMode();
     const others = ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${glassPair(m).replace(/,$/, '')} on ${nm[m]}`);   // [101126ag]
-    return ` That is on ${nm[me]}; they pay ${others.join(', ')}.` + (MED_LATE_FROM <= 10 && MED_LATE_BIG !== MODE_GLASS.medium[0] ? ` On Medium a big one pays ${MED_LATE_BIG} s from level ${MED_LATE_FROM}.` : '');   // [121126h]
+    return ` That is on ${nm[me]}; they pay ${others.join(', ')}.` + (MED_LATE_FROM <= 10 && MED_LATE_BIG !== MODE_GLASS.medium[0] ? ` On Medium a big one pays ${MED_LATE_BIG} s from level ${MED_LATE_FROM}.` : '')   // [121126h]
+        + (HARD_NO_GLASS ? ` On Hard there are no hourglasses at all; a row pays ${Math.round(8 * HARD_ROW_K[0])} s on levels 1–5, ${Math.round(8 * HARD_ROW_K[1])} s on 6–8 and ${Math.round(8 * HARD_ROW_K[2])} s on 9–10.${HARD_LATE_PAY < 1 ? ` From level ${HARD_LATE_PAY_FROM} everything that gives time gives ${Math.round((1 - HARD_LATE_PAY) * 100)}% less.` : ''}` : '')   // [131126i] · [131126p]
+        + (!HARD_NO_GLASS && (HARD_PAY[0] < 1 || HARD_PAY[1] < 1 || HARD_PAY[2] < 1) ? ` On Hard everything that gives time gives less: ${Math.round((1 - HARD_PAY[0]) * 100)}% less on levels 1–5, ${Math.round((1 - HARD_PAY[1]) * 100)}% on 6–8, ${Math.round((1 - HARD_PAY[2]) * 100)}% on 9–10.` : '');   // [131126f] · [131126g]
 }
 const TUT = [
   { ch: 'FLIP', title: 'STEER', line: 'Eight directions — your block flips on an edge or a corner. It never slides.', compass: true,
@@ -48726,11 +49124,11 @@ const TUT = [
             { k: 'settake', cube: [3, 1], set: 0, to: [[2, 1]], type: 'single', say: 'NOT ALL OF IT · −1 CUBE' },
             { k: 'wait' }, { k: 'wait' } ] },
   /* [311026o] ×2 GOLD, TAUGHT: a single lands on the coin (the clock pays), wears the gold rim, and its next row says POINTS ×2. */
-  ...(GOLD_ON ? [{ ch: 'FIT', title: '\u00d72 GOLD', line: `From level ${GOLD_FROM}, twice a level, \u00d72 gold ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried \u2014 dig it up, then land on it' : 'sits on an island. Land on it'} and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point is doubled \u2014 rows, slots, combos, the set${GOLD_TIME_X2 ? ' \u2014 and so is the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost' : '') + '' : ''}. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ', and stays until it leaves the bottom of the board' : `, and fades ${GOLD_LIFE_SEC} seconds after it appears`}.`,
+  ...(GOLD_ON ? [{ ch: 'FIT', title: '\u00d72 GOLD', line: GOLD_FREE ? `From level ${GOLD_FROM}, twice a level, a \u00d72 gold coin ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried; once it is dug up, flip onto it' : 'sits on an island; flip onto it'}. It is free: for the next ${GOLD_WINDOW_SEC} seconds every point is doubled, and if your clock is under ${clockFmt(GOLD_TIME_LOW_SEC)} when you take it, the time you gain is doubled too.${GOLD_STAYS ? ' It stays until it leaves the bottom of the board.' : ` It fades ${GOLD_LIFE_SEC} seconds after it appears.`}` : `From level ${GOLD_FROM}, twice a level, \u00d72 gold ${(typeof DIG_MODE !== 'undefined' && DIG_MODE) ? 'is buried \u2014 dig it up, then land on it' : 'sits on an island. Land on it'} and the clock pays ${GOLD_PRICE_SEC} seconds; for the next ${GOLD_WINDOW_SEC} seconds every point is doubled \u2014 rows, slots, combos, the set${GOLD_TIME_X2 ? ' \u2014 and so is the time the clock gains' + (GOLD_TIME_CAPPED ? ', up to the ' + GOLD_TIME_CAP + ' seconds it cost' : '') + '' : ''}. It needs ${GOLD_MIN_CLOCK} seconds on the clock${GOLD_STAYS ? ', and stays until it leaves the bottom of the board' : `, and fades ${GOLD_LIFE_SEC} seconds after it appears`}.`,
     showClock: true,
     init: { body: { cells: [[0, 2]], type: 'single', par: 0 }, tiles: { '2,2': 'gold' }, clock: 80, walked: [[0, 1], [1, 1], [3, 1], [4, 1], [5, 1], [6, 1]] },   // [011126l] above the floor
     acts: [ { k: 'flip', dir: 'E', to: [[1, 2]] }, { k: 'flip', dir: 'E', to: [[2, 2]] },
-            { k: 'gold', g: [2, 2], toll: GOLD_PRICE_SEC, say: `\u2212${GOLD_PRICE_SEC}s \u00b7 \u00d72` },
+            { k: 'gold', g: [2, 2], toll: GOLD_PRICE_SEC, say: GOLD_FREE ? '\u00d72 FOR ' + GOLD_WINDOW_SEC + 's' : `\u2212${GOLD_PRICE_SEC}s \u00b7 \u00d72` },
             { k: 'flip', dir: 'N', to: [[2, 1]] }, { k: 'rowclear', row: 1, cube: [4, 3], sec: ROW_RUN_SEC, say: `ROW +${ROW_RUN_SEC}s \u00b7 POINTS \u00d72` },
             { k: 'wait' } ] }] : []),
   { ch: 'FIT', title: 'TIPS', line: 'Tap the bulb in the row of round buttons. The first time you meet something new, a tip appears beside the joystick.',   // [290926r]

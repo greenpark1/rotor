@@ -2956,6 +2956,9 @@ body.theme-day .name-more { color: #334155; border-color: rgba(100, 116, 139, 0.
 .cert-line { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 1.55; color: #0f172a; }
 .cert-name { align-self: stretch; overflow: hidden; font-family: 'Unbounded', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: 0.04em; text-transform: uppercase; color: #0284c7; line-height: 1.15; margin-top: 6px; white-space: nowrap; }
 .cert-honour { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 13px; color: #0369a1; margin-bottom: 4px; }
+.cert-origin { font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.45; color: #334155; margin: 6px auto 8px; max-width: 30em; }   /* [161126f] */
+.cert-origin b { color: #0369a1; font-weight: 700; }
+.cert-origin div + div { margin-top: 3px; }
 .cert-seal { width: 84px; height: 84px; margin: 6px 0 2px; }
 .cert-seal svg { width: 100%; height: 100%; }
 .cert-seal path { fill: #0284c7; }
@@ -3680,6 +3683,11 @@ body.theme-day .play-home-btn, body.theme-day .play-cog-btn {
 body.test-drive .play-home-btn, body.test-drive .play-cog-btn, body.test-drive .play-theme-btn { display: none; }
 .theme-btn.play-theme-btn { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: auto; right: 66px; z-index: 40; }   /* [251026i] beside the cog */
 /* [031126l] five across the top, evenly: slot i of 0..4 sits at 14px + i quarters of the width left between the two ends */
+/* [171126a] clean capture */
+body.words-off #coachTip { display: none !important; }
+body.board-only.in-play .hud.set-only-hud, body.board-only.in-play #stickPad, body.board-only.in-play #coachTip,
+body.board-only.in-play .play-home-btn, body.board-only.in-play .play-cog-btn, body.board-only.in-play .theme-btn.play-theme-btn,
+body.board-only.in-play .play-corner { visibility: hidden !important; }
 body.top-five { --tf-w: 40px; --tf-left: 14px; --tf-top: calc(12px + env(safe-area-inset-top, 0px)); --tf-step: calc((100vw - 28px - var(--tf-w)) / 5); }
 body.top-five.in-play .play-home-btn, body.top-five.in-play .play-cog-btn, body.top-five.in-play .theme-btn.play-theme-btn, body.top-five.in-play .play-corner {
     top: var(--tf-top); bottom: auto; right: auto; width: var(--tf-w); height: var(--tf-w); }
@@ -4109,6 +4117,10 @@ body.theme-day .level-tally.inv-card .tally-total, body.theme-day .level-tally.i
 .tally-row.inv .inv-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 4px; border-bottom: 2px solid rgba(125, 211, 252, 0.6); }
 .tally-row.inv .inv-h { font-size: 13px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; color: #7dd3fc; }
 .tally-row.inv .inv-head .tally-pts { font-size: clamp(18px, 5.2cqw, 20px); font-weight: 900; min-width: 0; }
+.tally-row.inv .inv-hr { display: inline-flex; align-items: baseline; gap: 6px; }   /* [161126h] the time's seconds in its header */
+.tally-row.inv .inv-hs { font-size: clamp(18px, 5.2cqw, 20px); font-weight: 900; color: #7dd3fc; font-variant-numeric: tabular-nums; }
+.tally-row.inv .inv-hdot { font-weight: 900; opacity: 0.55; }
+body.theme-day .tally-row.inv .inv-hs { color: #0284c7; }
 .tally-row.inv .inv-line { display: flex; align-items: center; gap: 8px; padding: clamp(4px, 1.3cqw, 7px) 0; border-bottom: 1px solid rgba(148, 163, 184, 0.14); }
 .tally-row.inv .inv-line:last-child { border-bottom: 0; }
 .tally-row.inv .inv-lab { width: 42%; flex: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: #cbd5e1; }
@@ -4969,6 +4981,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
             <div class="cert-line">This is to certify that, on<br><b id="certGiven"></b>,<br>ROTOЯ named the player of this device</div>
             <div class="cert-name" id="certName"></div>
             <div class="cert-honour" id="certHonour"></div>
+            <div class="cert-origin" id="certOrigin" hidden></div>
             <div class="cert-line">and recognises the player by that name<br>throughout the world of ROTOЯ.</div>
             <div class="cert-seal" aria-hidden="true"><svg viewBox="0 0 100 100"><path id="certCog" d=""/><circle cx="50" cy="50" r="31" class="cert-seal-in"/><text x="50" y="59" text-anchor="end">R</text><text x="50" y="59" text-anchor="end" transform="translate(100 0) scale(-1 1)">R</text></svg></div>
             <div class="cert-no">ISSUED BY ROTOЯ · REGISTER No. <span id="certNo"></span></div>
@@ -5472,11 +5485,24 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                 <input type="checkbox" id="setHints" onchange="settingHints(this.checked)">
             </label>
             <label class="settings-row">
-                <!-- [060826m] Off by default on nothing — shown to everyone, but
-                     the API simply does not exist on iOS Safari, so the control
-                     is honest about doing nothing there rather than hidden. -->
-                <span>Vibration</span>
+                <!-- [060826m] Off by default on nothing — shown to everyone · [161126c] on iPhone it taps the Taptic Engine where iOS allows -->
+                <span>Vibration (phone)</span>
                 <input type="checkbox" id="setHaptics" checked onchange="settingHaptics(this.checked)">
+            </label>
+            <!-- [121126k] controller rumble · [161126c] beside the phone's, on every device -->
+            <label class="settings-row">
+                <span>Controller rumble</span>
+                <input type="checkbox" id="setRumble" onchange="settingRumble(this.checked)">
+            </label>
+            <!-- [171126a] for screen recordings and screenshots -->
+            <div class="settings-sub" style="margin-top:10px;opacity:.75;font-size:11px;letter-spacing:1.5px;font-weight:700">RECORDING</div>
+            <label class="settings-row">
+                <span>Words on the board <small style="opacity:.6">(key V)</small></span>
+                <input type="checkbox" id="setWords" checked onchange="settingWords(this.checked)">
+            </label>
+            <label class="settings-row">
+                <span>Board only: hide panel, buttons, joystick <small style="opacity:.6">(key U)</small></span>
+                <input type="checkbox" id="setBoardOnly" onchange="settingBoardOnly(this.checked)">
             </label>
             <label class="settings-row">
                 <span>Tips</span>
@@ -5499,11 +5525,6 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
                     <button id="setStickRight" class="settings-seg" onclick="settingStickSide('right')">Right ▶</button>
                 </div>
             </div>
-            <!-- [121126k] controller rumble -->
-            <label class="settings-row">
-                <span>Controller rumble</span>
-                <input type="checkbox" id="setRumble" onchange="settingRumble(this.checked)">
-            </label>
             <!-- [121126a] glide -->
             <label class="settings-row">
                 <span>Glide: click the board, then glide (trackpad)</span>
@@ -8640,6 +8661,12 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // 190926-1142: WORKING PRACTICES rewritten — no code change. The note told
 // any session to treat GitHub as the source of truth; the Claude project and
 // its dated chats are, and the game is never fetched from GitHub to edit.
+// 191126-1520: SET CELEBRATION. Jake, 19 Nov, 14:44–15:19. [191126a] A completed set plays the new celebration (bell run, C major payoff, sparkles) in place of the applause clatter; fireworks pops and the finale unchanged. ?setcheer=0.
+// 181126-1847: FLIP ONTO GREEN. Jake, 18 Nov, 18:46. [181126a] A move that lands beside a green and grows the shape now shows its flip (it jumped). ?greenflip=0.
+// 171126-1858: CLEAN CAPTURE. Jake, 17 Nov, 18:56. [171126a] Settings → RECORDING: Words on the board (V, ?words=0) hides every word drawn over the play and the tips; Board only (U, ?boardonly=1) hides the panel, buttons and joystick too.
+// 161126-1451: TIME IN SECONDS. Jake, 16 Nov, 14:49–14:51. [161126h] The level card's Time header shows the seconds the level earned (+104s), and the points too when time turns into points (+104s · +2,300). ?timehead=0.
+// 161126-1442: GLASS IN VIEW. Playdata 117 (Jake, 14:41): Hard's four hourglasses were laid but buried by dig mode at once and swept. [161126g] They stay in view.
+// 161126-0715: NAMES AND CLICKS. Jake, 16 Nov, 06:58. [161126a] A single on a turn tile uses it up: the tile comes back as a step (it stayed a turn for ever). [161126b] The joystick's play / pause / stop click and buzz; an edge round each symbol. [161126c] Rumble into a hole and when a cube breaks off; Firefox pads; iPhone taps where iOS allows; Vibration and Controller rumble together in Settings. [161126d] Hard: four small hourglasses a level, 5 s each. [161126e] A set you scroll past is dealt again at once. [161126f] The name certificate says where the name comes from.
 // 131126-1602: HARD TO THE END. Playdata 116 (Jake, 16:00): Hard won with the clock near the top from level 7. [131126p] On Hard (no hourglasses) every second the clock gains from level 7 pays 75% (whole seconds, fractions carried); the rules line says so. ?hardlatepay= ?hardlatepayfrom=.
 // 131126-1527: SWAP AND RANK. Jake, 13 Nov, 15:26. [131126n] A used shifter always comes back as the other kind from itself (turn → step → turn), not from the last shifter seen (?shiftown=0). [131126o] The end card shows RANK (cog, name, place, RANK UP) beside LEVEL instead of MEDAL + YOUR RANK; the replay bar and clip wear the rank (?rankonly=0).
 // 131126-1506: FREE GOLD. Jake, 13 Nov, 15:01–15:05. [131126m] ×2 gold is free (no 15 s, no 0:25 needed): 40 s of double points for everyone, and double time too if the clock is under 1:00 when it is taken. Words in the rules, tip, lesson and price list. ?goldfree=0, ?goldtimelow=.
@@ -9659,7 +9686,7 @@ try { if (sessionStorage.getItem('rotor_opening_seen')) { var _o = document.getE
 // shifter's sweep marks every ordinary floor cell it passes over as covered,
 // not only the holes it fills — so the arm's whole path reads as walked, and
 // can finish a row.
-const BUILD_VERSION = '131126-1602 ROTOЯ · HARD TO THE END';
+const BUILD_VERSION = '191126-1520 ROTOЯ · SET CELEBRATION';
 /* [091026x] "in the 'how to play' section the grid and the game objects do not need a drop shadow" (Jake, 9 Oct, 23:40).
    The lesson board and the legend's five tiles are drawn flat: no shadow, glow or side under or round a cell, a tile or
    the cube (the greens' and hourglasses' glows, the shifters' grey shadow, the cube's glow and its slab side, the
@@ -11407,6 +11434,25 @@ const HARD_PAY = (() => { const m = /[?&]hardpay=([\d.]+),([\d.]+),([\d.]+)/.exe
    away, it just pays less. ?hardlatepay= (1 = off), ?hardlatepayfrom=. */
 const HARD_LATE_PAY = econDial('hardlatepay', 0.75, 0.3, 1);
 const HARD_LATE_PAY_FROM = Math.round(econDial('hardlatepayfrom', 7, 1, 10));
+/* ══ [171126a] CLEAN CAPTURE — Jake, 17 Nov, 18:56: "can you build in a text on / text off toggle / disable overlay so that I am able to
+   record screen shots with out text being captured?" Two switches, each in Settings (under RECORDING), as an address setting and
+   as one key while you play:
+   · WORDS ON THE BOARD (default on; ?words=0; key V): off, nothing is written over the play — the floating words and seconds
+     (+8s, ×2 FOR 40s, MAKE ROWS, NOT ENOUGH TIME…), the ×2 banner, the seconds on the rows' gaps, a shifter's price, the tips.
+     The panel (clock, score, level, sets) stays. Kept between visits (rotor_words).
+   · BOARD ONLY (default off; ?boardonly=1; key U): the panel, the round buttons, the joystick and the tip bubble are hidden
+     (they keep their places, so the board does not move or resize). Not kept: a reload brings them back, so a player cannot
+     lose the controls. Play goes on as normal underneath; keys and a pad still steer. */
+let WORDS_ON = !/[?&]words=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || '')) && (() => { try { return localStorage.getItem('rotor_words') !== '0'; } catch (e) { return true; } })();
+let BOARD_ONLY = /[?&]boardonly=1(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function applyCapture() {
+    try { document.body.classList.toggle('words-off', !WORDS_ON); document.body.classList.toggle('board-only', BOARD_ONLY); } catch (e) {}
+    try { const w = document.getElementById('setWords'); if (w) w.checked = WORDS_ON; const b = document.getElementById('setBoardOnly'); if (b) b.checked = BOARD_ONLY; } catch (e) {}
+    if (!WORDS_ON) { try { floats.length = 0; } catch (e) {} try { const t = document.getElementById('coachTip'); if (t) t.classList.remove('show'); } catch (e) {} }
+}
+function settingWords(on) { WORDS_ON = !!on; try { localStorage.setItem('rotor_words', on ? '1' : '0'); } catch (e) {} applyCapture(); }
+function settingBoardOnly(on) { BOARD_ONLY = !!on; applyCapture(); }
+try { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyCapture); else setTimeout(applyCapture, 0); } catch (e) {}
 function hardShare() {   // what Hard pays of a second on this level
     if (hardNoGlass()) return (game && !game.testDrive && typeof advancedRound !== 'undefined' && advancedRound >= HARD_LATE_PAY_FROM) ? HARD_LATE_PAY : 1;   // [131126i] no hourglasses: everything else pays in full · [131126p] less from level 7
     if (runMode() !== 'hard' || typeof advancedRound === 'undefined' || (game && game.testDrive)) return 1;
@@ -11438,17 +11484,54 @@ function hardNoGlass() { return HARD_NO_GLASS && typeof runMode === 'function' &
    ?hardrows=a,b,c. */
 const HARD_ROW_K = (() => { const m = /[?&]hardrows=([\d.]+),([\d.]+),([\d.]+)/.exec(((typeof location !== 'undefined' && location.search) || '')); return m ? [+m[1], +m[2], +m[3]] : [1, 1.25, 1.5]; })();
 function hardRowSec() { const r = (typeof advancedRound !== 'undefined') ? advancedRound : 1; const k = r >= 9 ? HARD_ROW_K[2] : r >= 6 ? HARD_ROW_K[1] : HARD_ROW_K[0]; return Math.round(rowSecOld() * k); }
+/* ══ [161126d] HARD: FOUR SMALL HOURGLASSES A LEVEL — Jake, 16 Nov, 06:58: "Add in 4 x 5 second hourglasses per level in hard mode".
+   Hard still deals no hourglasses of its own (none on the board, none buried, none from the rows); instead it lays
+   HARD_GLASS_N (4) small ones a level, HARD_GLASS_SEC (5) s each: the first HARD_GLASS_FIRST_MS (8 s) into the level, the next
+   at least HARD_GLASS_GAP_MS (20 s) after the last one was laid, never two on the board at once, 3–7 rows ahead on floor you can
+   reach (as the rows' banked ones were). One missed is gone: the level still has only four. From level 7 they pay as everything
+   does on Hard ([131126p]: 75%). Replayed on playdata 116 with all four taken every level: lows 0:27, 0:55, 1:08, 1:08, 1:42,
+   2:02, 1:09, 1:45, 1:21, 1:11 (on 1602: 0:22, 0:35, 0:13, 0:08, 0:15, 0:34, 0:24, 0:49, 0:57, 0:43) — the time carries, so it
+   adds up. With the 75% from level 5 at 70%: 0:27, 0:55, 1:08, 1:08, 1:12, 0:59, 0:28, 0:44, 0:29, 0:17 (offered, not built:
+   ?hardlatepay=0.7&hardlatepayfrom=5). ?hardglassn= ?hardglasssec=. */
+const HARD_GLASS_N = Math.round(econDial('hardglassn', 4, 0, 12)), HARD_GLASS_SEC = Math.round(econDial('hardglasssec', 5, 1, 30));
+const HARD_GLASS_FIRST_MS = 8000, HARD_GLASS_GAP_MS = 20000;
+/* [161126g] THEY WERE BURIED — Jake, 16 Nov, 14:41 (playdata 117): "i didnt get any hour glasses appearing in any of the levels". 0715 laid
+   all four on every level (spawn events at about 9, 29, 50 and 70 s), but in dig mode digHide() buries every hourglass the board
+   shows the moment it appears, and Hard's sweep then deletes buried hourglasses — gone within a frame. My test ran with ?dig=0, so it
+   passed. Now each of the four is marked as shown (digShown, like the rows' banked ones), so it stays in view and is never buried. */
+let hardGlassKeys = new Set();
+function hardGlassTick() {
+    if (!hardNoGlass() || !game.running || !HARD_GLASS_N || game.testDrive || game._replay || game.paused || game.celebrating || game.introHold || !game._lv) return;
+    const L = game._lv, now = nowPlay();
+    if (L.hgT0 === undefined) { L.hgT0 = now; L.hgN = 0; L.hgAt = -1e9; }
+    for (const k of [...hardGlassKeys]) if (world[k] !== 't10' || +k.split(',')[1] > Math.floor(game.cameraY) + VIEW_H) hardGlassKeys.delete(k);
+    if (L.hgN >= HARD_GLASS_N || hardGlassKeys.size || now - L.hgT0 < HARD_GLASS_FIRST_MS || now - L.hgAt < HARD_GLASS_GAP_MS) return;
+    const camI = Math.floor(game.cameraY), reach = reachableSpawnSet(camI, camI + VIEW_H), cands = [];
+    for (let d = 3; d <= 7; d++) for (let x = 0; x < VIEW_W; x++) {
+        const y = game.playerY - d, k = `${x},${y}`;
+        if (y < camI || world[k] !== undefined || !reach.has(k) || islandCells.has(k)) continue;
+        if (slots.some(sl => !sl.claimed && sl.keys.has(k))) continue;
+        cands.push({ x, y, k });
+    }
+    if (!cands.length) return;
+    const c = cands[(Math.random() * cands.length) | 0];
+    world[c.k] = 't10'; hardGlassKeys.add(c.k); L.hgN++; L.hgAt = now;
+    try { digHidden.delete(c.k); digShown.add(c.k); } catch (e) {}   // [161126g] in view, never buried
+    rec('spawn', { k: 't10', src: 'hardglass', n: L.hgN, cell: c.k });
+    addBurst(c.x * CELL + CELL / 2, (c.y - game.cameraY) * CELL + CELL / 2, '#fcd34d');
+}
 function hardGlassSweep() {   // every frame on Hard: no hourglass on the board ahead of you or in the ground
     if (!hardNoGlass() || !game.running) return;
+    try { hardGlassTick(); } catch (e) {}   // [161126d] the four it lays
     const ci = Math.floor(game.cameraY);
     for (let y = ci - 3; y <= ci + VIEW_H + 14; y++) for (let x = 0; x < VIEW_W; x++) {
         const k = `${x},${y}`;
-        if (isTimeCell(world[k])) { delete world[k]; try { rowBankKeys.delete(k); } catch (e) {} rec('noglass', { at: k }); }
+        if (isTimeCell(world[k]) && !hardGlassKeys.has(k)) { delete world[k]; try { rowBankKeys.delete(k); } catch (e) {} rec('noglass', { at: k }); }   // [161126d] its own four stay
     }
     for (const [k, h] of [...digHidden]) if (h && isTimeCell(h.v)) { digHidden.delete(k); digDug.delete(k); }
 }
 // [131126i] Hard names none
-function glassPair(m) { if (m === 'hard' && HARD_NO_GLASS) return 'nothing, there are none,'; const g = MODE_GLASS[m]; return g[1] > 0 ? `${g[0]} and ${g[1]}` : `${g[0]}, no small ones,`; }   // [101126ag] for the words
+function glassPair(m) { if (m === 'hard' && HARD_NO_GLASS) return HARD_GLASS_N ? `${HARD_GLASS_N} small ones of ${HARD_GLASS_SEC} a level,` : 'nothing, there are none,'; const g = MODE_GLASS[m]; return g[1] > 0 ? `${g[0]} and ${g[1]}` : `${g[0]}, no small ones,`; }   // [101126ag] for the words
 const MODE_KEY = 'rotor_mode', MODE_DAILY = 'medium';
 let modePick = (() => {
     try { const m = /[?&]mode=(easy|medium|hard)(?:&|$)/.exec(((typeof location !== 'undefined' && location.search) || '')); if (m) return m[1]; } catch (e) {}
@@ -11490,6 +11573,7 @@ function modeRuns(m) { return runs.filter(r => modeOf(r) === m); }
 function modeBest(m) { let b = 0; for (const r of runs) if (modeOf(r) === m) b = Math.max(b, r.s || 0); return b; }
 function trimRuns(list) { const n = {}; return list.filter(r => { const m = modeOf(r); n[m] = (n[m] || 0) + 1; return n[m] <= RUNS_KEEP; }); }   // ten a mode
 function hourglassFace(w, key) {   // what an hourglass is worth, before the ceiling — one place for every payer · [061126u] by the mode
+    if (key && typeof hardGlassKeys !== 'undefined' && hardGlassKeys.has(key)) return HARD_GLASS_SEC;   // [161126d] Hard's own four
     if (CLOCK_RESETS && MODES_ON && !(key && typeof rowBankKeys !== 'undefined' && rowBankKeys.has(key))) {
         const g = MODE_GLASS[runMode()] || MODE_GLASS.hard;   // [121126h] a big one on Medium's late levels: MED_LATE_BIG
         if (w === 't30') return medLate() ? MED_LATE_BIG : g[0]; if (w === 't10') return g[1]; if (w === 't45') return Math.round(g[0] * 1.5);
@@ -12423,7 +12507,8 @@ const HAPTICS = {
     fire(pattern, minGap = 60) {
         // [121126k] the pad has its own switch, not the phone's Haptics
         if (typeof padRumble === 'function' && !(typeof game !== 'undefined' && game && game.testDrive)) { const n = performance.now(); if (n - (this._padLast || 0) >= minGap) { this._padLast = n; padRumble(pattern); } }   // [111126b] the pad too
-        if (!this.on || !this.ok()) return;
+        if (!this.on) return;
+        if (!this.ok()) { if (IOS_TAP && iosTapOk() && !(typeof game !== 'undefined' && game && game.testDrive)) { const now = performance.now(); if (now - this.last >= minGap) { this.last = now; iosTap(pattern); } } return; }   // [161126c]
         if (typeof game !== 'undefined' && game && game.testDrive) return;
         const now = performance.now();
         // A floor between buzzes. Without it, holding a direction against a wall
@@ -12433,6 +12518,32 @@ const HAPTICS = {
         try { navigator.vibrate(pattern); } catch (e) {}
     }
 };
+/* ══ [161126c] RUMBLE — Jake, 16 Nov, 06:58: "add a rumble for when a player flips into a void, bumps into the sides, top or bottom of
+   the grid or when a cube breaks off from the player shape" and "Add rumble to controllers across platforms and a toggle in the
+   settings menu". Bumping a side, the top or the bottom already buzzed (HAPTIC.bump). New: a cube into a hole (HAPTIC.voidIn,
+   also a single crossing one) and a cube breaking off (HAPTIC.breakOff, off an edge, the bottom, a red or the wrong slot).
+   Controllers: Chrome, Edge, Safari 16.4+ and the Steam build's browser shake a pad through its vibrationActuator; Firefox's
+   older hapticActuators.pulse is tried too (padRumble). iPhone: Safari has no vibration call at all. Since iOS 18 a switch
+   checkbox clicks the Taptic Engine when it is toggled, so where vibrate() is missing a hidden switch is toggled instead (iosTap,
+   one tap per pulse, up to three) — best effort: iOS allows it only shortly after a touch, so most of play buzzes and a few
+   late ones may not. Settings now has both switches together under RUMBLE: "Vibration (phone)" and "Controller rumble" (shown
+   on every device). ?iostap=0. */
+const IOS_TAP = !/[?&]iostap=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+let _iosSw = null;
+function iosTapOk() { try { return /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); } catch (e) { return false; } }
+function iosTap(pattern) {
+    try {
+        if (!_iosSw) {
+            const l = document.createElement('label'); l.setAttribute('aria-hidden', 'true');
+            l.style.cssText = 'position:fixed;left:-200px;top:-200px;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+            const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+            l.appendChild(i); document.body.appendChild(l); _iosSw = l;
+        }
+        const arr = Array.isArray(pattern) ? pattern : [pattern || 10];
+        let t = 0;
+        for (let k = 0; k < arr.length && k < 6; k += 2) { setTimeout(() => { try { _iosSw.click(); } catch (e) {} }, t); t += (arr[k] || 10) + (arr[k + 1] || 0); }
+    } catch (e) {}
+}
 // The vocabulary, matched to what each event COSTS — the same principle the
 // warning tiers use, so touch agrees with sound rather than inventing its own
 // scale. Duration is the whole language here: a phone motor cannot do pitch.
@@ -12446,6 +12557,10 @@ const HAPTIC = {
     stir:     [8],               // [061126h] the ground stirs
     find:     [16, 30, 16, 30, 34],   // [061126h] it opens: a find
     heart:    [50, 60, 90],      // a heart gone — the longest thing in the set
+    knob:     [14],              // [161126b] the joystick's play / pause / stop — a firm tick
+    knobStop: [20, 40, 30],      // [161126b] the run stopped
+    voidIn:   [26, 30, 18],      // [161126c] a cube into a hole — a dull double thud
+    breakOff: [34, 40, 22],      // [161126c] a cube breaks off the shape
     levelUp:  [22, 40, 22, 40, 60]
 };
 /* ══ [051126m] A SOUND BUTTON ON EVERY SCREEN — Jake, 5 Nov, 13:56: "add a mute button on all screens". Music and effects had their own
@@ -14359,6 +14474,20 @@ const sfx = {
     // [reward · event] [300926g] PIECE IN — the piece seated in its place in the
     // HUD set: a soft thunk, then "well — done", a rising fourth voiced like a
     // small bell (fundamental + octave + twelfth), a step higher each piece.
+    // [reward · major] [191126a] SET COMPLETE — the celebration (Jake, 19 Nov, 14:44 "i need a celebratory sfx for when a set is
+    // complete"; 15:19 "ensure that these sound bites are incorporated into the build"). A rising bell run C–E–G–C–E, then the
+    // payoff: a high G bell over a full C major chord and a low root, a bright sweep up, a shower of sparkles and a high shimmer
+    // (about 1.7 s). The same bell as the slot chimes. In the game the lock-in thump has already played at the claim; the
+    // trailer file (72a) starts with it.
+    setCelebrate: () => {
+        const N = NOTE, R = WAVE.reward;
+        const bell = (f, d, v) => { playTone(f, d, R, v); playTone(f * 2, d * 0.7, 'sine', v * 0.32); playTone(f * 3, d * 0.45, 'sine', v * 0.12); };
+        [N.C5, N.E5, N.G5, N.C6, N.E6].forEach((f, i) => setTimeout(() => bell(f, 0.18, VOL.event * (0.7 + 0.07 * i)), i * 75));
+        setTimeout(() => { bell(N.G6, 0.9, VOL.event * 0.9); [N.C5, N.E5, N.G5, N.C6].forEach(f => playTone(f, 1.3, 'triangle', VOL.event * 0.42)); playTone(N.C4 / 2, 1.1, 'sine', VOL.event * 0.55); }, 380);
+        setTimeout(() => playSweep(N.G5, N.C6 * 2, 0.45, 'sine', VOL.ui * 0.5), 360);
+        for (let k = 0; k < 14; k++) setTimeout(() => playTone(2200 + Math.random() * 2600, 0.04, 'square', VOL.ui * (0.10 + Math.random() * 0.12)), 440 + k * 55 + Math.random() * 30);
+        setTimeout(() => { playTone(N.E6, 0.7, 'sine', VOL.ui * 0.28); playTone(N.C6 * 2, 0.6, 'sine', VOL.ui * 0.2); }, 720);
+    },
     pieceIn: (n = 1) => {
         const L = PIECE_LADDER, i = Math.max(0, Math.min(L.length - 3, n - 1));
         const a = L[i], b = L[i + 2];
@@ -14577,6 +14706,12 @@ const sfx = {
     // most punishing part of a held refusal — a shake decays on its own and a
     // flash is silent, but a quack at 10Hz for nine seconds is unbearable, and
     // it was measured at exactly that. The window matches DENY_REPEAT_MS.
+    knobClick: (k) => {   // [161126b] the joystick's play / pause / stop: a short mechanical click, pitched by what it did
+        const f = k === 'stop' ? 520 : k === 'play' ? 1180 : 880;
+        playTone(f * 2, 0.012, 'square', VOL.ui * 0.22);
+        playTone(f, 0.035, 'triangle', VOL.ui * 0.55);
+        if (k === 'stop') setTimeout(() => playTone(f * 0.75, 0.06, 'triangle', VOL.ui * 0.5), 60);
+    },
     bonk: () => {   // [150826u]
         const now = performance.now();
         if (now - (sfx._bonkT || 0) < 400) return;
@@ -16366,6 +16501,32 @@ function runFitter() {
     game._stuckFor = 0;
 }
 
+/* ══ [161126e] A SET GONE PAST IS DEALT AGAIN — Jake, 16 Nov, 06:58: "In level 4 in 'hard' mode, I missed an opportunity to land on a
+   pair of diagonal pairs but the wait for the next opportunity of diagonal pairs was too long, can you close the gap a bit." A set
+   you scrolled past stayed in the game's list of sets on the board, so the shape still counted as served: the drought floor
+   (a needed shape with no set on the board for SLOT_DROUGHT_LANDINGS, 8, landings) never started, and the next one came only
+   when a general credit (every 20 landings) happened to pick that shape. Islands already worked the right way ([101026j]). Now
+   a set whose every cell is below the last row you can stand on bows out, and the same shape is dealt again at once in the band
+   just above the view (2–8 rows up), so it scrolls in within a few seconds. One at a time; tried every frame until it fits.
+   SLOT_PASS_REDEAL = false, or ?slotredeal=0, puts back the wait. */
+const SLOT_PASS_REDEAL = !/[?&]slotredeal=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function slotPassTick() {
+    if (!SLOT_PASS_REDEAL || !game.running || game.testDrive || game._replay || game.paused || game.celebrating || game.introHold || !setNeeded.length) return;
+    const bot = Math.floor(game.cameraY) + VIEW_H - 1;
+    for (const sl of slots) {
+        if (sl.claimed || sl.retiring || sl.levelIsle || sl.onIsland) continue;
+        if (!sl.cells.every(c => c.y > bot)) continue;
+        sl.retiring = performance.now();
+        if (setNeeded.includes(sl.id)) { game._slotOwed = game._slotOwed || []; game._slotOwed.push(sl.id); }
+        try { rec('slot', { k: 'passed', id: sl.id }); } catch (e) {}
+    }
+    const owed = game._slotOwed;
+    if (owed && owed.length) {
+        const id = owed[0];
+        if (!setNeeded.includes(id) || slots.some(q => q.id === id && !q.claimed && !q.retiring)) { owed.shift(); return; }
+        if (trySpawnSlot(viewAheadBand(), id)) { owed.shift(); try { rec('slot', { k: 'redealt', id }); } catch (e) {} }
+    }
+}
 function spendSlotCredit() {
     if (game.testDrive || !setNeeded.length) return;
     if (SQUARE_FIRST && game._squareOwed) {   // [181026n] the square, owed since the level opened, before anything else
@@ -21039,7 +21200,7 @@ function drawGoldFx(cells, ins) {   // the shockwave when it is taken; the rim a
         }
     }
     // [121126t] the ×2 words are drawn with the floats now (over the knuckles), see X2_WORDS_ON_TOP
-    if (!X2_WORDS_ON_TOP) { x2Moments(); drawX2Banner(); }   // [011126c] · [011126g] the 5-to-1 count is gone: it read as the game's clock
+    if (!X2_WORDS_ON_TOP) { x2Moments(); if (WORDS_ON) drawX2Banner(); }   // [011126c] · [011126g] the 5-to-1 count is gone: it read as the game's clock
     if (_lvl) ctx.restore();   // [121126o] back in the cube's frame for its rim and sparks
     if (!x2Active() || !cells || !cells.length) return;
     const left = x2Left(), pulse = left <= 3 ? 0.5 + 0.5 * Math.sin(performance.now() / 120) : 0.85 + 0.15 * Math.sin(performance.now() / 400);
@@ -27829,7 +27990,7 @@ function drawRowGapPulses() {
             ctx.strokeText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
         }
         if (TEXT_SHADOW) { ctx.shadowColor = 'rgba(6,20,45,0.6)'; ctx.shadowBlur = 4; }   // [091026p]
-        ctx.fillText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);
+        if (WORDS_ON) ctx.fillText(secsLabel(q.secs), sx + (CELL - 4) / 2, sy + (CELL - 4) / 2);   // [171126a]
         ctx.restore();
     }
 }
@@ -28027,7 +28188,17 @@ function buildInventoryRows(L, lvl, delta) {
     if (L.goldSecs > 0) tiles += tile('\u00d72 Gold', 'gold', L.goldN || 0, `\u2212${Math.round(L.goldSecs)}s`, 'gold');   // [311026o] what the gold cost
     if (L.guideSecs > 0) tiles += tile('Move Guide', 'guide', L.guideN || 0, `\u2212${Math.round(L.guideSecs)}s`, 'guide');   // [311026p] what the guide cost   // [251026b] what crossing holes cost
     if (L.penSecs > 0) tiles += tile('Penalties', 'pen', L.penN || 0, `−${Math.round(L.penSecs)}s`, 'pen');
-    const tHtml = head('Time') + `<div class="inv-tiles">${tiles}</div>` +
+    /* [161126h] TIME SAYS ITS SECONDS — Jake, 16 Nov, 14:49 (grab of level 1's card: TIME +0 over slots, rows, hourglasses, greens,
+       combos and holes filled): "why do i not score any points in the 'time' part of the scorecard"; 14:51 "yes" to showing the
+       seconds. The Time section pays seconds onto the clock; its header showed only the points time turns into (over 2:30, or on
+       the last level), almost always +0. Now the header shows what the section earned, +104s, in the tiles' blue; when time also
+       turns into points it reads +104s · +2,300 (the points still count up as before and are still part of the level total).
+       Nothing is paid differently. TIME_HEAD_SECS = false, or ?timehead=0, puts back +0. */
+    const _tSecs = Math.round(game.roundTimeSecs || 0);
+    const tHead = TIME_HEAD_SECS
+        ? `<div class="inv-head"><span class="inv-h">Time</span><span class="inv-hr"><span class="inv-hs">${_tSecs >= 0 ? '+' : '\u2212'}${Math.abs(_tSecs)}s</span>${timePts ? '<span class="inv-hdot">\u00b7</span><span class="tally-pts">+0</span>' : '<span class="tally-pts"></span>'}</span></div>`
+        : head('Time');
+    const tHtml = tHead + `<div class="inv-tiles">${tiles}</div>` +
         `<div class="inv-foot"><span>EARNED +${Math.round(game.roundTimeSecs || 0)}s</span><span>${L.carryOn ? ((L.carryStart || 0) > (L.carrySecs || 0) ? `LEVEL ${lvl + 1} STARTS ON ${clockFmt(L.carryStart)}` : `CARRY ${clockFmt(L.carrySecs)} INTO LEVEL ${lvl + 1}`) : `LEFT ${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}`}</span><span class="tally-count inv-spin">${L.timeSecs}s</span></div>` +
         (L.carryOn && L.timeSecs > 0 ? `<div class="inv-foot"><span>OVER THE ${clockFmt(L.carryLimit)} LIMIT</span><span>${L.timeSecs}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span></div>` : '') +   // [251026a]
         (L.over > 0 ? `<div class="inv-foot"><span>OVER ${clockFmt(CLOCK_CEILING)}</span><span>${Math.round(L.overSecs)}s × ${TIME_PTS_PER_SEC} × LEVEL ${lvl}</span></div>` : '');
@@ -28084,6 +28255,7 @@ function buildLevelTallyRows() {
                 spin: { secs: L.timeSecs, per: TIME_PTS_PER_SEC * lvl } });
     return rows;
 }
+const TIME_HEAD_SECS = !/[?&]timehead=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [161126h]
 function buildTallyRows() {
     if (LEVEL_TALLY && game._lv) return buildLevelTallyRows();   // [181026b]
     // [300726ba] SIX LINES, NOT TWELVE. The card had become a spreadsheet:
@@ -29327,6 +29499,7 @@ function pieceHome(color) {
     if (typeof HAPTICS !== 'undefined') HAPTICS.fire(HAPTIC.claim);
     rec('piece', { n: game._piecesHome, left });
 }
+const SET_CELEBRATE = !/[?&]setcheer=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [191126a] ?setcheer=0: the old clatter
 function triggerSetCelebration(fireworkCount = 15, duration = 2500) {
     try { rotorMarkFlip(); } catch (e) {}   // [061026d] the watermark turns once with the level
     const colors = SLOT_TYPES.map(t => SLOT_DEFS[t].color);
@@ -29358,7 +29531,10 @@ function triggerSetCelebration(fireworkCount = 15, duration = 2500) {
     }
 
     // ── Audio: scaled applause cascade + chord (high intensity only) ──
-    if (audioCtx) {
+    // [191126a] a set completed (not the finale's 46): the celebration in place of the clatter and the chord
+    const _cheer = SET_CELEBRATE && fireworkCount < 40 && sfx && sfx.setCelebrate && audioCtx;
+    if (_cheer) { try { sfx.setCelebrate(); } catch (e) {} }
+    if (audioCtx && !_cheer) {
         const clapCount = Math.round(40 * intensity);
         for (let i = 0; i < clapCount; i++) {
             setTimeout(() => {
@@ -29670,6 +29846,7 @@ function commitFusion(cellsHere, fuse, dir) {
 //   green fusion with the survivors then resolves on the next auto-fuse pass.
 // Returns true only if a green ADD/REMOVE was performed here (move handled).
 const GREEN_BEFORE_MACHINE = true;   // [300926c]
+const GREEN_FLIP_SHOWN = !/[?&]greenflip=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));   // [181126a]
 function tryFuseAlongPath(dir) {
     const shapeType = game.shapeType, config = game.shapeConfig;
     const newConfig = SHAPES[shapeType].trans[config][dir];
@@ -29710,6 +29887,7 @@ function tryFuseAlongPath(dir) {
         return (w === 'pivot' && canTurn) || w === 'slip';
     });
     if (fuse && (!toolUnderfoot || GREEN_BEFORE_MACHINE)) {   // [300926c] the green joins first; the machine then moves the whole new shape
+        const _gfFrom = getPlayerCells(), _gfPar = game.faceParity;   // [181126a] where the flip starts
         game.playerX = landX;
         game.playerY = landY;
         game.shapeConfig = newConfig;
@@ -29728,6 +29906,18 @@ function tryFuseAlongPath(dir) {
         if ((game.roundClaims || 0) > _claimsBefore)
             showCombo(LOGICAL_W / 2, (game.playerY - game.cameraY) * CELL - 24);
         commitFusion(getPlayerCells(), fuse, dir);
+        /* [181126a] THE FLIP ONTO A GREEN IS SHOWN — Jake, 18 Nov, 18:46 (six grabs: a vertical pair flips east beside a green and
+           becomes a J; "the move is not shown in the animation when it should be, where as the next move east with the j shape does
+           show the flip"). A move that lands beside a green goes through this path, which set the body down on its landing and
+           grew it without ever starting a flip — and applyFusionMove switches off any flip ("grow renders in place; not a move-flip
+           (v1 scope)"). So the shape jumped. Now the flip is started here, after the grow, from where the shape was to where it
+           landed (the shape before the green joined), with the move's sound and the knuckles, exactly as an ordinary move; the
+           green stays in sight (a ghost) until the fold reaches it, then is part of the body as it lands. The rules are unchanged. GREEN_FLIP_SHOWN = false, or ?greenflip=0, puts
+           back the jump. */
+        if (GREEN_FLIP_SHOWN && !game._replay) {
+            try { startFlip(dir, _gfFrom, _gfPar, false, landedCells.map(c => ({ x: c.x, y: c.y }))); noteJointFlash(_gfFrom, landedCells);
+                  _clearGhosts.set(`${fuse.adjX},${fuse.adjY}`, { kind: 'pickup', until: performance.now() + (flip.dur || 180), x: fuse.adjX, y: fuse.adjY, silent: 1 }); } catch (e) {}   // the green stays in sight until the fold reaches it
+        }
         return true;
     }
     // Otherwise: greens that are edge-adjacent (cardinal) to the player's
@@ -32439,6 +32629,7 @@ function move(dir) {
                 showTip('cross');
                 rec('fill', { n: vIdx.length, s: 'single', paid: 'sec' });
                 if (!BUILD_FEEL) HAPTICS.fire(HAPTIC.red, 90);   // [051126a]
+                else HAPTICS.fire(HAPTIC.voidIn, 90);   // [161126c] a single crossing: the same thud
             }
         }
         if (!RED_POPULATION && redIdx.length > 0 && !tryMultiDevolve(probeCells, redIdx)) {   // [290926i] off: a red never takes the last cube (checkCollisions)
@@ -36739,7 +36930,7 @@ function drawShifterPreview() {
             drawRouteGhost([p.shifterCell], '#ef4444', 0.55 * pulse, false);
             if (p.setCost) {   // [101026m] a single pushed onto the wrong set pays this — said before it happens
                 ctx.save(); ctx.globalAlpha = pulse; ctx.fillStyle = INK.loss; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';   // [011126h]
-                ctx.fillText(`\u2212${penaltyNext(SET_PUSH_SEC)}s`, p.shifterCell.x * CELL + CELL / 2, (p.shifterCell.y - game.cameraY) * CELL - 6);
+                if (WORDS_ON) ctx.fillText(`\u2212${penaltyNext(SET_PUSH_SEC)}s`, p.shifterCell.x * CELL + CELL / 2, (p.shifterCell.y - game.cameraY) * CELL - 6);   // [171126a]
                 ctx.restore();
             }
             continue;
@@ -37557,6 +37748,7 @@ function knobHit(pt) {   // is a point on the stick's pad on the knob itself?
 }
 function knobStopTick() {   // paused and held long enough: stop the run
     if (!_knobHold || !game.running || !game.paused) { if (_knobHold && !game.paused) _knobHold = null; return; }
+    knobPressFx('stop');   // [161126b]
     if (performance.now() - _knobHold.t0 >= KNOB_STOP_MS) { _knobHold = null; rec('knob', { k: 'stop' }); quitRun(); }
 }
 /* [131126e] THE BUTTON LIGHTS UP — Jake, 13 Nov, 12:04: "the play, pause, stop symbols need suitable colours to animate when
@@ -37574,22 +37766,45 @@ function knobBandOff() {   // the band goes steel while the button speaks
     const fx = game._knobFx;
     return !!(fx && fx.k === 'play' && performance.now() - fx.t < KNOB_POP_MS);
 }
+/* ══ [161126b] THE KNOB CLICKS — Jake, 16 Nov, 06:58: "Add a button click sound and subtle rumble for the Play, stop, pause button
+   press on the joystick, also add a line around the symbols to make them stand out more on the top of the joystick." Every press
+   (touch or mouse) plays a short click (sfx.knobClick: brighter for play, lower for pause, a falling double for stop) and a short
+   buzz (HAPTIC.knob; the stop a longer one) — the phone's vibration and a pad's rumble, each by its own switch. Each symbol (❚❚, ▶,
+   ■) is drawn with an edge: a dark line round the coloured ones, a light line round the resting ❚❚ (KNOB_SYM_EDGE). ?knobclick=0
+   ?knobedge=0. */
+const KNOB_CLICK = !/[?&]knobclick=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || '')), KNOB_SYM_EDGE = !/[?&]knobedge=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+function knobPressFx(k) {
+    if (!KNOB_CLICK) return;
+    try { initAudio(); if (sfx.knobClick) sfx.knobClick(k); } catch (e) {}
+    try { HAPTICS.fire(k === 'stop' ? HAPTIC.knobStop : HAPTIC.knob, 0); } catch (e) {}
+}
 function drawKnobFace(pctx, KH, day) {   // ❚❚ while playing, ▶ paused, the stop ring and ■ while it is held · [131126e] in colour
     if (!KNOB_BUTTON) return;   // [131126h] touch or mouse
     const ink = day ? 'rgba(31, 41, 55, 0.78)' : 'rgba(15, 23, 42, 0.8)';
     const s = KH * 0.22, now = performance.now();
+    let ink0 = null;   // [161126b] the resting ink, as the canvas spells it
     const fx = game._knobFx, age = fx ? now - fx.t : 1e9;
     const pop = (k) => (fx && fx.k === k && age < KNOB_POP_MS) ? Math.sin(Math.PI * age / KNOB_POP_MS) : 0;   // 0 → 1 → 0
-    const pauseBars = () => { const bw = s * 0.42, gap = s * 0.36; pctx.fillRect(-gap - bw, -s * 0.9, bw, s * 1.8); pctx.fillRect(gap, -s * 0.9, bw, s * 1.8); };
-    const playTri = () => { pctx.beginPath(); pctx.moveTo(-s * 0.75, -s); pctx.lineTo(s * 1.05, 0); pctx.lineTo(-s * 0.75, s); pctx.closePath(); pctx.fill(); };
+    const edge = (path) => {   // [161126b] a line round the symbol: dark round a colour, light round the resting ink
+        if (!KNOB_SYM_EDGE) return;
+        pctx.save(); pctx.shadowBlur = 0; pctx.globalAlpha = Math.min(1, pctx.globalAlpha * 1.6 + 0.2);
+        const ink = pctx.fillStyle === ink0;
+        pctx.strokeStyle = ink ? (day ? 'rgba(255, 255, 255, 0.95)' : 'rgba(241, 245, 249, 0.9)') : (day ? 'rgba(15, 23, 42, 0.85)' : 'rgba(2, 6, 23, 0.9)');
+        pctx.lineWidth = Math.max(1.4, KH * 0.035); pctx.lineJoin = 'round'; path(); pctx.stroke(); pctx.restore();
+    };
+    const rr = (x, y, w, h) => { pctx.beginPath(); pctx.rect(x, y, w, h); };
+    const pauseBars = () => { const bw = s * 0.42, gap = s * 0.36; pctx.fillRect(-gap - bw, -s * 0.9, bw, s * 1.8); pctx.fillRect(gap, -s * 0.9, bw, s * 1.8);
+        edge(() => { pctx.beginPath(); pctx.rect(-gap - bw, -s * 0.9, bw, s * 1.8); pctx.rect(gap, -s * 0.9, bw, s * 1.8); }); };
+    const triPath = () => { pctx.beginPath(); pctx.moveTo(-s * 0.75, -s); pctx.lineTo(s * 1.05, 0); pctx.lineTo(-s * 0.75, s); pctx.closePath(); };
+    const playTri = () => { triPath(); pctx.fill(); edge(triPath); };
     const lit = (col, glow) => { pctx.fillStyle = col; pctx.shadowColor = col; pctx.shadowBlur = glow; };
     pctx.save();
-    pctx.fillStyle = ink;
+    pctx.fillStyle = ink; ink0 = pctx.fillStyle;
     if (game.paused) {
         const held = _knobHold ? Math.min(1, (now - _knobHold.t0) / KNOB_STOP_MS) : 0;
         if (held > 0.08) {   // the stop: red ■, a red ring filling round it, a pulse as it fills
             const c = knobFxCol('stop', day), q = 1 + 0.08 * Math.sin(now / 70);
-            pctx.save(); pctx.scale(q, q); lit(c, 10); pctx.fillRect(-s * 0.85, -s * 0.85, s * 1.7, s * 1.7); pctx.restore();
+            pctx.save(); pctx.scale(q, q); lit(c, 10); pctx.fillRect(-s * 0.85, -s * 0.85, s * 1.7, s * 1.7); edge(() => rr(-s * 0.85, -s * 0.85, s * 1.7, s * 1.7)); pctx.restore();
             pctx.strokeStyle = c; pctx.lineWidth = 4; pctx.lineCap = 'round'; pctx.shadowColor = c; pctx.shadowBlur = 6;
             pctx.beginPath(); pctx.arc(0, 0, KH * (knobWellOn() ? 0.42 : 0.62), -Math.PI / 2, -Math.PI / 2 + held * Math.PI * 2); pctx.stroke();   // [131126d] inside the well
         } else if (pop('pause') > 0) {   // just paused: the ❚❚ pops in amber
@@ -38274,7 +38489,7 @@ const STICK_DODGE_ROW = /[?&]dodgerow=1(?:&|$)/.test(((typeof location !== 'unde
 function syncStickSettingsUI() {
     try { syncSwipeSettingsUI(); } catch (e) {}   // [111126d]
     try { syncGlideSettingsUI(); } catch (e) {}   // [121126a]
-    { const r = document.getElementById('setRumble'); if (r) { r.checked = padRumbleOn; const row = r.closest('.settings-row'); if (row) row.style.display = PAD_ON ? '' : 'none'; } }   // [121126k]
+    { const r = document.getElementById('setRumble'); if (r) { r.checked = padRumbleOn; const row = r.closest('.settings-row'); if (row) row.style.display = ''; } }   // [121126k] · [161126c] on every device
     { const dr = document.getElementById('setStickDodgeRow'); if (dr) dr.style.display = STICK_DODGE_ROW ? '' : 'none'; }   // [101126ae]
     const l = document.getElementById('setStickLeft'), r = document.getElementById('setStickRight');
     if (l) l.classList.toggle('active', stickSide === 'left');
@@ -38496,6 +38711,7 @@ function showTip(key) {
     if (typeof game !== 'undefined' && game.testDrive) return;   // garage: no tips
     if (TIPS[key]) tipWant[key] = (tipWant[key] || 0) + 1;
     if (!game.tipsOn || !TIPS[key] || tipsSeen.has(key)) return;
+    if (!WORDS_ON) return;   // [171126a] words off: no tip (it stays unseen, so it comes later)
     tipsSeen.add(key);
     try { localStorage.setItem('rotor_tips_seen', JSON.stringify([...tipsSeen])); } catch (e) {}
     tipQueue.push(key);
@@ -38784,7 +39000,23 @@ function turnNotYet(x, y) {
       const _te = moveTape[moveTape.length - 1];   // [280926r] on the tape, for the replay
       if (_te && !game._replay) _te.spin = { x, y, dur: _singleSpin.dur, ang: _singleSpin.ang }; }
     rec('pass', { k: 'pivot', s: game.shapeType });
+    if (SINGLE_TURN_SPENDS && !game._replay) {   // [161126a] it counts as used: it rests, then comes back as the other kind (a step)
+        const key = `${x},${y}`, m = shifterMeta[key];
+        if (m && !(m.spentUntil && performance.now() < m.spentUntil)) {
+            const end = (_singleSpin ? _singleSpin.t0 + _singleSpin.dur : performance.now());
+            m.spentAt = end; m.spentUntil = end + SHIFTER_RECHARGE_MS; m.held = true;
+        }
+    }
 }
+/* ══ [161126a] A SINGLE ON A TURN TILE USES IT UP — Jake, 16 Nov, 06:58: "in hard mode I went onto a shifter 4 or 5 times in a row
+   and they were all turn shifters.. no move shifters… please check the code, these must alternate.. feels like something got
+   stuck". It had: a single passes over a turn tile ([110926p]: it spins, nothing else), so the tile was never used, never rested
+   and never came back with its next setting — it stayed a turn for as long as you were a single, however often you landed on
+   it (reproduced on 1602: six landings, six turns; playdata 116 shows it on Hard, five passes in one level). Hard deals the most
+   singles. Now a single's landing counts as a use: the single spins as before, the tile rests, and it comes back as a STEP (the
+   other kind, [131126n]) with its white flash. It does not push you while you are still on it; step off and on again and it
+   does. SINGLE_TURN_SPENDS = false, or ?singleturn=0, puts back the pass. */
+const SINGLE_TURN_SPENDS = !/[?&]singleturn=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
 /* [091026v] "when a single cube rotates on a turn shifter it needs to be above the outer white ring on the outside not
    cropped by the outer white ring" (Jake, 9 Oct, 23:14). [280926j] drew the cell's steel ring OVER the spinning cube,
    "so its corners are seen to cross it" — which read as the ring cutting the corners off. Now the ring and the dashed
@@ -40487,6 +40719,7 @@ function draw() {
     try { slotKeepClear(); } catch (e) {}   // [121126c]
     try { shifterAlternateTick(); } catch (e) {}   // [131126b]
     try { hardGlassSweep(); } catch (e) {}   // [131126i]
+    try { slotPassTick(); } catch (e) {}   // [161126e]
     try { lowClockTick(); } catch (e) {}   // [131126l]
     tiltTick();   // [081026q]
     replayTick();   // [100926f] while a replay runs it owns the camera, the body and the flip
@@ -41910,10 +42143,11 @@ function draw() {
        above it. The boxes are now tracked as they are drawn, and a float that
        would land on one already down is stepped clear of it. Oldest first, so
        the message that has been read stays put and the new one moves. */
-    if (X2_WORDS_ON_TOP && !game._replay) { x2Moments(); drawX2Banner(); }   // [121126t] over the knuckles, with the other words
+    if (X2_WORDS_ON_TOP && !game._replay) { x2Moments(); if (WORDS_ON) drawX2Banner(); }   // [121126t] over the knuckles, with the other words
     releaseFloats();   // [091026j]
     const now = Date.now();
     const _fBoxes = (X2_FLOAT_STYLE && game && game._x2Box && game._x2Banner) ? [game._x2Box] : [];   // [031126h] the ×2 banner holds its place
+    if (!WORDS_ON) floats.length = 0;   // [171126a] words off: none drawn
     floats = floats.filter(f => {
         const age = now - f.t;
         const base = f.life || (f.big ? 2400 : 2000);   // V9: +1s — text was going too fast
@@ -44061,10 +44295,26 @@ function nameRevealSync() {
         : `<button type="button" class="go-name-line" onclick="event.stopPropagation(); openCertScreen(false);"><span class="go-name-lbl">PLAYED AS</span> <span class="go-name-v">${rnEsc(v.n)}</span></button>`;
 }
 
+/* ══ [161126f] WHERE THE NAME COMES FROM — Jake, 16 Nov, 06:58: "Can you add onto the name certificate the etymology or origin of the
+   name." Under the honour, the certificate now says where each part of the name comes from, in the name's own order: the rotor
+   word's origin (all 108 describing words, 157 nouns and 26 titles, RN_ETYM) and, for a name ROTOЯ dealt, the scientist it
+   honours (all 50); a player's own first name reads "your own first name" (the game's list holds 17,523 of them, so it says
+   no more than it knows). On screen and on the saved picture. ?certorigin=0. */
+const CERT_ORIGIN = !/[?&]certorigin=0(?:&|$)/.test(((typeof location !== 'undefined' && location.search) || ''));
+const RN_ETYM = {"Swift":"Old English swift, moving quickly","Steady":"from stead, a place: standing firm in one spot","Nimble":"Old English næmel, quick to take hold","Rotary":"Latin rota, a wheel","Radial":"Latin radius, the spoke of a wheel","Axial":"Latin axis, an axle","Kinetic":"Greek kinein, to move","Orbital":"Latin orbis, a circle or wheel","Balanced":"Latin bilanx, having two scale pans","Geared":"Old Norse gervi, equipment","Turning":"Latin tornare, to turn on a lathe","Flipping":"a 16th-century word for a quick toss","Pivoting":"French pivot, a hinge pin","Tumbling":"Old English tumbian, to leap and dance","Whirling":"Old Norse hvirfla, to turn about","Agile":"Latin agere, to drive or set in motion","Precise":"Latin praecisus, cut off short","Dynamic":"Greek dynamis, power","Spry":"English dialect, active and nimble","Brisk":"probably French brusque, lively","Even":"Old English efen, level and equal","Level":"Latin libella, a mason's balance","Exact":"Latin exactus, weighed out precisely","Rolling":"Latin rotula, a little wheel","Gliding":"Old English glidan, to slip along smoothly","Sliding":"Old English slidan, to slip","Spinning":"Old English spinnan, to draw out and twist thread","Revolving":"Latin revolvere, to roll back round","Orbiting":"Latin orbis, a circle or wheel","Looping":"Middle English loupe, a bend or fold","Twisting":"Old English twist, a rope of two strands","Sweeping":"Old English swapan, to sweep","Drifting":"from drive: what the wind drives along","Shifting":"Old English sciftan, to arrange or divide","Rapid":"Latin rapidus, seizing, swift","Quick":"Old English cwic, alive","Zippy":"from zip, the sound of something fast","Fleet":"Old English fleotan, to float or glide","Magnetic":"Greek Magnetis lithos, the stone of Magnesia","Charged":"Latin carricare, to load a wagon","Ionic":"Greek ion, going (named by Faraday, 1834)","Electric":"Greek elektron, amber: rubbed amber attracts","Galvanic":"after Luigi Galvani (1737–1798), who made frogs' legs twitch with electricity","Steel":"Old English stele, hard iron","Iron":"Old English iren","Tin":"Old English tin","Nickel":"German Kupfernickel, copper demon: miners' name for the ore","Zinc":"German Zink, named by Paracelsus","Tungsten":"Swedish tung sten, heavy stone","Alloy":"Latin alligare, to bind together","Ferrous":"Latin ferrum, iron","Forged":"Latin fabrica, a workshop","Welded":"Old English weallan, to boil up","Riveted":"Old French river, to clinch","Polished":"Latin polire, to make smooth","Alloyed":"Latin alligare, to bind together","Metallic":"Greek metallon, a mine","Sonic":"Latin sonus, sound","Quantum":"Latin quantus, how much; Planck's word in physics, 1900","Oscillating":"Latin oscillare, to swing","Turbo":"Latin turbo, a spinning top or whirlwind","Magnetised":"Greek Magnetis lithos, the stone of Magnesia","Mechanical":"Greek mechane, a machine","Motorised":"Latin motor, a mover","Mobile":"Latin mobilis, movable","Bolted":"Old English bolt, an arrow","Bevelled":"Old French baif, open-mouthed: a slanted edge","Clockwork":"medieval Latin clocca, a bell","Coiled":"Old French coillir, to gather","Clicking":"the sound itself","Calibrated":"Arabic qalib, a mould","Curving":"Latin curvus, bent","Circular":"Latin circulus, a small ring","Synchronised":"Greek syn + chronos, together in time","Spiralling":"Greek speira, a coil","Smooth":"Old English smoth","Sprung":"Old English springan, to leap","Hydraulic":"Greek hydor + aulos, a water pipe","Hovering":"Middle English hoveren, to linger in the air","Helical":"Greek helix, a spiral","Hinged":"Middle English heng, from hang","Jumping":"16th-century English, the sound of a leap","Jointed":"Latin iunctus, joined","Vaulting":"Italian voltare, to turn: a leap with a turn","Veering":"French virer, to turn","Variable":"Latin variare, to change","Neutral":"Latin neuter, neither","Notched":"Old French oche, a nick","Linked":"Old Norse hlekkr, a link of a chain","Winding":"Old English windan, to turn and twist","Whizzing":"the sound of something rushing past","Zooming":"the hum of something fast","Zigzag":"French zigzag, from German Zickzack","Shunting":"Middle English shunten, to shy away; railway sense 1840s","Chugging":"the sound of an engine","Yawing":"a sailors' word: to swing off course","Rotating":"Latin rotare, to turn like a wheel","Tilting":"Old English tealt, unsteady","Clockwise":"the way a clock's hands go round","Anticlockwise":"against the way a clock's hands go round","Swivelling":"Old English swifan, to move or sweep","Twirling":"twist and whirl together, 16th century","Prismatic":"Greek prisma, something sawn","Polar":"Latin polus, the end of an axis","Negative":"Latin negare, to deny; named for electricity by Benjamin Franklin","Positive":"Latin positivus, laid down; named for electricity by Benjamin Franklin","Levitating":"Latin levis, light","Floating":"Old English flotian, to float","Pivot":"French pivot, a hinge pin","Axle":"Old Norse oxull","Cog":"Middle English cogge, a tooth on a wheel","Sprocket":"16th century: a tooth on a wheel that drives a chain","Gear":"Old Norse gervi, equipment","Spindle":"Old English spinel, from spin","Flywheel":"fly + wheel: a heavy wheel that keeps turning","Bearing":"Old English beran, to carry","Rotor":"Latin rota, a wheel — and the game's own name","Lever":"Latin levare, to raise","Gyro":"Greek gyros, a ring or circle","Spoke":"Old English spaca","Hub":"16th century: the centre of a wheel","Torque":"Latin torquere, to twist","Vector":"Latin vector, a carrier","Orbit":"Latin orbita, a wheel's track","Vertex":"Latin vertex, a whirl, from vertere, to turn","Tumbler":"Old English tumbian, to leap and dance","Flipper":"from flip, a quick toss","Shifter":"Old English sciftan, to arrange — the game's own tiles that move you","Knuckle":"Middle Dutch knokel, a little bone","Ratchet":"French rochet, a bobbin","Dynamo":"Greek dynamis, power","Gimbal":"Latin gemellus, a twin: two rings turning together","Turbine":"Latin turbo, a spinning top or whirlwind","Rivet":"Old French river, to clinch","Clutch":"Old English clyccan, to grasp","Gearbox":"Old Norse gervi, equipment, in a box","Axis":"Latin axis, an axle","Radius":"Latin radius, the spoke of a wheel","Arc":"Latin arcus, a bow","Cube":"Greek kybos, a die","Facet":"French facette, a little face","Prism":"Greek prisma, something sawn","Wheel":"Old English hweol","Spinner":"Old English spinnan, to twist thread","Turner":"Latin tornare, to turn on a lathe","Roller":"Latin rotula, a little wheel","Swivel":"Old English swifan, to move or sweep","Caster":"from cast, to throw: a small wheel on a pivot","Cogwheel":"Middle English cogge + Old English hweol","Rotator":"Latin rotare, to turn like a wheel","Momentum":"Latin momentum, movement","Helix":"Greek helix, a spiral","Spiral":"Greek speira, a coil","Bevel":"Old French baif, open-mouthed: a slanted edge","Quadrant":"Latin quadrans, a quarter","Magnet":"Greek Magnetis lithos, the stone of Magnesia","Magneto":"Greek Magnetis lithos, the stone of Magnesia","Armature":"Latin armatura, equipment","Solenoid":"Greek solen, a pipe (named by Ampère)","Flux":"Latin fluxus, a flow","Dipole":"Greek di-, two, + pole","Lodestone":"Middle English lode, the way: the stone that leads","Volt":"after Alessandro Volta (1745–1827), who made the first battery","Amp":"after André-Marie Ampère (1775–1836), founder of electrodynamics","Field":"Old English feld, open land","Current":"Latin currere, to run","Charge":"Latin carricare, to load a wagon","Circuit":"Latin circuitus, a going round","Ingot":"Middle English: a mould for metal","Girder":"from gird, to brace","Bolt":"Old English bolt, an arrow","Rail":"Latin regula, a straight stick","Ballast":"Old Swedish barlast, a bare load","Flange":"probably Old French flanche, a side","Cylinder":"Greek kylindros, a roller","Diode":"Greek di-, two, + hodos, a way","Resistor":"Latin resistere, to stand against","Capacitor":"Latin capax, able to hold","Transistor":"transfer + resistor, named in 1948","Relay":"Old French relaier: fresh horses for the next stage","Fuse":"Latin fusus, melted","Spark":"Old English spearca","Pulse":"Latin pulsus, a beating","Signal":"Latin signum, a sign","Sensor":"Latin sentire, to feel","Motor":"Latin motor, a mover","Stator":"Latin stare, to stand: the part that stays still","Inductor":"Latin inducere, to lead in","Wire":"Old English wir","Anode":"Greek ana + hodos, the way up (named by Faraday)","Cathode":"Greek kata + hodos, the way down (named by Faraday)","Electrode":"Greek elektron, amber, + hodos, a way","Laser":"Light Amplification by Stimulated Emission of Radiation, 1960","Gauss":"after Carl Friedrich Gauss (1777–1855), mathematician of magnetism","Spin":"Old English spinnan, to twist thread","Whirl":"Old Norse hvirfla, to turn about","Swirl":"Middle English, probably Scandinavian: an eddy","Vortex":"Latin vortex, a whirlpool, from vertere, to turn","Glide":"Old English glidan, to slip along smoothly","Drift":"from drive: what the wind drives along","Shift":"Old English sciftan, to arrange or divide","Tumble":"Old English tumbian, to leap and dance","Rebound":"French rebondir, to leap back","Inertia":"Latin iners, idle","Velocity":"Latin velox, swift","Revolution":"Latin revolvere, to roll back round","Gyroscope":"Greek gyros, circle, + skopein, to look; named by Léon Foucault, 1852","Island":"Old English iegland, water land","Bridge":"Old English brycg","Landfall":"a sailors' word: the first land sighted","Crossing":"Latin crux, a cross","Slot":"Old French esclot, a hollow","Combo":"Latin combinare, to join two by two","Flip":"a 16th-century word for a quick toss","Turn":"Latin tornare, to turn on a lathe","Edge":"Old English ecg, a blade","Mechanism":"Greek mechane, a machine","Monorail":"Greek monos, single, + rail","Maglev":"magnetic levitation","Mainspring":"the main spring that drives a clock","Bobbin":"French bobine, a reel","Bracket":"16th century: a support for a shelf","Booster":"from boost, 19th-century American English","Busbar":"from omnibus, for all, + bar","Kilowatt":"Greek khilioi, a thousand, + James Watt","Capstan":"Latin capistrum, a halter","Socket":"Anglo-French soket, a little ploughshare","Scaffold":"Old French eschaffaut, a platform","Hammer":"Old English hamor","Hoist":"Dutch hijsen, to lift","Jet":"French jeter, to throw","Jib":"an 18th-century sailors' word","Junction":"Latin iunctio, a joining","Nozzle":"a little nose","Overdrive":"over + drive","Oscillator":"Latin oscillare, to swing","Lathe":"probably Old Norse hlað, a stand","Linkage":"Old Norse hlekkr, a link of a chain","Latch":"Old English laeccan, to grasp","Washer":"14th century: a ring under a nut","Zipwire":"zip, the sound of speed, + wire","Shuttle":"Old English scytel, a dart","Shackle":"Old English sceacel, a fetter","Chain":"Latin catena","Yaw":"a sailors' word: to swing off course","Yoke":"Old English geoc","Rotation":"Latin rotare, to turn like a wheel","Tilt":"Old English tealt, unsteady","Twirl":"twist and whirl together, 16th century","Roll":"Latin rotula, a little wheel","Spring":"Old English springan, to leap","Servo":"Latin servus, a servant: a motor that follows orders","Pole":"Latin polus, the end of an axis","Minus":"Latin minus, less","Plus":"Latin plus, more","Levitation":"Latin levis, light","Levitator":"Latin levis, light","Float":"Old English flotian, to float","Prof":"Latin professor, one who declares in public","Dr":"Latin doctor, a teacher","Capt":"Latin caput, the head","Major":"Latin major, greater","Cmdr":"Latin commendare, to entrust","Cadet":"Gascon capdet, a little chief","Chief":"Latin caput, the head","Ensign":"Latin insignia, badges: the officer who carried the flag","Pilot":"Greek pedon, an oar or rudder","Tutor":"Latin tutor, a guardian","Fellow":"Old Norse felagi, a partner","Sgt":"Latin serviens, serving","Skipper":"Dutch schipper, a shipman","Scholar":"Latin schola, a school","Marshal":"Old German marah-scalc, a keeper of horses","Mentor":"Mentor, who guided Odysseus's son in Homer","Keeper":"Old English cepan, to hold","Navigator":"Latin navis, a ship","Officer":"Latin officium, a duty","Lt":"French lieu tenant, holding the place","Warden":"Old French wardein, a guard","General":"Latin generalis, of the whole","Governor":"Latin gubernare, to steer","Admiral":"Arabic amir al-, commander of the","Inspector":"Latin inspicere, to look into","Rector":"Latin rector, a ruler, from regere, to steer","Ada":"after Ada Lovelace (1815–1852), who wrote the first program for a machine","Alan":"after Alan Turing (1912–1954), mathematician and code-breaker","Isaac":"after Isaac Newton (1643–1727), who set out the laws of motion","Nikola":"after Nikola Tesla (1856–1943), inventor of the AC induction motor","Marie":"after Marie Curie (1867–1934), pioneer of radioactivity","Grace":"after Grace Hopper (1906–1992), computer pioneer","James":"after James Watt (1736–1819), engineer of the steam engine","Otto":"after Otto Hahn (1879–1968), chemist who found nuclear fission","Hedy":"after Hedy Lamarr (1914–2000), co-inventor of frequency hopping","Emmy":"after Emmy Noether (1882–1935), who linked symmetry and conservation","Lise":"after Lise Meitner (1878–1968), physicist who explained nuclear fission","Mae":"after Mae Jemison (born 1956), engineer and astronaut","Ernst":"after Ernst Mach (1838–1916), physicist of the speed of sound","Edith":"after Edith Clarke (1883–1959), electrical engineer","Leon":"after Léon Foucault (1819–1868), of the pendulum and the gyroscope","Niels":"after Niels Bohr (1885–1962), physicist of the atom","Enrico":"after Enrico Fermi (1901–1954), builder of the first nuclear reactor","Mary":"after Mary Somerville (1780–1872), Scottish scientist and writer","Carl":"after Carl Friedrich Gauss (1777–1855), mathematician of magnetism","Emilie":"after Émilie du Châtelet (1706–1749), who translated Newton into French","Newton":"after Isaac Newton (1643–1727), who set out the laws of motion","Watt":"after James Watt (1736–1819), engineer of the steam engine","Faraday":"after Michael Faraday (1791–1867), who made the first electric motor","Curie":"after Marie Curie (1867–1934), pioneer of radioactivity","Turing":"after Alan Turing (1912–1954), mathematician and code-breaker","Hopper":"after Grace Hopper (1906–1992), computer pioneer","Babbage":"after Charles Babbage (1791–1871), designer of the Difference Engine","Volta":"after Alessandro Volta (1745–1827), who made the first battery","Ampere":"after André-Marie Ampère (1775–1836), founder of electrodynamics","Pascal":"after Blaise Pascal (1623–1662), of pressure and an early calculating machine","Joule":"after James Joule (1818–1889), who measured heat as energy","Hertz":"after Heinrich Hertz (1857–1894), who proved radio waves exist","Kepler":"after Johannes Kepler (1571–1630), who found how planets orbit","Euler":"after Leonhard Euler (1707–1783), mathematician of rotating bodies","Tesla":"after Nikola Tesla (1856–1943), inventor of the AC induction motor","Noether":"after Emmy Noether (1882–1935), who linked symmetry and conservation","Galileo":"after Galileo Galilei (1564–1642), father of modern physics","Huygens":"after Christiaan Huygens (1629–1695), inventor of the pendulum clock","Leibniz":"after Gottfried Leibniz (1646–1716), co-inventor of calculus","Coriolis":"after Gaspard-Gustave Coriolis (1792–1843), of the force in spinning things","Ohm":"after Georg Ohm (1789–1854), who measured electrical resistance","Mach":"after Ernst Mach (1838–1916), physicist of the speed of sound","Boyle":"after Robert Boyle (1627–1691), of the law of gases","Carnot":"after Sadi Carnot (1796–1832), founder of the science of engines","Lovelace":"after Ada Lovelace (1815–1852), who wrote the first program for a machine","Meitner":"after Lise Meitner (1878–1968), physicist who explained nuclear fission","Bohr":"after Niels Bohr (1885–1962), physicist of the atom","Fermi":"after Enrico Fermi (1901–1954), builder of the first nuclear reactor","Planck":"after Max Planck (1858–1947), founder of quantum theory","Doppler":"after Christian Doppler (1803–1853), of the Doppler effect"};
+function certOrigins(v) {   // [[word, where it comes from], ...] in the name's own order
+    if (!CERT_ORIGIN || !v) return [];
+    const pat = RN_PATTERNS[v.p]; if (!pat) return [];
+    const word = pat[0] === 'none' ? '' : (rnPool(pat[0]) || [])[v.w] || '';
+    const nameLine = [v.f, v.src === 'd' ? (RN_ETYM[v.f] || '') : 'your own first name'];
+    const wordLine = word ? [word, RN_ETYM[word] || ''] : null;
+    const out = (v.p <= 2) ? [wordLine, nameLine] : [nameLine, wordLine];
+    return out.filter(x => x && x[0] && x[1]);
+}
 /* The certificate of naming: on screen, and as a picture. */
 function certFields() {
     const v = rotorNameGet(); if (!v || v.auto) return null;
-    return { name: v.n, honour: v.h || rnHonour(v), given: nameFmtDay(v.at, true), no: v.no || 'RЯ-000000',
+    return { name: v.n, honour: v.h || rnHonour(v), given: nameFmtDay(v.at, true), no: v.no || 'RЯ-000000', origins: certOrigins(v),   // [161126f]
              next: nameFmtDay((v.at || 0) + ROTOR_NAME_WEEK_MS, true), can: rotorNameCanChange() };
 }
 function openCertScreen(fresh) {
@@ -44072,6 +44322,7 @@ function openCertScreen(fresh) {
     if (!s || !f) { const v = rotorNameGet(); if (v && v.auto) { const ns = document.getElementById('nameScreen'); if (ns) { ns.classList.remove('hidden'); syncNameScreen(true); } } return; }
     const set = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
     set('certName', f.name); set('certHonour', f.honour); set('certGiven', f.given); set('certNo', f.no);
+    { const o = document.getElementById('certOrigin'); if (o) { o.innerHTML = f.origins.map(([w, t]) => `<div><b>${w}</b> \u2014 ${t}</div>`).join(''); o.hidden = !f.origins.length; } }   // [161126f]
     set('certNext', f.can ? 'It can be changed now.' : `Held until ${f.next}. It can be changed once a week.`);
     const ch = document.getElementById('certChange'); if (ch) ch.classList.toggle('hidden', !f.can);
     s.classList.remove('hidden'); s.scrollTop = 0;
@@ -44120,13 +44371,21 @@ function certCanvas() {
     T('ROTOЯ named the player of this device', 490, "400 34px 'IBM Plex Mono', monospace", NIGHT);
     T(f.name.toLocaleUpperCase(), 620, fit(f.name.toLocaleUpperCase(), W - 220, 104, 800, "'Unbounded', sans-serif"), BLUE, 2);
     T(f.honour, 700, fit(f.honour, W - 220, 38, 700, "'IBM Plex Mono', monospace"), DEEP);
-    T('and recognises the player by that name', 790, "400 34px 'IBM Plex Mono', monospace", NIGHT);
-    T('throughout the world of ROTOЯ.', 840, "400 34px 'IBM Plex Mono', monospace", NIGHT);
-    certDrawCog(g, W / 2, 1010, 104, 16, BLUE);
-    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(W / 2, 1010, 70, 0, Math.PI * 2); g.fill();
-    T('RЯ', 1032, "800 60px 'Unbounded', sans-serif", BLUE);
-    T('ISSUED BY ROTOЯ  ·  REGISTER No. ' + f.no, 1170, "700 26px 'IBM Plex Mono', monospace", DEEP, 3);
-    T('Held until ' + f.next + '  ·  Flip. Turn. Fit.', 1220, "400 26px 'IBM Plex Mono', monospace", '#475569');
+    const _ol = [];   // [161126f] where the name comes from: each part on a line, wrapped at a comma when it is long
+    g.font = "400 26px 'IBM Plex Mono', monospace";
+    for (const [w, t] of (f.origins || [])) { const tx = w + ' \u2014 ' + t;
+        if (g.measureText(tx).width <= W - 200) { _ol.push(tx); continue; }
+        const cut = tx.lastIndexOf(', ', Math.floor(tx.length * 0.62)); if (cut > 10) { _ol.push(tx.slice(0, cut + 1)); _ol.push(tx.slice(cut + 2)); } else _ol.push(tx); }
+    const _dy = _ol.length ? 30 + _ol.length * 38 : 0;
+    _ol.forEach((tx, i) => T(tx, 760 + i * 38, fit(tx, W - 200, 26, 400, "'IBM Plex Mono', monospace"), '#334155'));
+    T('and recognises the player by that name', 790 + _dy, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    T('throughout the world of ROTOЯ.', 840 + _dy, "400 34px 'IBM Plex Mono', monospace", NIGHT);
+    const _cy = 1010 + _dy * 0.62, _cr = _dy ? 88 : 104;
+    certDrawCog(g, W / 2, _cy, _cr, 16, BLUE);
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(W / 2, _cy, _cr * 0.67, 0, Math.PI * 2); g.fill();
+    T('RЯ', _cy + 22 * (_cr / 104), `800 ${Math.round(60 * _cr / 104)}px 'Unbounded', sans-serif`, BLUE);
+    T('ISSUED BY ROTOЯ  ·  REGISTER No. ' + f.no, 1170 + _dy * 0.35, "700 26px 'IBM Plex Mono', monospace", DEEP, 3);
+    T('Held until ' + f.next + '  ·  Flip. Turn. Fit.', 1220 + _dy * 0.3, "400 26px 'IBM Plex Mono', monospace", '#475569');
     return c;
 }
 function certSave() {
@@ -45006,8 +45265,9 @@ function stageBreak(cas, opts = {}) {
     if (surv.length && !build) reactBody('cube', arriveIn + hold);   // [071026j] the shape that is left: white, pink, then on as its new self
     if (hold >= 120 && !build) later(arriveIn + Math.max(0, hold - 110), () => { if (sfx.crack) sfx.crack(); });   // the crack, just before it goes
     later(arriveIn + hold, () => {
-        if (build) { if (typeof opts.onBreak === 'function') opts.onBreak(); return; }   // [051126a] it is laid: fillVoid's moment carries it
+        if (build) { try { HAPTICS.fire(HAPTIC.voidIn, 80); } catch (e) {} if (typeof opts.onBreak === 'function') opts.onBreak(); return; }   // [051126a] it is laid: fillVoid's moment carries it · [161126c] a thud
         if (sfx.devolve) sfx.devolve();
+        try { HAPTICS.fire(HAPTIC.breakOff, 80); } catch (e) {}   // [161126c] a cube breaks off
         triggerShake(opts.shake || 5, 220);
         if (opts.deny) flashPlayerDenied(opts.deny);
         for (const c of cas) {
@@ -47203,6 +47463,8 @@ document.addEventListener('keydown', e => {
         e.preventDefault();
         return;
     }
+    if (e.key === 'v' || e.key === 'V') { settingWords(!WORDS_ON); e.preventDefault(); return; }   // [171126a] words on / off
+    if (e.key === 'u' || e.key === 'U') { settingBoardOnly(!BOARD_ONLY); e.preventDefault(); return; }   // [171126a] board only
     if (e.key === 't' || e.key === 'T') {
         toggleTips();
         e.preventDefault();
@@ -47462,7 +47724,8 @@ function settingRumble(on) { padRumbleOn = !!on; try { localStorage.setItem('rot
 function padRumble(pattern) {
     if (!PAD_ON || !padRumbleOn || !_pad.live || !document.body.classList.contains('pad-active')) return;
     try {
-        const p = navigator.getGamepads && navigator.getGamepads()[_pad.idx]; const a = p && p.vibrationActuator; if (!a || !a.playEffect) return;
+        const p = navigator.getGamepads && navigator.getGamepads()[_pad.idx]; const a = p && p.vibrationActuator;
+        if (!a || !a.playEffect) { const h = p && p.hapticActuators && p.hapticActuators[0]; if (h && h.pulse) { const arr = Array.isArray(pattern) ? pattern : [pattern || 20]; h.pulse(Math.min(1, 0.4 + arr[0] / 60), Math.max(20, arr.filter((v, i) => i % 2 === 0).reduce((x, y) => x + y, 0) * 1.6)); } return; }   // [161126c] Firefox's older call
         const arr = Array.isArray(pattern) ? pattern : [pattern || 20], dur = arr.filter((v, i) => i % 2 === 0).reduce((x, y) => x + y, 0);
         const strong = Math.min(1, 0.25 + dur / 80);
         a.playEffect('dual-rumble', { startDelay: 0, duration: Math.max(20, Math.min(400, dur * 1.6)), weakMagnitude: Math.min(1, strong + 0.2), strongMagnitude: strong }).catch(() => {});
@@ -47896,14 +48159,14 @@ function addStickAware(type, fn, opts) {
         if (_knobHold && _knobHold.mouse) {
             const short = performance.now() - _knobHold.t0 < KNOB_STOP_MS;
             _knobHold = null;
-            if (short && game.running && game.paused) { rec('knob', { k: 'play', by: 'mouse' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; }
+            if (short && game.running && game.paused) { rec('knob', { k: 'play', by: 'mouse' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; knobPressFx('play'); }
             return;
         }
         const mk = _mouseKnob; _mouseKnob = null;
         if (!mk || !game.running || game.paused || game.celebrating || game.introHold) return;
         const still = Math.hypot(e.clientX - mk.x, e.clientY - mk.y) < 8;
         if (still && !_stickTouch.dir && performance.now() - mk.t0 < Math.max(KNOB_TAP_MS, 400)) {
-            setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause', by: 'mouse' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; } }, 0);
+            setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause', by: 'mouse' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; knobPressFx('pause'); } }, 0);
         }
     }, true);
     // Touch too — the pad's touchstart routes through addStickAware to the stick
@@ -48114,7 +48377,7 @@ addStickAware('touchend', e => {
     if (_knobHold) {   // [131126c] released before the stop: play on
         const short = performance.now() - _knobHold.t0 < KNOB_STOP_MS;
         _knobHold = null;
-        if (short && game.running && game.paused) { rec('knob', { k: 'play' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; }
+        if (short && game.running && game.paused) { rec('knob', { k: 'play' }); togglePause(); game._knobFx = { k: 'play', t: performance.now() }; knobPressFx('play'); }
         e.preventDefault(); return;
     }
     if (!game.running) {
@@ -48141,7 +48404,7 @@ addStickAware('touchend', e => {
     const knobTap = _stickTouch.active && _stickTouch.knobTap && !_stickTouch.pushed && tapDur < KNOB_TAP_MS && !game.paused && !game.celebrating && !game.introHold;
     // STICK RELEASE — knob springs home, auto-repeat stops.
     if (_stickTouch.active) {
-        if (knobTap) { setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; } }, 0); }
+        if (knobTap) { setTimeout(() => { if (game.running && !game.paused) { rec('knob', { k: 'pause' }); togglePause(); game._knobFx = { k: 'pause', t: performance.now() }; knobPressFx('pause'); } }, 0); }
         _stickTouch.knobTap = false;
         _stickTouch.active = false;
         _stickTouch.dir = null; _stickTouch.pendDir = null;
@@ -49028,7 +49291,7 @@ function glassModesLine() {   // [101126w] what the hourglasses pay on each diff
     const nm = { easy: 'Easy', medium: 'Medium', hard: 'Hard' }, me = runMode();
     const others = ['easy', 'medium', 'hard'].filter(m => m !== me).map(m => `${glassPair(m).replace(/,$/, '')} on ${nm[m]}`);   // [101126ag]
     return ` That is on ${nm[me]}; they pay ${others.join(', ')}.` + (MED_LATE_FROM <= 10 && MED_LATE_BIG !== MODE_GLASS.medium[0] ? ` On Medium a big one pays ${MED_LATE_BIG} s from level ${MED_LATE_FROM}.` : '')   // [121126h]
-        + (HARD_NO_GLASS ? ` On Hard there are no hourglasses at all; a row pays ${Math.round(8 * HARD_ROW_K[0])} s on levels 1–5, ${Math.round(8 * HARD_ROW_K[1])} s on 6–8 and ${Math.round(8 * HARD_ROW_K[2])} s on 9–10.${HARD_LATE_PAY < 1 ? ` From level ${HARD_LATE_PAY_FROM} everything that gives time gives ${Math.round((1 - HARD_LATE_PAY) * 100)}% less.` : ''}` : '')   // [131126i] · [131126p]
+        + (HARD_NO_GLASS ? ` On Hard ${HARD_GLASS_N ? `the board deals no hourglasses of its own; ${HARD_GLASS_N} small ones of ${HARD_GLASS_SEC} s are laid each level` : 'there are no hourglasses at all'}; a row pays ${Math.round(8 * HARD_ROW_K[0])} s on levels 1–5, ${Math.round(8 * HARD_ROW_K[1])} s on 6–8 and ${Math.round(8 * HARD_ROW_K[2])} s on 9–10.${HARD_LATE_PAY < 1 ? ` From level ${HARD_LATE_PAY_FROM} everything that gives time gives ${Math.round((1 - HARD_LATE_PAY) * 100)}% less.` : ''}` : '')   // [131126i] · [131126p]
         + (!HARD_NO_GLASS && (HARD_PAY[0] < 1 || HARD_PAY[1] < 1 || HARD_PAY[2] < 1) ? ` On Hard everything that gives time gives less: ${Math.round((1 - HARD_PAY[0]) * 100)}% less on levels 1–5, ${Math.round((1 - HARD_PAY[1]) * 100)}% on 6–8, ${Math.round((1 - HARD_PAY[2]) * 100)}% on 9–10.` : '');   // [131126f] · [131126g]
 }
 const TUT = [
